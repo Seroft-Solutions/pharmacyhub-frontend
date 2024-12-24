@@ -23,7 +23,7 @@ const Navbar = ({ className }: NavbarProps) => {
 
           <div className="flex items-center space-x-2">
             <img
-                src="/PharmacyHub.png"
+                src="/Images/PharmacyHub.png"
                 alt="Pharmacy Hub logo"
                 className="h-10 w-10"
             />
