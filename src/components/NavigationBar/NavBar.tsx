@@ -8,8 +8,8 @@ import {
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { menuItems } from '@/config/menuItems';
-import MobileNavItem from "@/components/layout/MobileNavItem";
-import NavItem from "@/components/layout/NavItem";
+import MobileNavItem from "@/components/NavigationBar/MobileNavItem";
+import NavItem from "@/components/NavigationBar/NavItem";
 
 interface NavbarProps {
   className?: string;
@@ -23,7 +23,7 @@ const Navbar = ({ className }: NavbarProps) => {
 
           <div className="flex items-center space-x-2">
             <img
-                src="/api/placeholder/40/40"
+                src="/PharmacyHub.png"
                 alt="Pharmacy Hub logo"
                 className="h-10 w-10"
             />
