@@ -1,10 +1,11 @@
 'use client';
 
-import Navbar from "@/components/NavigationBar/NavBar";
+import Header from "@/components/NavigationBar/Header";
 import CarouselImage from "@/components/ui/Carousel_Image";
 import FeatureCardSection from "@/components/Dashboard/FeatureCardSelection";
 import ProductShowcase from "@/components/Dashboard/ProductShowcase";
 import Footer from "@/components/Dashboard/Footer";
+
 
 const images = [
   {src: "/Images/med.jpg", alt: "Slide 1"},
@@ -14,10 +15,11 @@ const images = [
 ];
 
 export default function Home() {
+
   return (
       <>
 
-        <Navbar/>
+        <Header/>
         <CarouselImage images={images}/>
         <FeatureCardSection/>
         <ProductShowcase/>
