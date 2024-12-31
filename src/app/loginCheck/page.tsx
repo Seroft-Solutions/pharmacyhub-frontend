@@ -7,8 +7,10 @@ import axios from 'axios';
 
 interface User {
   id: string;
-  email: string;
+  emailAddress: string;
   roles: string[];
+  firstName:string;
+  lastName:string;
 }
 
 export default function LoginCheck() {
@@ -31,12 +33,14 @@ export default function LoginCheck() {
           if (response.status === 200) {
 
             const userDTO = response.data.user;
+            console.log("User data is:", response.data.user);
 
             const user: User = {
               id : userDTO.id,
-              email: userDTO.email,
+              emailAddress: userDTO.emailAddress,
               roles: userDTO.roles,
-              name: userDTO.name,
+              firstName:userDTO.firstName,
+              lastName:userDTO.lastName,
               businessPicture: userDTO.businessPicture
             };
 

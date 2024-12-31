@@ -4,8 +4,10 @@ import {hasRole as checkRole} from '../utils/roleUtils';
 
 interface User {
     id: string;
-    email: string;
+    emailAddress: string;
     roles: string[];
+    firstName:string;
+    lastName:string;
 }
 
 interface AuthState {

@@ -2,9 +2,11 @@
 
 import Header from "@/components/NavigationBar/Header";
 import CarouselImage from "@/components/ui/Carousel_Image";
-import FeatureCardSection from "@/components/Dashboard/FeatureCardSelection";
-import ProductShowcase from "@/components/Dashboard/ProductShowcase";
-import Footer from "@/components/Dashboard/Footer";
+import FeatureCardSection from "@/components/Home/FeatureCardSelection";
+import ProductShowcase from "@/components/Home/ProductShowcase";
+import Footer from "@/components/Home/Footer";
+import {router} from "next/client";
+import {useEffect} from "react";
 
 
 const images = [
