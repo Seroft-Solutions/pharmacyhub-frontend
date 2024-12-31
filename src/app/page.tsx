@@ -5,8 +5,6 @@ import CarouselImage from "@/components/ui/Carousel_Image";
 import FeatureCardSection from "@/components/Home/FeatureCardSelection";
 import ProductShowcase from "@/components/Home/ProductShowcase";
 import Footer from "@/components/Home/Footer";
-import {router} from "next/client";
-import {useEffect} from "react";
 
 
 const images = [

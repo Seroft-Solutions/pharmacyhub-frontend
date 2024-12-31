@@ -4,14 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
+import {User} from "@/types/User";
 
-interface User {
-  id: string;
-  emailAddress: string;
-  roles: string[];
-  firstName:string;
-  lastName:string;
-}
 
 export default function LoginCheck() {
   const router = useRouter();
