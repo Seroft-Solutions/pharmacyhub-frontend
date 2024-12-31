@@ -15,7 +15,6 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/NavSideBar/nav-main"
-import { NavProjects } from "@/components/NavSideBar/nav-projects"
 import { NavUser } from "@/components/NavSideBar/nav-user"
 import { SideBarHeader } from "@/components/NavSideBar/sidebar-header"
 import {
@@ -25,6 +24,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import {NavTabs} from "@/components/NavSideBar/nav-tabs";
 
 // This is sample data.
 const data = {
