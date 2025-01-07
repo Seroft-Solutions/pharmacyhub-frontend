@@ -34,7 +34,10 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ childre
               </Breadcrumb>
             </div>
           </header>
-          {children}
+          <div className="ml-4 mr-4">
+            {children}
+          </div>
+
         </SidebarInset>
       </SidebarProvider>
   );
