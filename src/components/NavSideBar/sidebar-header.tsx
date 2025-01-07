@@ -1,36 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
 
 import {
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
 
-export function SideBarHeader({
-                               teams,
-                             }: {
-  teams: {
-    name: string
-    logo: React.ElementType
-    plan: string
-  }[]
-}) {
-  const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
-
+export function SideBarHeader() {
   return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -51,7 +33,7 @@ export function SideBarHeader({
                 <span className="truncate font-semibold">
                   Pharmacy Hub
                 </span>
-                  <span className="truncate text-xs">{activeTeam.plan}</span>
+                  <span className="truncate text-xs">Enterprise</span>
                 </div>
               </SidebarMenuButton>
             </DropdownMenuTrigger>

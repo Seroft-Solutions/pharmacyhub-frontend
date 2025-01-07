@@ -4,12 +4,15 @@ import { Card, CardContent } from "@/components/ui/card";
 
 type UserCardProps = {
   name: string;
-  role: string;
+  contact:string;
+  universityName:string;
+  experience:string;
+  role?: string;
   imageUrl?: string;
   onConnect?: (isConnected: boolean) => void;
 };
 
-const UserCard = ({ name, role, imageUrl, onConnect }: UserCardProps) => {
+const UserCard = ({ name,contact ,universityName,experience,role, imageUrl, onConnect }: UserCardProps) => {
   const [isConnected, setIsConnected] = useState(false);
 
   const handleConnect = () => {
@@ -32,6 +35,9 @@ const UserCard = ({ name, role, imageUrl, onConnect }: UserCardProps) => {
             </div>
             <div>
               <h3 className="font-medium">{name}</h3>
+              <h1>Contact No:{contact}</h1>
+              <h1>University Name:{universityName}</h1>
+              <h1>Expirence:{experience}</h1>
               <p className="text-sm text-gray-500">{role}</p>
             </div>
           </div>
