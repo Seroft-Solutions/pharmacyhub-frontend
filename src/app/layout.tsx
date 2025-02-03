@@ -5,6 +5,8 @@ import "./globals.css";
 import {cn} from "@/lib/utils";
 import {ThemeProvider} from "next-themes";
 import {AuthProvider} from "@/context/AuthContext";
+import {TanstackProvider} from "@/components/Provider/tanstack-provider";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 
 const fontSans = FontSans({
@@ -32,6 +34,7 @@ export default function RootLayout({
           )}
       >
 
+      <TanstackProvider>
       <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -41,7 +44,8 @@ export default function RootLayout({
           <AuthProvider>{children}</AuthProvider>
 
       </ThemeProvider>
-
+        <ReactQueryDevtools initialIsOpen={false} />
+      </TanstackProvider>
       </body>
       </html>
   );
