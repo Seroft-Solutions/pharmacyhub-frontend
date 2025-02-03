@@ -4,4 +4,5 @@ export interface User {
   roles: string[];
   firstName:string;
   lastName:string;
+  registered:boolean
 }
