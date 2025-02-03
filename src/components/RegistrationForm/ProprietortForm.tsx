@@ -16,30 +16,27 @@ const ProprietorForm= forwardRef<HTMLFormElement>((props, ref) =>  {
   const {control, register, handleSubmit, formState: {errors}} = useForm<ProprietorVO>({
     defaultValues: {}
   });
-  // const {user}=useAuth();
-  const {} = useProprietorApi()
+  const {AddUserInProprietorGroup} = useProprietorApi()
   const handleFormSubmit = async (data: ProprietorVO) => {
-    // console.log("Inside submit");
-    // console.log("City is:", data.city);
-    // console.log("Batch is:", data.batch);
-    // console.log("Data is:", data);
-    // // data.userId = user?.id;
-    // let result;
-    //
-    // result = await AddUserInPharmasictGroup(data);
-    // if (result.error)
-    // {
-    //   throw new Error(result.error);
-    // } else
-    // {
-    //   console.log("User added successfully")
-    // }
+    console.log("Inside submit");
+    console.log("Data is:", data);
 
+
+    try {
+
+      const result = await AddUserInProprietorGroup(data);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      console.log("User added successfully");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
   };
 
   return (
       <div className="w-full">
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col h-full">
+        <form ref={ref} onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col h-full">
           <RadioButtonField
               name="licenseRequired"
               label="License Required"
