@@ -8,27 +8,35 @@ export interface PharmacistDetails {
     connected: boolean;
     pharmacist: PharmacistVO;
 }
-interface PharmacistVO {
+export interface PharmacistVO {
     id: string;
     categoryAvailable: string;
     licenseDuration: string;
     experience: string;
     city: string;
-    location: string;
+    area: string;
     universityName: string;
     batch: string;
     contactNumber: string;
-    categoryProvince: string;
+    timePreference:string;
+    previousPharmacyName: string
+    currentJobStatus: string
+    // userId:string
 }
 
-export const usePharmasictApi = () => {
+export const usePharmacistApi = () => {
     const { getToken, logout } = useAuth();
     const { get, post, put, del } = useApi(getToken, logout);
 
-    const getPharmasict = () => get<PharmacistDetails[]>('/api/pharmacist/v1/get-all');
+    const getPharmacist = () => get<PharmacistDetails[]>('/api/pharmacist/v1/get-all');
+    const checkUserExistence = (userId) => get(`/api/pharmacist/v1/CheckUserGroup/${userId}`);
+    const AddUserInPharmacistGroup=(data,userId)=>post<PharmacistVO[]>(`/api/pharmacist/v1/add-info/${userId}`, data);
+
 
 
     return {
-        getPharmasict,
+        getPharmacist,
+        checkUserExistence,
+        AddUserInPharmacistGroup
     };
 };

@@ -7,14 +7,19 @@ export interface PharmacyManagerDetails {
   connected: boolean;
   pharmacyManager: PharmacyManagerVO;
 }
-interface PharmacyManagerVO {
+export interface PharmacyManagerVO {
+  id:string;
+  experienceAsManager: string;
+  education:string;
   contactNumber: string;
   area: string;
   city: string;
   experience: string;
   previousPharmacyName: string;
-  currentJobStatus: string;
-  shiftTime: string;
+   currentJobStatus: string;
+  // shiftTime: string;   //demo
+  timePrefernce: string
+  saleryExpectation:string
 }
 
 export const usePharmacyManagerApi = () => {

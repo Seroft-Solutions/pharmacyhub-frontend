@@ -7,15 +7,15 @@ export interface ProprietorDetails {
   connected: boolean;
   proprietor: ProprietorVO;
 }
-interface ProprietorVO {
-  categoryRequired: string;
-  licenseDuration: string;
-  experienced: string;
+export interface ProprietorVO {
+  id: string;   //demo
+  licenseRequired: string;
+  requiredLicenseDuration: string;
   pharmacyName: string;
   city: string;
-  location: string;
+  area: string;
   contactNumber: string;
-  categoryProvince: string;
+
 }
 
 export const useProprietorApi = () => {

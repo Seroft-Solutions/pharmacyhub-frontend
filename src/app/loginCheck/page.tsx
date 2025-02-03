@@ -35,6 +35,7 @@ export default function LoginCheck() {
               roles: userDTO.roles,
               firstName:userDTO.firstName,
               lastName:userDTO.lastName,
+              registered:userDTO.registered,
               businessPicture: userDTO.businessPicture
             };
 

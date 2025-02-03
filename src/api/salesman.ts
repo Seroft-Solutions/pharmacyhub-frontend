@@ -7,14 +7,17 @@ export interface SalesmanDetails {
   connected: boolean;
   salesman: SalesmanVO;
 }
-interface SalesmanVO {
+export interface SalesmanVO {
+  id: string;   //demo
+  experience: string
+  education:string
   contactNumber: string
   area: string
   city: string
-  experience: string
   previousPharmacyName: string
   currentJobStatus: string
-  shiftTime: string
+  timePrefernce: string
+  saleryExpectation:string
 }
 
 export const useSalesmanApi = () => {
