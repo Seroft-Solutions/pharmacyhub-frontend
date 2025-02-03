@@ -12,24 +12,22 @@ import {
   timePreference
 } from "@/components/RegistrationForm/SelectFieldOptons";
 import { RadioButtonField } from "@/components/ui/RadioButtonField";
-import {useAuth} from "@/hooks/useAuth";
 
 const PharmacistForm = forwardRef<HTMLFormElement>((props, ref) => {
   const { control, register, handleSubmit, formState: { errors } } = useForm<PharmacistVO>({
     defaultValues: {}
   });
-  const {user}=useAuth();
   const { AddUserInPharmacistGroup } = usePharmacistApi();
 
 
   const handleFormSubmit = async (data: PharmacistVO) => {
     console.log("Inside submit");
     console.log("Data is:", data);
-    console.log("UserId",user?.id)
+
 
     try {
 
-      const result = await AddUserInPharmacistGroup(data,user?.id);
+      const result = await AddUserInPharmacistGroup(data);
       if (result.error) {
         throw new Error(result.error);
       }

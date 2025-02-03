@@ -30,7 +30,7 @@ export const usePharmacistApi = () => {
 
     const getPharmacist = () => get<PharmacistDetails[]>('/api/pharmacist/v1/get-all');
     const checkUserExistence = (userId) => get(`/api/pharmacist/v1/CheckUserGroup/${userId}`);
-    const AddUserInPharmacistGroup=(data,userId)=>post<PharmacistVO[]>(`/api/pharmacist/v1/add-info/${userId}`, data);
+    const AddUserInPharmacistGroup=(data)=>post<PharmacistVO[]>(`/api/pharmacist/v1/add-info`, data);
 
 
 
