@@ -1,5 +1,6 @@
 import {useApi} from '@/hooks/useApi';
 import {useAuth} from '@/hooks/useAuth';
+import {PharmacistVO} from "@/api/pharmacist";
 
 export interface SalesmanDetails {
   firstName: string;
@@ -25,9 +26,11 @@ export const useSalesmanApi = () => {
   const { get, post, put, del } = useApi(getToken, logout);
 
   const getSalesman = () => get<SalesmanDetails[]>('/api/salesman/v1/get-all');
+  const AddUserInSalesmantGroup=(data)=>post<SalesmanVO[]>(`/api/salesman/v1/add-info`, data);
 
 
   return {
     getSalesman,
+    AddUserInSalesmantGroup,
   };
 };
