@@ -50,6 +50,7 @@ export default function RegistrationForm({ open, onOpenChange }: RegistrationFor
       formRef.current.dispatchEvent(
           new Event('submit', { cancelable: true, bubbles: true })
       );
+      onOpenChange(false);
     }
   };
 
