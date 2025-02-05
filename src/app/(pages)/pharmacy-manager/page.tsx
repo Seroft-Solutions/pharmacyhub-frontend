@@ -3,9 +3,8 @@ import PharmacyManagerList from "@/components/PharmacyManager/PharmacyManagerLis
 
 export default function PharmacyManager() {
   return(
-      <SidebarLayout>
-      <h1>Manager Page</h1>
-        <PharmacyManagerList/>
-      </SidebarLayout>
+
+      <><h1>Manager Page</h1><PharmacyManagerList/></>
+
   )
 }

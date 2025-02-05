@@ -31,7 +31,7 @@ export default function PharmacyManagerList() {
             { name: "Experience", value: pharmacyManager.pharmacyManager.experience },
             { name: "Current Job Status", value: pharmacyManager.pharmacyManager.currentJobStatus },
             { name: "Previous Pharmacy", value: pharmacyManager.pharmacyManager.previousPharmacyName },
-            { name: "Shift Time", value: pharmacyManager.pharmacyManager.shiftTime },
+            { name: "Time Preference", value: pharmacyManager.pharmacyManager.timePrefernce },
           ];
 
           return (

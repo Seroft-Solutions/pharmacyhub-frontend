@@ -17,14 +17,13 @@ const images = [
 export default function Home() {
 
   return (
-      <>
-
+      <main>
         <Header/>
         <CarouselImage images={images}/>
         <FeatureCardSection/>
         <ProductShowcase/>
         <Footer/>
-      </>
+      </main>
 
   );
 }
