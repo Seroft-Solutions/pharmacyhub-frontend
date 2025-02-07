@@ -22,7 +22,7 @@ const Header = ({ className }: NavbarProps) => {
           </div>
 
           {/* Join Us Button - Visible on both mobile and desktop */}
-          <Link href="/loginCheck" passHref>
+          <Link href="/login" passHref>
             <Button
                 variant="outline"
                 className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white transform group-hover:scale-105 transition-all duration-300"

@@ -3,7 +3,7 @@
 import * as React from "react"
 import {
   BriefcaseMedical,
-  HandCoins, Handshake,
+  HandCoins, Handshake, SquareTerminal,
   UserCog,
 } from "lucide-react"
 
@@ -21,51 +21,132 @@ import {NavTabs} from "@/components/NavSideBar/nav-tabs";
 
 // This is sample data.
 const data = {
-
-  navMain: [
+Nav:[
     {
-      name: "Pharmacist",
-      url: "/pharmacist",
-      icon: BriefcaseMedical,
-    },
-    {
-      name: "Salesman",
-      url: "/salesman",
-      icon: HandCoins,
-    },
-    {
-      name: "Proprietor",
-      url: "/proprietor",
-      icon: Handshake,
-    },
-    {
-      name: "Manager",
-      url: "/pharmacy-manager",
-      icon: UserCog,
-    },
-  ],
-  connections: [
-    {
-      name: "Pharmacist",
-      url: "/pharmacist",
-      icon: BriefcaseMedical,
-    },
-    {
-      name: "Salesman",
+  title: "Pharmacist",
       url: "#",
-      icon: HandCoins,
-    },
-    {
-      name: "Proprietor",
-      url: "#",
-      icon: Handshake,
-    },
-    {
-      name: "Manager",
-      url: "#",
-      icon: UserCog,
-    },
-  ],
+    icon: BriefcaseMedical,
+    isActive: true,
+    items: [
+  {
+    title: "List",
+    url: "/pharmacist",
+  },
+  {
+    title: "Established Connection",
+    url: "#",
+  },
+  {
+    title: "Pharmacist Connection Requests",
+    url: "#",
+  },
+],
+},
+  {
+    title: "Salesman",
+    url: "#",
+    icon: HandCoins,
+    isActive: true,
+    items: [
+      {
+        title: "List",
+        url: "/salesman",
+      },
+      {
+        title: "Established Connection",
+        url: "#",
+      },
+      {
+        title: "Connection Requests",
+        url: "#",
+      },
+    ],
+  },
+  {
+    title: "Proprietor",
+    url: "",
+    icon: Handshake,
+    isActive: true,
+    items: [
+      {
+        title: "List",
+        url: "/proprietor",
+      },
+      {
+        title: "Established Connection",
+        url: "#",
+      },
+      {
+        title: "Connection Requests",
+        url: "#",
+      },
+    ],
+  },
+  {
+    title: "Manager",
+    url: "/pharmacy-manager",
+    icon: UserCog,
+    isActive: true,
+    items: [
+      {
+        title: "List",
+        url: "/pharmacy-manager",
+      },
+      {
+        title: "Established Connection",
+        url: "#",
+      },
+      {
+        title: "Connection Requests",
+        url: "#",
+      },
+    ],
+  },],
+  // navMain: [
+  //
+  //   {
+  //     name: "Pharmacist",
+  //     url: "/pharmacist",
+  //     icon: BriefcaseMedical,
+  //   },
+  //   {
+  //     name: "Salesman",
+  //     url: "/salesman",
+  //     icon: HandCoins,
+  //   },
+  //   {
+  //     name: "Proprietor",
+  //     url: "/proprietor",
+  //     icon: Handshake,
+  //   },
+  //   {
+  //     name: "Manager",
+  //     url: "/pharmacy-manager",
+  //     icon: UserCog,
+  //   },
+  // ],
+  // connections: [
+  //   {
+  //     name: "Pharmacist",
+  //     url: "/pharmacist",
+  //     icon: BriefcaseMedical,
+  //   },
+  //   {
+  //     name: "Salesman",
+  //     url: "#",
+  //     icon: HandCoins,
+  //   },
+  //   {
+  //     name: "Proprietor",
+  //     url: "#",
+  //     icon: Handshake,
+  //   },
+  //   {
+  //     name: "Manager",
+  //     url: "#",
+  //     icon: UserCog,
+  //   },
+  // ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -75,8 +156,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SideBarHeader/>
         </SidebarHeader>
         <SidebarContent>
-          <NavTabs menu={data.navMain} MainTitle={"Menu"} />
-          <NavTabs menu={data.connections} MainTitle={"Established Connection"} />
+          <NavMain items={data.Nav} />
+          {/*<NavTabs menu={data.navMain} MainTitle={"Menu"} />*/}
+          {/*<NavTabs menu={data.connections} MainTitle={"Established Connection"} />*/}
         </SidebarContent>
         <SidebarFooter>
           <NavUser/>

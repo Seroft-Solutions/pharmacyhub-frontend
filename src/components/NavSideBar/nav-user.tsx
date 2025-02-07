@@ -32,14 +32,21 @@ import {
 import {useAuth} from "@/hooks/useAuth";
 import React, {useState} from "react";
 import RegistrationForm from "@/components/RegistrationForm/registration-from";
+import {useAuthContext} from "@/context/AuthContext";
 
 export function NavUser() {
   const { isMobile } = useSidebar()
  const {user}=useAuth();
+  const {logout}=useAuthContext();
   const [isRegistrationDialogOpen, setIsRegistrationDialogOpen] = useState(false);
   const handleRegister = () => {
     setIsRegistrationDialogOpen(true);
   }
+  const handleLogout=()=>{
+    console.log("Logout Click");
+    logout();
+  }
+
   return (
       <>
         <SidebarMenu>
@@ -102,7 +109,7 @@ export function NavUser() {
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator/>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
                 <LogOut/>
                 Log out
               </DropdownMenuItem>

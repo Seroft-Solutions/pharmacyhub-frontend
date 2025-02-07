@@ -1,23 +1,29 @@
 'use client'
 
-import {useEffect, useState} from 'react';
-import {useRouter} from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useRouter } from "next/navigation";
 import axios from "axios";
-import {User} from "@/types/User";
+import { User } from "@/types/User";
+import { useAuthContext } from "@/context/AuthContext";
 
 
 
 export default function LoginPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
+    const { login } = useAuthContext();
 
     useEffect(() => {
         async function checkAndFetchToken() {
             const storedToken = localStorage.getItem('token');
 
             if (storedToken) {
-                // Token exists, redirect to dashboard
-                router.push('/dashboard');
+                // Token exists, get user data and redirect to dashboard
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    router.push('/dashboard');
+                }
             } else {
                 try {
                     // Token doesn't exist, fetch it
@@ -36,13 +42,10 @@ export default function LoginPage() {
                             firstName:userDTO.firstName,
                             lastName:userDTO.lastName,
                             registered:userDTO.registered,
-                            businessPicture: userDTO.businessPicture
                         };
 
-                        localStorage.setItem('token', response.data.token);
+                        login(response.data.token);
                         localStorage.setItem('user', JSON.stringify(user));
-
-                        router.push('/dashboard');
                     } else {
                         // If fetching token fails, redirect to login
                        handleLogin();

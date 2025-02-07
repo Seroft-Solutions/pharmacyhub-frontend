@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link"; // Import Next.js Link for routing
-import { Button } from "@/components/ui/button"; // Shadcn button component
+import { Button } from "@/components/ui/button";
+import {ChartNoAxesCombined, ClipboardList, ClipboardPen, Megaphone} from "lucide-react"; // Shadcn button component
 
 interface FeatureCard {
   icon: React.ReactNode;
@@ -13,45 +14,19 @@ interface FeatureCard {
 const features: FeatureCard[] = [
   {
     icon: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-10 w-10 text-blue-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-        >
-          <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 11c0 4.418-3.582 8-8 8M16 16a4 4 0 100-8m-4-4h0m4 0a4 4 0 110 8h0"
-          />
-        </svg>
+        <Megaphone height={50} width={50} color={"green"}/>
     ),
-    title: "Pharma Team",
+    title: "Pharmacy Promotion Service",
     description:
         "Company was founded by scientists dedicated to create new therapeutics.",
-    buttonText: "OUR TEAM",
+    buttonText: "DISCOVER NOW",
     buttonHref: "/team",
   },
   {
     icon: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-10 w-10 text-blue-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-        >
-          <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m-4 4h.01M6 8h.01M9 16h.01M17 8h.01M4 6h16m-2 2h.01M6 6h.01"
-          />
-        </svg>
+        <ChartNoAxesCombined height={50} width={50}/>
     ),
-    title: "Pharma Focus",
+    title: "Pharmacy Development Cost",
     description:
         "We Interrogate the inner life of GPCR signaling to develop newest therapeutics.",
     buttonText: "DISCOVER NOW",
@@ -59,48 +34,23 @@ const features: FeatureCard[] = [
   },
   {
     icon: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-10 w-10 text-blue-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-        >
-          <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M14 10h.01M6 10h.01M9 10h.01m6 4h.01M14 14h.01M9 14h.01m-4-4h.01"
-          />
-        </svg>
+        <ClipboardList height={50} width={50}/>
     ),
-    title: "Pharma Pipeline",
+    title: "Experience Verification",
     description:
         "Consetetur sadipscing elitr sediam nonumy eirmod tempor invidunt labore magna.",
-    buttonText: "CHECK IT",
+    buttonText: "DISCOVER NOW",
     buttonHref: "/pipeline",
   },
   {
     icon: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-10 w-10 text-blue-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-        >
-          <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M14 10h.01M6 10h.01M9 10h.01m6 4h.01M14 14h.01M9 14h.01m-4-4h.01"
-          />
-        </svg>
+        <ClipboardPen height={50} width={50}/>
+
     ),
-    title: "Pharma Pipeline",
+    title: "Pharmacy Licencing Services",
     description:
         "Consetetur sadipscing elitr sediam nonumy eirmod tempor invidunt labore magna.",
-    buttonText: "CHECK IT",
+    buttonText: "DISCOVER NOW",
     buttonHref: "/pipeline",
   },
 
@@ -111,21 +61,20 @@ const FeatureCardSection: React.FC = () => {
       <section className="text-center py-16 bg-white">
         <h1 className="text-3xl font-semibold mb-4">Welcome to Pharmacy Hub!</h1>
         <p className="text-gray-600 mb-8">
-          We are a biopharmaceutical company focused on the discovery, development
-          and commercialization of innovative therapies intended to improve outcomes
-          in patients sufferings.
+          Pharmacy Hub is a comprehensive platform offering a wide range of services related to the retail pharmacy sector.
+          Its mission is to support proprietors, pharmacists, sales staff, and individuals aspiring to establish their own pharmacies.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-4 max-w-screen-lg mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4 max-w-screen-lg mx-auto">
           {features.map((feature, index) => (
               <div
                   key={index}
                   className="group p-6 border rounded-lg bg-white transition-all duration-300 ease-in-out
-                     hover:shadow-xl hover:-translate-y-2 hover:border-red-500
-                     relative overflow-hidden cursor-pointer"
+                             hover:shadow-xl hover:-translate-y-2 hover:border-red-500
+                             relative overflow-hidden cursor-pointer"
               >
                 {/* Hover background effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-red-50 to-red-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
+        
                 {/* Content */}
                 <div className="relative z-10">
                   {/* Icon with animation */}
@@ -134,25 +83,25 @@ const FeatureCardSection: React.FC = () => {
                       {feature.icon}
                     </div>
                   </div>
-
+        
                   {/* Title with animation */}
                   <h2 className="text-xl font-medium text-gray-800 mb-2 group-hover:text-red-500 transition-colors duration-300">
                     {feature.title}
                   </h2>
-
+        
                   {/* Description */}
                   <p className="text-gray-600 mb-4 group-hover:text-gray-700 transition-colors duration-300">
                     {feature.description}
                   </p>
-
+        
                   {/* Button with hover effect */}
                   <Link href={feature.buttonHref} passHref>
                     <Button
                         variant="outline"
                         className="text-red-500 border-red-500
-                           hover:bg-red-500 hover:text-white
-                           transform group-hover:scale-105
-                           transition-all duration-300"
+                                   hover:bg-red-500 hover:text-white
+                                   transform group-hover:scale-105
+                                   transition-all duration-300"
                     >
                       {feature.buttonText}
                     </Button>

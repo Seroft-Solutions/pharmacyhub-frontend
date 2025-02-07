@@ -49,10 +49,14 @@ const Footer = () => {
                     <MapPin className="h-4 w-4 text-cyan-400" />
                     <span className="text-sm">482 Charter Street</span>
                   </Button>
+                </div>
+                <div className="space-y-3">
                   <Button variant="link" className="text-white hover:text-cyan-400 p-0 h-auto font-normal space-x-2">
                     <Phone className="h-4 w-4 text-cyan-400" />
                     <span className="text-sm">0 (800) 123 4567</span>
                   </Button>
+                </div>
+                <div className="space-y-3">
                   <Button variant="link" className="text-white hover:text-cyan-400 p-0 h-auto font-normal space-x-2">
                     <Mail className="h-4 w-4 text-cyan-400" />
                     <span className="text-sm">pharmacom@example.com</span>
