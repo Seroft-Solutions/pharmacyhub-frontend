@@ -1,39 +1,46 @@
-import React, {useState} from "react";
-import {Button} from "@/components/ui/button";
-import {Card, CardContent} from "@/components/ui/card";
-import {useAuth} from "@/hooks/useAuth";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 import DetailedUserCard from "@/components/ui/DetailedUserCard";
 import RegistrationForm from "@/components/RegistrationForm/registration-from";
 
-type Field = {
+type ButtonConfig = {
   name: string;
-  value: string;
+  action: () => void;
+  variant?: "default" | "destructive" | "outline" | "secondary";
 };
 
 type UserCardProps = {
   name: string;
-  fields: Field[];
+  fields: { name: string; value: string }[];
   imageUrl?: string;
-  onConnect?: (isConnected: boolean) => void;
+  buttons?: ButtonConfig[];
+  maxButtons?: number;
 };
 
-const UserCard = ({name, fields, onConnect,imageUrl}: UserCardProps) => {
-  const [isConnected, setIsConnected] = useState(false);
+const UserCard = ({
+                    name,
+                    fields,
+                    imageUrl,
+                    buttons = [],
+                    maxButtons = 2
+                  }: UserCardProps) => {
   const [isDetailedDialogOpen, setIsDetailedDialogOpen] = useState(false);
   const [isRegistrationDialogOpen, setIsRegistrationDialogOpen] = useState(false);
-  const {user} = useAuth();
+  const { user } = useAuth();
 
-  const handleConnect = (e: React.MouseEvent) => {
+  const handleButtonClick = (button: ButtonConfig, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (user?.registered)
-    {
-      setIsConnected(!isConnected);
-      onConnect?.(!isConnected);
-    } else
-    {
+    if (user?.registered) {
+      button.action();
+    } else {
       setIsRegistrationDialogOpen(true);
     }
   };
+
+  // Limit buttons to maxButtons
+  const displayButtons = buttons.slice(0, maxButtons);
 
   return (
       <>
@@ -50,21 +57,31 @@ const UserCard = ({name, fields, onConnect,imageUrl}: UserCardProps) => {
                         alt={name}
                         className="h-full w-full rounded-full object-cover"
                     />
-                )}              </div>
+                )}
+              </div>
               <div className="min-w-0">
                 <h3 className="font-medium text-sm md:text-base truncate">{name}</h3>
-                <h1 className="text-xs md:text-sm truncate">City: {fields.find(f => f.name === "City")?.value}</h1>
-                <h1 className="text-xs md:text-sm truncate">Area: {fields.find(f => f.name === "Area")?.value}</h1>
+                <h1 className="text-xs md:text-sm truncate">
+                  City: {fields.find(f => f.name === "City")?.value}
+                </h1>
+                <h1 className="text-xs md:text-sm truncate">
+                  Area: {fields.find(f => f.name === "Area")?.value}
+                </h1>
               </div>
             </div>
-            <Button
-                onClick={handleConnect}
-                variant={isConnected ? "destructive" : "default"}
-                className="ml-2 text-xs md:text-sm"
-                size="sm"
-            >
-              {isConnected ? "Disconnect" : "Connect"}
-            </Button>
+            <div className="flex space-x-2">
+              {displayButtons.map((button, index) => (
+                  <Button
+                      key={index}
+                      onClick={(e) => handleButtonClick(button, e)}
+                      variant={button.variant || "default"}
+                      className="ml-2 text-xs md:text-sm"
+                      size="sm"
+                  >
+                    {button.name}
+                  </Button>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
@@ -74,8 +91,9 @@ const UserCard = ({name, fields, onConnect,imageUrl}: UserCardProps) => {
             ImageUrl={imageUrl}
             open={isDetailedDialogOpen}
             onOpenChange={setIsDetailedDialogOpen}
-            isConnected={isConnected}
-            onConnect={handleConnect}
+            isConnected={false}
+            onConnect={() => {}} // Placeholder, as buttons are now dynamic
+            additionalButtons={displayButtons}
         />
 
         <RegistrationForm

@@ -9,22 +9,23 @@ import {
   CardHeader,
   CardContent,
   CardFooter,
-  CardTitle,
 } from "@/components/ui/card";
 
-type Field = {
+type ButtonConfig = {
   name: string;
-  value: string;
+  action: () => void;
+  variant?: "default" | "destructive" | "outline" | "secondary";
 };
 
 type DetailedUserCardProps = {
   name: string;
-  fields: Field[];
+  fields: { name: string; value: string }[];
   open: boolean;
   imageUrl?: string;
   onOpenChange: (open: boolean) => void;
   isConnected: boolean;
   onConnect?: () => void;
+  additionalButtons?: ButtonConfig[];
 };
 
 const DetailedUserCard = ({
@@ -34,14 +35,14 @@ const DetailedUserCard = ({
                             onOpenChange,
                             isConnected,
                             onConnect,
-                            imageUrl
+                            imageUrl,
+                            additionalButtons = []
                           }: DetailedUserCardProps) => {
   return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="p-0 overflow-hidden w-[95vw] max-w-[400px] md:max-w-[500px]">
           <Card className="border-0">
             <CardHeader className="px-6 pt-6 pb-4 flex flex-col items-center">
-              {/*<CardTitle className="text-xl font-semibold text-center">User Details</CardTitle>*/}
               <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-gray-200 mx-auto mt-4">
                 {imageUrl && (
                     <img
@@ -71,14 +72,17 @@ const DetailedUserCard = ({
               </div>
             </CardContent>
             <CardFooter className="px-6 pb-6">
-              <div className="w-full flex justify-center pt-4 md:pt-6">
-                <Button
-                    onClick={onConnect}
-                    variant={isConnected ? "destructive" : "default"}
-                    className="w-full md:w-auto"
-                >
-                  {isConnected ? "Disconnect" : "Connect"}
-                </Button>
+              <div className="w-full flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-2 pt-4 md:pt-6">
+                {additionalButtons.map((button, index) => (
+                    <Button
+                        key={index}
+                        onClick={button.action}
+                        variant={button.variant || "default"}
+                        className="w-full md:w-auto"
+                    >
+                      {button.name}
+                    </Button>
+                ))}
               </div>
             </CardFooter>
           </Card>

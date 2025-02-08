@@ -34,11 +34,11 @@ Nav:[
   },
   {
     title: "Established Connection",
-    url: "#",
+    url: "/pharmacistsConnections",
   },
   {
     title: "Pharmacist Connection Requests",
-    url: "#",
+    url: "/pharmacistsRequests",
   },
 ],
 },
@@ -54,11 +54,11 @@ Nav:[
       },
       {
         title: "Established Connection",
-        url: "#",
+        url: "salesmanConnections",
       },
       {
         title: "Connection Requests",
-        url: "#",
+        url: "salesmenRequests",
       },
     ],
   },
@@ -74,11 +74,11 @@ Nav:[
       },
       {
         title: "Established Connection",
-        url: "#",
+        url: "proprietorConnections",
       },
       {
         title: "Connection Requests",
-        url: "#",
+        url: "proprietorsRequests",
       },
     ],
   },
@@ -94,11 +94,11 @@ Nav:[
       },
       {
         title: "Established Connection",
-        url: "#",
+        url: "pharmacyManagerConnections",
       },
       {
         title: "Connection Requests",
-        url: "#",
+        url: "pharmacyManagerRequests",
       },
     ],
   },],
