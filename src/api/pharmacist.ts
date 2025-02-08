@@ -9,7 +9,7 @@ export interface PharmacistDetails {
     pharmacist: PharmacistVO;
 }
 export interface PharmacistVO {
-    id: string;
+    id: number;
     categoryAvailable: string;
     licenseDuration: string;
     experience: string;
@@ -24,19 +24,39 @@ export interface PharmacistVO {
     // userId:string
 }
 
+export interface PharmacistsConnectionsDTO {
+    pharmacistId: number;
+    userId?: string;
+    connectionStatusEnum?: string;
+    notes?: string;
+    userGroup?: string;
+}
 export const usePharmacistApi = () => {
     const { getToken, logout } = useAuth();
     const { get, post, put, del } = useApi(getToken, logout);
 
     const getPharmacist = () => get<PharmacistDetails[]>('/api/pharmacist/v1/get-all');
-    const checkUserExistence = (userId) => get(`/api/pharmacist/v1/CheckUserGroup/${userId}`);
     const AddUserInPharmacistGroup=(data)=>post<PharmacistVO[]>(`/api/pharmacist/v1/add-info`, data);
+    const connectWithPharmacist = (data: PharmacistsConnectionsDTO) =>
+        post('/api/pharmacist/v1/connect', data);
 
+    const approveStatus = (id) =>
+        post(`/api/pharmacist/v1/approveStatus/${id}`);
+
+    const rejectStatus = (id) =>
+        post(`/api/pharmacist/v1/rejectStatus/${id}`);
+    const getPharmacistRequests = () => get<PharmacistDetails[]>('/api/pharmacist/v1/get-all-pending-requests');
+
+    const getAllConnections = () => get<PharmacistDetails[]>('/api/pharmacist/v1/get-all-connections');
 
 
     return {
         getPharmacist,
-        checkUserExistence,
-        AddUserInPharmacistGroup
+        AddUserInPharmacistGroup,
+        connectWithPharmacist,
+        getPharmacistRequests,
+        rejectStatus,
+        approveStatus,
+        getAllConnections// Add this line
     };
 };

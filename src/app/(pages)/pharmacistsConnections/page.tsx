@@ -5,23 +5,23 @@ import UserCard from "@/components/ui/UserCard";
 
 interface PharmacistConnection{
   id:number;
-connectionStatusEnum:string;
-userGroup:string;
-notes:string;
-userId:string;
-pharmacistId:string;
+  connectionStatusEnum:string;
+  userGroup:string;
+  notes:string;
+  userId:string;
+  pharmacistId:string;
 
 }
 
-export default function PharmacistList() {
-  const {getPharmacist,connectWithPharmacist} = usePharmacistApi();
+export default function PharmacistsConnections() {
+  const {getAllConnections} = usePharmacistApi();
   const [pharmasict, setPharmasict] = useState<PharmacistDetails[]>([]);
 
   useEffect(() => {
     fetchPharmasict();
   }, []);
   const fetchPharmasict = async () => {
-    const response = await getPharmacist();
+    const response = await getAllConnections();
     if (response.error)
     {
       throw new Error(response.error);
@@ -30,27 +30,11 @@ export default function PharmacistList() {
     setPharmasict(response.data || []);
   }
 
-  const handleConnect = async (pharmacistId: string) => {
 
-    try {
-      const connectionData: PharmacistsConnectionsDTO = {
-        pharmacistId: pharmacistId, // This will be set by the backend using TenantContext
-      };
+  function handleDisconnect()
+  {
 
-      const response = await connectWithPharmacist(connectionData);
-
-      if (response.error) {
-        throw new Error(response.error);
-      }
-
-      // Optionally refresh the pharmacist list or update UI state
-      await fetchPharmasict();
-
-    } catch (error) {
-      console.error('Error connecting with pharmacist:', error);
-      // Handle error (show error message to user)
-    }
-  };
+  }
 
   return (
       <div className="space-y-4">
@@ -71,11 +55,10 @@ export default function PharmacistList() {
           ];
           const buttonConfigs = [
             {
-              name: "Connect",
-              action: () => handleConnect(pharma.pharmacist.id),
-              variant: "default"
-            },
-
+              name: "Disconnect",
+              action: () => handleDisconnect(),
+              variant: "destructive"
+            }
           ];
           return (
               <UserCard
@@ -83,7 +66,7 @@ export default function PharmacistList() {
                   name={`${pharma.firstName} ${pharma.lastName}`}
                   fields={fields}
                   buttons={buttonConfigs}
-                  maxButtons={1}
+                  maxButtons={2}
               />
           );
         })}
