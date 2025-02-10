@@ -1,10 +1,11 @@
 "use client"
 import { useEffect, useState } from "react";
 import UserCard from "@/components/ui/UserCard";
-import { PharmacyManagerDetails, usePharmacyManagerApi } from "@/api/pharmacy-manager";
+import { PharmacyManagerDetails, usePharmacyManagerApi,PharmacyManagerConnectionsDTO } from "@/api/pharmacy-manager";
+import {PharmacistsConnectionsDTO} from "@/api/pharmacist";
 
 export default function PharmacyManagerList() {
-  const { getPharmacyManager } = usePharmacyManagerApi();
+  const { getPharmacyManager,connectWithPharmacyManager } = usePharmacyManagerApi();
   const [pharmacyManagers, setPharmacyManager] = useState<PharmacyManagerDetails[]>([]);
 
   useEffect(() => {
@@ -19,6 +20,27 @@ export default function PharmacyManagerList() {
     console.log(response.data);
     setPharmacyManager(response.data || []);
   };
+  const handleConnect = async (pharmacyManagerId: number) => {
+
+    try {
+      const connectionData: PharmacyManagerConnectionsDTO = {
+        pharmacyManagerId: pharmacyManagerId, // This will be set by the backend using TenantContext
+      };
+
+      const response = await connectWithPharmacyManager(connectionData);
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      // Optionally refresh the pharmacist list or update UI state
+      await fetchPharmacyManager();
+
+    } catch (error) {
+      console.error('Error connecting with pharmacist:', error);
+      // Handle error (show error message to user)
+    }
+  };
 
   return (
       <div className="space-y-4">
@@ -31,7 +53,15 @@ export default function PharmacyManagerList() {
             { name: "Experience", value: pharmacyManager.pharmacyManager.experience },
             { name: "Current Job Status", value: pharmacyManager.pharmacyManager.currentJobStatus },
             { name: "Previous Pharmacy", value: pharmacyManager.pharmacyManager.previousPharmacyName },
-            { name: "Time Preference", value: pharmacyManager.pharmacyManager.timePrefernce },
+            { name: "Time Preference", value: pharmacyManager.pharmacyManager.timePrefernce }
+
+          ];
+          const buttonConfigs = [
+            {
+              name: "Connect",
+              action: () => handleConnect(pharmacyManager.pharmacyManager.id),
+              variant: "default"
+            },
           ];
 
           return (
@@ -39,6 +69,8 @@ export default function PharmacyManagerList() {
                   key={pharmacyManager.pharmacyManager.id}
                   name={`${pharmacyManager.firstName} ${pharmacyManager.lastName}`}
                   fields={fields}
+                  buttons={buttonConfigs}
+                  maxButtons={1}
               />
           );
         })}

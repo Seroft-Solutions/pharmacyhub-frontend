@@ -30,7 +30,7 @@ export default function PharmacistList() {
     setPharmasict(response.data || []);
   }
 
-  const handleConnect = async (pharmacistId: string) => {
+  const handleConnect = async (pharmacistId: number) => {
 
     try {
       const connectionData: PharmacistsConnectionsDTO = {
