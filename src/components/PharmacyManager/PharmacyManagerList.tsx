@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import UserCard from "@/components/ui/UserCard";
 import { PharmacyManagerDetails, usePharmacyManagerApi,PharmacyManagerConnectionsDTO } from "@/api/pharmacy-manager";
-import {PharmacistsConnectionsDTO} from "@/api/pharmacist";
 
 export default function PharmacyManagerList() {
   const { getPharmacyManager,connectWithPharmacyManager } = usePharmacyManagerApi();
@@ -37,7 +36,7 @@ export default function PharmacyManagerList() {
       await fetchPharmacyManager();
 
     } catch (error) {
-      console.error('Error connecting with pharmacist:', error);
+      console.error('Error connecting with pharmacy manager:', error);
       // Handle error (show error message to user)
     }
   };
