@@ -20,6 +20,7 @@ export interface PharmacyManagerVO {
   currentJobStatus: string;
   timePrefernce: string
   saleryExpectation: string
+  userId: string;
 }
 
 export interface PharmacyManagerConnectionsDTO {

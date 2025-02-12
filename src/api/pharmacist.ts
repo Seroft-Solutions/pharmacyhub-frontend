@@ -21,7 +21,7 @@ export interface PharmacistVO {
     timePreference:string;
     previousPharmacyName: string
     currentJobStatus: string
-    // userId:string
+    userId:string
 }
 
 export interface PharmacistsConnectionsDTO {

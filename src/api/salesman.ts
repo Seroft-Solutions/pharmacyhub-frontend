@@ -18,6 +18,7 @@ export interface SalesmanVO {
   currentJobStatus: string
   timePrefernce: string
   saleryExpectation:string
+  userId: string;
 }
 export interface SalesmenConnectionsDTO {
   salesmanId: number;

@@ -14,7 +14,7 @@ export interface ProprietorVO {
   city: string;
   area: string;
   contactNumber: string;
-
+  userId: string;
 }
 export interface ProprietorsConnectionsDTO {
   proprietorId: number;

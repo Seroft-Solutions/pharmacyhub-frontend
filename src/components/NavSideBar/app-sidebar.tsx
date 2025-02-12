@@ -36,10 +36,6 @@ Nav:[
     title: "Established Connection",
     url: "/pharmacistsConnections",
   },
-  {
-    title: "Pharmacist Connection Requests",
-    url: "/pharmacistsRequests",
-  },
 ],
 },
   {
@@ -55,10 +51,6 @@ Nav:[
       {
         title: "Established Connection",
         url: "salesmanConnections",
-      },
-      {
-        title: "Connection Requests",
-        url: "salesmenRequests",
       },
     ],
   },
@@ -76,10 +68,6 @@ Nav:[
         title: "Established Connection",
         url: "proprietorConnections",
       },
-      {
-        title: "Connection Requests",
-        url: "proprietorsRequests",
-      },
     ],
   },
   {
@@ -96,57 +84,17 @@ Nav:[
         title: "Established Connection",
         url: "pharmacyManagerConnections",
       },
-      {
-        title: "Connection Requests",
-        url: "pharmacyManagerRequests",
-      },
     ],
   },],
-  // navMain: [
-  //
-  //   {
-  //     name: "Pharmacist",
-  //     url: "/pharmacist",
-  //     icon: BriefcaseMedical,
-  //   },
-  //   {
-  //     name: "Salesman",
-  //     url: "/salesman",
-  //     icon: HandCoins,
-  //   },
-  //   {
-  //     name: "Proprietor",
-  //     url: "/proprietor",
-  //     icon: Handshake,
-  //   },
-  //   {
-  //     name: "Manager",
-  //     url: "/pharmacy-manager",
-  //     icon: UserCog,
-  //   },
-  // ],
-  // connections: [
-  //   {
-  //     name: "Pharmacist",
-  //     url: "/pharmacist",
-  //     icon: BriefcaseMedical,
-  //   },
-  //   {
-  //     name: "Salesman",
-  //     url: "#",
-  //     icon: HandCoins,
-  //   },
-  //   {
-  //     name: "Proprietor",
-  //     url: "#",
-  //     icon: Handshake,
-  //   },
-  //   {
-  //     name: "Manager",
-  //     url: "#",
-  //     icon: UserCog,
-  //   },
-  // ],
+  requests:
+  [
+    {
+      name:"Connection Requests",
+      url:"connectionRequests",
+      icon:Handshake,
+    }
+  ]
+
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -157,8 +105,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarHeader>
         <SidebarContent>
           <NavMain items={data.Nav} />
-          {/*<NavTabs menu={data.navMain} MainTitle={"Menu"} />*/}
-          {/*<NavTabs menu={data.connections} MainTitle={"Established Connection"} />*/}
+          <NavTabs menu={data.requests} MainTitle={"Connection Requests"} />
         </SidebarContent>
         <SidebarFooter>
           <NavUser/>
