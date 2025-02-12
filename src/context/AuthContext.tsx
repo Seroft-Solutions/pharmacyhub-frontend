@@ -10,6 +10,8 @@ import {
 
 
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import {User} from "@/types/User";
 
 interface AuthContextProps {
   token: string | null;
@@ -17,13 +19,19 @@ interface AuthContextProps {
   isLoggedIn: boolean;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
   logout: () => void;
+  login: (token: string) => void;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('token');
+    }
+    return false;
+  });
   const router = useRouter();
 
   useEffect(() => {
@@ -54,12 +62,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     validateToken();
-  }, []);
+  }, [router]);
 
   const login = (token: string) => {
     setToken(token);
     setIsLoggedIn(true);
     localStorage.setItem('token', token);
+    router.push('/dashboard');
   };
 
   const logout = async () => {
@@ -73,7 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <AuthContext.Provider value={{ token, setToken, isLoggedIn, setIsLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ token, setToken, isLoggedIn, setIsLoggedIn, logout, login }}>
       {children}
     </AuthContext.Provider>
   );

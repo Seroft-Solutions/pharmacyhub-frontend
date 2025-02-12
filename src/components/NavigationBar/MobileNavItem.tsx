@@ -1,5 +1,5 @@
 import {Button} from "@/components/ui/button";
-import {NavItemProps} from "@/components/layout/NavItem";
+import {NavItemProps} from "@/components/NavigationBar/NavItem";
 
 const MobileNavItem = ({ item }: NavItemProps) => {
   const Icon = item.icon;

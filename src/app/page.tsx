@@ -1,71 +1,60 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-import axios from 'axios';
-
-interface User {
-  id: string;
-  email: string;
-  roles: string[];
-}
+import Header from "@/components/NavigationBar/Header";
+import CarouselImage from "@/components/ui/Carousel_Image";
+import FeatureCardSection from "@/components/Home/FeatureCardSelection";
+import ProductShowcase from "@/components/Home/ProductShowcase";
+import Footer from "@/components/Home/Footer";
+import { useAuthContext } from '@/context/AuthContext';
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+const images = [
+  {src: "/Images/med.jpg", alt: "Slide 1"},
+  {src: "/Images/new.jpg", alt: "Slide 2", height: 400, width: 800},
+  {src: "/api/placeholder/800/400", alt: "Slide 3", height: 400, width: 800},
+  {src: "/api/placeholder/800/400", alt: "Slide 4"},
+];
 
 export default function Home() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoggedIn } = useAuthContext();
 
   useEffect(() => {
-    async function checkAndFetchToken() {
-      const storedToken = sessionStorage.getItem('token');
-
-      if (storedToken) {
-        // Token exists, redirect to dashboard
-        router.push('/dashboard');
-      } else {
-        try {
-          // Token doesn't exist, fetch it
-          const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/token`, {
-            withCredentials: true
-          });
-          if (response.status === 200) {
-
-            const userDTO = response.data.user;
-
-            const user: User = {
-              id : userDTO.id,
-              email: userDTO.email,
-              roles: userDTO.roles,
-              name: userDTO.name,
-              businessPicture: userDTO.businessPicture
-            };
-
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('user', JSON.stringify(user));
-
-            router.push('/dashboard');
-          } else {
-            // If fetching token fails, redirect to login
-            router.push('/login');
-          }
-        } catch (error) {
-          console.error('Error fetching token:', error);
-          router.push('/login');
-        }
-      }
-      setIsLoading(false);
+    if (isLoggedIn) {
+      router.push('/dashboard');
     }
+  }, [isLoggedIn, router]);
 
-    checkAndFetchToken();
-  }, [router]);
+  return (
+      <main>
+        <header className="border-b">
+          <div className="container flex h-16 items-center justify-between">
+            {/* Logo and Title */}
+            <div className="flex items-center space-x-2">
+              <img
+                  src="/Images/PharmacyHub.png"
+                  alt="Pharmacy Hub logo"
+                  className="h-10 w-10"
+              />
+              <span className="text-xl font-bold">Pharmacy Hub</span>
+            </div>
 
-  if (isLoading) {
-    return (
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-        </div>
-    );
-  }
-
-  return null;
+            {/* Join Us Button - Visible on both mobile and desktop */}
+              <Button
+                  variant="outline"
+                  className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white transform group-hover:scale-105 transition-all duration-300"
+                  onClick={() => router.push('/login')}
+              >
+                Join Us
+              </Button>
+          </div>
+        </header>
+        <CarouselImage images={images}/>
+        <FeatureCardSection/>
+        <Footer/>
+      </main>
+  );
 }

@@ -1,12 +1,65 @@
 'use client'
 
-import React, {useState} from 'react';
-import {Button} from '@/components/ui/button';
-import {useRouter} from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { User } from "@/types/User";
+import { useAuthContext } from "@/context/AuthContext";
+
 
 
 export default function LoginPage() {
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(true);
+    const { login } = useAuthContext();
 
+    useEffect(() => {
+        async function checkAndFetchToken() {
+            const storedToken = localStorage.getItem('token');
+
+            if (storedToken) {
+                // Token exists, get user data and redirect to dashboard
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    router.push('/dashboard');
+                }
+            } else {
+                try {
+                    // Token doesn't exist, fetch it
+                    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/token`, {
+                        withCredentials: true
+                    });
+                    if (response.status === 200) {
+
+                        const userDTO = response.data.user;
+                        console.log("User data is:", response.data.user);
+
+                        const user: User = {
+                            id : userDTO.id,
+                            emailAddress: userDTO.emailAddress,
+                            roles: userDTO.roles,
+                            firstName:userDTO.firstName,
+                            lastName:userDTO.lastName,
+                            registered:userDTO.registered,
+                        };
+
+                        login(response.data.token);
+                        localStorage.setItem('user', JSON.stringify(user));
+                    } else {
+                        // If fetching token fails, redirect to login
+                       handleLogin();
+                    }
+                } catch (error) {
+                    console.error('Error fetching token:', error);
+                    handleLogin();
+                }
+            }
+            setIsLoading(false);
+        }
+
+        checkAndFetchToken();
+    }, [router]);
     const handleLogin = () => {
         const keycloakUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
         if (keycloakUrl) {
@@ -16,26 +69,5 @@ export default function LoginPage() {
         }
     };
 
-    return (
-        <div
-            className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-secondary/20">
-            <div className="bg-card rounded-3xl shadow-2xl p-8 w-full max-w-sm mx-4">
-                <div className="flex flex-col items-center">
-                    <h1 className="mt-6 text-3xl font-bold text-card-foreground">Welcome to Pharmacy Hub</h1>
-                    <p className="mt-2 text-sm text-muted-foreground text-center">
-                        Brew up some productivity.
-                        <br/>
-
-                    </p>
-                </div>
-                <Button
-                    className="w-full mt-8"
-                    variant="default"
-                    onClick={handleLogin}
-                >
-                    Start Brewing
-                </Button>
-            </div>
-        </div>
-    );
+    return null;
 }

@@ -1,12 +1,8 @@
 import {useState, useEffect, useCallback, useMemo} from 'react';
 import {useRouter} from 'next/navigation';
 import {hasRole as checkRole} from '../utils/roleUtils';
+import {User} from "@/types/User";
 
-interface User {
-    id: string;
-    email: string;
-    roles: string[];
-}
 
 interface AuthState {
     user: User | null;
