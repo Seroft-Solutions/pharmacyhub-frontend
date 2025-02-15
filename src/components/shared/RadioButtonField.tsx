@@ -12,19 +12,19 @@ interface RadioButtonFieldProps {
   name: string;
   label?: string;
   icon?: ElementType;
-  control: Control<any>;
+  control: Control<{ [x: string]: string }>;
   options: Option[];
   required?: boolean;
 }
 
-export const RadioButtonField: React.FC<RadioButtonFieldProps> = ({
+export const RadioButtonField = ({
                                                                     name,
                                                                     label,
                                                                     icon: Icon,
                                                                     control,
                                                                     options,
                                                                     required,
-                                                                  }) => {
+                                                                  }: RadioButtonFieldProps) => {
   return (
       <div className="space-y-2">
         <div className="flex items-center gap-2">

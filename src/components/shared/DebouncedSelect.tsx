@@ -11,12 +11,12 @@ interface DebouncedSelectProps {
     placeholder: string;
 }
 
-export const DebouncedSelect: React.FC<DebouncedSelectProps> = React.memo(({
+export const DebouncedSelect = ({
                                                                                options = [],
                                                                                value,
                                                                                onChange,
                                                                                placeholder
-                                                                           }) => {
+                                                                           }: DebouncedSelectProps) => {
     const [search, setSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const debouncedSearch = useDebounce(search, 300);
@@ -74,6 +74,4 @@ export const DebouncedSelect: React.FC<DebouncedSelectProps> = React.memo(({
             </Select>
         </div>
     );
-});
-
-DebouncedSelect.displayName = 'DebouncedSelect';
+};

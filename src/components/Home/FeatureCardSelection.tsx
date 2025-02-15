@@ -56,7 +56,7 @@ const features: FeatureCard[] = [
 
 ];
 
-const FeatureCardSection: React.FC = () => {
+const FeatureCardSection = () => {
   return (
       <section className="text-center py-16 bg-white">
         <h1 className="text-3xl font-semibold mb-4">Welcome to Pharmacy Hub!</h1>

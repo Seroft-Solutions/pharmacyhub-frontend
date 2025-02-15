@@ -21,7 +21,7 @@ interface UserMenuProps {
     } | null;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
+const UserMenu = ({ user }: UserMenuProps) => {
     const router = useRouter();
     const { logout } = useAuthContext();
 
