@@ -3,18 +3,18 @@ import {ProprietorDetails, useProprietorApi} from "@/api/proprietor";
 import {useEffect, useState} from "react";
 import UserCard from "@/components/ui/UserCard";
 
-interface ProprietorConnection{
-  id:number;
-  connectionStatusEnum:string;
-  userGroup:string;
-  notes:string;
-  userId:string;
-  proprietorId:string;
+interface ProprietorConnection {
+  id: number;
+  connectionStatusEnum: string;
+  userGroup: string;
+  notes: string;
+  userId: string;
+  proprietorId: string;
 
 }
 
 export default function ProprietorsConnectionRequests() {
-  const {approveStatus,rejectStatus,getProprietorRequests} = useProprietorApi();
+  const {approveStatus, rejectStatus, getProprietorRequests} = useProprietorApi();
   const [proprietor, setProprietor] = useState<ProprietorDetails[]>([]);
 
   useEffect(() => {
@@ -22,8 +22,7 @@ export default function ProprietorsConnectionRequests() {
   }, []);
   const fetchProprietor = async () => {
     const response = await getProprietorRequests();
-    if (response.error)
-    {
+    if (response.error) {
       throw new Error(response.error);
     }
     console.log(response.data);
@@ -54,38 +53,36 @@ export default function ProprietorsConnectionRequests() {
     }
   }
 
-
-
   return (
-      <div className="space-y-4">
-        {proprietor.map((pharma) => {
-          const fields = [
-            { name: "Name", value: `${pharma.firstName} ${pharma.lastName}` },
-            { name: "City", value: pharma.proprietor.city },
-            { name: "Area", value: pharma.proprietor.area },
-          ];
-          const buttonConfigs = [
-            {
-              name: "Approve",
-              action: () => handleApprove(pharma.proprietor.id),
-              variant: "default"
-            },
-            {
-              name: "Reject",
-              action: () => handleReject(pharma.proprietor.id),
-              variant: "destructive"
-            }
-          ];
-          return (
-              <UserCard
-                  key={pharma.proprietor.id}
-                  name={`${pharma.firstName} ${pharma.lastName}`}
-                  fields={fields}
-                  buttons={buttonConfigs}
-                  maxButtons={2}
-              />
-          );
-        })}
-      </div>
+    <div className="space-y-4">
+      {proprietor.map((pharma) => {
+        const fields = [
+          {name: "Name", value: `${pharma.firstName} ${pharma.lastName}`},
+          {name: "City", value: pharma.proprietor.city},
+          {name: "Area", value: pharma.proprietor.area},
+        ];
+        const buttonConfigs = [
+          {
+            name: "Approve",
+            action: () => handleApprove(pharma.proprietor.id),
+            variant: "default"
+          },
+          {
+            name: "Reject",
+            action: () => handleReject(pharma.proprietor.id),
+            variant: "destructive"
+          }
+        ];
+        return (
+          <UserCard
+            key={pharma.proprietor.id}
+            name={`${pharma.firstName} ${pharma.lastName}`}
+            fields={fields}
+            buttons={buttonConfigs}
+            maxButtons={2}
+          />
+        );
+      })}
+    </div>
   )
 }

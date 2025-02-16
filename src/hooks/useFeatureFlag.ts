@@ -1,5 +1,5 @@
-import { featureFlags } from '@/config/features/feature-flags';
-import { useAuth } from './useAuth';
+import {featureFlags} from '@/config/features/feature-flags';
+import {useAuth} from './useAuth';
 
 interface FeatureFlag {
   enabled: boolean;
@@ -12,7 +12,7 @@ interface FeatureFlags {
 }
 
 export function useFeatureFlag(flagName: keyof FeatureFlags): boolean {
-  const { user, hasRole } = useAuth();
+  const {user, hasRole} = useAuth();
   const flag = (featureFlags as FeatureFlags)[flagName];
 
   if (!flag) return false;

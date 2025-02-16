@@ -1,5 +1,4 @@
-import {useApi} from '@/hooks/useApi';
-import {useAuth} from '@/hooks/useAuth';
+import { apiClient } from '@/lib/api/apiClient';
 
 export interface PharmacyManagerDetails {
   firstName: string;
@@ -31,31 +30,52 @@ export interface PharmacyManagerConnectionsDTO {
   userGroup?: string;
 }
 
-export const usePharmacyManagerApi = () => {
-  const {getToken, logout} = useAuth();
-  const {get, post, put, del} = useApi(getToken, logout);
+class PharmacyManagerService {
+  private static instance: PharmacyManagerService;
 
-  const getPharmacyManager = () => get<PharmacyManagerDetails[]>('/api/pharmacymanager/v1/get-all');
-  const AddUserInPharmacyManagerGroup = (data) => post<PharmacyManagerVO[]>(`/api/pharmacymanager/v1/add-info`, data);
+  private constructor() {}
 
-  const connectWithPharmacyManager = (data: PharmacyManagerConnectionsDTO) =>
-      post('/api/pharmacymanager/v1/connect', data);
+  public static getInstance(): PharmacyManagerService {
+    if (!PharmacyManagerService.instance) {
+      PharmacyManagerService.instance = new PharmacyManagerService();
+    }
+    return PharmacyManagerService.instance;
+  }
 
-  const approveStatus = (id) =>
-      post(`/api/pharmacymanager/v1/approveStatus/${id}`);
+  public async getPharmacyManager(): Promise<PharmacyManagerDetails[]> {
+    const response = await apiClient.get('/api/pharmacymanager/v1/get-all');
+    return (response as any).data;
+  }
 
-  const rejectStatus = (id) =>
-      post(`/api/pharmacymanager/v1/rejectStatus/${id}`);
-  const getPharmacyManagerRequests = () => get<PharmacyManagerDetails[]>('/api/pharmacymanager/v1/get-all-pending-requests');
+  public async AddUserInPharmacyManagerGroup(data: PharmacyManagerVO): Promise<PharmacyManagerVO[]> {
+    const response = await apiClient.post(`/api/pharmacymanager/v1/add-info`, data);
+    return (response as any).data;
+  }
 
-  const getAllConnections = () => get<PharmacyManagerDetails[]>('/api/pharmacymanager/v1/get-all-connections');
-  return {
-    getPharmacyManager,
-    AddUserInPharmacyManagerGroup,
-    getAllConnections,
-    getPharmacyManagerRequests,
-    approveStatus,
-    rejectStatus,
-    connectWithPharmacyManager
-  };
-};
+  public async connectWithPharmacyManager(data: PharmacyManagerConnectionsDTO): Promise<any> {
+    const response = await apiClient.post('/api/pharmacymanager/v1/connect', data);
+    return (response as any).data;
+  }
+
+  public async approveStatus(id: number): Promise<any> {
+    const response = await apiClient.post(`/api/pharmacymanager/v1/approveStatus/${id}`);
+    return (response as any).data;
+  }
+
+  public async rejectStatus(id: number): Promise<any> {
+    const response = await apiClient.post(`/api/pharmacymanager/v1/rejectStatus/${id}`);
+    return (response as any).data;
+  }
+
+  public async getPharmacyManagerRequests(): Promise<PharmacyManagerDetails[]> {
+    const response = await apiClient.get('/api/pharmacymanager/v1/get-all-pending-requests');
+    return (response as any).data;
+  }
+
+  public async getAllConnections(): Promise<PharmacyManagerDetails[]> {
+    const response = await apiClient.get('/api/pharmacymanager/v1/get-all-connections');
+    return (response as any).data;
+  }
+}
+
+export const pharmacyManagerService = PharmacyManagerService.getInstance();

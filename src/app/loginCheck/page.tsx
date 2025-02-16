@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import {useEffect, useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {Loader2} from 'lucide-react';
 import axios from 'axios';
 import {User} from "@/types/User";
-
 
 export default function LoginCheck() {
   const router = useRouter();
@@ -30,12 +29,12 @@ export default function LoginCheck() {
             console.log("User data is:", response.data.user);
 
             const user: User = {
-              id : userDTO.id,
+              id: userDTO.id,
               emailAddress: userDTO.emailAddress,
               roles: userDTO.roles,
-              firstName:userDTO.firstName,
-              lastName:userDTO.lastName,
-              registered:userDTO.registered,
+              firstName: userDTO.firstName,
+              lastName: userDTO.lastName,
+              registered: userDTO.registered,
               businessPicture: userDTO.businessPicture
             };
 
@@ -60,9 +59,9 @@ export default function LoginCheck() {
 
   if (isLoading) {
     return (
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500"/>
+      </div>
     );
   }
 

@@ -4,10 +4,9 @@ import {Inter as FontSans} from "next/font/google";
 import "./globals.css";
 import {cn} from "@/lib/utils";
 import {ThemeProvider} from "next-themes";
-import {AuthProvider} from "@/context/AuthContext";
+import {AuthProvider} from "@/providers/AuthProvider";
 import {TanstackProvider} from "@/components/Provider/tanstack-provider";
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-
+import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -25,28 +24,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <html lang="en" suppressHydrationWarning>
-      <head/>
-      <body
-          className={cn(
-              "min-h-screen bg-background font-sans antialiased",
-              fontSans.variable
-          )}
-      >
+    <html lang="en" suppressHydrationWarning>
+    <head/>
+    <body
+      className={cn(
+        "min-h-screen bg-background font-sans antialiased",
+        fontSans.variable
+      )}
+    >
 
-      <TanstackProvider>
+    <TanstackProvider>
       <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          disableTransitionOnChange
+        attribute="class"
+        defaultTheme="light"
+        disableTransitionOnChange
       >
 
-          <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
 
       </ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </TanstackProvider>
-      </body>
-      </html>
+      <ReactQueryDevtools initialIsOpen={false}/>
+    </TanstackProvider>
+    </body>
+    </html>
   );
 }

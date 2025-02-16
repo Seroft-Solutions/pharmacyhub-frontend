@@ -1,103 +1,113 @@
 # PharmacyHub Frontend
 
-A modern web application built with Next.js 14+ for managing pharmacy operations.
+A modern, feature-rich pharmacy management system built with Next.js 15 and Spring Boot.
+
+## Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: ShadCN UI
+- **State Management**: 
+  - Zustand (Client State)
+  - TanStack Query (Server State)
+- **Authentication**: JWT with Spring Boot
+- **API Client**: Axios
 
 ## Project Structure
 
 ```
-pharmacyhub-frontend/
-├── src/
-│   ├── api/                  # API integration layer
-│   ├── app/                  # Next.js app directory (routes and layouts)
-│   │   ├── (auth)/          # Authentication related routes
-│   │   ├── (pages)/         # Application pages
-│   │   ├── auth/            # Auth callback handlers
-│   │   └── loginCheck/      # Login verification routes
-│   ├── components/          
-│   │   ├── Home/            # Homepage specific components
-│   │   ├── NavigationBar/   # Navigation components
-│   │   ├── NavSideBar/      # Sidebar navigation components
-│   │   ├── Provider/        # Provider components
-│   │   ├── shared/          # Reusable shared components
-│   │   └── ui/              # UI components (buttons, inputs, etc.)
-│   ├── config/              
-│   │   ├── components/      # Component configurations
-│   │   └── features/        # Feature flags and role configurations
-│   ├── features/            # Feature-based modules
-│   │   ├── auth/           
-│   │   ├── billing/
-│   │   ├── organizations/
-│   │   ├── pharmacist/
-│   │   ├── roles/
-│   │   └── users/
-│   ├── hooks/               # Custom React hooks
-│   ├── lib/                 # Utility libraries
-│   ├── providers/          # React context providers
-│   ├── services/           # Service layer for API interactions
-│   ├── store/             
-│   │   ├── react-query/    # React Query configurations
-│   │   └── zustand/        # Zustand state management
-│   ├── types/              # TypeScript type definitions
-│   └── utils/              # Utility functions
-├── public/                 # Static assets
-└── ...config files        # Various configuration files
+/src
+├── app/                # Next.js 15 App Router
+│   ├── (auth)/         # Authentication routes
+│   ├── (dashboard)/    # Protected routes
+│   └── api/            # API routes
+├── features/           # Feature modules
+├── components/         # Shared components
+├── hooks/              # Custom hooks
+├── lib/                # Utilities
+├── providers/          # Context providers
+├── services/           # API services
+├── store/              # State management
+├── styles/             # Global styles
+├── types/              # TypeScript types
+└── utils/              # Helper functions
 ```
 
-## Key Features
+## Getting Started
 
-- **Role-Based Access Control**: Implemented through features/roles
-- **Feature Flags**: Configurable feature toggles
-- **Theme Support**: Dark/Light mode with ThemeProvider
-- **Form Components**: Reusable form elements
-- **API Integration**: Organized service layer
-- **State Management**: 
-  - React Query for server state
-  - Zustand for client state
-
-## Technology Stack
-
-- **Framework**: Next.js 14+
-- **Styling**: Tailwind CSS
-- **State Management**: 
-  - Zustand
-  - React Query
-- **Form Handling**: React Hook Form
-- **UI Components**: shadcn/ui
-
-## Component Architecture
-
-### Shared Components
-- `FormField`: Base form input wrapper
-- `InputField`: Text input component
-- `SelectField`: Dropdown select component
-- `RadioButtonField`: Radio button group
-- `DialogHeaderField`: Modal header component
-- `OptimizedImage`: Optimized image loading component
-- `DebouncedSelect`: Performance optimized select input
-
-### Feature Components
-Organization by feature modules allows for better code organization and separation of concerns:
-- `auth/`: Authentication related components
-- `pharmacist/`: Pharmacist management
-- `billing/`: Billing and invoicing
-- `organizations/`: Organization management
-- `users/`: User management
-
-### Navigation
-- `NavigationBar/`: Main navigation components
-- `NavSideBar/`: Sidebar navigation with role-based menu items
-- `UserMenu`: User profile and settings dropdown
-
-## Development Setup
-
-1. Clone the repository
-2. Install dependencies:
+1. **Install dependencies**:
    ```bash
    npm install
    ```
-3. Run the development server:
+
+2. **Set up environment variables**:
+   Create a `.env.local` file:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:8080
+   ```
+
+3. **Run the development server**:
    ```bash
    npm run dev
    ```
 
-For more information about specific features or components, refer to the documentation in respective directories.
+4. **Build for production**:
+   ```bash
+   npm run build
+   ```
+
+## Features
+
+- 🔐 **Authentication**
+  - JWT-based auth with Spring Boot
+  - Protected routes
+  - Persistent sessions
+  
+- 🎨 **Modern UI**
+  - Responsive design
+  - Dark mode support
+  - Accessible components
+  
+- 📱 **State Management**
+  - Client state with Zustand
+  - Server state with TanStack Query
+  - Persistent storage
+  
+- 🚀 **Performance**
+  - Server-side rendering
+  - Optimized API calls
+  - Code splitting
+
+## Development Guidelines
+
+1. **Feature Development**
+   - Each feature should be self-contained in the `features/` directory
+   - Follow the Feature-Sliced Design methodology
+   
+2. **State Management**
+   - Use Zustand for UI state
+   - Use TanStack Query for API data
+   
+3. **API Integration**
+   - All API calls should go through service classes
+   - Use the centralized API client
+   
+4. **Styling**
+   - Use Tailwind CSS utility classes
+   - Create reusable components with ShadCN UI
+   
+5. **TypeScript**
+   - Maintain strict type safety
+   - Share types with backend DTOs
+
+## Contributing
+
+1. Create a new branch for your feature
+2. Follow the existing code style
+3. Write clear commit messages
+4. Submit a pull request
+
+## License
+
+MIT

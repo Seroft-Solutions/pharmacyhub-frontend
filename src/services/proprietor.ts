@@ -1,29 +1,30 @@
-import axios from 'axios';
+import { apiClient } from '@/lib/api/apiClient';
 
 export interface ProprietorVO {
-  // Define the ProprietorVO interface based on your requirements
-  pharmacyName: string;
-  city: string;
-  area: string;
-  contactNumber: string;
-  licenseRequired: boolean;
-  requiredLicenseDuration: string;
+  [key: string]: string;
 }
 
-export const useProprietorApi = () => {
-  const AddUserInProprietorGroup = async (data: ProprietorVO): Promise<{ success: true } | { error: string }> => {
-    try {
-      const response = await axios.post<{ success: true }>('/api/proprietor', data);
-      return { success: true };
-    } catch (error) {
-      if (error instanceof Error) {
-        return { error: error.message };
-      }
-      return { error: 'An unknown error occurred' };
-    }
-  };
+class ProprietorService {
+  private static instance: ProprietorService;
 
-  return {
-    AddUserInProprietorGroup
-  };
-};
+  private constructor() {}
+
+  public static getInstance(): ProprietorService {
+    if (!ProprietorService.instance) {
+      ProprietorService.instance = new ProprietorService();
+    }
+    return ProprietorService.instance;
+  }
+
+  public async AddUserInProprietorGroup(data: ProprietorVO): Promise<any> {
+    try {
+      const response = await apiClient.post('/api/proprietor', data);
+      return (response as any).data;
+    } catch (error) {
+      console.error("Error adding user in proprietor group", error);
+      throw error;
+    }
+  }
+}
+
+export const proprietorService = ProprietorService.getInstance();

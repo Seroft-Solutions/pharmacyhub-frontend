@@ -8,11 +8,11 @@ interface DialogHeaderFieldProps {
 }
 
 export const DialogHeaderField = ({
-                                                                      title,
-                                                                      icon,
-                                                                      className = '',
-                                                                      ...props
-                                                                    }: DialogHeaderFieldProps) => {
+                                    title,
+                                    icon,
+                                    className = '',
+                                    ...props
+                                  }: DialogHeaderFieldProps) => {
   return (
     <div
       className={`bg-primary p-6 relative overflow-hidden rounded-t-lg flex justify-center items-center ${className}`}

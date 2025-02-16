@@ -1,73 +1,118 @@
 'use client'
 
-import { useEffect, useState } from 'react';
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { User } from "@/types/User";
-import { useAuthContext } from "@/context/AuthContext";
-
-
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import authService from '@/services/authService';
+import { useAuthStore } from '@/store/authStore';
+import { AxiosError } from 'axios';
 
 export default function LoginPage() {
-    const router = useRouter();
-    const [isLoading, setIsLoading] = useState(true);
-    const { login } = useAuthContext();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  
+  const { setUser, setIsAuthenticated } = useAuthStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        async function checkAndFetchToken() {
-            const storedToken = localStorage.getItem('token');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
 
-            if (storedToken) {
-                // Token exists, get user data and redirect to dashboard
-                const userStr = localStorage.getItem('user');
-                if (userStr) {
-                    const user = JSON.parse(userStr);
-                    router.push('/dashboard');
-                }
-            } else {
-                try {
-                    // Token doesn't exist, fetch it
-                    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/token`, {
-                        withCredentials: true
-                    });
-                    if (response.status === 200) {
+    try {
+      const response = await authService.login({ email, password });
+      setUser(response.user);
+      setIsAuthenticated(true);
+      router.push(callbackUrl);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        const errorMessage = err.response?.data?.message || 'Invalid email or password';
+        setError(errorMessage);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-                        const userDTO = response.data.user;
-                        console.log("User data is:", response.data.user);
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to PharmacyHub
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Enter your credentials to access your account
+          </p>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
 
-                        const user: User = {
-                            id : userDTO.id,
-                            emailAddress: userDTO.emailAddress,
-                            roles: userDTO.roles,
-                            firstName:userDTO.firstName,
-                            lastName:userDTO.lastName,
-                            registered:userDTO.registered,
-                        };
+          {error && (
+            <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
+              {error}
+            </div>
+          )}
 
-                        login(response.data.token);
-                        localStorage.setItem('user', JSON.stringify(user));
-                    } else {
-                        // If fetching token fails, redirect to login
-                       handleLogin();
-                    }
-                } catch (error) {
-                    console.error('Error fetching token:', error);
-                    handleLogin();
-                }
-            }
-            setIsLoading(false);
-        }
-
-        checkAndFetchToken();
-    }, [router]);
-    const handleLogin = () => {
-        const keycloakUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
-        if (keycloakUrl) {
-            window.location.href = keycloakUrl;
-        } else {
-            console.error("Keycloak URL is not defined");
-        }
-    };
-
-    return null;
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing in...
+                </>
+              ) : (
+                'Sign in'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
