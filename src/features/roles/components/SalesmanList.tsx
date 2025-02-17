@@ -1,65 +1,80 @@
-import React, {useEffect, useState} from "react";
-import {SalesmanDetails, SalesmenConnectionsDTO} from "@/features/salesman/salesman";
-import {Button} from "@/components/ui/button";
-import { salesmanService } from '@/features/salesman/salesman';
-import {UserCard} from "@/components/shared/UserCard";
-
-interface Props {
-  userId: string;
-}
+"use client"
+import {useEffect, useState} from "react";
+import UserCard from "@/components/ui/UserCard";
+import {SalesmanDetails, useSalesmanApi,SalesmenConnectionsDTO} from "@/api/salesman";
 
 export default function SalesmanList() {
+  const {getSalesman,connectWithSalesman} = useSalesmanApi();
   const [salesmen, setSalesman] = useState<SalesmanDetails[]>([]);
 
   useEffect(() => {
-    const fetchSalesmen = async () => {
-      try {
-        const response = await salesmanService.getSalesman();
-        setSalesman(response);
-      } catch (error) {
-        console.error('Error fetching salesmen:', error);
-      }
-    };
-
-    fetchSalesmen();
+    fetchSalesman();
   }, []);
-
+  const fetchSalesman = async () => {
+    const response = await getSalesman();
+    if (response.error)
+    {
+      throw new Error(response.error);
+    }
+    console.log(response.data);
+    setSalesman(response.data || []);
+  }
   const handleConnect = async (salesmanId: number) => {
+
     try {
       const connectionData: SalesmenConnectionsDTO = {
-        salesmanId: salesmanId,
+        salesmanId: salesmanId, // This will be set by the backend using TenantContext
       };
-      //await connectWithSalesman(connectionData);
-      console.log("connect")
+      console.log(salesmanId);
+
+      const response = await connectWithSalesman(connectionData);
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      // Optionally refresh the pharmacist list or update UI state
+      await fetchSalesman();
+
     } catch (error) {
-      console.error('Error connecting with salesman:', error);
+      console.error('Error connecting with pharmacist:', error);
+      // Handle error (show error message to user)
     }
   };
 
+
   return (
-    <div className="space-y-4">
-      {salesmen.map((salesman) => {
-        const fields = [
-          {name: "Name", value: `$salesman.firstName} ${salesman.lastName}`},
-          {name: "Contact", value: salesman.salesman.contactNumber},
-          {name: "City", value: salesman.salesman.city},
-          {name: "Area", value: salesman.salesman.area},
-        ];
-        return (
-          <UserCard
-            key={salesman.salesman.id}
-            name={`$salesman.firstName} ${salesman.lastName}`}
-            fields={fields}
-            actionButtons={[
-              {
-                name: "Connect",
-                action: () => handleConnect(salesman.salesman.id),
-                variant: "default"
-              }
-            ]}
-          />
-        );
-      })}
-    </div>
+      <div className="space-y-4">
+        {salesmen.map((salesman) => {
+          const fields = [
+            { name: "Name", value: `${salesman.firstName} ${salesman.lastName}` },
+            { name: "Contact", value: salesman.salesman.contactNumber },
+            { name: "Previous Pharmacy Name", value: salesman.salesman.previousPharmacyName },
+            { name: "City", value: salesman.salesman.city },
+            { name: "Area", value: salesman.salesman.area },
+            { name: "Experience", value: salesman.salesman.experience },
+            { name: "Current Job Status", value: salesman.salesman.currentJobStatus},
+            { name: "Education", value: salesman.salesman.education},
+            { name: "Time Preference", value: salesman.salesman.timePrefernce},
+            { name: "Salery Expectation", value: salesman.salesman.saleryExpectation},
+          ];
+          const buttonConfigs = [
+            {
+              name: "Connect",
+              action: () => handleConnect(salesman.salesman.id),
+              variant: "default"
+            },
+          ];
+          return (
+              <UserCard
+                  key={salesman.salesman.id}
+                  name={`${salesman.firstName} ${salesman.lastName}`}
+                  fields={fields}
+                  buttons={buttonConfigs}
+                  maxButtons={1}
+              />
+          );
+        })}
+      </div>
   );
 }

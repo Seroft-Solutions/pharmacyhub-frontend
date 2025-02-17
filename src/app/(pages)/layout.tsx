@@ -1,4 +1,4 @@
-import {SidebarLayout} from "@/components/NavSideBar/SideBarLayout";
+import { SidebarLayout } from "@/components/NavSideBar/SideBarLayout";
 
 export default function AuthLayout({
                                      children,

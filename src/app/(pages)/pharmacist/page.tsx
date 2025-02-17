@@ -1,9 +1,10 @@
+
+import {SidebarLayout} from "@/components/NavSideBar/SideBarLayout";
 import PharmacistList from "@/components/Pharmacist/PharmacistList";
-
 export default function Pharmacist() {
-  return (
+  return(
 
-    <><h1>Pharmacists Page</h1><PharmacistList/></>
+      <><h1>Pharmacists Page</h1><PharmacistList/></>
 
   )
 }

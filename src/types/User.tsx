@@ -2,7 +2,7 @@ export interface User {
   id: string;
   emailAddress: string;
   roles: string[];
-  firstName: string;
-  lastName: string;
-  registered: boolean
+  firstName:string;
+  lastName:string;
+  registered:boolean
 }

@@ -1,15 +1,10 @@
-"use client";
-import PharmacyManagerList from "@/features/roles/components/PharmacyManagerList";
-import { pharmacyManagerService } from "@/services/pharmacy-manager";
-import { useAuthStore } from "@/store/authStore";
+import {SidebarLayout} from "@/components/NavSideBar/SideBarLayout";
+import PharmacyManagerList from "@/components/PharmacyManager/PharmacyManagerList";
 
 export default function PharmacyManager() {
-  const { user } = useAuthStore();
+  return(
 
-  return (
-    <>
-      <h1>Manager Page</h1>
-      {user && <PharmacyManagerList userId={user.id} pharmacyManagerService={pharmacyManagerService} />}
-    </>
+      <><h1>Manager Page</h1><PharmacyManagerList/></>
+
   )
 }

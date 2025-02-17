@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import {cn} from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 interface OptimizedImageProps {
   src: string;
@@ -10,12 +10,12 @@ interface OptimizedImageProps {
 }
 
 export function OptimizedImage({
-                                 src,
-                                 alt,
-                                 width,
-                                 height,
-                                 className
-                               }: OptimizedImageProps) {
+  src,
+  alt,
+  width,
+  height,
+  className
+}: OptimizedImageProps) {
   return (
     <div className={cn('relative', className)}>
       <Image

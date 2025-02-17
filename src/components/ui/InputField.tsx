@@ -13,16 +13,16 @@ interface InputFieldProps {
 }
 
 export const InputField = ({
-                             name,
-                             label,
-                             register,
-                             placeholder,
-                             required = false,
-                             type = 'text',
-                             error,
-                             maxLength,
-                             exactLength
-                           }: InputFieldProps) => {
+  name,
+  label,
+  register,
+  placeholder,
+  required = false,
+  type = 'text',
+  error,
+  maxLength,
+  exactLength
+}: InputFieldProps) => {
   return (
     <div className="mb-4">
       <label htmlFor={name} className="block text-sm font-medium text-gray-700">
@@ -37,8 +37,8 @@ export const InputField = ({
             value: maxLength,
             message: `${label} must be at most ${maxLength} characters`
           },
-          validate: exactLength && ((value: string) =>
-              value.length === maxLength || `${label} must be exactly ${maxLength} characters`
+          validate: exactLength && ((value: string) => 
+            value.length === maxLength || `${label} must be exactly ${maxLength} characters`
           )
         })}
         placeholder={placeholder}
