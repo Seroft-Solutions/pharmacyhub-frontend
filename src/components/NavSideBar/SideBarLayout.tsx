@@ -4,11 +4,12 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  BreadcrumbList,
+  BreadcrumbList, BreadcrumbPage,
+  BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
 import {AppSidebar} from "@/components/NavSideBar/app-sidebar";
 
-export const SidebarLayout = ({ children }: { children: React.ReactNode }) => {
+export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
       <SidebarProvider>
         <AppSidebar />

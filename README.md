@@ -1,103 +1,36 @@
-# PharmacyHub Frontend
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A modern web application built with Next.js 14+ for managing pharmacy operations.
+## Getting Started
 
-## Project Structure
+First, run the development server:
 
-```
-pharmacyhub-frontend/
-├── src/
-│   ├── api/                  # API integration layer
-│   ├── app/                  # Next.js app directory (routes and layouts)
-│   │   ├── (auth)/          # Authentication related routes
-│   │   ├── (pages)/         # Application pages
-│   │   ├── auth/            # Auth callback handlers
-│   │   └── loginCheck/      # Login verification routes
-│   ├── components/          
-│   │   ├── Home/            # Homepage specific components
-│   │   ├── NavigationBar/   # Navigation components
-│   │   ├── NavSideBar/      # Sidebar navigation components
-│   │   ├── Provider/        # Provider components
-│   │   ├── shared/          # Reusable shared components
-│   │   └── ui/              # UI components (buttons, inputs, etc.)
-│   ├── config/              
-│   │   ├── components/      # Component configurations
-│   │   └── features/        # Feature flags and role configurations
-│   ├── features/            # Feature-based modules
-│   │   ├── auth/           
-│   │   ├── billing/
-│   │   ├── organizations/
-│   │   ├── pharmacist/
-│   │   ├── roles/
-│   │   └── users/
-│   ├── hooks/               # Custom React hooks
-│   ├── lib/                 # Utility libraries
-│   ├── providers/          # React context providers
-│   ├── services/           # Service layer for API interactions
-│   ├── store/             
-│   │   ├── react-query/    # React Query configurations
-│   │   └── zustand/        # Zustand state management
-│   ├── types/              # TypeScript type definitions
-│   └── utils/              # Utility functions
-├── public/                 # Static assets
-└── ...config files        # Various configuration files
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## Key Features
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-- **Role-Based Access Control**: Implemented through features/roles
-- **Feature Flags**: Configurable feature toggles
-- **Theme Support**: Dark/Light mode with ThemeProvider
-- **Form Components**: Reusable form elements
-- **API Integration**: Organized service layer
-- **State Management**: 
-  - React Query for server state
-  - Zustand for client state
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## Technology Stack
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-- **Framework**: Next.js 14+
-- **Styling**: Tailwind CSS
-- **State Management**: 
-  - Zustand
-  - React Query
-- **Form Handling**: React Hook Form
-- **UI Components**: shadcn/ui
+## Learn More
 
-## Component Architecture
+To learn more about Next.js, take a look at the following resources:
 
-### Shared Components
-- `FormField`: Base form input wrapper
-- `InputField`: Text input component
-- `SelectField`: Dropdown select component
-- `RadioButtonField`: Radio button group
-- `DialogHeaderField`: Modal header component
-- `OptimizedImage`: Optimized image loading component
-- `DebouncedSelect`: Performance optimized select input
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### Feature Components
-Organization by feature modules allows for better code organization and separation of concerns:
-- `auth/`: Authentication related components
-- `pharmacist/`: Pharmacist management
-- `billing/`: Billing and invoicing
-- `organizations/`: Organization management
-- `users/`: User management
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-### Navigation
-- `NavigationBar/`: Main navigation components
-- `NavSideBar/`: Sidebar navigation with role-based menu items
-- `UserMenu`: User profile and settings dropdown
+## Deploy on Vercel
 
-## Development Setup
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
-
-For more information about specific features or components, refer to the documentation in respective directories.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

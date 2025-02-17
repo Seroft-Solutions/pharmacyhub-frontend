@@ -8,7 +8,7 @@ interface FormFieldProps {
     children: React.ReactNode;
 }
 
-export const FormField = ({ name, label, icon: Icon, children }: FormFieldProps) => (
+export const FormField: React.FC<FormFieldProps> = ({ name, label, icon: Icon, children }) => (
     <div className="space-y-2">
         <Label htmlFor={name} className="flex items-center space-x-2">
             <Icon className="w-4 h-4" />

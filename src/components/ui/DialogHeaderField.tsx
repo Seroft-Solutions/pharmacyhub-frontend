@@ -7,15 +7,15 @@ interface DialogHeaderFieldProps {
   className?: string;
 }
 
-export const DialogHeaderField = ({
+export const DialogHeaderField: React.FC<DialogHeaderFieldProps> = ({
                                                                       title,
                                                                       icon,
                                                                       className = '',
                                                                       ...props
-                                                                    }: DialogHeaderFieldProps) => {
+                                                                    }) => {
   return (
     <div
-      className={`bg-primary p-6 relative overflow-hidden rounded-t-lg flex justify-center items-center ${className}`}
+      className="bg-primary p-6 relative overflow-hidden rounded-t-lg flex justify-center items-center"
       {...props}
     >
       <div className="flex items-center space-x-4 justify-center">
@@ -33,3 +33,5 @@ export const DialogHeaderField = ({
     </div>
   );
 };
+
+DialogHeaderField.displayName = "DialogHeaderField";

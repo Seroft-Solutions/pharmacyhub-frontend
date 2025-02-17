@@ -18,13 +18,13 @@ interface SelectFieldProps {
   name: string;
   label?: string;
   icon?: ElementType;
-  control: Control<{ [x: string]: string }>;
+  control: Control<any>;
   options: Option[];
   placeholder?: string;
   required?: boolean;
 }
 
-export const SelectField = ({
+export const SelectField: React.FC<SelectFieldProps> = ({
                                                           name,
                                                           label,
                                                           icon: Icon,
@@ -32,7 +32,7 @@ export const SelectField = ({
                                                           options,
                                                           placeholder,
                                                           required,
-                                                        }: SelectFieldProps) => {
+                                                        }) => {
   return (
       <div className="space-y-2">
         <div className="flex items-center gap-2">
