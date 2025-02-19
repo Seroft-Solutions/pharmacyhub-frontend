@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import CarouselImage from "@/shared/ui/CarouselImage";
 import { FeatureCardSection } from "@/features/home/ui/FeatureCardSection";
 import { Footer } from "@/features/home/ui/Footer";
-import { useAuthContext } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from "@/shared/ui/button";
 
 const images = [
@@ -34,14 +34,14 @@ const images = [
 
 export default function Home() {
   const router = useRouter();
-  const { isLoggedIn } = useAuthContext();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isAuthenticated) {
       // @ts-expect-error - Next.js App Router type issue
       router.replace('/dashboard');
     }
-  }, [isLoggedIn, router]);
+  }, [isAuthenticated, router]);
 
   const handleNavigation = (route: string) => {
     // @ts-expect-error - Next.js App Router type issue
