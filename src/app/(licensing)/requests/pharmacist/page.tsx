@@ -1,2 +1,3 @@
-import { PharmacistRequestsPage } from '@/features/licensing/ui/pages/requests/pharmacist/page';
+import {PharmacistRequestsPage} from '@/features/licensing/ui/pages/requests/pharmacist/page';
+
 export default PharmacistRequestsPage;

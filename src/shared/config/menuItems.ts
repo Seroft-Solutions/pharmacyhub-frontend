@@ -1,7 +1,7 @@
 // src/config/menuItems.ts
-import {FaCog, FaPhone, FaTachometerAlt, FaUsers,} from "react-icons/fa";
+import {FaPhone, FaTachometerAlt, FaUsers,} from "react-icons/fa";
 import {MenuItem} from '@/types/menuItem';
-import {  Handshake} from "lucide-react";
+import {Handshake} from "lucide-react";
 
 export const menuItems: MenuItem[] = [
   {

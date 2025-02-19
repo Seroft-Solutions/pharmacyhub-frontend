@@ -1,16 +1,13 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Header from "@/components/NavigationBar/Header";
+import React, {useEffect} from 'react';
+import {useRouter} from 'next/navigation';
 import CarouselImage from "@/components/ui/Carousel_Image";
 import FeatureCardSection from "@/components/Home/FeatureCardSelection";
-import ProductShowcase from "@/components/Home/ProductShowcase";
 import Footer from "@/components/Home/Footer";
-import { useAuthContext } from '@/context/AuthContext';
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import {useAuthContext} from '@/context/AuthContext';
+import {Button} from "@/components/ui/button";
+
 const images = [
   {src: "/Images/med.jpg", alt: "Slide 1"},
   {src: "/Images/new.jpg", alt: "Slide 2", height: 400, width: 800},
@@ -20,7 +17,7 @@ const images = [
 
 export default function Home() {
   const router = useRouter();
-  const { isLoggedIn } = useAuthContext();
+  const {isLoggedIn} = useAuthContext();
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -29,32 +26,32 @@ export default function Home() {
   }, [isLoggedIn, router]);
 
   return (
-      <main>
-        <header className="border-b">
-          <div className="container flex h-16 items-center justify-between">
-            {/* Logo and Title */}
-            <div className="flex items-center space-x-2">
-              <img
-                  src="/Images/PharmacyHub.png"
-                  alt="Pharmacy Hub logo"
-                  className="h-10 w-10"
-              />
-              <span className="text-xl font-bold">Pharmacy Hub</span>
-            </div>
-
-            {/* Join Us Button - Visible on both mobile and desktop */}
-              <Button
-                  variant="outline"
-                  className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white transform group-hover:scale-105 transition-all duration-300"
-                  onClick={() => router.push('/login')}
-              >
-                Join Us
-              </Button>
+    <main>
+      <header className="border-b">
+        <div className="container flex h-16 items-center justify-between">
+          {/* Logo and Title */}
+          <div className="flex items-center space-x-2">
+            <img
+              src="/Images/PharmacyHub.png"
+              alt="Pharmacy Hub logo"
+              className="h-10 w-10"
+            />
+            <span className="text-xl font-bold">Pharmacy Hub</span>
           </div>
-        </header>
-        <CarouselImage images={images}/>
-        <FeatureCardSection/>
-        <Footer/>
-      </main>
+
+          {/* Join Us Button - Visible on both mobile and desktop */}
+          <Button
+            variant="outline"
+            className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white transform group-hover:scale-105 transition-all duration-300"
+            onClick={() => router.push('/login')}
+          >
+            Join Us
+          </Button>
+        </div>
+      </header>
+      <CarouselImage images={images}/>
+      <FeatureCardSection/>
+      <Footer/>
+    </main>
   );
 }

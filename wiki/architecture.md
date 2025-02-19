@@ -2,7 +2,8 @@
 
 ## Overview
 
-PharmacyHub is built using a modern, scalable architecture following Feature-Sliced Design (FSD) principles with Next.js 15. The application is designed to handle pharmacy management, licensing, and exam preparation features.
+PharmacyHub is built using a modern, scalable architecture following Feature-Sliced Design (FSD) principles with Next.js
+15. The application is designed to handle pharmacy management, licensing, and exam preparation features.
 
 ## Architectural Patterns
 
@@ -173,19 +174,19 @@ Next.js app router structure:
 ## Future Considerations
 
 1. Microservices Architecture
-   - Service decomposition
-   - API Gateway integration
-   - Message queue implementation
+    - Service decomposition
+    - API Gateway integration
+    - Message queue implementation
 
 2. Performance Monitoring
-   - Real-time analytics
-   - Error tracking
-   - Performance metrics
+    - Real-time analytics
+    - Error tracking
+    - Performance metrics
 
 3. Scalability
-   - Horizontal scaling
-   - Load balancing
-   - Cache optimization
+    - Horizontal scaling
+    - Load balancing
+    - Cache optimization
 
 ## Documentation
 

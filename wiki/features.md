@@ -31,22 +31,22 @@
 ### Key Features
 
 1. **User Registration**
-   - Pharmacist registration
-   - Pharmacy Manager registration
-   - Proprietor registration
-   - Salesman registration
+    - Pharmacist registration
+    - Pharmacy Manager registration
+    - Proprietor registration
+    - Salesman registration
 
 2. **Connection Management**
-   - Connection requests
-   - Connection approvals
-   - Connection listings
-   - Request notifications
+    - Connection requests
+    - Connection approvals
+    - Connection listings
+    - Request notifications
 
 3. **License Management**
-   - License application
-   - License renewal
-   - License verification
-   - Status tracking
+    - License application
+    - License renewal
+    - License verification
+    - Status tracking
 
 ## Exam Feature
 
@@ -70,22 +70,22 @@
 ### Key Features
 
 1. **Practice Tests**
-   - MCQ questions
-   - Topic-wise practice
-   - Progress tracking
-   - Score history
+    - MCQ questions
+    - Topic-wise practice
+    - Progress tracking
+    - Score history
 
 2. **Mock Exams**
-   - Timed tests
-   - Real exam simulation
-   - Result analysis
-   - Performance metrics
+    - Timed tests
+    - Real exam simulation
+    - Result analysis
+    - Performance metrics
 
 3. **Learning Resources**
-   - Study materials
-   - Reference guides
-   - Practice tips
-   - Exam preparation strategies
+    - Study materials
+    - Reference guides
+    - Practice tips
+    - Exam preparation strategies
 
 ## Authentication Feature
 
@@ -108,19 +108,19 @@
 ### Key Features
 
 1. **User Authentication**
-   - JWT-based auth
-   - OAuth2 integration
-   - Session management
-   - Secure token storage
+    - JWT-based auth
+    - OAuth2 integration
+    - Session management
+    - Secure token storage
 
 2. **Authorization**
-   - Role-based access
-   - Permission management
-   - Protected routes
-   - API security
+    - Role-based access
+    - Permission management
+    - Protected routes
+    - API security
 
 3. **Account Management**
-   - Profile updates
-   - Password reset
-   - Email verification
-   - Account recovery
+    - Profile updates
+    - Password reset
+    - Email verification
+    - Account recovery

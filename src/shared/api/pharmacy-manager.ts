@@ -39,14 +39,15 @@ export const usePharmacyManagerApi = () => {
   const AddUserInPharmacyManagerGroup = (data) => post<PharmacyManagerVO[]>(`/api/pharmacymanager/v1/add-info`, data);
 
   const connectWithPharmacyManager = (data: PharmacyManagerConnectionsDTO) =>
-      post('/api/pharmacymanager/v1/connect', data);
+    post('/api/pharmacymanager/v1/connect', data);
 
   const approveStatus = (id) =>
-      post(`/api/pharmacymanager/v1/approveStatus/${id}`);
+    post(`/api/pharmacymanager/v1/approveStatus/${id}`);
 
   const rejectStatus = (id) =>
-      post(`/api/pharmacymanager/v1/rejectStatus/${id}`);
-  const getPharmacyManagerRequests = () => get<PharmacyManagerDetails[]>('/api/pharmacymanager/v1/get-all-pending-requests');
+    post(`/api/pharmacymanager/v1/rejectStatus/${id}`);
+  const getPharmacyManagerRequests = () => get<PharmacyManagerDetails[]>(
+    '/api/pharmacymanager/v1/get-all-pending-requests');
 
   const getAllConnections = () => get<PharmacyManagerDetails[]>('/api/pharmacymanager/v1/get-all-connections');
   return {

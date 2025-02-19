@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  createContext,
-  useState,
-  useContext,
-  ReactNode,
-  useEffect,
-} from "react";
+import {createContext, ReactNode, useContext, useEffect, useState,} from "react";
 
-
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import {User} from "@/types/User";
+import {useRouter} from "next/navigation";
 
 interface AuthContextProps {
   token: string | null;
@@ -24,7 +15,7 @@ interface AuthContextProps {
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({children}: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -40,7 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (savedToken) {
         try {
           const response = await fetch(
-              process.env.NEXT_PUBLIC_API_BASE_URL+"/oauth2/validate-token",
+            process.env.NEXT_PUBLIC_API_BASE_URL + "/oauth2/validate-token",
             {
               method: "GET",
               headers: {
@@ -72,17 +63,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-      setToken(null);
-      setIsLoggedIn(false);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = process.env.NEXT_PUBLIC_API_BASE_URL + "/logout"; // Redirect to Keycloak
+    setToken(null);
+    setIsLoggedIn(false);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = process.env.NEXT_PUBLIC_API_BASE_URL + "/logout"; // Redirect to Keycloak
 
   };
 
-
   return (
-    <AuthContext.Provider value={{ token, setToken, isLoggedIn, setIsLoggedIn, logout, login }}>
+    <AuthContext.Provider value={{token, setToken, isLoggedIn, setIsLoggedIn, logout, login}}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,2 +1,3 @@
-import { PharmacistConnectionsPage } from '@/features/licensing/ui/pages/connections/pharmacist/page';
+import {PharmacistConnectionsPage} from '@/features/licensing/ui/pages/connections/pharmacist/page';
+
 export default PharmacistConnectionsPage;

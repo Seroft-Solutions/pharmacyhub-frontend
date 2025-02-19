@@ -1,98 +1,92 @@
-import React, { forwardRef } from 'react';
-import { ProprietorVO, useProprietorApi} from "@/api/proprietor";
+import React, {forwardRef} from 'react';
+import {ProprietorVO, useProprietorApi} from "@/api/proprietor";
 import {useForm} from "react-hook-form";
 import InputField from "@/components/ui/InputField";
 import {SelectField} from "@/components/ui/SelectField";
-import {
-  area,
-  city,
-  licenseDuration, licenseRequired,
-} from "@/components/RegistrationForm/SelectFieldOptons";
+import {area, city, licenseDuration, licenseRequired,} from "@/components/RegistrationForm/SelectFieldOptons";
 import {RadioButtonField} from "@/components/ui/RadioButtonField";
-import PharmacistForm from "@/components/RegistrationForm/PharmacistForm";
 
-const ProprietorForm= forwardRef<HTMLFormElement>((props, ref) =>  {
+const ProprietorForm = forwardRef<HTMLFormElement>((props, ref) => {
 
-  const {control, register, handleSubmit, formState: {errors}} = useForm<ProprietorVO>({
-    defaultValues: {}
-  });
-  const {AddUserInProprietorGroup} = useProprietorApi()
-  const handleFormSubmit = async (data: ProprietorVO) => {
-    console.log("Inside submit");
-    console.log("Data is:", data);
+    const {control, register, handleSubmit, formState: {errors}} = useForm<ProprietorVO>({
+      defaultValues: {}
+    });
+    const {AddUserInProprietorGroup} = useProprietorApi()
+    const handleFormSubmit = async (data: ProprietorVO) => {
+      console.log("Inside submit");
+      console.log("Data is:", data);
 
+      try {
 
-    try {
-
-      const result = await AddUserInProprietorGroup(data);
-      if (result.error) {
-        throw new Error(result.error);
+        const result = await AddUserInProprietorGroup(data);
+        if (result.error) {
+          throw new Error(result.error);
+        }
+        console.log("User added successfully");
+      } catch (error) {
+        console.error("Error submitting form:", error);
       }
-      console.log("User added successfully");
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
-  };
+    };
 
-  return (
+    return (
       <div className="w-full">
         <form ref={ref} onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col h-full">
           <RadioButtonField
-              name="licenseRequired"
-              label="License Required"
-              control={control}
-              options={licenseRequired}
-              required={true}
+            name="licenseRequired"
+            label="License Required"
+            control={control}
+            options={licenseRequired}
+            required={true}
           />
 
           <RadioButtonField
-              name="requiredLicenseDuration"
-              label="Required License Duration"
-              control={control}
-              options={licenseDuration}
-              required={true}
+            name="requiredLicenseDuration"
+            label="Required License Duration"
+            control={control}
+            options={licenseDuration}
+            required={true}
           />
           <InputField
-              name="pharmacyName"
-              label="Pharmacy Name"
-              register={register}
-              placeholder="Pharmacy Name"
-              required
-              error={errors.pharmacyName}
+            name="pharmacyName"
+            label="Pharmacy Name"
+            register={register}
+            placeholder="Pharmacy Name"
+            required
+            error={errors.pharmacyName}
           />
 
           <SelectField
-              name="city"
-              label="City"
-              control={control}
-              options={city}
-              placeholder="City"
-              required={true}
+            name="city"
+            label="City"
+            control={control}
+            options={city}
+            placeholder="City"
+            required={true}
           />
           <SelectField
-              name="area"
-              label="Area"
-              control={control}
-              options={area}
-              placeholder="Area"
-              required={true}
+            name="area"
+            label="Area"
+            control={control}
+            options={area}
+            placeholder="Area"
+            required={true}
           />
           <InputField
-              name="contactNumber"
-              label="Contact Number"
-              register={register}
-              placeholder="Contact Number"
-              required
-              type="number"
-              error={errors.contactNumber}
-              maxLength={11}
-              exactLength={true}
+            name="contactNumber"
+            label="Contact Number"
+            register={register}
+            placeholder="Contact Number"
+            required
+            type="number"
+            error={errors.contactNumber}
+            maxLength={11}
+            exactLength={true}
           />
 
         </form>
       </div>
-  );
-}
+    );
+  }
 );
 ProprietorForm.displayName = 'ProprietorForm';
 

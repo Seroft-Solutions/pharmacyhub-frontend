@@ -1,5 +1,4 @@
-import { SidebarLayout } from "@/shared/ui/sidebar/SideBarLayout";
-import { ProprietorConnections } from "@/features/licensing/ui/proprietor/ProprietorConnections";
+import {ProprietorConnections} from "@/features/licensing/ui/proprietor/ProprietorConnections";
 
 export default function ProprietorConnectionsPage() {
   return (

@@ -1,5 +1,4 @@
-import { SidebarLayout } from "@/shared/ui/sidebar/SideBarLayout";
-import { ProprietorRequests } from "@/features/licensing/ui/proprietor/ProprietorRequests";
+import {ProprietorRequests} from "@/features/licensing/ui/proprietor/ProprietorRequests";
 
 export default function ProprietorRequestsPage() {
   return (

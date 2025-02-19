@@ -7,19 +7,21 @@ export interface SalesmanDetails {
   connected: boolean;
   salesman: SalesmanVO;
 }
+
 export interface SalesmanVO {
   id: number;   //demo
   experience: string
-  education:string
+  education: string
   contactNumber: string
   area: string
   city: string
   previousPharmacyName: string
   currentJobStatus: string
   timePrefernce: string
-  saleryExpectation:string
+  saleryExpectation: string
   userId: string;
 }
+
 export interface SalesmenConnectionsDTO {
   salesmanId: number;
   userId?: string;
@@ -27,20 +29,21 @@ export interface SalesmenConnectionsDTO {
   notes?: string;
   userGroup?: string;
 }
+
 export const useSalesmanApi = () => {
-  const { getToken, logout } = useAuth();
-  const { get, post, put, del } = useApi(getToken, logout);
+  const {getToken, logout} = useAuth();
+  const {get, post, put, del} = useApi(getToken, logout);
 
   const getSalesman = () => get<SalesmanDetails[]>('/api/salesman/v1/get-all');
-  const AddUserInSalesmantGroup=(data)=>post<SalesmanVO[]>(`/api/salesman/v1/add-info`, data);
+  const AddUserInSalesmantGroup = (data) => post<SalesmanVO[]>(`/api/salesman/v1/add-info`, data);
   const connectWithSalesman = (data: SalesmenConnectionsDTO) =>
-      post('/api/salesman/v1/connect', data);
+    post('/api/salesman/v1/connect', data);
 
   const approveStatus = (id) =>
-      post(`/api/salesman/v1/approveStatus/${id}`);
+    post(`/api/salesman/v1/approveStatus/${id}`);
 
   const rejectStatus = (id) =>
-      post(`/api/salesman/v1/rejectStatus/${id}`);
+    post(`/api/salesman/v1/rejectStatus/${id}`);
   const getSalesmanRequests = () => get<SalesmanDetails[]>('/api/salesman/v1/get-all-pending-requests');
 
   const getAllConnections = () => get<SalesmanDetails[]>('/api/salesman/v1/get-all-connections');

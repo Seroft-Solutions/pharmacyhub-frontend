@@ -1,5 +1,4 @@
-import { SidebarLayout } from "@/shared/ui/sidebar/SideBarLayout";
-import { SalesmanRequests } from "@/features/licensing/ui/salesman/SalesmanRequests";
+import {SalesmanRequests} from "@/features/licensing/ui/salesman/SalesmanRequests";
 
 export default function SalesmanRequestsPage() {
   return (

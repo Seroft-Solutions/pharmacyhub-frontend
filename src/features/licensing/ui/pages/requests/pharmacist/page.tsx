@@ -1,5 +1,4 @@
-import { SidebarLayout } from "@/shared/ui/sidebar/SideBarLayout";
-import { PharmacistRequests } from "@/features/licensing/ui/pharmacist/PharmacistRequests";
+import {PharmacistRequests} from "@/features/licensing/ui/pharmacist/PharmacistRequests";
 
 export default function PharmacistRequestsPage() {
   return (

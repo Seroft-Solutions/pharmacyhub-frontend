@@ -1,10 +1,12 @@
 # PharmacyHub Frontend Documentation
 
-Welcome to the PharmacyHub frontend documentation. This wiki provides comprehensive information about the project's architecture, features, and development guidelines.
+Welcome to the PharmacyHub frontend documentation. This wiki provides comprehensive information about the project's
+architecture, features, and development guidelines.
 
 ## Table of Contents
 
 ### 1. [Architecture Overview](./architecture.md)
+
 - Project structure and organization
 - Architectural patterns
 - Technical stack
@@ -13,20 +15,22 @@ Welcome to the PharmacyHub frontend documentation. This wiki provides comprehens
 - Future considerations
 
 ### 2. [Features Documentation](./features.md)
+
 - Licensing feature
-  * User registration
-  * Connection management
-  * License management
+    * User registration
+    * Connection management
+    * License management
 - Exam feature
-  * Practice tests
-  * Mock exams
-  * Learning resources
+    * Practice tests
+    * Mock exams
+    * Learning resources
 - Authentication feature
-  * User authentication
-  * Authorization
-  * Account management
+    * User authentication
+    * Authorization
+    * Account management
 
 ### 3. [Development Guide](./development-guide.md)
+
 - Development standards
 - State management patterns
 - Component patterns
@@ -39,6 +43,7 @@ Welcome to the PharmacyHub frontend documentation. This wiki provides comprehens
 ## Quick Start
 
 1. **Project Setup**
+
 ```bash
 # Install dependencies
 npm install
@@ -48,6 +53,7 @@ npm run dev
 ```
 
 2. **Key Directories**
+
 ```
 /src/
 ├── entities/     # Business entities
@@ -57,6 +63,7 @@ npm run dev
 ```
 
 3. **Development Commands**
+
 ```bash
 # Run tests
 npm run test
