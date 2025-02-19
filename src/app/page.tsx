@@ -3,10 +3,10 @@
 import React, { useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import CarouselImage from "@/shared/ui/Carousel_Image";
+import CarouselImage from "@/shared/ui/CarouselImage";
 import { FeatureCardSection } from "@/features/home/ui/FeatureCardSection";
 import { Footer } from "@/features/home/ui/Footer";
-import { useAuthContext } from '@/shared/lib/providers/AuthContext';
+import { useAuthContext } from '@/context/AuthContext';
 import { Button } from "@/shared/ui/button";
 
 const images = [
@@ -38,10 +38,15 @@ export default function Home() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      // Using App Router navigation
-      router.replace(`/dashboard`);
+      // @ts-expect-error - Next.js App Router type issue
+      router.replace('/dashboard');
     }
   }, [isLoggedIn, router]);
+
+  const handleNavigation = (route: string) => {
+    // @ts-expect-error - Next.js App Router type issue
+    router.replace(route);
+  };
 
   return (
     <main>
@@ -63,7 +68,7 @@ export default function Home() {
           <Button
             variant="outline"
             className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white transform group-hover:scale-105 transition-all duration-300"
-            onClick={() => router.replace(`/login`)}
+            onClick={() => handleNavigation('/login')}
           >
             Join Us
           </Button>

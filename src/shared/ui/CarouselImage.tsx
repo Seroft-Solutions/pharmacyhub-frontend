@@ -1,5 +1,6 @@
 import React from 'react';
-import {Carousel, CarouselContent, CarouselItem,} from "@/components/ui/carousel";
+import Image from 'next/image';
+import {Carousel, CarouselContent, CarouselItem} from "@/shared/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
 interface Image {
@@ -29,12 +30,14 @@ const CarouselImage = ({images}: ImageCarouselProps) => {
       <CarouselContent>
         {images.map((image, index) => (
           <CarouselItem key={index}>
-            <div className="relative w-full">
-              <img
+            <div className="relative w-full h-[200px] sm:h-[300px] md:h-[400px] lg:h-[450px] xl:h-[500px] 2xl:h-[600px]">
+              <Image
                 src={image.src}
                 alt={image.alt}
-                className={`w-full h-[200px] sm:h-[300px] md:h-[400px] lg:h-[450px] xl:h-[500px] 2xl:h-[600px] object-cover ${image.className ||
-                ""}`}
+                fill
+                priority={index === 0}
+                sizes="100vw"
+                className={`object-cover ${image.className || ""}`}
                 style={{
                   maxHeight: 'calc(100vh - 200px)',
                   objectPosition: 'center'
@@ -44,7 +47,6 @@ const CarouselImage = ({images}: ImageCarouselProps) => {
           </CarouselItem>
         ))}
       </CarouselContent>
-
     </Carousel>
   );
 };
