@@ -1,125 +1,54 @@
-import { ReactNode } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Permission, Role } from '@/types/auth';
+"use client";
 
-interface AuthGuardProps {
+import { ReactNode } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Role, Permission } from "@/types/auth";
+import { AuthLoading } from "./AuthLoading";
+import { Unauthorized } from "./Unauthorized";
+
+export interface AuthGuardProps {
   children: ReactNode;
-  fallback?: ReactNode;
-  roles?: Role[];
-  permissions?: Permission[];
-  requireAll?: boolean; // If true, user must have all specified roles/permissions
+  requiredRoles?: Role[];
+  requiredPermissions?: Permission[];
+  loadingComponent?: ReactNode;
+  unauthorizedComponent?: ReactNode;
 }
 
-export const AuthGuard = ({
+export function AuthGuard({
   children,
-  fallback = null,
-  roles = [],
-  permissions = [],
-  requireAll = false
-}: AuthGuardProps) => {
-  const { isAuthenticated, hasRole, hasPermission } = useAuth();
+  requiredRoles,
+  requiredPermissions,
+  loadingComponent = <AuthLoading />,
+  unauthorizedComponent = <Unauthorized />
+}: AuthGuardProps) {
+  const { isLoading, hasAccess } = useAuth();
 
-  if (!isAuthenticated) {
-    return fallback;
+  if (isLoading) {
+    return loadingComponent;
   }
 
-  const checkRoles = () => {
-    if (!roles.length) return true;
-    return requireAll
-      ? roles.every(role => hasRole(role))
-      : roles.some(role => hasRole(role));
+  const hasRequiredAccess = hasAccess(requiredRoles, requiredPermissions);
+  if (!hasRequiredAccess) {
+    return unauthorizedComponent;
+  }
+
+  return <>{children}</>;
+}
+
+// HOC for protecting components
+export function withAuth<P extends object>(
+  Component: React.ComponentType<P>,
+  requiredRoles?: Role[],
+  requiredPermissions?: Permission[]
+) {
+  return function ProtectedComponent(props: P) {
+    return (
+      <AuthGuard
+        requiredRoles={requiredRoles}
+        requiredPermissions={requiredPermissions}
+      >
+        <Component {...props} />
+      </AuthGuard>
+    );
   };
-
-  const checkPermissions = () => {
-    if (!permissions.length) return true;
-    return requireAll
-      ? permissions.every(permission => hasPermission(permission))
-      : permissions.some(permission => hasPermission(permission));
-  };
-
-  const hasAccess = checkRoles() && checkPermissions();
-
-  return hasAccess ? <>{children}</> : fallback;
-};
-
-// Create a specialized guard for admin-only content
-export const AdminGuard = ({ 
-  children, 
-  fallback = null 
-}: Omit<AuthGuardProps, 'roles' | 'permissions'>) => (
-  <AuthGuard
-    roles={['SUPER_ADMIN', 'ADMIN']}
-    fallback={fallback}
-  >
-    {children}
-  </AuthGuard>
-);
-
-// Create a guard for manager-level access
-export const ManagerGuard = ({ 
-  children, 
-  fallback = null 
-}: Omit<AuthGuardProps, 'roles' | 'permissions'>) => (
-  <AuthGuard
-    roles={['SUPER_ADMIN', 'ADMIN', 'MANAGER']}
-    fallback={fallback}
-  >
-    {children}
-  </AuthGuard>
-);
-
-// Create a guard for specific feature access
-export const FeatureGuard = ({ 
-  children, 
-  feature,
-  fallback = null 
-}: Omit<AuthGuardProps, 'permissions'> & { feature: Permission }) => (
-  <AuthGuard
-    permissions={[feature]}
-    fallback={fallback}
-  >
-    {children}
-  </AuthGuard>
-);
-
-/*
-Usage Examples:
-
-// Basic usage
-<AuthGuard
-  roles={['ADMIN']}
-  permissions={['manage_users']}
-  fallback={<AccessDenied />}
->
-  <AdminPanel />
-</AuthGuard>
-
-// Simple permission check
-<AuthGuard permissions={['view_reports']}>
-  <ReportsButton />
-</AuthGuard>
-
-// Admin only content
-<AdminGuard fallback={<AccessDenied />}>
-  <SystemSettings />
-</AdminGuard>
-
-// Manager level access
-<ManagerGuard>
-  <InventoryManagement />
-</ManagerGuard>
-
-// Feature-specific guard
-<FeatureGuard feature="manage_inventory">
-  <StockControls />
-</FeatureGuard>
-
-// Require all permissions
-<AuthGuard
-  permissions={['view_reports', 'export_data']}
-  requireAll={true}
-  fallback={<RestrictedAccess />}
->
-  <AdvancedReporting />
-</AuthGuard>
-*/
+}
