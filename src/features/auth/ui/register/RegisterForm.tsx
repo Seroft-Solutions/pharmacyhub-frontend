@@ -143,13 +143,15 @@ export const RegisterForm = () => {
       
       await registerMutation.mutateAsync(registrationData);
       
-      // Show success animation
+      // Show success animation - ensure it works
       setShowSuccessAnimation(true);
+      console.log("Success animation triggered");
       
       // Delay login to show success animation
       setTimeout(async () => {
         try {
           // Automatically log in after successful registration
+          console.log("Attempting automatic login");
           const loginResult = await loginMutation.mutateAsync({
             email: formData.email,
             password: formData.password
@@ -158,12 +160,14 @@ export const RegisterForm = () => {
           login(loginResult.token);
           router.push(ROUTES.DASHBOARD);
         } catch (loginErr) {
+          console.error("Auto-login failed", loginErr);
           // If auto-login fails, redirect to login page
           router.push('/login');
         }
       }, 1500);
       
     } catch (err) {
+      console.error("Registration failed", err);
       setErrors({
         email: err instanceof Error ? err.message : 'Registration failed'
       });
