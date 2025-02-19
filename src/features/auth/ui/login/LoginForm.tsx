@@ -23,11 +23,8 @@ import {
   Mail, 
   AlertCircle, 
   Loader2, 
-  Key,
-  UserCircle,
   User,
-  LogIn,
-  Settings
+  LogIn
 } from 'lucide-react';
 
 export const LoginForm = () => {
@@ -89,14 +86,10 @@ export const LoginForm = () => {
 
       <CardContent>
         <Tabs defaultValue="credentials" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-1 mb-8">
             <TabsTrigger value="credentials" className="data-[state=active]:bg-blue-50">
               <User className="mr-2 h-4 w-4" />
               Credentials
-            </TabsTrigger>
-            <TabsTrigger value="admin" className="data-[state=active]:bg-blue-50">
-              <Settings className="mr-2 h-4 w-4" />
-              Admin Access
             </TabsTrigger>
           </TabsList>
           
@@ -242,77 +235,6 @@ export const LoginForm = () => {
                 </Button>
               </div>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="admin" className="mt-0">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6">
-              <h3 className="text-blue-800 font-medium mb-2 flex items-center">
-                <Key className="h-5 w-5 mr-2 text-blue-600" />
-                Admin Access
-              </h3>
-              <p className="text-sm text-blue-700">
-                This area is restricted to pharmacy administrators only. Please contact your system
-                administrator if you need access.
-              </p>
-            </div>
-            
-            <form className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="admin-email" className="text-gray-700 font-medium">
-                  Admin Email
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                  <Input
-                    id="admin-email"
-                    type="email"
-                    placeholder="admin@example.com"
-                    className="pl-10 border-gray-300 bg-white"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="admin-password" className="text-gray-700 font-medium">
-                  Admin Password
-                </Label>
-                <div className="relative">
-                  <LockKeyhole className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                  <Input
-                    id="admin-password"
-                    type="password"
-                    placeholder="••••••••"
-                    className="pl-10 border-gray-300 bg-white"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="admin-code" className="text-gray-700 font-medium">
-                  Security Code
-                </Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                  <Input
-                    id="admin-code"
-                    type="text"
-                    placeholder="Enter your security code"
-                    className="pl-10 border-gray-300 bg-white"
-                  />
-                </div>
-                <p className="text-xs text-gray-500">
-                  The security code was provided by your system administrator
-                </p>
-              </div>
-
-              <Button
-                type="button"
-                className="w-full h-11 font-semibold"
-                disabled
-              >
-                Request Admin Access
-              </Button>
-            </form>
           </TabsContent>
         </Tabs>
       </CardContent>
