@@ -1,0 +1,205 @@
+{
+  "realm": "pharmacyhub",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "ADMIN",
+        "description": "Administrator with full access",
+        "composite": true,
+        "composites": {
+          "client": {
+            "pharmacyhub-client": [
+              "manage-users",
+              "view-reports"
+            ]
+          }
+        }
+      },
+      {
+        "name": "PHARMACIST",
+        "description": "Registered pharmacist",
+        "composite": true,
+        "composites": {
+          "client": {
+            "pharmacyhub-client": [
+              "view-prescriptions",
+              "manage-inventory"
+            ]
+          }
+        }
+      },
+      {
+        "name": "USER",
+        "description": "Basic user",
+        "composite": true,
+        "composites": {
+          "client": {
+            "pharmacyhub-client": [
+              "view-profile"
+            ]
+          }
+        }
+      },
+      {
+        "name": "INSTRUCTOR",
+        "description": "Exam instructor",
+        "composite": true,
+        "composites": {
+          "client": {
+            "pharmacyhub-client": [
+              "manage-exams"
+            ]
+          }
+        }
+      }
+    ],
+    "client": {
+      "pharmacyhub-client": [
+        {
+          "name": "manage-users",
+          "description": "Permission to manage users"
+        },
+        {
+          "name": "view-reports",
+          "description": "Permission to view reports"
+        },
+        {
+          "name": "view-prescriptions",
+          "description": "Permission to view prescriptions"
+        },
+        {
+          "name": "manage-inventory",
+          "description": "Permission to manage inventory"
+        },
+        {
+          "name": "view-profile",
+          "description": "Permission to view profile"
+        },
+        {
+          "name": "manage-exams",
+          "description": "Permission to manage exams"
+        }
+      ]
+    }
+  },
+  "groups": [
+    {
+      "name": "Administrators",
+      "path": "/Administrators",
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "name": "Pharmacists",
+      "path": "/Pharmacists",
+      "realmRoles": ["PHARMACIST"]
+    },
+    {
+      "name": "Users",
+      "path": "/Users",
+      "realmRoles": ["USER"]
+    },
+    {
+      "name": "Instructors",
+      "path": "/Instructors",
+      "realmRoles": ["INSTRUCTOR"]
+    }
+  ],
+  "defaultGroups": ["/Users"],
+  "clients": [
+    {
+      "clientId": "pharmacyhub-client",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-client-secret",
+      "redirectUris": [
+        "https://dev.pharmacyhub.com/*"
+      ],
+      "webOrigins": [
+        "https://dev.pharmacyhub.com"
+      ],
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "true",
+            "claim.name": "groups",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "claim.name": "roles",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@pharmacyhub.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "dev-admin123",
+          "temporary": false
+        }
+      ],
+      "groups": ["/Administrators"]
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "enabled": true,
+      "defaultAction": true,
+      "priority": 1
+    },
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 2
+    }
+  ],
+  "browserFlow": "browser",
+  "registrationFlow": "registration",
+  "directGrantFlow": "direct grant",
+  "resetCredentialsFlow": "reset credentials",
+  "clientAuthenticationFlow": "clients",
+  "emailTheme": "keycloak",
+  "smtpServer": {
+    "from": "no-reply@pharmacyhub.com",
+    "host": "smtp.gmail.com",
+    "port": "587",
+    "fromDisplayName": "PharmacyHub",
+    "auth": true,
+    "starttls": true,
+    "ssl": false
+  }
+}

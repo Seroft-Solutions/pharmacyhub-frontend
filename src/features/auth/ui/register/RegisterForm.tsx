@@ -3,11 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '../../model/store';
-import { useRegister, useLogin } from '../../api/mutations';
-import { validateRegistrationForm, calculatePasswordStrength } from '../../lib/validation';
-import { ROUTES } from '@/config/auth';
-import { RegistrationData } from '../../model/types';
+import { useAuth, RegistrationData, USER_TYPE_PERMISSIONS } from '@/shared/auth';
+import { calculatePasswordStrength } from '../../lib/validation';
 
 // Import shadcn UI components
 import { Button } from '@/shared/ui/button';
@@ -16,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/shared/ui/label';
 import { Separator } from '@/shared/ui/separator';
 import { Checkbox } from '@/shared/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 
 // Import icons
 import { 
@@ -34,55 +32,100 @@ import {
 
 type FormStep = 'account' | 'personal' | 'confirmation';
 
-const initialFormData: RegistrationData = {
+const initialFormData = {
+  username: '',
   email: '',
   password: '',
   confirmPassword: '',
   firstName: '',
   lastName: '',
   phoneNumber: '',
+  userType: 'GENERAL_USER',
   acceptTerms: false
 };
 
+// Helper function to validate form data
+const validateRegistrationForm = (data: typeof initialFormData) => {
+  const errors: Partial<Record<keyof typeof initialFormData, string>> = {};
+  
+  // Email validation
+  if (!data.email) {
+    errors.email = 'Email is required';
+  } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(data.email)) {
+    errors.email = 'Invalid email address';
+  }
+  
+  // Username validation
+  if (!data.username) {
+    errors.username = 'Username is required';
+  } else if (data.username.length < 4) {
+    errors.username = 'Username must be at least 4 characters';
+  }
+  
+  // Password validation
+  if (!data.password) {
+    errors.password = 'Password is required';
+  } else if (data.password.length < 8) {
+    errors.password = 'Password must be at least 8 characters';
+  }
+  
+  // Confirm password validation
+  if (data.password !== data.confirmPassword) {
+    errors.confirmPassword = 'Passwords do not match';
+  }
+  
+  // Name validation
+  if (!data.firstName) {
+    errors.firstName = 'First name is required';
+  }
+  
+  if (!data.lastName) {
+    errors.lastName = 'Last name is required';
+  }
+  
+  // Phone validation
+  if (data.phoneNumber && !/^\+?\d{10,15}$/.test(data.phoneNumber.replace(/[\s()-]/g, ''))) {
+    errors.phoneNumber = 'Invalid phone number';
+  }
+  
+  // Terms validation
+  if (!data.acceptTerms) {
+    errors.acceptTerms = 'You must accept the Terms and Privacy Policy';
+  }
+  
+  return errors;
+};
+
 export const RegisterForm = () => {
-  const [formData, setFormData] = useState<RegistrationData>(initialFormData);
-  const [errors, setErrors] = useState<Partial<Record<keyof RegistrationData, string>>>({});
+  const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof initialFormData, string>>>({});
   const [currentStep, setCurrentStep] = useState<FormStep>('account');
   const [passwordStrength, setPasswordStrength] = useState(calculatePasswordStrength(''));
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   
-  const login = useAuthStore(state => state.login);
-  const registerMutation = useRegister();
-  const loginMutation = useLogin();
+  const { register, login } = useAuth();
   const router = useRouter();
 
   const validateStep = (step: FormStep): boolean => {
-    const validationData = {...formData};
-    let fieldsToValidate: Array<keyof RegistrationData> = [];
+    let fieldsToValidate: Array<keyof typeof initialFormData> = [];
     
     switch(step) {
       case 'account':
-        fieldsToValidate = ['email', 'password', 'confirmPassword'];
+        fieldsToValidate = ['username', 'email', 'password', 'confirmPassword'];
         break;
       case 'personal':
-        fieldsToValidate = ['firstName', 'lastName', 'phoneNumber'];
+        fieldsToValidate = ['firstName', 'lastName', 'phoneNumber', 'userType'];
         break;
       case 'confirmation':
         fieldsToValidate = ['acceptTerms'];
         break;
     }
     
-    // Create a partial registration data with only the fields to validate
-    const partialData = fieldsToValidate.reduce((obj, key) => {
-      obj[key] = formData[key];
-      return obj;
-    }, {} as Partial<RegistrationData>);
-    
-    // Run validation on the partial data
-    const validationErrors = validateRegistrationForm(validationData);
+    // Run validation on all fields
+    const validationErrors = validateRegistrationForm(formData);
     
     // Filter validation errors to only include fields relevant to this step
-    const stepErrors: Partial<Record<keyof RegistrationData, string>> = {};
+    const stepErrors: Partial<Record<keyof typeof initialFormData, string>> = {};
     fieldsToValidate.forEach(field => {
       if (validationErrors[field]) {
         stepErrors[field] = validationErrors[field];
@@ -103,9 +146,13 @@ export const RegisterForm = () => {
     }
 
     // Clear error when field is modified
-    if (errors[name as keyof RegistrationData]) {
+    if (errors[name as keyof typeof initialFormData]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const nextStep = () => {
@@ -134,31 +181,26 @@ export const RegisterForm = () => {
     try {
       // Prepare data for API
       const registrationData: RegistrationData = {
+        username: formData.username,
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        phoneNumber: formData.phoneNumber || undefined
+        userType: formData.userType as any,
+        phoneNumber: formData.phoneNumber || undefined,
       };
       
-      await registerMutation.mutateAsync(registrationData);
+      await register(registrationData);
       
-      // Show success animation - ensure it works
+      // Show success animation
       setShowSuccessAnimation(true);
-      console.log("Success animation triggered");
       
       // Delay login to show success animation
       setTimeout(async () => {
         try {
           // Automatically log in after successful registration
-          console.log("Attempting automatic login");
-          const loginResult = await loginMutation.mutateAsync({
-            email: formData.email,
-            password: formData.password
-          });
-          
-          login(loginResult.token);
-          router.push(ROUTES.DASHBOARD);
+          await login(formData.email, formData.password);
+          router.push('/dashboard');
         } catch (loginErr) {
           console.error("Auto-login failed", loginErr);
           // If auto-login fails, redirect to login page
@@ -227,6 +269,29 @@ export const RegisterForm = () => {
 
   const renderAccountStep = () => (
     <div className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="username" className={errors.username ? "text-red-500" : "text-gray-700"}>
+          Username
+        </Label>
+        <div className="relative">
+          <User className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Input
+            id="username"
+            name="username"
+            type="text"
+            autoComplete="username"
+            placeholder="johndoe"
+            value={formData.username}
+            onChange={handleChange}
+            className={`pl-10 border-gray-300 bg-white ${errors.username ? "border-red-500 ring-red-500" : ""}`}
+            required
+          />
+          {errors.username && (
+            <p className="mt-1 text-sm text-red-500">{errors.username}</p>
+          )}
+        </div>
+      </div>
+      
       <div className="space-y-2">
         <Label htmlFor="email" className={errors.email ? "text-red-500" : "text-gray-700"}>
           Email address
@@ -397,6 +462,29 @@ export const RegisterForm = () => {
         </div>
         <p className="text-xs text-gray-500 mt-1">We'll use this number for account verification and important notifications</p>
       </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="userType" className="text-gray-700">
+          Account type
+        </Label>
+        <Select 
+          value={formData.userType} 
+          onValueChange={(value) => handleSelectChange('userType', value)}
+        >
+          <SelectTrigger className="w-full border-gray-300 bg-white">
+            <SelectValue placeholder="Select account type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="GENERAL_USER">General User</SelectItem>
+            <SelectItem value="PHARMACIST">Pharmacist</SelectItem>
+            <SelectItem value="PROPRIETOR">Pharmacy Proprietor</SelectItem>
+            <SelectItem value="MANAGER">Pharmacy Manager</SelectItem>
+            <SelectItem value="SALESMAN">Pharmacy Salesperson</SelectItem>
+            <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-gray-500 mt-1">Your account type determines which features you can access</p>
+      </div>
 
       <div className="flex justify-between pt-4">
         <Button
@@ -424,6 +512,10 @@ export const RegisterForm = () => {
         <h3 className="font-medium text-blue-800 mb-2">Account Summary</h3>
         <div className="space-y-3 text-sm">
           <div className="grid grid-cols-3 gap-2">
+            <span className="text-gray-500">Username:</span>
+            <span className="col-span-2 font-medium text-gray-800">{formData.username}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
             <span className="text-gray-500">Email:</span>
             <span className="col-span-2 font-medium text-gray-800">{formData.email}</span>
           </div>
@@ -437,6 +529,12 @@ export const RegisterForm = () => {
               <span className="col-span-2 font-medium text-gray-800">{formData.phoneNumber}</span>
             </div>
           )}
+          <div className="grid grid-cols-3 gap-2">
+            <span className="text-gray-500">Account Type:</span>
+            <span className="col-span-2 font-medium text-gray-800">
+              {formData.userType.replace(/_/g, ' ')}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -483,7 +581,7 @@ export const RegisterForm = () => {
         </Button>
         <Button
           type="submit"
-          disabled={registerMutation.isPending || showSuccessAnimation}
+          disabled={showSuccessAnimation}
           onClick={handleSubmit}
           className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
         >
@@ -494,11 +592,6 @@ export const RegisterForm = () => {
               </svg>
               <span className="ml-2">Success!</span>
             </div>
-          ) : registerMutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating account...
-            </>
           ) : (
             'Create account'
           )}

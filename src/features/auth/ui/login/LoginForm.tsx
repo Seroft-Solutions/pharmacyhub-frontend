@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/shared/auth';
 
 // Import shadcn UI components
 import { Button } from '@/shared/ui/button';
@@ -30,6 +30,7 @@ export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,27 +38,25 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError('Invalid email or password');
-        return;
-      }
-
+      await login(email, password);
       router.push('/dashboard');
-    } catch {
-      setError('An unexpected error occurred');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSocialLogin = (provider: 'google' | 'azure-ad') => {
-    signIn(provider, { callbackUrl: '/dashboard' });
+    // For social login, we'll redirect to Keycloak's login page with the selected provider
+    const KEYCLOAK_BASE_URL = process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL || 'http://localhost:8080';
+    const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'pharmacyhub';
+    const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'pharmacyhub-client';
+    
+    const redirectUri = encodeURIComponent(`${window.location.origin}/api/auth/callback`);
+    const identityProvider = provider === 'google' ? 'google' : 'azure';
+    
+    window.location.href = `${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid&kc_idp_hint=${identityProvider}`;
   };
 
   return (
