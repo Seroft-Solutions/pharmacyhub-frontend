@@ -1,16 +1,15 @@
 "use client";
 
 import { usePermissions } from "@/hooks/usePermissions";
-import { useRequiredSession } from "@/hooks/useSession";
+import { useSession } from "@/hooks/useSession";
 import { Permission, Role } from "@/types/auth";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LucideIcon, Home, Settings, Users, Package, FileText, Bell } from "lucide-react";
 import { UserMenu } from "@/components/dashboard/UserMenu";
 import { Breadcrumbs } from "@/components/dashboard/Breadcrumbs";
 import { Button } from "@/shared/ui/button";
 import { useEffect } from "react";
-import { keycloakService } from "@/shared/auth";
 
 interface MenuItem {
   label: string;
@@ -96,27 +95,28 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Use the required session hook with automatic refresh
-  const { isAuthenticated, checkSession } = useRequiredSession();
+  const { status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.replace('/login');
+    },
+  });
+  const router = useRouter();
 
-  // Add a cleanup effect
-  useEffect(() => {
-    // Initial session check
-    checkSession();
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
-    // Cleanup on unmount
-    return () => {
-      keycloakService.destroy();
-    };
-  }, [checkSession]);
-
-  if (!isAuthenticated) {
-    return null; // Don't render anything while redirecting
+  if (status === 'unauthenticated') {
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -133,10 +133,8 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
-          {/* Sidebar */}
           <aside className="w-64 bg-white rounded-lg shadow-sm h-fit sticky top-24">
             <nav className="p-4 space-y-1">
               {menuItems.map((item) => (
@@ -145,7 +143,6 @@ export default function DashboardLayout({
             </nav>
           </aside>
 
-          {/* Main Content Area */}
           <main className="flex-1 min-w-0">
             <Breadcrumbs />
             <div className="bg-white rounded-lg shadow-sm p-6">
