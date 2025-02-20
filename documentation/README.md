@@ -1,85 +1,61 @@
-# PharmacyHub Documentation
+# PharmacyHub Frontend Documentation
 
-Welcome to the comprehensive documentation for PharmacyHub. This documentation provides detailed information about the project architecture, features, authentication system, development guidelines, and more.
+Welcome to the PharmacyHub frontend documentation. This repository provides comprehensive information about the project's architecture, features, and development guidelines.
 
 ## Documentation Structure
 
-### 1. [Overview](./01-overview/README.md)
-- Project introduction
-- System requirements
-- Tech stack summary
-- Quick start guide
+1. [Overview](./01-overview/README.md)
+   - System purpose and requirements
+   - Technical stack
+   - Getting started
 
-### 2. [Architecture](./02-architecture/README.md)
-- System architecture
-- Application layers
-- Code organization
-- Design patterns
-- Performance considerations
+2. [Architecture](./02-architecture/README.md)
+   - Project structure
+   - Design patterns
+   - Component organization
+   - State management
 
-### 3. [Authentication & Authorization](./03-authentication/README.md)
-- Keycloak integration
-- Permission system
-- Role-based access control
-- Authentication flows
-- Security guidelines
+3. [Authentication](./03-authentication/README.md)
+   - Authentication system
+   - Keycloak integration
+   - Permission system
+   - Security considerations
 
-### 4. [Features](./04-features/README.md)
-- Licensing management
-- Exam preparation
-- User management
-- Pharmacy operations
-- Inventory management
-- Reporting
+4. [Features](./04-features/README.md)
+   - Licensing management
+   - Exam preparation
+   - Pharmacy operations
+   - Reporting & analytics
 
-### 5. [Development Guide](./05-development/README.md)
-- Development environment setup
-- Coding standards
-- Testing guidelines
-- State management
-- Component patterns
-- API integration
+5. [Development](./05-development/README.md)
+   - Development standards
+   - Coding patterns
+   - API integration
+   - Testing guidelines
 
-### 6. [Deployment](./06-deployment/README.md)
-- Environment configuration
-- Deployment process
-- CI/CD pipeline
-- Monitoring and logging
-- Performance optimization
+6. [Deployment](./06-deployment/README.md)
+   - Deployment architecture
+   - CI/CD pipeline
+   - Environment configuration
+   - Monitoring & logging
+
+7. [Assets](./07-assets/README.md)
+   - Image requirements
+   - Asset organization
+   - Optimization guidelines
 
 ## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/pharmacyhub-frontend.git
-
-# Navigate to the project directory
-cd pharmacyhub-frontend
-
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env.local
-
-# Start the development server
+# Run development server
 npm run dev
 ```
 
-## Key Technologies
+## Project Overview
 
-- **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS
-- **State Management**: Zustand, React Query
-- **UI Components**: ShadCN UI
-- **Authentication**: Keycloak 25.0.2
-- **Backend**: Spring Boot (Java)
-- **Testing**: Jest, React Testing Library, Playwright
-- **Deployment**: Docker, Kubernetes
+PharmacyHub is a comprehensive pharmacy management and licensing platform built with Next.js 15, TypeScript, and Keycloak for authentication. The application follows Feature-Sliced Design (FSD) principles and Domain-Driven Design (DDD) for maintainable, scalable architecture.
 
-## Contributing
-
-Please read our [Contributing Guide](./05-development/contributing.md) for details on our code of conduct and the process for submitting pull requests.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+For detailed information, please navigate to the appropriate section in the documentation structure.
