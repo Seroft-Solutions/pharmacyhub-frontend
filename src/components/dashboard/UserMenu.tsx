@@ -2,7 +2,8 @@
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { useSession } from "@/hooks/useSession";
-import { signOut } from "next-auth/react";
+import { keycloakService } from "@/shared/auth";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -19,16 +20,46 @@ import {
   LogOut,
   ChevronDown,
   Shield,
-  Key
+  Key,
+  Loader2
 } from "lucide-react";
+import { useState } from "react";
 
 export function UserMenu() {
   const { session } = useSession();
   const { isAdmin, isManager } = usePermissions();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const user = session?.user;
 
-  const handleSignOut = () => {
-    signOut({ callbackUrl: '/login' });
+  const handleSignOut = async () => {
+    try {
+      setIsLoggingOut(true);
+      
+      // First, logout from Keycloak
+      await keycloakService.logout();
+      
+      // Clear local storage
+      localStorage.clear();
+      
+      // Clear session cookies
+      document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
+      // Redirect to login
+      router.push('/login');
+      
+      // Force reload to clear any remaining state
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still try to redirect even if logout fails
+      router.push('/login');
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -110,9 +141,14 @@ export function UserMenu() {
         <DropdownMenuItem 
           className="cursor-pointer text-red-600 focus:text-red-600"
           onClick={handleSignOut}
+          disabled={isLoggingOut}
         >
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign Out
+          {isLoggingOut ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <LogOut className="mr-2 h-4 w-4" />
+          )}
+          {isLoggingOut ? 'Signing out...' : 'Sign Out'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
