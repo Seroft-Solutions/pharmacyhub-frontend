@@ -179,42 +179,56 @@ export const RegisterForm = () => {
     }
 
     try {
-      // Prepare data for API
-      const registrationData: RegistrationData = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        userType: formData.userType as any,
-        phoneNumber: formData.phoneNumber || undefined,
-      };
-      
-      await register(registrationData);
-      
-      // Show success animation
-      setShowSuccessAnimation(true);
-      
-      // Delay login to show success animation
-      setTimeout(async () => {
-        try {
-          // Automatically log in after successful registration
-          await login(formData.email, formData.password);
-          router.push('/dashboard');
-        } catch (loginErr) {
-          console.error("Auto-login failed", loginErr);
-          // If auto-login fails, redirect to login page
-          router.push('/login');
+      try {
+        // Prepare data for API
+        const registrationData: RegistrationData = {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          userType: formData.userType as any,
+          phoneNumber: formData.phoneNumber || undefined,
+        };
+        
+        await register(registrationData);
+        
+        // Show success animation
+        setShowSuccessAnimation(true);
+        
+        // Delay login to show success animation
+        setTimeout(async () => {
+          try {
+            // Automatically log in after successful registration
+            await login(formData.email, formData.password);
+            router.push('/dashboard');
+          } catch (loginErr) {
+            console.error("Auto-login failed", loginErr);
+            // If auto-login fails, redirect to login page
+            router.push('/login');
+          }
+        }, 1500);
+        
+      } catch (err) {
+        console.error("Registration failed", err);
+        
+        // Determine user-friendly error message based on error
+        let errorMessage = 'Registration failed';
+        if (err instanceof Error) {
+          if (err.message.includes('Failed to fetch') || err.message.includes('TypeError')) {
+            errorMessage = 'Could not connect to authentication server. Please check your network connection or try again later.';
+          } else if (err.message.includes('already exists')) {
+            errorMessage = 'An account with this username or email already exists.';
+          } else {
+            errorMessage = err.message;
+          }
         }
-      }, 1500);
-      
-    } catch (err) {
-      console.error("Registration failed", err);
-      setErrors({
-        email: err instanceof Error ? err.message : 'Registration failed'
-      });
-      setCurrentStep('account');
-    }
+        
+        setErrors({
+          email: errorMessage
+        });
+        setCurrentStep('account'); // Return to first step on error
+      }
   };
   
   const getPasswordStrengthColor = () => {
@@ -582,7 +596,6 @@ export const RegisterForm = () => {
         <Button
           type="submit"
           disabled={showSuccessAnimation}
-          onClick={handleSubmit}
           className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
         >
           {showSuccessAnimation ? (
@@ -631,7 +644,14 @@ export const RegisterForm = () => {
 
       <CardContent>
         {renderStepIndicator()}
-        {renderCurrentStep()}
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (currentStep === 'confirmation') {
+            handleSubmit(e);
+          }
+        }}>
+          {renderCurrentStep()}
+        </form>
       </CardContent>
 
       <CardFooter className="flex flex-col items-center justify-center p-6 border-t bg-gray-50 rounded-b-lg">

@@ -68,10 +68,14 @@ class KeycloakService {
       formData.append('username', username);
       formData.append('password', password);
       
-      const response = await fetch(KEYCLOAK_ENDPOINTS.TOKEN, {
+      const loginUrl = KEYCLOAK_ENDPOINTS.TOKEN;
+      console.log('Attempting login at:', loginUrl);
+      
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
         },
         body: formData.toString(),
       });
@@ -129,32 +133,57 @@ class KeycloakService {
         },
       };
       
-      const userResponse = await fetch(KEYCLOAK_ENDPOINTS.ADMIN_USERS, {
+      const registerUrl = KEYCLOAK_ENDPOINTS.ADMIN_USERS;
+      console.log(`Registering user: ${data.username} to endpoint: ${registerUrl}`);
+      
+      // Make request to create user
+      const userResponse = await fetch(registerUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.adminToken}`,
+          'Authorization': `Bearer ${this.adminToken}`
         },
         body: JSON.stringify(userData),
       });
       
       if (!userResponse.ok) {
-        const error = await userResponse.json();
-        throw new Error(error.errorMessage || 'Failed to register user');
+        let errorMessage;
+        try {
+          // Try to parse error as JSON
+          const errorJson = await userResponse.json();
+          errorMessage = errorJson.errorMessage || `Failed to register user: ${userResponse.status} ${userResponse.statusText}`;
+        } catch (e) {
+          // If error isn't JSON, get as text
+          const errorText = await userResponse.text();
+          errorMessage = errorText || `Failed to register user: ${userResponse.status} ${userResponse.statusText}`;
+        }
+        
+        // Check for common error cases
+        if (errorMessage.includes('already exists')) {
+          throw new Error('User with this username or email already exists');
+        }
+        
+        throw new Error(errorMessage);
       }
       
-      // Get the created user's ID from the Location header
+      // Success! Get the user ID from the Location header
       const locationHeader = userResponse.headers.get('Location');
-      const userId = locationHeader?.split('/').pop();
+      console.log('User created successfully, location:', locationHeader);
       
-      if (!userId) {
-        throw new Error('Failed to get user ID');
+      // Only try to assign to group if we got a location header with user ID
+      if (locationHeader) {
+        const userId = locationHeader.split('/').pop();
+        if (userId) {
+          // Assign the user to the appropriate group based on user type
+          try {
+            const groupPath = GROUP_PATHS[data.userType] || GROUP_PATHS.USER;
+            await this.assignUserToGroup(userId, groupPath);
+          } catch (groupError) {
+            console.warn('User was created but could not be assigned to group:', groupError);
+            // Continue without throwing - user is created but not in group
+          }
+        }
       }
-      
-      // Assign the user to the appropriate group based on user type
-      const groupPath = GROUP_PATHS[data.userType] || GROUP_PATHS.USER;
-      await this.assignUserToGroup(userId, groupPath);
-      
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -170,23 +199,81 @@ class KeycloakService {
       const groupId = await this.getGroupId(groupPath);
       
       if (!groupId) {
-        throw new Error(`Group not found: ${groupPath}`);
+        console.warn(`Group not found: ${groupPath}`);
+        return; // Exit early instead of throwing - less disruptive
       }
+      
+      console.log(`Assigning user ${userId} to group ${groupPath} (ID: ${groupId})`);
       
       // Assign the user to the group
       const response = await fetch(`${KEYCLOAK_ENDPOINTS.ADMIN_USERS}/${userId}/groups/${groupId}`, {
         method: 'PUT',
         headers: {
-          Authorization: `Bearer ${this.adminToken}`,
-        },
+          'Authorization': `Bearer ${this.adminToken}`,
+          'Content-Length': '0' // Required for empty PUT requests
+        }
       });
       
       if (!response.ok) {
-        throw new Error('Failed to assign user to group');
+        let errorMessage = `Failed to assign user to group: ${response.status} ${response.statusText}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` - ${errorText}`;
+          }
+        } catch {}
+        
+        throw new Error(errorMessage);
       }
+      
+      console.log(`Successfully assigned user ${userId} to group ${groupPath}`);
     } catch (error) {
       console.error('Error assigning user to group:', error);
       throw error;
+    }
+  }
+  
+  /**
+   * Create a default group in Keycloak
+   */
+  private async createDefaultGroup(groupPath: string): Promise<string | null> {
+    try {
+      if (!groupPath.startsWith('/')) {
+        groupPath = `/${groupPath}`;
+      }
+      
+      console.log(`Creating default group: ${groupPath}`);
+      
+      const createGroupResponse = await fetch(KEYCLOAK_ENDPOINTS.ADMIN_GROUPS, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.adminToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: groupPath.split('/').pop(),
+          path: groupPath
+        })
+      });
+      
+      if (!createGroupResponse.ok) {
+        console.error(`Failed to create group: ${createGroupResponse.status} ${createGroupResponse.statusText}`);
+        return null;
+      }
+      
+      // Get the location header to extract the group ID
+      const locationHeader = createGroupResponse.headers.get('Location');
+      if (!locationHeader) {
+        console.error('No location header in group creation response');
+        return null;
+      }
+      
+      const groupId = locationHeader.split('/').pop();
+      console.log(`Successfully created group with ID: ${groupId}`);
+      return groupId || null;
+    } catch (error) {
+      console.error('Error creating default group:', error);
+      return null;
     }
   }
   
@@ -195,18 +282,33 @@ class KeycloakService {
    */
   private async getGroupId(groupPath: string): Promise<string | null> {
     try {
+      console.log(`Getting group ID for path: ${groupPath}`);
       const response = await fetch(KEYCLOAK_ENDPOINTS.ADMIN_GROUPS, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${this.adminToken}`,
-        },
+          'Authorization': `Bearer ${this.adminToken}`,
+          'Accept': 'application/json'
+        }
       });
       
       if (!response.ok) {
-        throw new Error('Failed to get groups');
+        console.error(`Failed to get groups: ${response.status} ${response.statusText}`);
+        return null;
       }
       
       const groups = await response.json();
+      console.log(`Retrieved ${groups.length} groups from Keycloak`);
+      
+      // If groups is empty, create the default group structure
+      if (groups.length === 0 && Object.values(GROUP_PATHS).includes(groupPath)) {
+        try {
+          return await this.createDefaultGroup(groupPath);
+        } catch (e) {
+          console.error('Failed to create default group:', e);
+          return null;
+        }
+      }
+      
       return this.findGroupIdByPath(groups, groupPath);
     } catch (error) {
       console.error('Error getting group ID:', error);
@@ -233,7 +335,7 @@ class KeycloakService {
   }
   
   /**
-   * Get admin token for Keycloak Admin API
+   * Get admin token for Keycloak Admin API using master realm
    */
   private async getAdminToken(): Promise<void> {
     // Check if we already have a valid admin token
@@ -242,26 +344,38 @@ class KeycloakService {
     }
     
     try {
-      const formData = new URLSearchParams();
-      formData.append('grant_type', 'client_credentials');
-      formData.append('client_id', 'admin-cli');
-      formData.append('client_secret', KEYCLOAK_CONFIG.CLIENT_SECRET);
+      // Important: For admin access, need to use master realm
+      console.log('Attempting master realm admin authentication');
       
-      const response = await fetch(KEYCLOAK_ENDPOINTS.TOKEN, {
+      const masterRealmTokenUrl = `${KEYCLOAK_CONFIG.BASE_URL}/realms/master/protocol/openid-connect/token`;
+      const formData = new URLSearchParams();
+      formData.append('grant_type', 'password');
+      formData.append('client_id', 'admin-cli');
+      formData.append('username', KEYCLOAK_CONFIG.ADMIN_USERNAME);
+      formData.append('password', KEYCLOAK_CONFIG.ADMIN_PASSWORD);
+      
+      const response = await fetch(masterRealmTokenUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: formData.toString(),
+        body: formData.toString()
       });
       
       if (!response.ok) {
-        throw new Error('Failed to get admin token');
+        const errorText = await response.text();
+        console.error('Admin authentication failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        throw new Error(`Failed to get admin token: ${response.status} ${response.statusText}`);
       }
       
       const tokenData: TokenResponse = await response.json();
       this.adminToken = tokenData.access_token;
       this.adminTokenExpiry = Date.now() + (tokenData.expires_in * 1000) - 60000; // 1-minute buffer
+      console.log('Successfully obtained admin token from master realm');
     } catch (error) {
       console.error('Error getting admin token:', error);
       throw error;

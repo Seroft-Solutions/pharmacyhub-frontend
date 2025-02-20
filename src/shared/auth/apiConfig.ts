@@ -10,7 +10,9 @@ export const KEYCLOAK_CONFIG = {
   BASE_URL: process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL || 'http://localhost:8080',
   REALM: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'pharmacyhub',
   CLIENT_ID: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'pharmacyhub-client',
-  CLIENT_SECRET: process.env.KEYCLOAK_CLIENT_SECRET || 'your-client-secret',
+  CLIENT_SECRET: process.env.KEYCLOAK_CLIENT_SECRET || 'DOO1WKevcNgRSWNTNkpBjuMiLlYxjCSv',
+  ADMIN_USERNAME: process.env.KEYCLOAK_ADMIN_USERNAME || 'admin',
+  ADMIN_PASSWORD: process.env.KEYCLOAK_ADMIN_PASSWORD || 'admin',
 };
 
 // API Service Configuration

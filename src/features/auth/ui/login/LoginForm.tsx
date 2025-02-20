@@ -47,14 +47,14 @@ export const LoginForm = () => {
     }
   };
 
-  const handleSocialLogin = (provider: 'google' | 'azure-ad') => {
+  const handleSocialLogin = (provider: 'google' | 'facebook') => {
     // For social login, we'll redirect to Keycloak's login page with the selected provider
     const KEYCLOAK_BASE_URL = process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL || 'http://localhost:8080';
     const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'pharmacyhub';
     const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'pharmacyhub-client';
     
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/auth/callback`);
-    const identityProvider = provider === 'google' ? 'google' : 'azure';
+    const identityProvider = provider === 'google' ? 'google' : 'facebook';
     
     window.location.href = `${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid&kc_idp_hint=${identityProvider}`;
   };
@@ -202,13 +202,13 @@ export const LoginForm = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleSocialLogin('azure-ad')}
+              onClick={() => handleSocialLogin('facebook')}
               className="bg-white font-normal hover:bg-gray-50 transition-colors"
             >
               <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path fill="#0078d4" d="M11.44 24H1.503C.665 24 0 23.335 0 22.497V1.503C0 .665.665 0 1.503 0h20.994C23.335 0 24 .665 24 1.503v20.994c0 .838-.665 1.503-1.503 1.503h-7.918v-9.159h3.076l.461-3.574h-3.537V9.03c0-1.035.287-1.74 1.771-1.74h1.893V4.122a25.24 25.24 0 00-2.756-.142c-2.728 0-4.595 1.666-4.595 4.717v2.629H9.74v3.574h3.076V24h-1.376z"/>
+                <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
-              Microsoft
+              Facebook
             </Button>
           </div>
         </div>
