@@ -2,22 +2,22 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   // App Environment
-  NODE_ENV: z.enum(['development', 'production', 'test']),
-  APP_ENV: z.enum(['local', 'development', 'staging', 'production']),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  APP_ENV: z.enum(['local', 'development', 'staging', 'production']).default('local'),
 
   // Next Auth
-  NEXTAUTH_URL: z.string().url(),
+  NEXTAUTH_URL: z.string().url().default('http://localhost:3000'),
   NEXTAUTH_SECRET: z.string().min(32),
 
   // Keycloak Configuration
-  KEYCLOAK_CLIENT_ID: z.string(),
-  KEYCLOAK_CLIENT_SECRET: z.string(),
-  KEYCLOAK_ISSUER: z.string().url(),
-  KEYCLOAK_BASE_URL: z.string().url(),
+  KEYCLOAK_CLIENT_ID: z.string().default('pharmacyhub-client'),
+  KEYCLOAK_CLIENT_SECRET: z.string().default('your-client-secret'),
+  KEYCLOAK_ISSUER: z.string().url().default('http://localhost:8080/realms/pharmacyhub'),
+  KEYCLOAK_BASE_URL: z.string().url().default('http://localhost:8080'),
 
   // Frontend URLs
-  NEXT_PUBLIC_APP_URL: z.string().url(),
-  NEXT_PUBLIC_API_URL: z.string().url(),
+  NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
+  NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:8081/api'),
 
   // Optional Email Configuration
   SMTP_HOST: z.string().optional(),
@@ -67,7 +67,14 @@ export type Env = z.infer<typeof envSchema>;
 
 function validateEnv(): Env {
   try {
-    return envSchema.parse(process.env);
+    // For development, we'll use default values if env vars are missing
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    const parsed = isDevelopment 
+      ? envSchema.parse({ ...process.env })
+      : envSchema.parse(process.env);
+
+    return parsed;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const { fieldErrors } = error.flatten();

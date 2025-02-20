@@ -1,80 +1,104 @@
 "use client";
 
 import { useEffect, useRef } from 'react';
-import { 
-  useSession as useNextAuthSession, 
-  signOut,
-  getSession as getNextAuthSession
-} from 'next-auth/react';
-import { Session } from 'next-auth';
+import { useRouter } from 'next/navigation';
+import { keycloakService } from '@/shared/auth';
 
 const TOKEN_REFRESH_THRESHOLD = 5 * 60 * 1000; // 5 minutes in milliseconds
+const SESSION_CHECK_INTERVAL = 2 * 60 * 1000; // 2 minutes
 const DEFAULT_REDIRECT = '/login';
 
-interface AuthSessionOptions {
+interface SessionOptions {
   required?: boolean;
+  redirectTo?: string;
+  shouldRedirect?: boolean;
 }
 
-interface AuthSession {
-  session: Session | null;
-  status: 'loading' | 'authenticated' | 'unauthenticated';
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  user: Session['user'] | undefined;
-  update: () => Promise<Session | null>;
-}
-
-export function useSession(options: AuthSessionOptions = {}): AuthSession {
-  const refreshTimeout = useRef<NodeJS.Timeout>();
-
-  const { data: session, status, update } = useNextAuthSession<boolean>({
-    required: options.required ?? false,
-    onUnauthenticated: () => {
-      if (options.required) {
-        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-        const callbackUrl = encodeURIComponent(currentPath);
-        window.location.href = `${DEFAULT_REDIRECT}?callbackUrl=${callbackUrl}`;
-      }
-    }
-  });
+/**
+ * Custom hook to manage session state and automatic token refresh
+ */
+export function useSession(options: SessionOptions = {}) {
+  const router = useRouter();
+  const sessionCheckRef = useRef<NodeJS.Timeout>();
+  const shouldRedirect = options.shouldRedirect ?? true;
+  const redirectPath = options.redirectTo ?? DEFAULT_REDIRECT;
 
   useEffect(() => {
-    if (refreshTimeout.current) {
-      clearTimeout(refreshTimeout.current);
+    // Clear any existing interval
+    if (sessionCheckRef.current) {
+      clearInterval(sessionCheckRef.current);
     }
 
-    if (session?.accessToken) {
-      const expiresAt = session?.expires ? new Date(session.expires).getTime() : 0;
-      const timeUntilRefresh = expiresAt - Date.now() - TOKEN_REFRESH_THRESHOLD;
-
-      if (timeUntilRefresh > 0) {
-        refreshTimeout.current = setTimeout(async () => {
-          try {
-            await update();
-          } catch (error) {
-            console.error('Failed to refresh session:', error);
-            await signOut({ redirect: true, callbackUrl: DEFAULT_REDIRECT });
+    // Function to check and refresh session
+    const checkSession = async () => {
+      try {
+        if (!keycloakService.isAuthenticated()) {
+          if (options.required && shouldRedirect) {
+            const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+            const callbackUrl = encodeURIComponent(currentPath);
+            router.push(`${redirectPath}?callbackUrl=${callbackUrl}`);
           }
-        }, timeUntilRefresh);
-      } else {
-        signOut({ redirect: true, callbackUrl: DEFAULT_REDIRECT });
-      }
-    }
+          return;
+        }
 
-    return () => {
-      if (refreshTimeout.current) {
-        clearTimeout(refreshTimeout.current);
+        // Get the expiry time
+        const expiry = localStorage.getItem('pharmacyhub_token_expiry');
+        if (!expiry) return;
+
+        const expiryTime = parseInt(expiry);
+        const timeUntilExpiry = expiryTime - Date.now();
+
+        // If token will expire soon, refresh it
+        if (timeUntilExpiry < TOKEN_REFRESH_THRESHOLD) {
+          const refreshed = await keycloakService.refreshToken();
+          if (!refreshed && options.required && shouldRedirect) {
+            router.push(redirectPath);
+          }
+        }
+      } catch (error) {
+        console.error('Session check failed:', error);
+        if (options.required && shouldRedirect) {
+          router.push(redirectPath);
+        }
       }
     };
-  }, [session, status, update]);
+
+    // Initial check
+    checkSession();
+
+    // Set up interval for periodic checks
+    sessionCheckRef.current = setInterval(checkSession, SESSION_CHECK_INTERVAL);
+
+    // Clean up on unmount
+    return () => {
+      if (sessionCheckRef.current) {
+        clearInterval(sessionCheckRef.current);
+      }
+    };
+  }, [options.required, shouldRedirect, redirectPath, router]);
+
+  useEffect(() => {
+    // Check if session is required but user is not authenticated
+    if (options.required && !keycloakService.isAuthenticated() && shouldRedirect) {
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      const callbackUrl = encodeURIComponent(currentPath);
+      router.push(`${redirectPath}?callbackUrl=${callbackUrl}`);
+    }
+  }, [options.required, shouldRedirect, redirectPath, router]);
 
   return {
-    session: session as Session | null,
-    status,
-    isLoading: status === 'loading',
-    isAuthenticated: status === 'authenticated',
-    user: session?.user,
-    update
+    isAuthenticated: keycloakService.isAuthenticated(),
+    checkSession: async () => {
+      try {
+        if (!keycloakService.isAuthenticated()) {
+          return false;
+        }
+        return await keycloakService.refreshToken();
+      } catch (error) {
+        console.error('Session check failed:', error);
+        return false;
+      }
+    }
   };
 }
 
@@ -82,25 +106,6 @@ export function useSession(options: AuthSessionOptions = {}): AuthSession {
  * Hook that requires authentication
  * Will automatically redirect to login if user is not authenticated
  */
-export function useRequiredSession(): AuthSession {
-  return useSession({ required: true });
-}
-
-/**
- * Get session data without hooks
- * Useful in server components or API routes
- */
-export async function getSession() {
-  return getNextAuthSession();
-}
-
-// Type guard to validate session object
-export function isValidSession(session: unknown): session is Session {
-  return (
-    session !== null &&
-    typeof session === 'object' &&
-    'user' in session &&
-    typeof (session as { user: unknown }).user === 'object' &&
-    (session as { user: unknown }).user !== null
-  );
+export function useRequiredSession(options: Omit<SessionOptions, 'required'> = {}) {
+  return useSession({ ...options, required: true });
 }

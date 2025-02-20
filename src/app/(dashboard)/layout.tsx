@@ -1,7 +1,7 @@
 "use client";
 
 import { usePermissions } from "@/hooks/usePermissions";
-import { useSession } from "@/hooks/useSession";
+import { useRequiredSession } from "@/hooks/useSession";
 import { Permission, Role } from "@/types/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,6 +9,8 @@ import { LucideIcon, Home, Settings, Users, Package, FileText, Bell } from "luci
 import { UserMenu } from "@/components/dashboard/UserMenu";
 import { Breadcrumbs } from "@/components/dashboard/Breadcrumbs";
 import { Button } from "@/shared/ui/button";
+import { useEffect } from "react";
+import { keycloakService } from "@/shared/auth";
 
 interface MenuItem {
   label: string;
@@ -94,8 +96,23 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Only call useSession to enforce authentication
-  useSession({ required: true });
+  // Use the required session hook with automatic refresh
+  const { isAuthenticated, checkSession } = useRequiredSession();
+
+  // Add a cleanup effect
+  useEffect(() => {
+    // Initial session check
+    checkSession();
+
+    // Cleanup on unmount
+    return () => {
+      keycloakService.destroy();
+    };
+  }, [checkSession]);
+
+  if (!isAuthenticated) {
+    return null; // Don't render anything while redirecting
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
