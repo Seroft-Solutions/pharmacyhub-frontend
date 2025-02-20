@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { FeatureCardSection } from "@/features/home/ui/FeatureCardSection";
 import { Footer } from "@/features/home/ui/Footer";
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/shared/auth';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import { Button } from "@/shared/ui/button";
 
