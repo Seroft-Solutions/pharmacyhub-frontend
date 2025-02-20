@@ -5,14 +5,42 @@
  * It's used throughout the auth module to ensure consistency.
  */
 
+/**
+ * Get Keycloak base URL based on environment
+ */
+function getKeycloakBaseUrl(): string {
+  if (typeof window === 'undefined') {
+    // Server-side rendering - use environment variable or default
+    return process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL || 'http://localhost:8080';
+  }
+  
+  // Client-side - determine dynamically based on current URL
+  const isLocalDev = window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1';
+                     
+  if (isLocalDev) {
+    // In local development, use the environment variable if available, otherwise use localhost:8080
+    return process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL || 'http://localhost:8080';
+  } else {
+    // In production, derive from current origin by replacing port if in the same domain
+    // This assumes Keycloak and the app are hosted in the same domain with different ports
+    const productionUrl = window.location.origin.replace(/:\d+$/, ':8080');
+    return productionUrl;
+  }
+}
+
 // Keycloak Configuration
 export const KEYCLOAK_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL || 'http://localhost:8080',
+  BASE_URL: getKeycloakBaseUrl(),
   REALM: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'pharmacyhub',
   CLIENT_ID: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'pharmacyhub-client',
-  CLIENT_SECRET: process.env.KEYCLOAK_CLIENT_SECRET || 'DOO1WKevcNgRSWNTNkpBjuMiLlYxjCSv',
+  CLIENT_SECRET: process.env.KEYCLOAK_CLIENT_SECRET || 'your-client-secret',
+  // Master realm admin credentials
   ADMIN_USERNAME: process.env.KEYCLOAK_ADMIN_USERNAME || 'admin',
-  ADMIN_PASSWORD: process.env.KEYCLOAK_ADMIN_PASSWORD || 'admin',
+  ADMIN_PASSWORD: process.env.KEYCLOAK_ADMIN_PASSWORD || 'admin123',
+  // Realm-specific admin credentials
+  REALM_ADMIN_USERNAME: 'admin',
+  REALM_ADMIN_PASSWORD: 'admin123',
 };
 
 // API Service Configuration
@@ -41,6 +69,7 @@ export const KEYCLOAK_ENDPOINTS = {
   ADMIN_USERS: `${KEYCLOAK_CONFIG.BASE_URL}/admin/realms/${KEYCLOAK_CONFIG.REALM}/users`,
   ADMIN_GROUPS: `${KEYCLOAK_CONFIG.BASE_URL}/admin/realms/${KEYCLOAK_CONFIG.REALM}/groups`,
   ADMIN_ROLES: `${KEYCLOAK_CONFIG.BASE_URL}/admin/realms/${KEYCLOAK_CONFIG.REALM}/roles`,
+  REGISTRATION: `${KEYCLOAK_CONFIG.BASE_URL}/realms/${KEYCLOAK_CONFIG.REALM}/protocol/openid-connect/registrations`,
 };
 
 // Authentication Routes

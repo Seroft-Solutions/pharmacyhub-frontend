@@ -5,12 +5,11 @@
  * including authentication, registration, and token management.
  */
 
-import { Permission, Role, UserType, GROUP_PATHS } from './permissions';
+import { Permission, Role, UserType, GROUP_PATHS, GroupPath } from './permissions';
 import { 
   KEYCLOAK_CONFIG, 
   KEYCLOAK_ENDPOINTS, 
-  TOKEN_CONFIG,
-  SESSION_CONFIG
+  TOKEN_CONFIG
 } from './apiConfig';
 
 // Types
@@ -35,7 +34,7 @@ export interface UserProfile {
   permissions: Permission[];
   groups: string[];
   userType: UserType;
-  attributes?: Record<string, any>;
+  attributes?: Record<string, unknown>;
 }
 
 export interface RegistrationData {
@@ -46,7 +45,13 @@ export interface RegistrationData {
   password: string;
   userType: UserType;
   phoneNumber?: string;
-  additionalInfo?: Record<string, any>;
+  additionalInfo?: Record<string, unknown>;
+}
+
+interface KeycloakGroup {
+  id: string;
+  path: string;
+  subGroups?: KeycloakGroup[];
 }
 
 /**
@@ -61,6 +66,12 @@ class KeycloakService {
    */
   async login(username: string, password: string): Promise<UserProfile> {
     try {
+      console.log('Attempting login with username:', username);
+      
+      let useProxyApi = true;
+      // Always use the proxy for consistent behavior
+      let loginUrl = '/api/auth/login';
+
       const formData = new URLSearchParams();
       formData.append('grant_type', 'password');
       formData.append('client_id', KEYCLOAK_CONFIG.CLIENT_ID);
@@ -68,21 +79,94 @@ class KeycloakService {
       formData.append('username', username);
       formData.append('password', password);
       
-      const loginUrl = KEYCLOAK_ENDPOINTS.TOKEN;
-      console.log('Attempting login at:', loginUrl);
       
-      const response = await fetch(loginUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
-        },
-        body: formData.toString(),
-      });
+      let attempts = 0;
+      const maxAttempts = 2;
+      let response;
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error_description || 'Failed to authenticate');
+      while (attempts < maxAttempts) {
+        try {
+          response = await Promise.race([
+            fetch(loginUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
+              },
+              credentials: useProxyApi ? 'include' : 'same-origin',
+              body: formData.toString(),
+            }),
+            new Promise<Response>((_, reject) => 
+              setTimeout(() => reject(new Error('Login request timed out')), 10000)
+            )
+          ]) as Response;
+          
+          // If successful, break out of retry loop
+          if (response.ok) break;
+          
+          // If we get a CORS error on direct access, switch to proxy
+          if (attempts === 0 && !useProxyApi) {
+            const corsError = await response.text();
+            if (corsError.includes('CORS') || !corsError) {
+              console.warn('Possible CORS issue detected during login, switching to proxy API');
+              useProxyApi = true;
+              loginUrl = '/api/auth/login';
+              attempts++;
+              await new Promise(resolve => setTimeout(resolve, 500));
+              continue;
+            }
+          }
+          
+          // Don't retry on authentication errors
+          if (response.status === 401 || response.status === 403) {
+            break;
+          }
+          
+          // For other errors, try once more
+          attempts++;
+          if (attempts < maxAttempts) {
+            console.warn(`Login failed, retry attempt ${attempts}`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        } catch (error) {
+          console.error('Login fetch error:', error);
+          
+          // If we get a network error on direct access, switch to proxy
+          if (attempts === 0 && !useProxyApi) {
+            console.warn('Network error during login, switching to proxy API');
+            useProxyApi = true;
+            loginUrl = '/api/auth/login';
+          }
+          
+          attempts++;
+          if (attempts >= maxAttempts) {
+            throw new Error(error instanceof Error ? 
+              `Login failed: ${error.message}` : 
+              'Login failed due to network error');
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+      
+      if (!response || !response.ok) {
+        let errorMessage;
+        try {
+          const errorData = await response?.json();
+          errorMessage = errorData.error_description || 
+                        errorData.error || 
+                        errorData.message || 
+                        'Authentication failed';
+        } catch {
+          try {
+            const errorText = await response?.text();
+            errorMessage = errorText || `Authentication failed with status ${response.status}`;
+          } catch {
+            errorMessage = `Authentication failed with status ${response?.status ?? 'unknown'}`;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
       
       const tokenData: TokenResponse = await response.json();
@@ -104,79 +188,109 @@ class KeycloakService {
    */
   async register(data: RegistrationData): Promise<void> {
     try {
-      // First, we need an admin token to create users
-      await this.getAdminToken();
-      
-      if (!this.adminToken) {
-        throw new Error('Failed to obtain admin token');
+      // Validate required fields
+      if (!data.username || !data.email || !data.password || !data.firstName || !data.lastName) {
+        throw new Error('Missing required registration fields');
       }
-      
-      // Create the user
-      const userData = {
-        username: data.username,
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        enabled: true,
-        emailVerified: false,
-        credentials: [
-          {
-            type: 'password',
-            value: data.password,
-            temporary: false,
-          },
-        ],
-        attributes: {
-          phoneNumber: [data.phoneNumber || ''],
-          userType: [data.userType],
-          ...data.additionalInfo,
+
+      // Use direct registration - bypass admin token requirements 
+      await this.registerDirectly(data);
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Register a user via admin API
+   */
+  private async registerViaAdmin(data: RegistrationData): Promise<void> {
+    // Get admin token first
+    await this.getAdminToken();
+    
+    if (!this.adminToken) {
+      throw new Error('Failed to obtain admin token');
+    }
+    
+    // Prepare user data
+    const userData = {
+      username: data.username,
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      enabled: true,
+      emailVerified: true,
+      credentials: [
+        {
+          type: 'password',
+          value: data.password,
+          temporary: false,
         },
+      ],
+      attributes: {
+        phoneNumber: [data.phoneNumber || ''],
+        userType: [data.userType || 'GENERAL_USER'],
+        ...data.additionalInfo,
+      },
+    };
+    
+    // Determine if we should use proxy
+    const isProduction = typeof window !== 'undefined' && 
+                        window.location.hostname !== 'localhost' && 
+                        window.location.hostname !== '127.0.0.1';
+    
+    const registerUrl = isProduction ? 
+                       '/api/auth/register' : 
+                       KEYCLOAK_ENDPOINTS.ADMIN_USERS;
+    
+    console.log(`Registering user via admin API: ${data.username}`);
+    
+    // Make request with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
       };
       
-      const registerUrl = KEYCLOAK_ENDPOINTS.ADMIN_USERS;
-      console.log(`Registering user: ${data.username} to endpoint: ${registerUrl}`);
+      // Add auth header for direct requests
+      if (!isProduction) {
+        headers['Authorization'] = `Bearer ${this.adminToken}`;
+      }
       
-      // Make request to create user
-      const userResponse = await fetch(registerUrl, {
+      const response = await fetch(registerUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.adminToken}`
-        },
+        headers,
+        credentials: isProduction ? 'include' : 'same-origin',
         body: JSON.stringify(userData),
+        signal: controller.signal,
       });
       
-      if (!userResponse.ok) {
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        // Try to extract error message
         let errorMessage;
         try {
-          // Try to parse error as JSON
-          const errorJson = await userResponse.json();
-          errorMessage = errorJson.errorMessage || `Failed to register user: ${userResponse.status} ${userResponse.statusText}`;
-        } catch (e) {
-          // If error isn't JSON, get as text
-          const errorText = await userResponse.text();
-          errorMessage = errorText || `Failed to register user: ${userResponse.status} ${userResponse.statusText}`;
-        }
-        
-        // Check for common error cases
-        if (errorMessage.includes('already exists')) {
-          throw new Error('User with this username or email already exists');
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.errorMessage || 
+                        `Admin registration failed: ${response.status} ${response.statusText}`;
+        } catch {
+          errorMessage = `Admin registration failed: ${response.status}`;
         }
         
         throw new Error(errorMessage);
       }
-      
+
       // Success! Get the user ID from the Location header
-      const locationHeader = userResponse.headers.get('Location');
-      console.log('User created successfully, location:', locationHeader);
-      
-      // Only try to assign to group if we got a location header with user ID
+      const locationHeader = response.headers.get('Location');
       if (locationHeader) {
         const userId = locationHeader.split('/').pop();
         if (userId) {
           // Assign the user to the appropriate group based on user type
           try {
-            const groupPath = GROUP_PATHS[data.userType] || GROUP_PATHS.USER;
+            const groupPath = data.userType in GROUP_PATHS ? GROUP_PATHS[data.userType as keyof typeof GROUP_PATHS] : GROUP_PATHS.USER;
             await this.assignUserToGroup(userId, groupPath);
           } catch (groupError) {
             console.warn('User was created but could not be assigned to group:', groupError);
@@ -185,6 +299,65 @@ class KeycloakService {
         }
       }
     } catch (error) {
+      clearTimeout(timeoutId);
+      console.error('Admin registration error:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Register a user directly via direct API proxy
+   */
+  private async registerDirectly(data: RegistrationData): Promise<void> {
+    console.log(`Registering user: ${data.username}`);
+    
+    // Always use the proxy API for registration - this handles admin token acquisition server-side
+    const registerUrl = '/api/auth/direct-register';
+    
+    // Prepare registration data
+    const registrationData = {
+      username: data.username,
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      password: data.password,
+      phoneNumber: data.phoneNumber,
+      userType: data.userType || 'GENERAL_USER',
+      additionalInfo: data.additionalInfo,
+    };
+    
+    // Make request with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    try {
+      const response = await fetch(registerUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(registrationData),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        // Try to extract error message
+        let errorMessage;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.errorMessage || 
+                       `Registration failed: ${response.status} ${response.statusText}`;
+        } catch {
+          errorMessage = `Registration failed: ${response.status}`;
+        }
+        
+        throw new Error(errorMessage);
+      }
+    } catch (error) {
+      clearTimeout(timeoutId);
       console.error('Registration error:', error);
       throw error;
     }
@@ -300,7 +473,7 @@ class KeycloakService {
       console.log(`Retrieved ${groups.length} groups from Keycloak`);
       
       // If groups is empty, create the default group structure
-      if (groups.length === 0 && Object.values(GROUP_PATHS).includes(groupPath)) {
+      if (groups.length === 0 && Object.values(GROUP_PATHS).includes(groupPath as GroupPath)) {
         try {
           return await this.createDefaultGroup(groupPath);
         } catch (e) {
@@ -319,7 +492,12 @@ class KeycloakService {
   /**
    * Find group ID by path recursively
    */
-  private findGroupIdByPath(groups: any[], path: string): string | null {
+  private findGroupIdByPath(groups: Array<{
+    id: string;
+    path: string;
+    subGroups?: Array<{ id: string; path: string; subGroups?: unknown[] }>;
+  }>, path: string): string | null {
+
     for (const group of groups) {
       if (group.path === path) {
         return group.id;
@@ -335,7 +513,7 @@ class KeycloakService {
   }
   
   /**
-   * Get admin token for Keycloak Admin API using master realm
+   * Get admin token for Keycloak Admin API using multiple approaches
    */
   private async getAdminToken(): Promise<void> {
     // Check if we already have a valid admin token
@@ -344,41 +522,198 @@ class KeycloakService {
     }
     
     try {
-      // Important: For admin access, need to use master realm
+      // Try different authentication approaches in order
+      const authSuccess = 
+        await this.tryMasterRealmAdminAuth() || 
+        await this.tryRealmSpecificAdminAuth() || 
+        await this.tryClientCredentialsAuth() || 
+        await this.tryServiceAccountAuth();
+      
+      if (!this.adminToken) {
+        throw new Error('All admin authentication methods failed');
+      }
+      
+      console.log('Successfully obtained admin token');
+    } catch (error) {
+      console.error('Error getting admin token:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Try to authenticate with master realm admin credentials
+   * @returns boolean True if successful, false otherwise
+   */
+  private async tryMasterRealmAdminAuth(): Promise<boolean> {
+    try {
       console.log('Attempting master realm admin authentication');
       
+      const isProduction = typeof window !== 'undefined' && 
+                         window.location.hostname !== 'localhost' && 
+                         window.location.hostname !== '127.0.0.1';
+      
+      // In production, try API proxy first to avoid CORS issues
+      if (isProduction) {
+        const success = await this.tryTokenFromProxy('/api/auth/admin-token');
+        if (success) return true;
+      }
+      
       const masterRealmTokenUrl = `${KEYCLOAK_CONFIG.BASE_URL}/realms/master/protocol/openid-connect/token`;
+      
       const formData = new URLSearchParams();
       formData.append('grant_type', 'password');
       formData.append('client_id', 'admin-cli');
       formData.append('username', KEYCLOAK_CONFIG.ADMIN_USERNAME);
       formData.append('password', KEYCLOAK_CONFIG.ADMIN_PASSWORD);
       
-      const response = await fetch(masterRealmTokenUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: formData.toString()
-      });
+      return await this.fetchTokenWithFormData(masterRealmTokenUrl, formData);
+    } catch (error) {
+      console.warn('Master realm admin authentication failed:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Try to authenticate with realm-specific admin credentials
+   * @returns boolean True if successful, false otherwise
+   */
+  private async tryRealmSpecificAdminAuth(): Promise<boolean> {
+    try {
+      console.log('Attempting realm-specific admin authentication');
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Admin authentication failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          body: errorText
-        });
-        throw new Error(`Failed to get admin token: ${response.status} ${response.statusText}`);
+      const realmTokenUrl = `${KEYCLOAK_CONFIG.BASE_URL}/realms/${KEYCLOAK_CONFIG.REALM}/protocol/openid-connect/token`;
+      
+      const formData = new URLSearchParams();
+      formData.append('grant_type', 'password');
+      formData.append('client_id', KEYCLOAK_CONFIG.CLIENT_ID);
+      formData.append('client_secret', KEYCLOAK_CONFIG.CLIENT_SECRET);
+      formData.append('username', KEYCLOAK_CONFIG.REALM_ADMIN_USERNAME);
+      formData.append('password', KEYCLOAK_CONFIG.REALM_ADMIN_PASSWORD);
+      
+      return await this.fetchTokenWithFormData(realmTokenUrl, formData);
+    } catch (error) {
+      console.warn('Realm admin authentication failed:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Try to authenticate with client credentials
+   * @returns boolean True if successful, false otherwise
+   */
+  private async tryClientCredentialsAuth(): Promise<boolean> {
+    try {
+      console.log('Attempting client credentials authentication');
+      
+      // Make sure we use client credentials only when client is confidential (has a secret)
+      if (!KEYCLOAK_CONFIG.CLIENT_SECRET || KEYCLOAK_CONFIG.CLIENT_SECRET === 'your-client-secret') {
+        console.warn('Client credentials auth skipped: no valid client secret');
+        return false;
       }
       
-      const tokenData: TokenResponse = await response.json();
-      this.adminToken = tokenData.access_token;
-      this.adminTokenExpiry = Date.now() + (tokenData.expires_in * 1000) - 60000; // 1-minute buffer
-      console.log('Successfully obtained admin token from master realm');
+      const tokenUrl = `${KEYCLOAK_CONFIG.BASE_URL}/realms/${KEYCLOAK_CONFIG.REALM}/protocol/openid-connect/token`;
+      
+      const formData = new URLSearchParams();
+      formData.append('grant_type', 'client_credentials');
+      formData.append('client_id', KEYCLOAK_CONFIG.CLIENT_ID);
+      formData.append('client_secret', KEYCLOAK_CONFIG.CLIENT_SECRET);
+      
+      return await this.fetchTokenWithFormData(tokenUrl, formData);
     } catch (error) {
-      console.error('Error getting admin token:', error);
-      throw error;
+      console.warn('Client credentials authentication failed:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Try to authenticate with service account credentials
+   * @returns boolean True if successful, false otherwise
+   */
+  private async tryServiceAccountAuth(): Promise<boolean> {
+    try {
+      console.log('Attempting service account authentication');
+      
+      // Try API proxy first to avoid CORS issues
+      const proxySucess = await this.tryTokenFromProxy('/api/auth/service-token');
+      if (proxySucess) return true;
+      
+      // Fallback to direct connection
+      const tokenUrl = `${KEYCLOAK_CONFIG.BASE_URL}/realms/${KEYCLOAK_CONFIG.REALM}/protocol/openid-connect/token`;
+      
+      const formData = new URLSearchParams();
+      formData.append('grant_type', 'urn:ietf:params:oauth:grant-type:token-exchange');
+      formData.append('client_id', KEYCLOAK_CONFIG.CLIENT_ID);
+      formData.append('client_secret', KEYCLOAK_CONFIG.CLIENT_SECRET);
+      
+      return await this.fetchTokenWithFormData(tokenUrl, formData);
+    } catch (error) {
+      console.warn('Service account authentication failed:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Try to get token from proxy API
+   * @returns boolean True if successful, false otherwise
+   */
+  private async tryTokenFromProxy(proxyUrl: string): Promise<boolean> {
+    try {
+      console.log(`Attempting to get token via proxy: ${proxyUrl}`);
+      
+      const response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) return false;
+      
+      const data = await response.json();
+      if (!data.access_token) return false;
+      
+      this.adminToken = data.access_token;
+      this.adminTokenExpiry = Date.now() + ((data.expires_in || 300) * 1000) - 60000; // 1-minute buffer
+      return true;
+    } catch (error) {
+      console.warn('Proxy token acquisition failed:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Fetch token with form data
+   * @returns boolean True if successful, false otherwise
+   */
+  private async fetchTokenWithFormData(url: string, formData: URLSearchParams): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+        body: formData.toString(),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) return false;
+      
+      const tokenData = await response.json();
+      if (!tokenData.access_token) return false;
+      
+      this.adminToken = tokenData.access_token;
+      this.adminTokenExpiry = Date.now() + ((tokenData.expires_in || 300) * 1000) - 60000; // 1-minute buffer
+      return true;
+    } catch (error) {
+      console.warn('Token fetch failed:', error);
+      return false;
     }
   }
   
@@ -390,9 +725,6 @@ class KeycloakService {
     localStorage.removeItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY);
     localStorage.removeItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY);
     localStorage.removeItem(TOKEN_CONFIG.USER_PROFILE_KEY);
-    
-    // Optional: Redirect to Keycloak logout if needed
-    // window.location.href = `${KEYCLOAK_ENDPOINTS.LOGOUT}?redirect_uri=${encodeURIComponent(window.location.origin)}`;
   }
   
   /**
@@ -480,7 +812,20 @@ class KeycloakService {
   /**
    * Parse JWT token
    */
-  private parseToken(token: string): any {
+  private parseToken(token: string): {
+    sub: string;
+    preferred_username: string;
+    email: string;
+    given_name: string;
+    family_name: string;
+    roles: Role[];
+    permissions: Permission[];
+    groups: string[];
+    userType: UserType;
+    attributes?: Record<string, unknown>;
+    [key: string]: unknown;
+  } | null {
+
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -506,21 +851,22 @@ class KeycloakService {
     if (!tokenData) {
       throw new Error('Invalid token');
     }
-    
-    return {
-      id: tokenData.sub,
-      username: tokenData.preferred_username,
-      email: tokenData.email,
-      firstName: tokenData.given_name,
-      lastName: tokenData.family_name,
-      roles: tokenData.roles || [],
-      permissions: tokenData.permissions || [],
-      groups: tokenData.groups || [],
-      userType: tokenData.userType || 'USER',
-      attributes: tokenData.attributes,
-    };
-  }
   
+
+    const userProfile: UserProfile = {
+      id: tokenData.sub,
+      username: tokenData.preferred_username as string,
+      email: tokenData.email as string,
+      firstName: tokenData.given_name as string,
+      lastName: tokenData.family_name as string,
+      roles: (tokenData.roles as Role[]) || [],
+      permissions: (tokenData.permissions as Permission[]) || [],
+      groups: (tokenData.groups as string[]) || [],
+      userType: (tokenData.userType as UserType) || 'GENERAL_USER',
+      attributes: tokenData.attributes as Record<string, unknown> | undefined,
+    };
+    return userProfile;
+  }
   /**
    * Check if user has a specific permission
    */

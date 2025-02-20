@@ -103,7 +103,7 @@ export const RegisterForm = () => {
   const [passwordStrength, setPasswordStrength] = useState(calculatePasswordStrength(''));
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   
-  const { register, login } = useAuth();
+  const { register, login, connectivityStatus } = useAuth();
   const router = useRouter();
 
   const validateStep = (step: FormStep): boolean => {
@@ -179,56 +179,65 @@ export const RegisterForm = () => {
     }
 
     try {
-      try {
-        // Prepare data for API
-        const registrationData: RegistrationData = {
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          userType: formData.userType as any,
-          phoneNumber: formData.phoneNumber || undefined,
-        };
-        
-        await register(registrationData);
-        
-        // Show success animation
-        setShowSuccessAnimation(true);
-        
-        // Delay login to show success animation
-        setTimeout(async () => {
-          try {
-            // Automatically log in after successful registration
-            await login(formData.email, formData.password);
-            router.push('/dashboard');
-          } catch (loginErr) {
-            console.error("Auto-login failed", loginErr);
-            // If auto-login fails, redirect to login page
-            router.push('/login');
-          }
-        }, 1500);
-        
-      } catch (err) {
-        console.error("Registration failed", err);
-        
-        // Determine user-friendly error message based on error
-        let errorMessage = 'Registration failed';
-        if (err instanceof Error) {
-          if (err.message.includes('Failed to fetch') || err.message.includes('TypeError')) {
-            errorMessage = 'Could not connect to authentication server. Please check your network connection or try again later.';
-          } else if (err.message.includes('already exists')) {
-            errorMessage = 'An account with this username or email already exists.';
-          } else {
-            errorMessage = err.message;
-          }
+      // Prepare data for API
+      const registrationData: RegistrationData = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        userType: formData.userType as any,
+        phoneNumber: formData.phoneNumber || undefined,
+      };
+      
+      await register(registrationData);
+      
+      // Show success animation
+      setShowSuccessAnimation(true);
+      
+      // Delay login to show success animation
+      setTimeout(async () => {
+        try {
+          // Automatically log in after successful registration
+          await login(formData.email, formData.password);
+          router.push('/dashboard');
+        } catch (loginErr) {
+          console.error("Auto-login failed", loginErr);
+          // If auto-login fails, redirect to login page
+          router.push('/login');
         }
+      }, 1500);
+    } catch (err) {
+      console.error("Registration failed", err);
+      
+      // Determine user-friendly error message based on error
+      let errorMessage = 'Registration failed';
+      
+      if (err instanceof Error) {
+        const errorText = err.message.toLowerCase();
         
-        setErrors({
-          email: errorMessage
-        });
-        setCurrentStep('account'); // Return to first step on error
+        if (errorText.includes('failed to fetch') || 
+            errorText.includes('typeerror') || 
+            errorText.includes('network') ||
+            errorText.includes('cors')) {
+          errorMessage = 'Could not connect to authentication server. Please check your network connection or try again later.';
+        } else if (errorText.includes('already exists')) {
+          errorMessage = 'An account with this username or email already exists.';
+        } else if (errorText.includes('admin token') || errorText.includes('authentication')) {
+          errorMessage = 'Authentication service error. Our team has been notified. Please try again later.';
+        } else if (errorText.includes('timeout')) {
+          errorMessage = 'Registration timed out. Please check your internet connection and try again.';
+        } else {
+          // Use the original error message
+          errorMessage = err.message;
+        }
       }
+      
+      setErrors({
+        email: errorMessage
+      });
+      setCurrentStep('account'); // Return to first step on error
+    }
   };
   
   const getPasswordStrengthColor = () => {
@@ -628,6 +637,24 @@ export const RegisterForm = () => {
 
   return (
     <Card className="border-none shadow-2xl backdrop-blur-sm bg-white/90">
+      {connectivityStatus.hasIssues && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-4">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-amber-700">
+                Connection issues detected. Registration may not work correctly. 
+                {connectivityStatus.message && (
+                  <span className="block mt-1 text-xs">{connectivityStatus.message}</span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <CardHeader className="space-y-1 pb-6">
         <div className="flex justify-center mb-2">
           <div className="size-16 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center p-4 shadow-lg">

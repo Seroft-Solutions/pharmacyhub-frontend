@@ -19,6 +19,13 @@ export const validateLoginForm = (data: LoginCredentials) => {
 export const validateRegistrationForm = (data: RegistrationData) => {
   const errors: Record<string, string> = {};
   
+  // Username validation
+  if (!data.username) {
+    errors.username = 'Username is required';
+  } else if (data.username.length < 4) {
+    errors.username = 'Username must be at least 4 characters';
+  }
+  
   // Email validation
   if (!data.email) {
     errors.email = 'Email is required';

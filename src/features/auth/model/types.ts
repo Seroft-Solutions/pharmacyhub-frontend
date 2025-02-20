@@ -21,14 +21,16 @@ export interface LoginResponse {
 }
 
 export interface RegistrationData {
+  username: string;
   email: string;
   password: string;
   confirmPassword?: string;
   firstName: string;
   lastName: string;
   phoneNumber?: string;
+  userType?: string;
   acceptTerms?: boolean;
-  attributes?: Record<string, string | string[]>;
+  additionalInfo?: Record<string, any>;
 }
 
 export interface RegisterResponse {

@@ -10,6 +10,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import keycloakService, { UserProfile, RegistrationData } from './keycloakService';
 import { Permission, Role } from './permissions';
+import { detectConnectivityIssues } from '../utils/connectivity';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -21,6 +22,11 @@ interface AuthContextType {
   hasPermission: (permission: Permission) => Promise<boolean>;
   hasRole: (role: Role) => Promise<boolean>;
   refreshUser: () => Promise<void>;
+  connectivityStatus: {
+    isChecking: boolean;
+    hasIssues: boolean;
+    message: string | null;
+  };
 }
 
 // Create the context with a default value
@@ -42,6 +48,11 @@ const AuthContext = createContext<AuthContextType>({
   refreshUser: async () => {
     throw new Error('AuthContext not initialized');
   },
+  connectivityStatus: {
+    isChecking: false,
+    hasIssues: false,
+    message: null,
+  },
 });
 
 // User profile storage key
@@ -54,12 +65,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [connectivityStatus, setConnectivityStatus] = useState({
+    isChecking: true,
+    hasIssues: false,
+    message: null as string | null,
+  });
   const router = useRouter();
   
   // Initialize auth state on component mount
   useEffect(() => {
     const initAuth = async () => {
       try {
+        // Check for connectivity issues first
+        try {
+          const connectivityResult = await detectConnectivityIssues();
+          setConnectivityStatus({
+            isChecking: false,
+            hasIssues: connectivityResult.recommendedApproach === 'none',
+            message: connectivityResult.message || null,
+          });
+          
+          if (connectivityResult.recommendedApproach === 'none') {
+            console.warn('Auth connectivity issues detected:', connectivityResult.message);
+          }
+        } catch (connectivityError) {
+          console.error('Error checking connectivity:', connectivityError);
+          setConnectivityStatus({
+            isChecking: false,
+            hasIssues: false, // Don't block auth if connectivity check fails
+            message: null,
+          });
+        }
+        
         if (keycloakService.isAuthenticated()) {
           // Try to get user profile from local storage first for faster rendering
           const cachedProfile = localStorage.getItem(USER_PROFILE_KEY);
@@ -199,6 +236,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     hasPermission,
     hasRole,
     refreshUser,
+    connectivityStatus,
   };
   
   return (
