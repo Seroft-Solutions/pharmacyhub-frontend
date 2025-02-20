@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import {useEffect, useState} from 'react';
 
 const RECENTLY_USED_KEY = 'pharmacyhub-recently-used';
 const MAX_RECENT_ITEMS = 5;
@@ -27,7 +27,7 @@ export function useRecentlyUsed() {
   const addRecentItem = (href: string) => {
     const now = Date.now();
     const newItems = [
-      { href, timestamp: now },
+      {href, timestamp: now},
       ...recentItems.filter(item => item.href !== href)
     ].slice(0, MAX_RECENT_ITEMS);
 
@@ -43,7 +43,7 @@ export function useRecentlyUsed() {
   const formatTimestamp = (timestamp: number): string => {
     const now = Date.now();
     const diff = now - timestamp;
-    
+
     // Less than a minute
     if (diff < 60000) {
       return 'Just now';
@@ -63,7 +63,7 @@ export function useRecentlyUsed() {
       const days = Math.floor(diff / 86400000);
       return `${days}d ago`;
     }
-    
+
     // More than a week, show date
     return new Date(timestamp).toLocaleDateString();
   };

@@ -1,8 +1,8 @@
 "use client";
 
-import { useSession } from './useSession';
-import { Permission, Role } from '@/types/auth';
-import { useCallback, useMemo } from 'react';
+import {useSession} from './useSession';
+import {Permission, Role} from '@/types/auth';
+import {useCallback, useMemo} from 'react';
 
 interface AccessConfig {
   permissions?: Permission[];
@@ -11,7 +11,7 @@ interface AccessConfig {
 }
 
 export function usePermissions() {
-  const { session } = useSession();
+  const {session} = useSession();
   const user = session?.user;
 
   const hasPermission = useCallback((permission: Permission) => {
@@ -31,14 +31,14 @@ export function usePermissions() {
   }, [hasRole]);
 
   const canAccess = useCallback((config: AccessConfig) => {
-    const { permissions = [], roles = [], requireAll = true } = config;
+    const {permissions = [], roles = [], requireAll = true} = config;
 
     if (!permissions.length && !roles.length) return true;
 
     const hasRequiredPermissions = permissions.length ? checkPermissions(permissions) : true;
     const hasRequiredRoles = roles.length ? checkRoles(roles) : true;
 
-    return requireAll 
+    return requireAll
       ? hasRequiredPermissions && hasRequiredRoles
       : hasRequiredPermissions || hasRequiredRoles;
   }, [checkPermissions, checkRoles]);
@@ -70,18 +70,18 @@ export function usePermissions() {
 
 // Hook for checking specific access patterns
 export function useAccess(config: AccessConfig) {
-  const { canAccess } = usePermissions();
+  const {canAccess} = usePermissions();
   return useMemo(() => canAccess(config), [canAccess, config]);
 }
 
 // Hook for admin-only access
 export function useAdminAccess() {
-  const { isAdmin } = usePermissions();
+  const {isAdmin} = usePermissions();
   return isAdmin;
 }
 
 // Hook for manager-only access
 export function useManagerAccess() {
-  const { isManager } = usePermissions();
+  const {isManager} = usePermissions();
   return isManager;
 }

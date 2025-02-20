@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { AuthUser } from '@/types/auth';
-import { createAuthHeaders } from '@/lib/auth';
+import {useCallback, useEffect, useState} from 'react';
+import {useAuth} from '@/context/AuthContext';
+import {AuthUser} from '@/types/auth';
+import {createAuthHeaders} from '@/lib/auth';
 
 interface UseProfileResult {
   profile: AuthUser | null;
@@ -12,7 +12,7 @@ interface UseProfileResult {
 }
 
 export const useProfile = (): UseProfileResult => {
-  const { token, user } = useAuth();
+  const {token, user} = useAuth();
   const [profile, setProfile] = useState<AuthUser | null>(user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -23,10 +23,10 @@ export const useProfile = (): UseProfileResult => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/profile`,
-        { headers: createAuthHeaders(token.access) }
+        {headers: createAuthHeaders(token.access)}
       );
 
       if (!response.ok) {

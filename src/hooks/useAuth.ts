@@ -1,9 +1,9 @@
-import { useSession, signOut } from "next-auth/react";
-import { Permission, Role } from "@/types/auth";
-import { redirect } from "next/navigation";
+import {signOut, useSession} from "next-auth/react";
+import {Permission, Role} from "@/types/auth";
+import {redirect} from "next/navigation";
 
 export function useAuth() {
-  const { data: session, status } = useSession({
+  const {data: session, status} = useSession({
     required: false,
     onUnauthenticated() {
       redirect("/login");
@@ -24,7 +24,7 @@ export function useAuth() {
     }
 
     const hasRequiredRole = requiredRoles?.some(role => hasRole(role)) ?? true;
-    const hasRequiredPermission = requiredPermissions?.every(permission => 
+    const hasRequiredPermission = requiredPermissions?.every(permission =>
       hasPermission(permission)
     ) ?? true;
 
@@ -32,9 +32,9 @@ export function useAuth() {
   };
 
   const logout = async () => {
-    await signOut({ 
+    await signOut({
       callbackUrl: "/login",
-      redirect: true 
+      redirect: true
     });
   };
 
@@ -56,10 +56,10 @@ export function useRequireAuth(
   requiredRoles?: Role[],
   requiredPermissions?: Permission[]
 ) {
-  const { hasAccess, isLoading } = useAuth();
-  
+  const {hasAccess, isLoading} = useAuth();
+
   if (isLoading) {
-    return { isLoading: true };
+    return {isLoading: true};
   }
 
   const hasRequiredAccess = hasAccess(requiredRoles, requiredPermissions);
@@ -67,5 +67,5 @@ export function useRequireAuth(
     redirect("/unauthorized");
   }
 
-  return { isLoading: false };
+  return {isLoading: false};
 }

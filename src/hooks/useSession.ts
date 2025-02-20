@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { keycloakService } from '@/shared/auth';
+import {useEffect, useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {keycloakService} from '@/shared/auth';
 
 interface UseSessionOptions {
   required?: boolean;
 }
 
-export function useSession({ required = false }: UseSessionOptions = {}) {
+export function useSession({required = false}: UseSessionOptions = {}) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
 
@@ -16,7 +16,7 @@ export function useSession({ required = false }: UseSessionOptions = {}) {
     const checkAuth = () => {
       const isAuth = keycloakService.isAuthenticated();
       setIsAuthenticated(isAuth);
-      
+
       if (!isAuth && required) {
         router.push('/login');
       }
@@ -25,5 +25,5 @@ export function useSession({ required = false }: UseSessionOptions = {}) {
     checkAuth();
   }, [required, router]);
 
-  return { isAuthenticated };
+  return {isAuthenticated};
 }

@@ -1,4 +1,4 @@
-import { useState, TouchEvent } from "react";
+import {TouchEvent, useState} from "react";
 
 interface SwipeInput {
   onSwipeLeft?: () => void;
@@ -7,10 +7,10 @@ interface SwipeInput {
 }
 
 export function useSwipe({
-  onSwipeLeft,
-  onSwipeRight,
-  threshold = 50
-}: SwipeInput) {
+                           onSwipeLeft,
+                           onSwipeRight,
+                           threshold = 50
+                         }: SwipeInput) {
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
   const onTouchStart = (e: TouchEvent) => {
