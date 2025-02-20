@@ -1,17 +1,4 @@
-export interface UserProfile {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-}
-
-export interface UserPermissions {
-  roles: string[];
-  permissions: string[];
-}
-
-export interface AuthUser extends UserProfile, UserPermissions {}
+import type { Role, Permission, AuthUser as BaseAuthUser } from './auth-types';
 
 export interface TokenData {
   access: string | null;
@@ -20,7 +7,7 @@ export interface TokenData {
 }
 
 export interface AuthState {
-  user: AuthUser | null;
+  user: BaseAuthUser | null;
   isAuthenticated: boolean;
   token: TokenData;
 }
@@ -31,18 +18,5 @@ export interface AuthError {
   action?: 'REFRESH_TOKEN' | 'LOGOUT' | 'RETRY';
 }
 
-export type Permission = 
-  | 'manage_system'
-  | 'manage_users'
-  | 'manage_staff'
-  | 'view_reports'
-  | 'approve_orders'
-  | 'manage_inventory'
-  | 'view_products'
-  | 'place_orders';
-
-export type Role = 
-  | 'SUPER_ADMIN'
-  | 'ADMIN'
-  | 'MANAGER'
-  | 'USER';
+// Re-export the types from auth-types.ts for backward compatibility
+export type { Role, Permission, BaseAuthUser as AuthUser };

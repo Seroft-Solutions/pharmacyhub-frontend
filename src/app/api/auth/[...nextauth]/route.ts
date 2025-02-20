@@ -2,26 +2,47 @@ import NextAuth, { AuthOptions } from "next-auth";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { JWT } from "next-auth/jwt";
 import { authConfig, keycloakConfig } from "@/config/env";
-import { DEFAULT_PERMISSIONS, type Role, type TokenUser } from "@/types/next-auth";
+import type { Role, Permission, TokenUser } from "@/types/auth-types";
+import { DEFAULT_PERMISSIONS } from "@/types/auth-constants";
 
-// Helper to get permissions from roles
-function getPermissionsFromRoles(roles: string[]) {
-  const permissions = new Set<string>();
-  roles.forEach(role => {
-    const rolePermissions = DEFAULT_PERMISSIONS[role as Role];
-    if (rolePermissions) {
-      rolePermissions.forEach(permission => permissions.add(permission));
-    }
-  });
-  return Array.from(permissions);
+// Valid roles and permissions arrays for runtime checks
+const VALID_ROLES = [
+  'SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER', 'PHARMACIST', 'INSTRUCTOR'
+] as const satisfies Role[];
+
+const VALID_PERMISSIONS = [
+  'manage_system', 'manage_users', 'manage_staff', 'view_reports', 
+  'approve_orders', 'manage_inventory', 'view_products', 'place_orders',
+  'create:pharmacy', 'edit:pharmacy', 'delete:pharmacy', 'view:pharmacy',
+  'manage:users', 'view:users', 'manage:roles', 'manage:exams',
+  'take:exams', 'grade:exams'
+] as const satisfies Permission[];
+
+function validateRoles(roles: string[]): Role[] {
+  return roles.filter((role): role is Role => 
+    VALID_ROLES.includes(role as Role)
+  );
 }
 
-// Initialize new token with required fields
-function createNewToken(
-  token: Partial<JWT>,
-  overrides: Partial<JWT> = {}
-): JWT {
-  const roles = overrides.roles || token.roles || [];
+function validatePermissions(permissions: string[]): Permission[] {
+  return permissions.filter((permission): permission is Permission => 
+    VALID_PERMISSIONS.includes(permission as Permission)
+  );
+}
+
+function getDefaultPermissions(roles: Role[]): Permission[] {
+  return validatePermissions(roles.flatMap(role => DEFAULT_PERMISSIONS[role] || []));
+}
+
+interface TokenOverrides extends Partial<JWT> {
+  roles?: Role[];
+  permissions?: Permission[];
+}
+
+function createNewToken(token: Partial<JWT>, overrides: TokenOverrides = {}): JWT {
+  const roles = (overrides.roles || token.roles || []) as Role[];
+  const permissions = (overrides.permissions || getDefaultPermissions(roles)) as Permission[];
+  
   return {
     name: overrides.name || token.name || "",
     email: overrides.email || token.email || "",
@@ -31,14 +52,13 @@ function createNewToken(
     refreshToken: overrides.refreshToken || token.refreshToken,
     accessTokenExpires: overrides.accessTokenExpires || token.accessTokenExpires,
     roles,
-    permissions: overrides.permissions || getPermissionsFromRoles(roles),
+    permissions,
     iat: Date.now() / 1000,
     exp: (Date.now() + (overrides.accessTokenExpires || 0)) / 1000,
     jti: overrides.jti || token.jti || "",
   };
 }
 
-// Ensure we have non-null values for TokenUser
 function ensureTokenUser(token: JWT): TokenUser {
   return {
     id: token.sub || "unknown",
@@ -73,11 +93,13 @@ export const authOptions: AuthOptions = {
     async jwt({ token, account, profile }): Promise<JWT> {
       // Initial sign in
       if (account && profile) {
-        const roles = [
+        const rawRoles = [
           ...(profile.realm_access?.roles || []),
           ...(profile.resource_access?.account.roles || []),
         ];
-
+        const roles = validateRoles(rawRoles);
+        const permissions = getDefaultPermissions(roles);
+        
         return createNewToken(token, {
           name: profile.name || "Anonymous",
           email: profile.email || "no-email",
@@ -86,7 +108,7 @@ export const authOptions: AuthOptions = {
           refreshToken: account.refresh_token,
           accessTokenExpires: account.expires_at! * 1000,
           roles,
-          permissions: getPermissionsFromRoles(roles),
+          permissions,
           idToken: account.id_token,
         });
       }

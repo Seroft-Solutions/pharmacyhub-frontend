@@ -1,5 +1,6 @@
 import { DefaultSession, DefaultUser } from "next-auth";
 import { DefaultJWT } from "next-auth/jwt";
+import type { Role, Permission } from "@/types/auth-types";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -7,8 +8,8 @@ declare module "next-auth" {
     error?: string;
     user: {
       id: string;
-      roles: string[];
-      permissions: string[];
+      roles: Role[];
+      permissions: Permission[];
       email: string;
       name: string;
     } & DefaultSession["user"]
@@ -16,8 +17,8 @@ declare module "next-auth" {
 
   interface User extends DefaultUser {
     id: string;
-    roles: string[];
-    permissions: string[];
+    roles: Role[];
+    permissions: Permission[];
     name: string;
   }
 
@@ -50,63 +51,8 @@ declare module "next-auth/jwt" {
     accessToken: string;
     refreshToken?: string;
     accessTokenExpires?: number;
-    roles: string[];
-    permissions: string[];
+    roles: Role[];
+    permissions: Permission[];
     error?: string;
   }
-}
-
-export type Role = 'ADMIN' | 'PHARMACIST' | 'USER' | 'INSTRUCTOR';
-
-export type Permission = 
-  | 'create:pharmacy'
-  | 'edit:pharmacy'
-  | 'delete:pharmacy'
-  | 'view:pharmacy'
-  | 'manage:users'
-  | 'view:users'
-  | 'manage:roles'
-  | 'manage:exams'
-  | 'take:exams'
-  | 'grade:exams';
-
-export const DEFAULT_PERMISSIONS: Record<Role, Permission[]> = {
-  ADMIN: [
-    'manage:users',
-    'manage:roles',
-    'manage:exams',
-    'create:pharmacy',
-    'edit:pharmacy',
-    'delete:pharmacy',
-    'view:pharmacy',
-    'view:users',
-    'grade:exams'
-  ],
-  PHARMACIST: [
-    'create:pharmacy',
-    'edit:pharmacy',
-    'view:pharmacy',
-    'take:exams'
-  ],
-  USER: [
-    'view:pharmacy',
-    'take:exams'
-  ],
-  INSTRUCTOR: [
-    'manage:exams',
-    'grade:exams',
-    'view:users'
-  ]
-} as const;
-
-export interface TokenUser {
-  id: string;
-  email: string;
-  name: string;
-  roles: string[];
-  permissions: string[];
-}
-
-export interface ExtendedJWT extends JWT {
-  user?: TokenUser;
 }

@@ -1,4 +1,4 @@
-import type { Role, Permission } from "@/types/next-auth";
+import type { Role, Permission } from "@/types/auth-types";
 
 export function hasRole(userRoles: string[], requiredRoles: Role[], requireAll: boolean = false): boolean {
   if (!userRoles?.length || !requiredRoles?.length) return false;

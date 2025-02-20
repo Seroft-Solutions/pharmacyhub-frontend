@@ -43,10 +43,12 @@ export const hasPermission = (userPermissions: string[], requiredPermission: Per
 
 export const hasRole = (userRoles: string[], requiredRole: Role): boolean => {
   const roleHierarchy: Record<Role, Role[]> = {
-    'SUPER_ADMIN': ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER'],
-    'ADMIN': ['ADMIN', 'MANAGER', 'USER'],
-    'MANAGER': ['MANAGER', 'USER'],
-    'USER': ['USER']
+    'SUPER_ADMIN': ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'PHARMACIST', 'INSTRUCTOR', 'USER'] as Role[],
+    'ADMIN': ['ADMIN', 'MANAGER', 'PHARMACIST', 'INSTRUCTOR', 'USER'] as Role[],
+    'MANAGER': ['MANAGER', 'USER'] as Role[],
+    'USER': ['USER'] as Role[],
+    'PHARMACIST': ['PHARMACIST', 'USER'] as Role[],
+    'INSTRUCTOR': ['INSTRUCTOR', 'USER'] as Role[]
   };
 
   return roleHierarchy[requiredRole].some(role => userRoles.includes(role));

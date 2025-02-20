@@ -6,62 +6,58 @@ import {
   signOut,
   getSession as getNextAuthSession
 } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-
-interface UseSessionOptions {
-  required?: boolean;
-  redirectTo?: string;
-  onUnauthenticated?: () => void;
-}
+import { Session } from 'next-auth';
 
 const TOKEN_REFRESH_THRESHOLD = 5 * 60 * 1000; // 5 minutes in milliseconds
+const DEFAULT_REDIRECT = '/login';
 
-export function useSession(options: UseSessionOptions = {}) {
-  const { 
-    required = false, 
-    redirectTo = '/login',
-    onUnauthenticated 
-  } = options;
+interface AuthSessionOptions {
+  required?: boolean;
+}
 
-  const router = useRouter();
+interface AuthSession {
+  session: Session | null;
+  status: 'loading' | 'authenticated' | 'unauthenticated';
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  user: Session['user'] | undefined;
+  update: () => Promise<Session | null>;
+}
+
+export function useSession(options: AuthSessionOptions = {}): AuthSession {
   const refreshTimeout = useRef<NodeJS.Timeout>();
 
-  const { data: session, status, update } = useNextAuthSession({
-    required,
+  const { data: session, status, update } = useNextAuthSession<boolean>({
+    required: options.required ?? false,
     onUnauthenticated: () => {
-      if (onUnauthenticated) {
-        onUnauthenticated();
-      } else if (required) {
+      if (options.required) {
         const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
         const callbackUrl = encodeURIComponent(currentPath);
-        router.push(`${redirectTo}?callbackUrl=${callbackUrl}`);
+        window.location.href = `${DEFAULT_REDIRECT}?callbackUrl=${callbackUrl}`;
       }
     }
   });
 
   useEffect(() => {
-    // Clear any existing refresh timeout
     if (refreshTimeout.current) {
       clearTimeout(refreshTimeout.current);
     }
 
-    // If we have a session and an expiry time, set up refresh
-    if (session?.user?.accessToken) {
-      const expiresAt = session.expires ? new Date(session.expires).getTime() : 0;
+    if (session?.accessToken) {
+      const expiresAt = session?.expires ? new Date(session.expires).getTime() : 0;
       const timeUntilRefresh = expiresAt - Date.now() - TOKEN_REFRESH_THRESHOLD;
 
       if (timeUntilRefresh > 0) {
         refreshTimeout.current = setTimeout(async () => {
           try {
-            await update(); // Trigger session refresh
+            await update();
           } catch (error) {
             console.error('Failed to refresh session:', error);
-            await signOut({ redirect: true, callbackUrl: redirectTo });
+            await signOut({ redirect: true, callbackUrl: DEFAULT_REDIRECT });
           }
         }, timeUntilRefresh);
       } else {
-        // Token is already close to expiring or expired
-        signOut({ redirect: true, callbackUrl: redirectTo });
+        signOut({ redirect: true, callbackUrl: DEFAULT_REDIRECT });
       }
     }
 
@@ -70,10 +66,10 @@ export function useSession(options: UseSessionOptions = {}) {
         clearTimeout(refreshTimeout.current);
       }
     };
-  }, [session, status, update, router, redirectTo]);
+  }, [session, status, update]);
 
   return {
-    session,
+    session: session as Session | null,
     status,
     isLoading: status === 'loading',
     isAuthenticated: status === 'authenticated',
@@ -86,16 +82,8 @@ export function useSession(options: UseSessionOptions = {}) {
  * Hook that requires authentication
  * Will automatically redirect to login if user is not authenticated
  */
-export function useRequiredSession(redirectTo?: string) {
-  return useSession({ 
-    required: true, 
-    redirectTo,
-    onUnauthenticated: () => {
-      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-      const callbackUrl = encodeURIComponent(currentPath);
-      window.location.href = `${redirectTo || '/login'}?callbackUrl=${callbackUrl}`;
-    }
-  });
+export function useRequiredSession(): AuthSession {
+  return useSession({ required: true });
 }
 
 /**
@@ -104,4 +92,15 @@ export function useRequiredSession(redirectTo?: string) {
  */
 export async function getSession() {
   return getNextAuthSession();
+}
+
+// Type guard to validate session object
+export function isValidSession(session: unknown): session is Session {
+  return (
+    session !== null &&
+    typeof session === 'object' &&
+    'user' in session &&
+    typeof (session as { user: unknown }).user === 'object' &&
+    (session as { user: unknown }).user !== null
+  );
 }

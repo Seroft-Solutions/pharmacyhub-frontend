@@ -13,6 +13,19 @@ import {
   validateAccessRights
 } from "../lib/auth";
 
+// Valid roles and permissions arrays for runtime checks
+const VALID_ROLES = [
+  'SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER', 'PHARMACIST', 'INSTRUCTOR'
+] as const;
+
+const VALID_PERMISSIONS = [
+  'manage_system', 'manage_users', 'manage_staff', 'view_reports', 
+  'approve_orders', 'manage_inventory', 'view_products', 'place_orders',
+  'create:pharmacy', 'edit:pharmacy', 'delete:pharmacy', 'view:pharmacy',
+  'manage:users', 'view:users', 'manage:roles', 'manage:exams',
+  'take:exams', 'grade:exams'
+] as const;
+
 interface AuthContextType extends AuthState {
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -72,11 +85,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateStateWithToken = (accessToken: string) => {
     const decoded = parseToken(accessToken);
+    // Validate and cast roles and permissions to their proper types
+    const roles = decoded.roles.filter(role => 
+      VALID_ROLES.includes(role as Role)) as Role[];
+    const permissions = decoded.permissions.filter(perm => 
+      VALID_PERMISSIONS.includes(perm as Permission)) as Permission[];
+
     const user: AuthUser = {
       id: decoded.sub,
       email: decoded.email,
-      roles: decoded.roles,
-      permissions: decoded.permissions,
+      roles,
+      permissions,
+      name: decoded.email.split('@')[0], // Use email username as initial name
       firstName: "", // These will be fetched from user profile API
       lastName: ""
     };
