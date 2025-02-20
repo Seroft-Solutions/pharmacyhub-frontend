@@ -1,4 +1,12 @@
-import { KEYCLOAK_CONFIG, TOKEN_CONFIG } from './apiConfig';
+import { KEYCLOAK_CONFIG, TOKEN_CONFIG, KEYCLOAK_ENDPOINTS } from './apiConfig';
+import { formatAuthError } from './utils';
+
+interface KeycloakTokenResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  token_type: string;
+}
 
 class KeycloakService {
   private sessionCheckInterval: NodeJS.Timeout | null = null;
@@ -118,7 +126,7 @@ class KeycloakService {
     }
   };
 
-  private saveTokens = (data: any) => {
+  private saveTokens = (data: KeycloakTokenResponse) => {
     localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, data.access_token);
     localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, data.refresh_token);
     localStorage.setItem(
@@ -134,6 +142,28 @@ class KeycloakService {
     localStorage.removeItem(TOKEN_CONFIG.USER_PROFILE_KEY);
     document.cookie.split(';').forEach(cookie => 
       document.cookie = cookie.split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/');
+  };
+
+  resetPassword = async (token: string, newPassword: string): Promise<void> => {
+    try {
+      const response = await fetch(`${KEYCLOAK_ENDPOINTS.TOKEN}/reset-credentials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: KEYCLOAK_CONFIG.CLIENT_ID,
+          token,
+          new_password: newPassword
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(formatAuthError(error));
+      }
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw new Error(formatAuthError(error));
+    }
   };
 
   destroy = () => {

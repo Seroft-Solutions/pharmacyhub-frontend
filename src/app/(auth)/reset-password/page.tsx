@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AuthLoading } from '@/components/auth';
-import AuthService from '@/services/authService';
 import { validatePassword, calculatePasswordStrength } from '@/utils/password';
 import { ROUTES } from '@/config/auth';
+import { keycloakService } from '@/shared/auth';
 
 export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('');
@@ -44,7 +44,7 @@ export default function ResetPasswordPage() {
 
     try {
       setLoading(true);
-      await AuthService.resetPassword(token, newPassword);
+      await keycloakService.resetPassword(token, newPassword);
       router.push(`${ROUTES.LOGIN}?message=Password reset successful. Please login with your new password.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reset password');

@@ -1,7 +1,8 @@
 import {useCallback, useEffect, useState} from 'react';
-import {useAuth} from '@/context/AuthContext';
+import {useAuth} from '@/shared/auth';
 import {AuthUser} from '@/types/auth';
-import {createAuthHeaders} from '@/lib/auth';
+import {createAuthHeaders} from '@/shared/auth/utils';
+import { TOKEN_CONFIG } from '@/shared/auth/apiConfig';
 
 interface UseProfileResult {
   profile: AuthUser | null;
@@ -12,21 +13,31 @@ interface UseProfileResult {
 }
 
 export const useProfile = (): UseProfileResult => {
-  const {token, user} = useAuth();
+  const {user, isAuthenticated} = useAuth();
   const [profile, setProfile] = useState<AuthUser | null>(user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  const getAccessToken = () => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
+  };
+
   const fetchProfile = useCallback(async () => {
-    if (!token.access) return;
+    if (!isAuthenticated) return;
 
     try {
       setLoading(true);
       setError(null);
 
+      const token = getAccessToken();
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/profile`,
-        {headers: createAuthHeaders(token.access)}
+        {headers: createAuthHeaders(token)}
       );
 
       if (!response.ok) {
@@ -40,20 +51,25 @@ export const useProfile = (): UseProfileResult => {
     } finally {
       setLoading(false);
     }
-  }, [token.access]);
+  }, [isAuthenticated]);
 
   const updateProfile = async (data: Partial<AuthUser>) => {
-    if (!token.access) return;
+    if (!isAuthenticated) return;
 
     try {
       setLoading(true);
       setError(null);
 
+      const token = getAccessToken();
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/profile`,
         {
           method: 'PATCH',
-          headers: createAuthHeaders(token.access),
+          headers: createAuthHeaders(token),
           body: JSON.stringify(data)
         }
       );
@@ -73,10 +89,10 @@ export const useProfile = (): UseProfileResult => {
   };
 
   useEffect(() => {
-    if (token.access && !profile) {
+    if (isAuthenticated && !profile) {
       fetchProfile();
     }
-  }, [token.access, profile, fetchProfile]);
+  }, [isAuthenticated, profile, fetchProfile]);
 
   return {
     profile,
