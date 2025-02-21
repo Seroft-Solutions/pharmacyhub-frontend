@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import {
     Card,
@@ -14,7 +16,6 @@ import {
     FileText,
     CheckCircle2,
     Lock,
-    AlertCircle,
     Star,
 } from 'lucide-react';
 import { MCQPaper } from '../model/types';

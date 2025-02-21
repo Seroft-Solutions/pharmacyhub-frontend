@@ -4,12 +4,11 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useSession } from "@/hooks/useSession";
 import { Permission, Role } from "@/types/auth";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LucideIcon, Home, Settings, Users, Package, FileText, Bell } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { LucideIcon, Home, Settings, Users, Package, FileText, Bell, GraduationCap } from "lucide-react";
 import { UserMenu } from "@/components/dashboard/UserMenu";
 import { Breadcrumbs } from "@/components/dashboard/Breadcrumbs";
 import { Button } from "@/shared/ui/button";
-import { useEffect } from "react";
 
 interface MenuItem {
   label: string;
@@ -21,6 +20,11 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
+  { 
+    label: "Exam Practice", 
+    href: "/exam", 
+    icon: GraduationCap,
+  },
   { 
     label: "Inventory", 
     href: "/dashboard/inventory", 
@@ -50,7 +54,8 @@ const menuItems: MenuItem[] = [
 function MenuItem({ item }: { item: MenuItem }) {
   const pathname = usePathname();
   const { canAccess } = usePermissions();
-  const isActive = pathname === item.href;
+  // Check if the current path starts with the menu item's href
+  const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
 
   if (!canAccess({
     permissions: item.permissions,
@@ -95,24 +100,14 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { status } = useSession({
-    required: true,
-    onUnauthenticated() {
-      router.replace('/login');
-    },
-  });
-  const router = useRouter();
+  const { isAuthenticated } = useSession({ required: true });
 
-  if (status === 'loading') {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
       </div>
     );
-  }
-
-  if (status === 'unauthenticated') {
-    return null;
   }
 
   return (

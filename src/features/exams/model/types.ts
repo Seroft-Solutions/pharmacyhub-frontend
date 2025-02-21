@@ -3,78 +3,93 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface MCQPaper {
     id: string;
-    type: PaperType;
-    year?: number;
-    version: string;
-    title: string;
-    description: string;
-    timeLimit: number;
-    totalQuestions: number;
-    passingCriteria: {
-        minimumQuestions: number;
-        passingScore: number;
-    };
-    sections: MCQSection[];
     metadata: PaperMetadata;
+    content: PaperContent;
 }
 
 export interface PaperMetadata {
-    createdAt: string;
-    updatedAt: string;
-    difficulty: Difficulty;
+    format_version: string;
+    created_at: string;
+    last_updated: string;
     tags: string[];
-    category: string;
-    subCategory?: string;
+    topics_covered: string[];
+    difficulty: Difficulty;
+    source: string;
+    author: string;
+}
+
+export interface PaperContent {
+    title: string;
+    description: string;
+    time_limit: number;
+    total_questions: number;
+    passing_criteria: {
+        minimum_questions: number;
+        passing_score: number;
+    };
+    sections: MCQSection[];
 }
 
 export interface MCQSection {
     id: string;
     title: string;
-    description?: string;
     questions: MCQuestion[];
 }
 
 export interface MCQuestion {
     id: string;
-    questionNumber: number;
-    question: string;
-    options: {
-        [key: string]: string;
-    };
-    answer: string;
-    explanation: string;
     metadata: QuestionMetadata;
-    stats?: QuestionStats;
+    content: QuestionContent;
+    statistics: QuestionStatistics;
 }
 
 export interface QuestionMetadata {
+    created_at: string;
+    last_updated: string;
     difficulty: Difficulty;
-    topic: string;
-    subTopic?: string;
-    tags: string[];
-    source?: string;
-    lastUpdated: string;
+    estimated_time: number;
+    topics: {
+        primary: string;
+        secondary?: string;
+    };
 }
 
-export interface QuestionStats {
-    attemptCount: number;
-    correctCount: number;
-    averageTimeSpent: number;
+export interface QuestionContent {
+    question_text: string;
+    question_type: 'single_choice';
+    options: {
+        [key: string]: string;
+    };
+    correct_answer: string;
+    explanation: {
+        detailed: string;
+        key_points: string[];
+        references?: string[];
+    };
 }
 
+export interface QuestionStatistics {
+    attempts: number;
+    success_rate: number;
+    average_time: number;
+    difficulty_rating: number;
+    discrimination_index?: number;
+}
+
+// Types for user interactions with exams
 export interface UserAnswer {
-    questionId: string;
-    selectedOption: string;
-    timeSpent: number;
-    isCorrect?: boolean;
+    question_id: string;
+    selected_option: string;
+    time_spent: number;
+    is_correct?: boolean;
 }
 
 export interface ExamSession {
-    paperId: string;
-    startTime: string;
-    endTime?: string;
+    paper_id: string;
+    start_time: string;
+    end_time?: string;
     answers: UserAnswer[];
-    isCompleted: boolean;
+    is_completed: boolean;
     score?: number;
-    timeSpent?: number;
+    time_spent?: number;
 }

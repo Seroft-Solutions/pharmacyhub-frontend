@@ -1,7 +1,19 @@
 import { MCQPaper, ExamSession, UserAnswer } from '../model/types';
 import { logger } from '@/shared/lib/logger';
+import env from '@/config/env';
 
-const BASE_URL = '/api/exam';
+const BASE_URL = `${env.NEXT_PUBLIC_APP_URL}/api/exam`;
+
+// Helper function to ensure valid URL construction
+const buildUrl = (path: string, params?: Record<string, string>) => {
+    const url = new URL(`${BASE_URL}${path}`, env.NEXT_PUBLIC_APP_URL);
+    if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+            url.searchParams.append(key, value);
+        });
+    }
+    return url.toString();
+};
 
 export const examService = {
     async listPapers(type: 'model' | 'past'): Promise<MCQPaper[]> {
@@ -12,7 +24,13 @@ export const examService = {
                 endpoint: `${BASE_URL}/papers`
             });
 
-            const response = await fetch(`${BASE_URL}/papers?type=${type}`);
+            const url = buildUrl('/papers', { type });
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const papers = await response.json();
 
             logger.info('Successfully fetched exam papers', {
@@ -41,7 +59,13 @@ export const examService = {
                 endpoint: `${BASE_URL}/papers/${id}`
             });
 
-            const response = await fetch(`${BASE_URL}/papers/${id}`);
+            const url = buildUrl(`/papers/${id}`);
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const paper = await response.json();
 
             logger.info('Successfully fetched exam paper', {
@@ -70,13 +94,19 @@ export const examService = {
                 endpoint: `${BASE_URL}/sessions`
             });
 
-            const response = await fetch(`${BASE_URL}/sessions`, {
+            const url = buildUrl('/sessions');
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ paperId }),
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const session = await response.json();
 
             logger.info('Successfully started exam session', {
@@ -109,16 +139,19 @@ export const examService = {
                 endpoint: `${BASE_URL}/sessions/${sessionId}/answers`
             });
 
-            const response = await fetch(
-                `${BASE_URL}/sessions/${sessionId}/answers`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(answer),
-                }
-            );
+            const url = buildUrl(`/sessions/${sessionId}/answers`);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(answer),
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const result = await response.json();
 
             logger.info('Successfully submitted answer', {
@@ -149,15 +182,18 @@ export const examService = {
                 endpoint: `${BASE_URL}/sessions/${sessionId}/complete`
             });
 
-            const response = await fetch(
-                `${BASE_URL}/sessions/${sessionId}/complete`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
+            const url = buildUrl(`/sessions/${sessionId}/complete`);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const session = await response.json();
 
             logger.info('Successfully completed exam session', {

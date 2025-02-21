@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\code\\PharmacyHub\\pharmacyhub-frontend\\logs\\.fa1313c35038883ce0ed2ffad612aee2c865c9a8-audit.json",
+    "files": [
+        {
+            "date": 1740122707918,
+            "name": "D:\\code\\PharmacyHub\\pharmacyhub-frontend\\logs\\api-2025-02-21.log",
+            "hash": "60824c527fb40805749f72d863d06dd6b781be9c92e07f43d4912ed75e111884"
+        }
+    ],
+    "hashType": "sha256"
+}
