@@ -242,6 +242,7 @@ Comprehensive study materials:
 ### Implementation Details
 
 For detailed implementation information, see the [Exam Module Implementation Guide](./exam-implementation.md).
+For MCQ practice platform specifications, see the [MCQ Practice Platform Documentation](./mcq-practice-platform.md).
 
 ## Authentication & Authorization
 
