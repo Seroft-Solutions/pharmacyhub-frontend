@@ -48,7 +48,7 @@ export default function DashboardLayout({
             <div className="flex items-center space-x-4">
               {isMobile && <Sidebar />}
               <Link href="/dashboard" className="font-bold text-xl text-blue-600">
-                <ModernMinimalistLogo size="small" animate={false} />
+                <ModernMinimalistLogo />
               </Link>
             </div>
             <div className="flex items-center space-x-4">

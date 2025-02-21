@@ -14,7 +14,7 @@ const Header = ({className}: NavbarProps) => {
       <div className="container mx-auto px-4 flex h-14 md:h-16 items-center justify-between">
         {/* Neon Logo */}
         <div className="flex items-center">
-          <ModernMinimalistLogo size="default" animate={true} />
+          <ModernMinimalistLogo size="small" animate={true} />
         </div>
 
         {/* Join Us Button - Visible on both mobile and desktop */}

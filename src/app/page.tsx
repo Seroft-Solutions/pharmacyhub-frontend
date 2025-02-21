@@ -39,7 +39,7 @@ export default function Home() {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <ModernMinimalistLogo size="default" animate={true} />
+                <ModernMinimalistLogo />
               </motion.div>
             </div>
 

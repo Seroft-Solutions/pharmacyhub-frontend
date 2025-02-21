@@ -209,21 +209,17 @@ function NavItems() {
 export function Sidebar() {
   const isMobile = useIsMobile();
 
-  // On desktop: render full sidebar
+  // On desktop: render full sidebar without logo
   if (!isMobile) {
     return (
       <aside className="w-64 bg-white rounded-lg shadow-sm h-fit sticky top-24 overflow-y-auto max-h-[calc(100vh-6rem)]">
         <div className="p-4">
-          <div className="mb-4 flex justify-center">
-            <ModernMinimalistLogo size="small" animate={false} />
-          </div>
           <NavItems />
         </div>
       </aside>
     );
   }
 
-  // On mobile: render Sheet component with responsive navigation
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -234,7 +230,7 @@ export function Sidebar() {
       <SheetContent side="left" className="w-[280px] sm:w-[320px] overflow-y-auto">
         <SheetHeader className="px-1">
           <SheetTitle>
-            <ModernMinimalistLogo size="small" animate={false} />
+            <ModernMinimalistLogo />
           </SheetTitle>
         </SheetHeader>
         <div className="mt-8 px-1">
