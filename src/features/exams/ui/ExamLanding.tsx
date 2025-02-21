@@ -1,190 +1,219 @@
 "use client";
 
-import React from 'react';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-    Clock,
-    FileText,
-    CheckCircle2,
-    Lock,
-    Star,
-} from 'lucide-react';
-import { MCQPaper } from '../model/types';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { 
+  Search, 
+  Star, 
+  Filter, 
+  CheckCircle2 
+} from 'lucide-react';
+
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from '@/components/ui/tabs';
+
+import { ExamPaperCard } from './ExamPaperCard';
+import { 
+  ExamPaperMetadata, 
+  UserExamProgress 
+} from '../model/types';
 
 interface ExamLandingProps {
-    modelPapers: MCQPaper[];
-    pastPapers: MCQPaper[];
-    userProgress?: {
-        completedPapers: string[];
-        premiumAccess: boolean;
-    };
+  modelPapers?: ExamPaperMetadata[];
+  pastPapers?: ExamPaperMetadata[];
+  userProgress?: UserExamProgress;
 }
 
-export const ExamLanding = ({
-    modelPapers,
-    pastPapers,
-    userProgress,
-}: ExamLandingProps) => {
-    const router = useRouter();
+export const ExamLanding: React.FC<ExamLandingProps> = ({ 
+  modelPapers = [], 
+  pastPapers = [], 
+  userProgress = {
+    completedPapers: [],
+    premium_access: false,
+    papers_progress: []
+  }
+}) => {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [difficulty, setDifficulty] = useState<string | null>(null);
 
-    const canAccessPaper = (paper: MCQPaper) => {
-        if (paper.metadata.source === 'model') {
-            // First two model papers are free
-            const paperIndex = modelPapers.findIndex(p => p.id === paper.id);
-            return paperIndex < 2 || userProgress?.premiumAccess;
-        } else {
-            // Only first past paper is free
-            const paperIndex = pastPapers.findIndex(p => p.id === paper.id);
-            return paperIndex === 0 || userProgress?.premiumAccess;
-        }
-    };
+  const filterPapers = (papers: ExamPaperMetadata[]) => {
+    return papers.filter(paper => {
+      // Ensure paper is not undefined and has required properties
+      if (!paper || !paper.title || !paper.topics_covered) return false;
 
-    const isPaperCompleted = (paperId: string) => {
-        return userProgress?.completedPapers.includes(paperId);
-    };
+      return (searchTerm === '' || 
+        (paper.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        paper.topics_covered?.some(topic => 
+          topic?.toLowerCase().includes(searchTerm.toLowerCase())
+        ))
+      ) &&
+      (difficulty === null || paper.difficulty === difficulty);
+    });
+  };
 
-    const handleStartPaper = (paper: MCQPaper) => {
-        if (!canAccessPaper(paper)) {
-            router.push('/pricing');
-            return;
-        }
-        router.push(`/exam/${paper.id}`);
-    };
+  const handleStartPaper = (paper: ExamPaperMetadata) => {
+    if (paper.is_premium && !userProgress?.premium_access) {
+      router.push('/pricing');
+      return;
+    }
+    router.push(`/exam/${paper.id}`);
+  };
 
-    const renderPaperCard = (paper: MCQPaper) => (
-        <Card key={paper.id} className="w-full">
-            <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle>{paper.content.title}</CardTitle>
-                        <CardDescription>{paper.content.description}</CardDescription>
-                    </div>
-                    {!canAccessPaper(paper) && (
-                        <Lock className="h-5 w-5 text-muted-foreground" />
-                    )}
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <div className="flex items-center text-muted-foreground">
-                                <FileText className="h-4 w-4 mr-1" />
-                                <span>{paper.content.total_questions} Questions</span>
-                            </div>
-                            <div className="flex items-center text-muted-foreground">
-                                <Clock className="h-4 w-4 mr-1" />
-                                <span>{paper.content.time_limit} mins</span>
-                            </div>
-                        </div>
-                        <Badge
-                            variant={paper.metadata.difficulty === 'easy' ? 'default' : 
-                                   paper.metadata.difficulty === 'medium' ? 'secondary' : 
-                                   'destructive'}
-                        >
-                            {paper.metadata.difficulty}
-                        </Badge>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        {paper.metadata.topics_covered.map(topic => (
-                            <Badge key={topic} variant="outline">
-                                {topic}
-                            </Badge>
-                        ))}
-                    </div>
-                </div>
-            </CardContent>
-            <CardFooter className="justify-between">
-                {isPaperCompleted(paper.id) && (
-                    <div className="flex items-center text-green-600">
-                        <CheckCircle2 className="h-4 w-4 mr-1" />
-                        <span>Completed</span>
-                    </div>
-                )}
-                <Button
-                    onClick={() => handleStartPaper(paper)}
-                    disabled={!canAccessPaper(paper)}
-                >
-                    {canAccessPaper(paper) ? 'Start Paper' : 'Premium Access'}
-                </Button>
-            </CardFooter>
-        </Card>
-    );
+  const difficultiesAvailable = useMemo(() => {
+    const difficulties = new Set<string>();
+    modelPapers?.forEach(p => p?.difficulty && difficulties.add(p.difficulty));
+    pastPapers?.forEach(p => p?.difficulty && difficulties.add(p.difficulty));
+    return Array.from(difficulties);
+  }, [modelPapers, pastPapers]);
 
+  const capitalize = (str?: string) => 
+    str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+
+  const renderPaperSection = (
+    title: string, 
+    description: string, 
+    papers: ExamPaperMetadata[]
+  ) => {
+    const filteredPapers = filterPapers(papers);
     return (
-        <div className="container py-8 space-y-8">
-            <div className="space-y-4">
-                <h1 className="text-3xl font-bold">Model Papers</h1>
-                <p className="text-muted-foreground">
-                    Practice with our curated model papers to prepare for your exam.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {modelPapers.map(renderPaperCard)}
-                </div>
+      <div className="space-y-4">
+        <h2 className="text-3xl font-bold">{title}</h2>
+        <p className="text-muted-foreground">{description}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPapers.length > 0 ? (
+            filteredPapers.map(paper => paper && (
+              <ExamPaperCard 
+                key={paper.id}
+                paper={paper}
+                progress={
+                  userProgress?.papers_progress?.find(p => p.paperId === paper.id)
+                }
+                onStart={handleStartPaper}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-8 text-muted-foreground">
+              No papers found matching your search.
             </div>
-
-            <div className="space-y-4">
-                <h1 className="text-3xl font-bold">Past Papers</h1>
-                <p className="text-muted-foreground">
-                    Review actual exam papers from previous years.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {pastPapers.map(renderPaperCard)}
-                </div>
-            </div>
-
-            {!userProgress?.premiumAccess && (
-                <Card className="bg-gradient-to-r from-purple-100 to-indigo-100 border-0">
-                    <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                            <Star className="h-6 w-6 text-yellow-500" />
-                            <span>Unlock Premium Access</span>
-                        </CardTitle>
-                        <CardDescription>
-                            Get access to all model papers and past papers with detailed explanations.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="space-y-2">
-                            <li className="flex items-center">
-                                <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
-                                <span>Access to all model papers</span>
-                            </li>
-                            <li className="flex items-center">
-                                <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
-                                <span>Full past paper archive</span>
-                            </li>
-                            <li className="flex items-center">
-                                <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
-                                <span>Detailed answer explanations</span>
-                            </li>
-                            <li className="flex items-center">
-                                <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
-                                <span>Progress tracking & analytics</span>
-                            </li>
-                        </ul>
-                    </CardContent>
-                    <CardFooter>
-                        <Button 
-                            size="lg" 
-                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600"
-                            onClick={() => router.push('/pricing')}
-                        >
-                            Upgrade Now
-                        </Button>
-                    </CardFooter>
-                </Card>
-            )}
+          )}
         </div>
+      </div>
     );
+  };
+
+  return (
+    <div className="container py-8 space-y-8">
+      <div className="flex space-x-4 mb-6">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+          <Input 
+            placeholder="Search papers by title or topics" 
+            className="pl-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <Select 
+          onValueChange={(value) => 
+            setDifficulty(value === 'all' ? null : value)
+          }
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Difficulty" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Difficulties</SelectItem>
+            {difficultiesAvailable.map(diff => (
+              <SelectItem key={diff} value={diff}>
+                {capitalize(diff)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Tabs defaultValue="model">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="model">Model Papers</TabsTrigger>
+          <TabsTrigger value="past">Past Papers</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="model">
+          {renderPaperSection(
+            'Model Papers', 
+            'Practice with our curated model papers to prepare for your exam.', 
+            modelPapers
+          )}
+        </TabsContent>
+
+        <TabsContent value="past">
+          {renderPaperSection(
+            'Past Papers', 
+            'Review actual exam papers from previous years.', 
+            pastPapers
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {!userProgress?.premium_access && (
+        <Card className="bg-gradient-to-r from-purple-100 to-indigo-100 border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Star className="h-6 w-6 text-yellow-500" />
+              <span>Unlock Premium Access</span>
+            </CardTitle>
+            <CardDescription>
+              Get access to all model papers and past papers with detailed explanations.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {[
+                "Unlimited access to all model papers",
+                "Complete past paper archive",
+                "Comprehensive answer explanations",
+                "Advanced progress tracking & analytics"
+              ].map((benefit, index) => (
+                <li key={index} className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
+                  <span>{benefit}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              size="lg" 
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+              onClick={() => router.push('/pricing')}
+            >
+              Upgrade to Premium
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
+    </div>
+  );
 };
