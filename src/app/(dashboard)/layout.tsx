@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { LucideIcon, Home, Settings, Users, Package, FileText, Bell, GraduationCap } from "lucide-react";
 import { UserMenu } from "@/components/dashboard/UserMenu";
 import { Breadcrumbs } from "@/components/dashboard/Breadcrumbs";
+import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
 import { Button } from "@/shared/ui/button";
 
 interface MenuItem {
@@ -117,7 +118,7 @@ export default function DashboardLayout({
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/dashboard" className="font-bold text-xl text-blue-600">
-                PharmacyHub
+                <ModernMinimalistLogo size="small" animate={true} />
               </Link>
             </div>
             <div className="flex items-center space-x-4">

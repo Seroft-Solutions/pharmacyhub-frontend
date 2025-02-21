@@ -38,13 +38,14 @@ export const ExamLanding = ({
     const router = useRouter();
 
     const canAccessPaper = (paper: MCQPaper) => {
-        if (paper.type === 'model') {
+        if (paper.metadata.source === 'model') {
             // First two model papers are free
             const paperIndex = modelPapers.findIndex(p => p.id === paper.id);
             return paperIndex < 2 || userProgress?.premiumAccess;
         } else {
-            // Only 2018 paper is free for past papers
-            return paper.year === 2018 || userProgress?.premiumAccess;
+            // Only first past paper is free
+            const paperIndex = pastPapers.findIndex(p => p.id === paper.id);
+            return paperIndex === 0 || userProgress?.premiumAccess;
         }
     };
 
@@ -65,8 +66,8 @@ export const ExamLanding = ({
             <CardHeader>
                 <div className="flex justify-between items-start">
                     <div>
-                        <CardTitle>{paper.title}</CardTitle>
-                        <CardDescription>{paper.description}</CardDescription>
+                        <CardTitle>{paper.content.title}</CardTitle>
+                        <CardDescription>{paper.content.description}</CardDescription>
                     </div>
                     {!canAccessPaper(paper) && (
                         <Lock className="h-5 w-5 text-muted-foreground" />
@@ -79,11 +80,11 @@ export const ExamLanding = ({
                         <div className="flex items-center space-x-4">
                             <div className="flex items-center text-muted-foreground">
                                 <FileText className="h-4 w-4 mr-1" />
-                                <span>{paper.totalQuestions} Questions</span>
+                                <span>{paper.content.total_questions} Questions</span>
                             </div>
                             <div className="flex items-center text-muted-foreground">
                                 <Clock className="h-4 w-4 mr-1" />
-                                <span>{paper.timeLimit} mins</span>
+                                <span>{paper.content.time_limit} mins</span>
                             </div>
                         </div>
                         <Badge
@@ -95,9 +96,9 @@ export const ExamLanding = ({
                         </Badge>
                     </div>
                     <div className="flex items-center space-x-2">
-                        {paper.metadata.tags.map(tag => (
-                            <Badge key={tag} variant="outline">
-                                {tag}
+                        {paper.metadata.topics_covered.map(topic => (
+                            <Badge key={topic} variant="outline">
+                                {topic}
                             </Badge>
                         ))}
                     </div>

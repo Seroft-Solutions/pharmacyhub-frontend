@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +26,6 @@ export const ExamLayout = () => {
         timeRemaining,
         answers,
         isPaused,
-        startExam,
         answerQuestion,
         nextQuestion,
         previousQuestion,
@@ -55,16 +56,16 @@ export const ExamLayout = () => {
     const handleAnswer = (answer: string) => {
         if (!currentPaper) return;
 
-        const question = currentPaper.sections[0].questions[currentQuestionIndex];
+        const question = currentPaper.content.sections[0].questions[currentQuestionIndex];
         answerQuestion({
-            questionId: question.id,
-            selectedOption: answer,
-            timeSpent: 0, // Calculate time spent from question start
+            question_id: question.id,
+            selected_option: answer,
+            time_spent: 0,
         });
 
         // Auto-advance to next question after a brief delay
         setTimeout(() => {
-            if (currentQuestionIndex < currentPaper.totalQuestions - 1) {
+            if (currentQuestionIndex < currentPaper.content.total_questions - 1) {
                 nextQuestion();
             }
         }, 1000);
@@ -92,8 +93,8 @@ export const ExamLayout = () => {
             if (!currentPaper) return;
 
             const answeredCount = Object.keys(answers).length;
-            if (answeredCount < currentPaper.passingCriteria.minimumQuestions) {
-                setError(`Please attempt at least ${currentPaper.passingCriteria.minimumQuestions} questions`);
+            if (answeredCount < currentPaper.content.passing_criteria.minimum_questions) {
+                setError(`Please attempt at least ${currentPaper.content.passing_criteria.minimum_questions} questions`);
                 return;
             }
 
@@ -108,7 +109,7 @@ export const ExamLayout = () => {
         return <div>No exam in progress</div>;
     }
 
-    const currentQuestion = currentPaper.sections[0].questions[currentQuestionIndex];
+    const currentQuestion = currentPaper.content.sections[0].questions[currentQuestionIndex];
 
     return (
         <div className="flex h-screen">
@@ -116,7 +117,7 @@ export const ExamLayout = () => {
                 {/* Header */}
                 <div className="p-4 border-b">
                     <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-xl font-bold">{currentPaper.title}</h1>
+                        <h1 className="text-xl font-bold">{currentPaper.content.title}</h1>
                         <Button 
                             variant="destructive"
                             onClick={() => setShowSubmitDialog(true)}
@@ -125,7 +126,7 @@ export const ExamLayout = () => {
                         </Button>
                     </div>
                     <ExamTimer
-                        totalTime={currentPaper.timeLimit * 60}
+                        totalTime={currentPaper.content.time_limit * 60}
                         remainingTime={timeRemaining}
                         isPaused={isPaused}
                         onPause={pauseExam}
@@ -139,7 +140,7 @@ export const ExamLayout = () => {
                     <QuestionCard
                         question={currentQuestion}
                         currentAnswer={answers[currentQuestion.id]}
-                        timeSpent={0} // Calculate from question start time
+                        timeSpent={0}
                         onAnswer={handleAnswer}
                         onFlag={handleFlag}
                     />
@@ -156,7 +157,7 @@ export const ExamLayout = () => {
                         </Button>
                         <Button
                             onClick={nextQuestion}
-                            disabled={currentQuestionIndex === currentPaper.totalQuestions - 1}
+                            disabled={currentQuestionIndex === currentPaper.content.total_questions - 1}
                         >
                             Next
                         </Button>
@@ -166,12 +167,12 @@ export const ExamLayout = () => {
 
             {/* Question Navigation Sidebar */}
             <QuestionNavigation
-                totalQuestions={currentPaper.totalQuestions}
+                totalQuestions={currentPaper.content.total_questions}
                 currentQuestion={currentQuestionIndex}
                 answers={answers}
                 flaggedQuestions={flaggedQuestions}
                 onQuestionSelect={(index) => useExamStore.setState({ currentQuestionIndex: index })}
-                minimumRequired={currentPaper.passingCriteria.minimumQuestions}
+                minimumRequired={currentPaper.content.passing_criteria.minimum_questions}
             />
 
             {/* Submit Confirmation Dialog */}
@@ -180,7 +181,7 @@ export const ExamLayout = () => {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Submit Exam?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            You have answered {Object.keys(answers).length} out of {currentPaper.totalQuestions} questions.
+                            You have answered {Object.keys(answers).length} out of {currentPaper.content.total_questions} questions.
                             {error && (
                                 <span className="text-red-500 block mt-2">{error}</span>
                             )}
@@ -202,7 +203,7 @@ export const ExamLayout = () => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Time's Up!</AlertDialogTitle>
+                        <AlertDialogTitle>Time&apos;s Up!</AlertDialogTitle>
                         <AlertDialogDescription>
                             Your exam time has ended. Your answers will be submitted automatically.
                         </AlertDialogDescription>
