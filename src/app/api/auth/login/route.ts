@@ -1,23 +1,39 @@
-import { KEYCLOAK_CONFIG, KEYCLOAK_ENDPOINTS } from '@/shared/auth/apiConfig';
+import { KEYCLOAK_ENDPOINTS } from '@/shared/auth/apiConfig';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { logger } from '@/shared/lib/logger';
+import { withApiLogger } from '@/shared/lib/api-logger';
+
+interface KeycloakError {
+  error: string;
+  error_description?: string;
+}
 
 /**
  * This API route acts as a proxy for Keycloak login with fallback mechanism
  */
-export async function POST(request: NextRequest) {
+async function handler(request: NextRequest) {
   try {
     // Forward the request body to Keycloak
     const formData = await request.formData();
     const username = formData.get('username')?.toString();
-    const password = formData.get('password')?.toString();
     
-    if (!username || !password) {
+    if (!username || !formData.get('password')) {
+      logger.warn('Login attempt failed - Missing credentials', {
+        path: request.nextUrl.pathname,
+        username: username || 'unknown'
+      });
+      
       return NextResponse.json(
         { error: 'Username and password are required' },
         { status: 400 }
       );
     }
+    
+    logger.info('Login attempt', {
+      path: request.nextUrl.pathname,
+      username
+    });
     
     // Create a new request to Keycloak with timeout
     const controller = new AbortController();
@@ -40,11 +56,11 @@ export async function POST(request: NextRequest) {
       clearTimeout(timeoutId);
       
       if (!loginResponse.ok) {
-        let errorMessage;
+        let errorMessage: string;
         try {
-          const errorData = await loginResponse.json();
+          const errorData = await loginResponse.json() as KeycloakError;
           errorMessage = errorData.error_description || errorData.error || 'Authentication failed';
-        } catch (e) {
+        } catch {
           try {
             const errorText = await loginResponse.text();
             errorMessage = errorText || `Authentication failed with status ${loginResponse.status}`;
@@ -53,15 +69,30 @@ export async function POST(request: NextRequest) {
           }
         }
         
-        let statusCode = loginResponse.status;
+        const statusCode = loginResponse.status;
+        
+        logger.warn('Keycloak authentication failed', {
+          username,
+          statusCode,
+          errorMessage,
+          path: request.nextUrl.pathname
+        });
         
         // For certain errors, try to use development fallback
         if (process.env.NODE_ENV !== 'production' && 
             (statusCode === 401 || statusCode === 403 || statusCode >= 500 || errorMessage.includes('network'))) {
           try {
+            logger.info('Attempting development fallback auth', {
+              username,
+              reason: 'Keycloak authentication failed'
+            });
             return await generateDevelopmentToken(username);
           } catch (fallbackError) {
-            console.error('Development fallback failed:', fallbackError);
+            logger.error('Development fallback failed', {
+              username,
+              error: fallbackError instanceof Error ? fallbackError.message : 'Unknown error',
+              stack: fallbackError instanceof Error ? fallbackError.stack : undefined
+            });
           }
         }
         
@@ -71,20 +102,38 @@ export async function POST(request: NextRequest) {
         );
       }
       
+      // Log successful authentication
+      logger.info('Authentication successful', {
+        username,
+        path: request.nextUrl.pathname
+      });
+      
       // Return the Keycloak token response
       const tokenData = await loginResponse.json();
       return NextResponse.json(tokenData);
-    } catch (fetchError: any) {
+    } catch (fetchError: Error | unknown) {
       clearTimeout(timeoutId);
-      console.error('Fetch error in login proxy:', fetchError);
+      logger.error('Fetch error in login proxy', {
+        username,
+        error: fetchError instanceof Error ? fetchError.message : 'Unknown error',
+        stack: fetchError instanceof Error ? fetchError.stack : undefined,
+        path: request.nextUrl.pathname
+      });
       
-      if (fetchError.name === 'AbortError') {
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         // In development environment, generate fallback token
         if (process.env.NODE_ENV !== 'production') {
           try {
+            logger.info('Attempting development fallback auth due to timeout', {
+              username
+            });
             return await generateDevelopmentToken(username);
           } catch (fallbackError) {
-            console.error('Development fallback failed:', fallbackError);
+            logger.error('Development fallback failed after timeout', {
+              username,
+              error: fallbackError instanceof Error ? fallbackError.message : 'Unknown error',
+              stack: fallbackError instanceof Error ? fallbackError.stack : undefined
+            });
           }
         }
         
@@ -95,28 +144,34 @@ export async function POST(request: NextRequest) {
       }
       
       return NextResponse.json(
-        { error: fetchError.message || 'Login request failed' },
+        { error: fetchError instanceof Error ? fetchError.message : 'Login request failed' },
         { status: 500 }
       );
     }
     
-  } catch (error: any) {
-    console.error('Login proxy error:', error);
+  } catch (error: Error | unknown) {
+    const typedError = error as Error & { code?: string };
+    logger.error('Login proxy error', {
+      error: typedError.message,
+      code: typedError.code,
+      stack: typedError instanceof Error ? typedError.stack : undefined,
+      path: request.nextUrl.pathname
+    });
     
     // Determine appropriate error message and status
     let status = 500;
     let message = 'Login failed';
     
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+    if (typedError.code === 'ECONNREFUSED' || typedError.code === 'ENOTFOUND') {
       status = 502;
       message = 'Could not connect to authentication server';
-    } else if (error.message && error.message.includes('timeout')) {
+    } else if (typedError.message && typedError.message.includes('timeout')) {
       status = 504;
       message = 'Authentication server timeout';
     }
     
     return NextResponse.json(
-      { error: message, message: error.message },
+      { error: message, message: typedError.message },
       { status }
     );
   }
@@ -128,10 +183,16 @@ export async function POST(request: NextRequest) {
  */
 async function generateDevelopmentToken(username: string): Promise<NextResponse> {
   if (process.env.NODE_ENV === 'production') {
+    logger.error('Attempted to generate development token in production', {
+      username
+    });
     throw new Error('Development tokens not allowed in production');
   }
   
-  console.warn('Generating development fallback token for', username);
+  logger.warn('Generating development fallback token', {
+    username,
+    environment: process.env.NODE_ENV
+  });
   
   // Create expiration 24 hours from now
   const now = Math.floor(Date.now() / 1000);
@@ -177,6 +238,12 @@ async function generateDevelopmentToken(username: string): Promise<NextResponse>
   // Create refresh token
   const refreshToken = `dev-refresh-${crypto.randomUUID()}`;
   
+  logger.debug('Development token generated', {
+    username,
+    exp,
+    sessionState: payload.session_state
+  });
+  
   return NextResponse.json({
     access_token: developmentToken,
     expires_in: 86400,
@@ -188,3 +255,6 @@ async function generateDevelopmentToken(username: string): Promise<NextResponse>
     scope: "openid email profile"
   });
 }
+
+// Wrap the handler with apiLogger middleware
+export const POST = withApiLogger(handler);
