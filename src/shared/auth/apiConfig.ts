@@ -31,18 +31,18 @@ export const AUTH_ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   VERIFY_EMAIL: '/verify-email',
-  CALLBACK: '/api/auth/callback',
+  CALLBACK: '/auth/callback',
   PROFILE: '/profile',
   DASHBOARD: '/dashboard',
 };
 
-// Authentication API Endpoints
+// Authentication API Endpoints - Direct backend calls
 export const AUTH_ENDPOINTS = {
-  LOGIN: '/api/auth/direct-login',
-  REGISTER: '/api/auth/direct-register',
-  LOGOUT: '/logout', // No backend endpoint
+  LOGIN: '/api/auth/login',
+  REGISTER: '/api/auth/register',
+  LOGOUT: '/api/auth/logout',
   VERIFY_EMAIL: '/api/auth/verify',
-  USER_PROFILE: '/api/v1/get-user',
+  USER_PROFILE: '/api/v1/users/profile',
   HEALTH: '/api/health',
 };
 

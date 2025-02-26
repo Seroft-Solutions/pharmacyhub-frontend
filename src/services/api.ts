@@ -1,11 +1,14 @@
 import axios from 'axios';
 import { getSession } from 'next-auth/react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+// Direct backend API URL without proxy
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+// API path prefix
+const API_PATH_PREFIX = '/api/v1';
 
 // Create axios instance with auth interceptor
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: `${API_URL}${API_PATH_PREFIX}`,
 });
 
 // Add auth token to requests

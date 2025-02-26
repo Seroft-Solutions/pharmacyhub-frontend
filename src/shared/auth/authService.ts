@@ -1,5 +1,5 @@
-import { TOKEN_CONFIG, AUTH_ENDPOINTS, AUTH_ROUTES } from './apiConfig';
-import { formatAuthError } from './utils';
+import { TOKEN_CONFIG, AUTH_ENDPOINTS, AUTH_ROUTES, API_CONFIG } from './apiConfig';
+import { formatAuthError, debugJwtToken } from './utils';
 import { UserProfile, RegistrationData } from './types';
 import { Permission, Role } from './permissions';
 
@@ -48,19 +48,40 @@ class AuthService {
 
   login = async (username: string, password: string): Promise<UserProfile> => {
     try {
-      const response = await fetch(AUTH_ENDPOINTS.LOGIN, {
+      console.log('Sending login request to:', `${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.LOGIN}`);
+      console.log('With payload:', { emailAddress: username });
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.LOGIN}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ emailAddress: username, password })
       });
 
+      console.log('Login response status:', response.status);
+      console.log('Login response headers:', Object.fromEntries([...response.headers.entries()]));
+      
       if (!response.ok) {
-        const error = await response.json();
+        console.error('Login failed with status:', response.status);
+        const error = await response.json().catch(e => {
+          console.error('Error parsing login error response:', e);
+          return { error: 'Unknown login error' };
+        });
+        console.error('Login error details:', error);
         throw new Error(error.error || 'Login failed');
       }
 
       const data = await response.json();
+      console.log('Login successful, response data keys:', Object.keys(data));
       this.saveTokens(data);
+      
+      // Debug token for troubleshooting
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
+      const tokenDebug = debugJwtToken(token);
+      console.log('Token debug after login:', tokenDebug);
+      
       const userProfile = await this.getUserProfile();
       this.userProfile = userProfile;
       return userProfile;
@@ -72,7 +93,7 @@ class AuthService {
 
   register = async (data: RegistrationData): Promise<void> => {
     try {
-      const response = await fetch(AUTH_ENDPOINTS.REGISTER, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.REGISTER}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -90,14 +111,59 @@ class AuthService {
 
   getUserProfile = async (): Promise<UserProfile> => {
     try {
-      const response = await fetch(AUTH_ENDPOINTS.USER_PROFILE, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY)}`
-        }
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
+      if (!token) {
+        throw new Error('No access token available');
+      }
+      
+      // Debug token before making profile request
+      const tokenDebug = debugJwtToken(token);
+      console.log('Token debug before profile request:', tokenDebug);
+      
+      console.log('Fetching profile from:', `${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.USER_PROFILE}`);
+      
+      // Log the exact URL and headers we're using
+      console.log('Profile request URL:', `${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.USER_PROFILE}`);
+      console.log('Authorization header:', `Bearer ${token.substring(0, 20)}...`);
+      
+      // Try with standard headers
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      console.log('Using headers:', headers);
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.USER_PROFILE}`, {
+        method: 'GET',
+        headers: headers
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch user profile');
+        console.error('Profile request failed with status:', response.status, response.statusText);
+        
+        // Try to get more detailed error information
+        let errorMessage = 'Failed to fetch user profile';
+        try {
+          const errorData = await response.json();
+          console.error('Error details:', errorData);
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          console.error('Could not parse error response:', parseError);
+          // Try to get error text if JSON parsing fails
+          try {
+            const errorText = await response.text();
+            if (errorText) {
+              console.error('Error response text:', errorText);
+              errorMessage = errorText;
+            }
+          } catch (textError) {
+            console.error('Could not get error text either:', textError);
+          }
+        }
+        
+        throw new Error(`${errorMessage} (${response.status})`);
       }
 
       const profile = await response.json();
@@ -137,7 +203,7 @@ class AuthService {
     try {
       // Call backend logout endpoint if it exists
       try {
-        await fetch(AUTH_ENDPOINTS.LOGOUT, {
+        await fetch(`${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.LOGOUT}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -175,7 +241,7 @@ class AuthService {
     if (!refreshToken) return false;
 
     try {
-      const response = await fetch('/api/auth/token/refresh', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/auth/token/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken })
@@ -192,13 +258,40 @@ class AuthService {
     }
   };
 
-  private saveTokens = (data: TokenResponse) => {
-    localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, data.access_token);
-    localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, data.refresh_token);
-    localStorage.setItem(
-      TOKEN_CONFIG.TOKEN_EXPIRY_KEY, 
-      (Date.now() + (data.expires_in * 1000)).toString()
-    );
+  private saveTokens = (data: any) => {
+    // Handle different API response formats
+    if (data.jwtToken) {
+      // Direct login response format
+      // Check if the token is inside a jwtToken property or is directly the response
+      const token = typeof data === 'string' ? data : data.jwtToken;
+      
+      console.log('Login response data structure:', JSON.stringify(data, null, 2));
+      console.log('Token value type:', typeof token);
+      
+      if (!token) {
+        console.error('No token found in response data:', data);
+        throw new Error('No token found in response');
+      }
+      
+      localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, token);
+      // No refresh token in this format
+      localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, '');
+      // Default to 8 hours expiry if not provided
+      const expiryTime = Date.now() + (8 * 60 * 60 * 1000);
+      localStorage.setItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY, expiryTime.toString());
+      console.log('Saved token from login response', token.substring(0, 20) + '...');
+    } else if (data.access_token) {
+      // Token refresh response format
+      localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, data.access_token);
+      localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, data.refresh_token || '');
+      localStorage.setItem(
+        TOKEN_CONFIG.TOKEN_EXPIRY_KEY, 
+        (Date.now() + (data.expires_in * 1000)).toString()
+      );
+    } else {
+      console.error('Unexpected token response format', data);
+      throw new Error('Unexpected token format received');
+    }
   };
 
   private clearStorage = () => {
@@ -212,7 +305,7 @@ class AuthService {
 
   resetPassword = async (token: string, newPassword: string): Promise<void> => {
     try {
-      const response = await fetch(`/api/auth/reset-password`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

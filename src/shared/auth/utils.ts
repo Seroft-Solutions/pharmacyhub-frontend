@@ -73,3 +73,41 @@ export const formatAuthError = (error: unknown): string => {
   
   return 'An unexpected authentication error occurred';
 };
+
+/**
+ * Debug and validate JWT token structure
+ * Returns information about the token for troubleshooting
+ */
+export const debugJwtToken = (token: string | null): { valid: boolean, message: string, payload?: any } => {
+  if (!token) {
+    return { valid: false, message: 'No token provided' };
+  }
+  
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    return { valid: false, message: `Invalid JWT structure - expected 3 parts, got ${parts.length}` };
+  }
+  
+  try {
+    const payload = parseJwtToken(token);
+    if (!payload) {
+      return { valid: false, message: 'Failed to parse token payload' };
+    }
+    
+    return { 
+      valid: true, 
+      message: 'Token structure is valid', 
+      payload: {
+        // Only include non-sensitive parts for logging
+        sub: payload.sub,
+        exp: payload.exp ? new Date(payload.exp * 1000).toISOString() : 'not set',
+        roles: payload.roles || [],
+        hasRoles: Array.isArray(payload.roles) && payload.roles.length > 0,
+        // If token expiry exists, check if token is expired
+        expired: payload.exp ? (Date.now() >= payload.exp * 1000) : false
+      }
+    };
+  } catch (error) {
+    return { valid: false, message: `Error parsing token: ${error}` };
+  }
+};

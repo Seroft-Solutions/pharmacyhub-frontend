@@ -53,7 +53,8 @@ export const LoginForm = () => {
     const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'pharmacyhub';
     const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'pharmacyhub-client';
     
-    const redirectUri = encodeURIComponent(`${window.location.origin}/api/auth/callback`);
+    // Direct backend callback URL
+    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
     const identityProvider = provider === 'google' ? 'google' : 'facebook';
     
     window.location.href = `${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid&kc_idp_hint=${identityProvider}`;

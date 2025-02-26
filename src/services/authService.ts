@@ -83,6 +83,7 @@ class AuthService {
    */
   public async login(credentials: LoginCredentials): Promise<TokenData> {
     try {
+      // Direct backend call instead of using proxy route
       const response = await axios.post<LoggedInUserResponse>(
         `${this.apiBaseUrl}${AUTH_ENDPOINTS.LOGIN}`,
         credentials
@@ -115,6 +116,7 @@ class AuthService {
    */
   public async register(userData: RegistrationData): Promise<any> {
     try {
+      // Direct backend call instead of using proxy route
       const response = await axios.post(
         `${this.apiBaseUrl}${AUTH_ENDPOINTS.REGISTER}`,
         userData
@@ -156,6 +158,7 @@ class AuthService {
         throw new Error('No access token available');
       }
       
+      // Direct backend call to get user profile
       const response = await axios.get<UserProfile>(
         `${this.apiBaseUrl}${AUTH_ENDPOINTS.USER_PROFILE}`,
         {
