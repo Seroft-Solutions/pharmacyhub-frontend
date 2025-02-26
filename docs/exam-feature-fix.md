@@ -1,49 +1,73 @@
-# PharmacyHub Exam Feature Fix
+# Exam Feature Fix Documentation
 
-## Issue
-The exam feature was not working correctly, displaying "Failed to load exams. Please try again later." error. This was primarily due to API communication issues between the frontend and backend.
+## Issue Overview
 
-## Solution
-The issue has been fixed by properly configuring the API communication in the frontend. Key changes include:
+The exams feature had TypeScript errors related to the `ExamStatus` export from `mcqTypes.ts`. The adapter file was trying to use `ExamStatus` as an enum with properties like `ExamStatus.DRAFT`, but it was defined as a TypeScript type: `type ExamStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'`. 
 
-### 1. Corrected API URL Configuration
+Additionally, there were missing type definitions for `ExamQuestion` and `ExamOption` that were referenced in the adapter file.
 
-Updated the `examService.ts` file to correctly use the environment variable for the API base URL with a fallback:
+## Changes Made
 
-```typescript
-// Using environment variable for API base URL with fallback
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-const API_URL = `${API_BASE_URL}/api/exams`;
-```
+1. Updated `mcqTypes.ts` to provide both a type and const object for ExamStatus:
+   ```typescript
+   // The type for type checking
+   export type ExamStatusType = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+   
+   // The constant for consistent enum-like usage
+   export const ExamStatus = {
+     DRAFT: 'DRAFT',
+     PUBLISHED: 'PUBLISHED',
+     ARCHIVED: 'ARCHIVED'
+   } as const;
+   ```
 
-### 2. Improved Request Headers
+2. Added missing type definitions for `ExamQuestion` and `ExamOption`:
+   ```typescript
+   export interface ExamQuestion {
+     id: number;
+     text: string;
+     options: ExamOption[];
+     explanation: string;
+     points: number;
+   }
+   
+   export interface ExamOption {
+     id: string;
+     text: string;
+     isCorrect: boolean;
+   }
+   ```
 
-Added proper headers to prevent caching issues:
+3. Updated the `Exam` interface to use the new `ExamStatusType`.
 
-```typescript
-headers: {
-  'Cache-Control': 'no-cache',
-  'Pragma': 'no-cache'
-}
-```
+4. Updated `adapter.ts` to:
+   - Import the new `ExamStatusType`
+   - Fix the return type of `mapBackendStatus`
+   - Fix property names in the `adaptBackendExam` function to match the `Exam` interface
 
-### 3. Added Credentials Support
+## Architecture Notes
 
-Ensured requests include credentials for authentication:
+The exam feature follows a clean architecture pattern with:
 
-```typescript
-credentials: 'include'
-```
+1. **Model layer** - Type definitions in `mcqTypes.ts` and `types.ts`
+2. **API layer** - API clients and adapters to transform data between frontend and backend formats
+3. **UI layer** - React components to render the exam interface
+4. **Store layer** - State management for exam data
 
-### 4. Enhanced Error Handling
+The adapter pattern is used to transform data between different formats, making it easy to handle changes in API responses without affecting the rest of the application.
 
-Improved error messages, logging, and the user experience when errors occur, making it easier to debug issues.
+## Future Improvements
 
-## How to Verify
+1. Consider consolidating types between `mcqTypes.ts` and `types.ts` to avoid duplication
+2. Add runtime type validation using a library like Zod
+3. Add unit tests for the adapter functions to ensure they correctly transform data
 
-1. Make sure the backend server is running (typically at http://localhost:8080)
-2. Ensure there are published exams in the database 
-3. Start the frontend application
-4. Navigate to the Exams page
+## Additional Information
 
-If you still encounter issues, the enhanced error page provides troubleshooting guidance.
+The exam feature is integrated with the backend through REST APIs defined in the `examApi.ts` file. The backend provides endpoints for:
+- Retrieving exam lists and details
+- Starting an exam attempt
+- Submitting answers
+- Retrieving results
+
+The frontend handles exam presentation, timer management, and result display.

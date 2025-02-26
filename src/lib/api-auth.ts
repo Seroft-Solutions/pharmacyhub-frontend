@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { authService } from '@/services/authService';
+import { authService } from '@/shared/auth/authService';
 
 /**
  * Create authorized axios instance with interceptors for handling authentication
@@ -18,12 +18,14 @@ export const createAuthorizedApi = (baseURL: string = process.env.NEXT_PUBLIC_AP
   api.interceptors.request.use(
     (config: AxiosRequestConfig) => {
       // Add auth token to headers
-      const token = authService.getToken();
-      if (token.access) {
-        config.headers = {
-          ...config.headers,
-          Authorization: `Bearer ${token.access}`,
-        };
+      if (authService.isAuthenticated()) {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          config.headers = {
+            ...config.headers,
+            Authorization: `Bearer ${token}`,
+          };
+        }
       }
       
       return config;

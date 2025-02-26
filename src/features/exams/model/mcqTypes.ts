@@ -1,4 +1,10 @@
-export type ExamStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+export type ExamStatusType = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+
+export const ExamStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
+} as const;
 
 export interface Question {
   id: number;
@@ -7,11 +13,25 @@ export interface Question {
   correctOption: number;
 }
 
+export interface ExamQuestion {
+  id: number;
+  text: string;
+  options: ExamOption[];
+  explanation: string;
+  points: number;
+}
+
+export interface ExamOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
 export interface Exam {
   id: number;
   title: string;
   description: string;
-  status: ExamStatus;
+  status: ExamStatusType;
   questions?: Question[];
   duration: number; // in minutes
   passingScore: number;

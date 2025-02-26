@@ -1,5 +1,5 @@
 import { ExamPaper, ExamPaperMetadata } from '../model/types';
-import { Exam, ExamStatus, ExamQuestion, ExamOption } from '../model/mcqTypes';
+import { Exam, ExamStatus, ExamQuestion, ExamOption, ExamStatusType } from '../model/mcqTypes';
 
 // Define the backend API response types
 export interface BackendExamPaper {
@@ -82,8 +82,8 @@ export function adaptBackendExam(backendExam: BackendExam): Exam {
     title: backendExam.title,
     description: backendExam.description,
     duration: backendExam.durationMinutes,
-    totalMarks: backendExam.maxScore,
-    passingMarks: backendExam.passingScore,
+    maxScore: backendExam.maxScore,
+    passingScore: backendExam.passingScore,
     status: mapBackendStatus(backendExam.status),
     createdAt: backendExam.createdAt,
     updatedAt: backendExam.updatedAt,
@@ -109,7 +109,7 @@ function adaptBackendOption(backendOption: BackendExamOption): ExamOption {
   };
 }
 
-function mapBackendStatus(status: string): ExamStatus {
+function mapBackendStatus(status: string): ExamStatusType {
   switch (status.toUpperCase()) {
     case 'DRAFT':
       return ExamStatus.DRAFT;
