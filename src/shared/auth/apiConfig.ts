@@ -7,7 +7,7 @@
 
 // API Service Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081',
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080',
   TIMEOUT: 15000, // 15 seconds timeout
   RETRY_ATTEMPTS: 3,
   AUTH_HEADER_PREFIX: 'Bearer',

@@ -130,7 +130,7 @@ LOGIN_ATTEMPTS_LIMIT=5
 LOGIN_ATTEMPTS_WINDOW=900 # 15 minutes
 
 # API Configuration
-API_BASE_URL=http://localhost:8081
+API_BASE_URL=http://localhost:8080
 API_AUTH_SECRET=your-secret-here
 ```
 

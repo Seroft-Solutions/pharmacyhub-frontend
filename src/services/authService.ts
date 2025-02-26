@@ -66,7 +66,7 @@ class AuthService {
   private apiBaseUrl: string;
 
   private constructor() {
-    this.apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081';
+    this.apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
   }
 
   public static getInstance(): AuthService {

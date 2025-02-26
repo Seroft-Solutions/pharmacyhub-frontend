@@ -124,7 +124,7 @@ function ProtectedComponent() {
 
 Required environment variables:
 ```env
-API_BASE_URL=http://localhost:8081
+API_BASE_URL=http://localhost:8080
 API_AUTH_SECRET=your-auth-secret
 NEXTAUTH_SECRET=your-nextauth-secret
 ```

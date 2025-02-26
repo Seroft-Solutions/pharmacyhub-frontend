@@ -102,7 +102,7 @@ npm run dev
 
 # Environment variables (.env.development)
 NEXT_PUBLIC_API_URL=http://localhost:8080
-NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8081
+NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8080
 ```
 
 ### 2. Staging Environment

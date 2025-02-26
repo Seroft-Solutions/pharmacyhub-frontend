@@ -750,5 +750,5 @@ If backend denies access unexpectedly:
 3. **Test with Direct API Calls**:
    ```bash
    # Test API directly with token
-   curl -H "Authorization: Bearer $TOKEN" http://localhost:8081/api/pharmacies
+   curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/pharmacies
    ```

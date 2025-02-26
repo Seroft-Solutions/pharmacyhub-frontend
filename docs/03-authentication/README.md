@@ -81,7 +81,7 @@ Auth-related configuration is managed through environment variables:
 
 ```env
 # Auth Configuration
-API_BASE_URL=http://localhost:8081
+API_BASE_URL=http://localhost:8080
 API_AUTH_SECRET=your-secret-here
 NEXTAUTH_SECRET=your-nextauth-secret
 NEXTAUTH_URL=http://localhost:3000

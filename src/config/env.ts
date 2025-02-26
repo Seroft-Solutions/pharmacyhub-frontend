@@ -10,12 +10,12 @@ const envSchema = z.object({
   NEXTAUTH_SECRET: z.string().min(32),
 
   // Backend API Configuration
-  API_BASE_URL: z.string().url().default('http://localhost:8081'),
+  API_BASE_URL: z.string().url().default('http://localhost:8080'),
   API_AUTH_SECRET: z.string().optional(),
 
   // Frontend URLs
   NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
-  NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:8081/api'),
+  NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:8080/api'),
 
   // Optional Email Configuration
   SMTP_HOST: z.string().optional(),

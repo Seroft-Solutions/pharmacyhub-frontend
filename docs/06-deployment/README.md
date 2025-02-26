@@ -142,7 +142,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:8081
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
       - NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8080
       
   keycloak:
