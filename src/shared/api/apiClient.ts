@@ -5,7 +5,7 @@
  * refresh flows, and error handling.
  */
 
-import keycloakService from '../auth/keycloakService';
+import { authService } from '../auth';
 
 interface RequestOptions extends RequestInit {
   requiresAuth?: boolean;
@@ -37,7 +37,7 @@ export async function apiRequest<T>(
     
     // Add authentication token if required
     if (requiresAuth) {
-      const token = await keycloakService.getAccessToken();
+      const token = localStorage.getItem('accessToken');
       
       if (!token) {
         throw new Error('Authentication required');
@@ -59,7 +59,7 @@ export async function apiRequest<T>(
     
     // Handle token expiration
     if (response.status === 401 && autoRefreshToken) {
-      const refreshed = await keycloakService.refreshToken();
+      const refreshed = await authService.refreshToken();
       
       if (refreshed) {
         // Retry the request with the new token

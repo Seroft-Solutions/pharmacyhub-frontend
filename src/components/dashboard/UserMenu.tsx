@@ -2,7 +2,7 @@
 
 import { usePermissions } from "@/hooks/usePermissions";
 import { useSession } from "@/hooks/useSession";
-import { keycloakService } from "@/shared/auth";
+import { authService } from "@/shared/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -36,8 +36,8 @@ export function UserMenu() {
     try {
       setIsLoggingOut(true);
       
-      // First, logout from Keycloak
-      await keycloakService.logout();
+      // Logout using authService
+      await authService.logout();
       
       // Clear local storage
       localStorage.clear();
