@@ -1,5 +1,5 @@
 // src/lib/api/pharmacist.ts
-import {useApi} from '@/hooks/useApi';
+import {useApi} from '@/shared/api/hook/useApi';
 import {useAuth} from '@/hooks/useAuth';
 
 export interface PharmacistDetails {

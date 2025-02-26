@@ -1,71 +1,48 @@
-import { ExamPaperMetadata } from './types';
+export type ExamStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
-export enum ExamStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  ARCHIVED = 'ARCHIVED'
-}
-
-export interface ExamOption {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-}
-
-export interface ExamQuestion {
+export interface Question {
   id: number;
   text: string;
-  options: ExamOption[];
-  explanation: string;
-  points: number;
+  options: string[];
+  correctOption: number;
 }
 
 export interface Exam {
   id: number;
   title: string;
   description: string;
-  duration: number; // in minutes
-  totalMarks: number;
-  passingMarks: number;
   status: ExamStatus;
-  createdAt?: string;
-  updatedAt?: string;
-  questions?: ExamQuestion[];
-}
-
-export interface UserAnswer {
-  questionId: number;
-  selectedOptionId: string;
-  timeSpent: number;
+  questions?: Question[];
+  duration: number; // in minutes
+  passingScore: number;
+  maxScore: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ExamAttempt {
   id: number;
   examId: number;
-  userId: string;
+  userId: number;
   startTime: string;
   endTime?: string;
-  score?: number;
-  answers: UserAnswer[];
   status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
 }
 
+export interface UserAnswer {
+  questionId: number;
+  selectedOption: number;
+}
+
 export interface ExamResult {
+  attemptId: number;
   examId: number;
-  examTitle: string;
   score: number;
-  totalMarks: number;
-  passingMarks: number;
   isPassed: boolean;
-  timeSpent: number;
-  questionResults: {
+  completedAt: string;
+  answers: Array<{
     questionId: number;
-    questionText: string;
-    userAnswerId?: string;
-    correctAnswerId: string;
+    selectedOption: number;
     isCorrect: boolean;
-    explanation: string;
-    points: number;
-    earnedPoints: number;
-  }[];
+  }>;
 }
