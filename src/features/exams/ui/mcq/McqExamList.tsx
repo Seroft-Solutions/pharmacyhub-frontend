@@ -86,14 +86,46 @@ export const McqExamList: React.FC = () => {
   }
 
   if (error) {
+    const isCorsError = error.toString().includes('CORS');
+    const isAuthError = error.toString().includes('403') || error.toString().includes('401') || error.toString().includes('Forbidden') || error.toString().includes('Unauthorized');
+    
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg max-w-lg text-center">
+        <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-lg text-center shadow-md">
           <h2 className="text-xl font-bold mb-2">Error</h2>
-          <p>{error}</p>
-          <Button className="mt-4" onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <p className="mb-4">{error.toString()}</p>
+          <div className="space-y-2">
+            {isAuthError ? (
+              <Button className="w-full" onClick={() => window.location.href = '/auth/login'}>
+                Login to Access Exams
+              </Button>
+            ) : (
+              <Button className="w-full" onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            )}
+            <p className="text-xs text-red-500 mt-2">
+              Server Status: {navigator.onLine ? 'Your internet connection appears to be working.' : 'You appear to be offline.'}
+            </p>
+            <details className="mt-4 text-left" open={isCorsError || isAuthError}>
+              <summary className="cursor-pointer text-sm">Troubleshooting Steps</summary>
+              <ul className="list-disc pl-5 mt-2 text-sm">
+                <li>Make sure the backend server is running at {process.env.NEXT_PUBLIC_API_BASE_URL}</li>
+                {isAuthError && (
+                  <>
+                    <li><strong>Authentication Required:</strong> You need to be logged in to access exams</li>
+                    <li>Check if your authentication token is valid</li>
+                    <li>Verify that your user account has the required permissions</li>
+                  </>
+                )}
+                <li>Check that published exams exist in the database</li>
+                <li>Check browser console for detailed network errors</li>
+                {isCorsError && (
+                  <li>If CORS errors persist, verify your SecurityConfig.java CORS settings allow <code>{window.location.origin}</code></li>
+                )}
+              </ul>
+            </details>
+          </div>
         </div>
       </div>
     );
