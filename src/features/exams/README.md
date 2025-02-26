@@ -1,88 +1,137 @@
-# PharmacyHub MCQ Exam Feature
+# Exam Feature Integration
 
-This README provides an overview of the MCQ (Multiple Choice Question) exam feature implementation in PharmacyHub.
+## Overview
+
+The exam feature in PharmacyHub allows users to browse and take exams (model papers and past papers). The feature has been integrated with the backend API to fetch real data instead of using mock data.
 
 ## Architecture
 
-The MCQ exam feature follows a feature-based architecture, organized as follows:
+The exam feature follows a clean architecture with separate layers:
 
+1. **API Layer** - Contains services for communicating with the backend
+2. **Model Layer** - Contains TypeScript interfaces for data structures
+3. **Store Layer** - Contains Zustand stores for state management
+4. **UI Layer** - Contains React components for the user interface
+
+## Integration Details
+
+### API Services
+
+- `examService.ts` - Handles regular MCQ exams with questions and answers
+- `mcqService.ts` - Handles MCQ-specific functionality
+- `examPaperService.ts` - Handles browsing exam papers (model and past papers)
+- `adapter.ts` - Contains adapter functions to transform backend data to frontend models
+
+### Data Stores
+
+- `examStore.ts` - General exam state management
+- `mcqExamStore.ts` - MCQ-specific state management
+- `examPaperStore.ts` - State management for browsing exam papers
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/exams` | GET | Get all exams |
+| `/api/exams/published` | GET | Get published exams |
+| `/api/exams/:id` | GET | Get exam by ID |
+| `/api/exams/:id/start` | POST | Start an exam attempt |
+| `/api/exams/attempts/:id/submit` | POST | Submit an exam attempt |
+| `/api/exams/status/:status` | GET | Get exams by status |
+| `/api/exams/papers/model` | GET | Get model papers |
+| `/api/exams/papers/past` | GET | Get past papers |
+| `/api/exams/papers/:id` | GET | Get paper by ID |
+| `/api/exams/papers/stats` | GET | Get exam statistics |
+
+## Usage Examples
+
+### Browsing Exam Papers
+
+```tsx
+import { useExamPaperStore } from '@/features/exams';
+import { useEffect } from 'react';
+
+const ExamBrowser = () => {
+  const { 
+    modelPapers, 
+    pastPapers, 
+    stats, 
+    isLoading, 
+    error, 
+    fetchAllPapers, 
+    fetchExamStats 
+  } = useExamPaperStore();
+
+  useEffect(() => {
+    fetchAllPapers();
+    fetchExamStats();
+  }, [fetchAllPapers, fetchExamStats]);
+
+  if (isLoading) return <Loading />;
+  if (error) return <Error message={error} />;
+
+  return (
+    <div>
+      <StatsDisplay stats={stats} />
+      <ModelPapers papers={modelPapers} />
+      <PastPapers papers={pastPapers} />
+    </div>
+  );
+};
 ```
-src/features/exams/
-├── api/                  # API services for exams
-│   ├── examService.ts    # Service to communicate with backend API
-│   └── index.ts
-├── model/                # Type definitions
-│   ├── mcqTypes.ts       # MCQ-specific types
-│   ├── types.ts          # General exam types
-│   └── index.ts
-├── store/                # State management
-│   ├── examStore.ts      # Original Zustand store
-│   ├── mcqExamStore.ts   # MCQ-specific Zustand store
-│   └── index.ts
-├── ui/                   # UI components
-│   ├── mcq/              # MCQ-specific UI components
-│   │   ├── McqExamLayout.tsx
-│   │   ├── McqQuestionCard.tsx
-│   │   ├── McqQuestionNavigation.tsx
-│   │   ├── McqExamResults.tsx
-│   │   ├── McqExamList.tsx
-│   │   └── index.ts
-│   ├── quiz/             # Original quiz components (for reference)
-│   └── index.ts
-└── index.ts              # Feature entry point
+
+### Taking an Exam
+
+```tsx
+import { useMcqExamStore } from '@/features/exams';
+import { useEffect } from 'react';
+
+const ExamTaker = ({ examId }) => {
+  const { 
+    currentExam, 
+    currentQuestionIndex, 
+    userAnswers, 
+    isLoading, 
+    error, 
+    fetchExamById, 
+    startExam, 
+    answerQuestion, 
+    completeExam 
+  } = useMcqExamStore();
+
+  useEffect(() => {
+    startExam(examId);
+  }, [examId, startExam]);
+
+  if (isLoading) return <Loading />;
+  if (error) return <Error message={error} />;
+  if (!currentExam) return null;
+
+  return (
+    <div>
+      <ExamHeader exam={currentExam} />
+      <QuestionDisplay 
+        question={currentExam.questions[currentQuestionIndex]} 
+        userAnswer={userAnswers[currentExam.questions[currentQuestionIndex].id]} 
+        onAnswer={answerQuestion} 
+      />
+      <ExamControls onComplete={completeExam} />
+    </div>
+  );
+};
 ```
 
-## Implementation
+## Backend Data Transformation
 
-### Data Flow
+The backend API may return data in a format that differs from the frontend models. Adapter functions in `adapter.ts` handle the transformation:
 
-1. User browses to `/exams` to see available exams
-2. User selects an exam to start, navigating to `/exams/[id]`
-3. Exam session starts, loading questions from the backend
-4. User answers questions and navigates between them
-5. User submits the exam when finished
-6. Results are calculated and displayed at `/exams/results`
-
-### Key Components
-
-- **McqExamList**: Displays all available published exams
-- **McqExamLayout**: Main exam taking interface with question display and navigation
-- **McqQuestionCard**: Displays individual questions and answer options
-- **McqQuestionNavigation**: Side panel for navigating between questions
-- **McqExamResults**: Displays exam results and performance feedback
-
-### State Management
-
-We use Zustand for state management. The `mcqExamStore` handles:
-
-- Loading exam data
-- Managing the current question index
-- Tracking user answers
-- Handling exam time remaining
-- Processing exam submission
-- Storing and displaying results
-
-### API Integration
-
-The `examService` communicates with the backend API, matching the `ExamController` endpoints:
-
-- `GET /api/exams/published` - List published exams
-- `GET /api/exams/:id` - Get exam by ID
-- `POST /api/exams/:id/start` - Start an exam session
-- `POST /api/exams/attempts/:id/submit` - Submit exam answers
-
-## Usage
-
-To start using the exam feature:
-
-1. Navigate to `/exams` to view available exams
-2. Click "Start Exam" on any exam card
-3. Answer questions, using the navigation panel to move between questions
-4. Submit the exam when finished
-5. View your results and performance feedback
-
-## Mock Data
-
-For development purposes, the implementation includes mock data that simulates the backend API responses. This allows for testing and development without requiring the actual backend to be running.
-
-In production, the mock data conditionals should be removed, and the actual API calls should be enabled.
+```typescript
+// Example adapter
+function adaptBackendExamPaper(backendPaper: BackendExamPaper): ExamPaper {
+  return {
+    id: backendPaper.id,
+    title: backendPaper.title,
+    // ... transform other fields
+  };
+}
+```
