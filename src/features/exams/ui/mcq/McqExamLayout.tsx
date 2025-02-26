@@ -27,7 +27,6 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
     const router = useRouter();
     const {
         currentExam,
-        currentAttempt,
         currentQuestionIndex,
         timeRemaining,
         userAnswers,
@@ -111,7 +110,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
             const answeredCount = Object.keys(userAnswers).length;
             // Check if the user has answered enough questions based on exam requirements
             // This is just a placeholder. You should define your own criteria
-            const minimumRequired = Math.ceil(currentExam.questions?.length * 0.5) || 1;
+            const minimumRequired = Math.ceil((currentExam.questions?.length || 0) * 0.5) || 1;
             
             if (answeredCount < minimumRequired) {
                 setSubmitError(`Please attempt at least ${minimumRequired} questions`);
@@ -119,7 +118,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
             }
 
             await completeExam();
-            router.push('/exams/results');
+            router.push('/exam/results');
         } catch (err) {
             setSubmitError(err instanceof Error ? err.message : 'Failed to submit exam');
         }
@@ -140,7 +139,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                 <div className="bg-red-50 text-red-600 p-4 rounded-lg max-w-lg text-center">
                     <h2 className="text-xl font-bold mb-2">Error</h2>
                     <p>{error}</p>
-                    <Button className="mt-4" onClick={() => router.push('/exams')}>
+                    <Button className="mt-4" onClick={() => router.push('/exam')}>
                         Return to Exams
                     </Button>
                 </div>

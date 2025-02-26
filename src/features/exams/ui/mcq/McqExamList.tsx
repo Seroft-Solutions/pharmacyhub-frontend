@@ -59,7 +59,7 @@ export const McqExamList: React.FC = () => {
   }, []);
 
   const handleStartExam = (examId: number) => {
-    router.push(`/exams/${examId}`);
+    router.push(`/exam/${examId}`);
   };
 
   // Filter exams based on search term and difficulty
