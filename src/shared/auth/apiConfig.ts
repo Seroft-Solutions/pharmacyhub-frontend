@@ -43,7 +43,7 @@ export const AUTH_ENDPOINTS = {
   LOGOUT: '/logout', // No backend endpoint
   VERIFY_EMAIL: '/api/auth/verify',
   USER_PROFILE: '/api/v1/get-user',
-  HEALTH: '/health',
+  HEALTH: '/api/health',
 };
 
 // Session Configuration

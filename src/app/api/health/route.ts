@@ -1,75 +1,38 @@
-import { API_CONFIG } from '@/shared/auth/apiConfig';
 import { NextResponse } from 'next/server';
+import { API_CONFIG, AUTH_ENDPOINTS } from '@/shared/auth/apiConfig';
 
-/**
- * Health Check Handler
- * 
- * This API route checks the health of the backend authentication service
- */
 export async function GET() {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(`${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.HEALTH}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
 
-    try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/health`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          status: 'error',
+          message: `Backend health check failed: ${response.status} ${response.statusText}`,
         },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        return NextResponse.json({
-          status: 'error',
-          message: `API server returned an error: ${response.status} ${response.statusText}`,
-          details: {
-            timestamp: new Date().toISOString(),
-          }
-        }, { status: response.status });
-      }
-
-      return NextResponse.json({
-        status: 'ok',
-        message: 'API server is available',
-        details: {
-          timestamp: new Date().toISOString(),
-        }
-      });
-
-    } catch (fetchError: unknown) {
-      clearTimeout(timeoutId);
-
-      if (fetchError && typeof fetchError === 'object' && 'name' in fetchError && fetchError.name === 'AbortError') {
-        return NextResponse.json({
-          status: 'error',
-          message: 'Connection to API server timed out',
-          details: {
-            timestamp: new Date().toISOString(),
-          }
-        }, { status: 504 });
-      }
-
-      return NextResponse.json({
-        status: 'error',
-        message: `Network error: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`,
-        details: {
-          timestamp: new Date().toISOString(),
-        }
-      }, { status: 503 });
+        { status: response.status }
+      );
     }
 
-  } catch (error: unknown) {
-    return NextResponse.json({
-      status: 'error',
-      message: `Failed to check API connectivity: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      details: {
-        timestamp: new Date().toISOString(),
-      }
-    }, { status: 500 });
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        status: 'error',
+        message: 'Failed to connect to backend service',
+        details: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString(),
+        },
+      },
+      { status: 500 }
+    );
   }
 }
