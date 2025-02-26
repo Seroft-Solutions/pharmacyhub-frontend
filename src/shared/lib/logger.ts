@@ -1,153 +1,61 @@
-import winston from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
-import { loggerConfig, logFormatConfig, logFilePatterns, retentionPolicy } from '../config/logger';
-import { LogMetadata, ApiRequest, ApiResponse } from '../types/logger';
+// Browser-compatible logger implementation
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+type LogLevel = 'info' | 'warn' | 'error' | 'debug';
+
+interface LogParams {
+  [key: string]: any;
+}
 
 class Logger {
-  private static instance: Logger;
-  private logger: winston.Logger;
+  private prefix: string;
 
-  private constructor() {
-    const { combine, timestamp, json, colorize, printf } = winston.format;
+  constructor(prefix: string = 'PharmacyHub') {
+    this.prefix = prefix;
+  }
 
-    // Create logs directory if it doesn't exist
-    const rotateFileOptions = {
-      ...retentionPolicy,
-      dirname: loggerConfig.directory,
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-    };
+  info(message: string, params?: LogParams): void {
+    this.log('info', message, params);
+  }
 
-    // Initialize Winston logger
-    this.logger = winston.createLogger({
-      level: loggerConfig.level,
-      format: combine(
-        timestamp(),
-        json(),
-        printf(({ timestamp, level, message, ...metadata }) => {
-          return JSON.stringify({
-            timestamp,
-            level,
-            message,
-            ...logFormatConfig.metadata,
-            ...metadata,
-          });
-        })
-      ),
-      transports: [
-        // Error log file
-        new DailyRotateFile({
-          ...rotateFileOptions,
-          filename: logFilePatterns.error,
-          level: 'error',
-        }),
-        // Combined log file for all levels
-        new DailyRotateFile({
-          ...rotateFileOptions,
-          filename: logFilePatterns.combined,
-        }),
-        // API-specific log file
-        new DailyRotateFile({
-          ...rotateFileOptions,
-          filename: logFilePatterns.api,
-        }),
-      ],
-    });
+  warn(message: string, params?: LogParams): void {
+    this.log('warn', message, params);
+  }
 
-    // Add console transport in development
-    if (process.env.NODE_ENV === 'development') {
-      this.logger.add(
-        new winston.transports.Console({
-          format: combine(
-            colorize(),
-            printf(({ timestamp, level, message, ...metadata }) => {
-              return `${timestamp} [${level}]: ${message} ${
-                Object.keys(metadata).length ? JSON.stringify(metadata, null, 2) : ''
-              }`;
-            })
-          ),
-        })
-      );
+  error(message: string, params?: LogParams): void {
+    this.log('error', message, params);
+  }
+
+  debug(message: string, params?: LogParams): void {
+    if (isDevelopment) {
+      this.log('debug', message, params);
     }
   }
 
-  public static getInstance(): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger();
+  private log(level: LogLevel, message: string, params?: LogParams): void {
+    // Only log in development or use browser's console in production
+    // This ensures no server-side code is imported in the client
+    if (typeof window !== 'undefined') {
+      const timestamp = new Date().toISOString();
+      const logPrefix = `[${this.prefix}] [${timestamp}] [${level.toUpperCase()}]`;
+      
+      switch (level) {
+        case 'info':
+          console.info(logPrefix, message, params ? params : '');
+          break;
+        case 'warn':
+          console.warn(logPrefix, message, params ? params : '');
+          break;
+        case 'error':
+          console.error(logPrefix, message, params ? params : '');
+          break;
+        case 'debug':
+          console.debug(logPrefix, message, params ? params : '');
+          break;
+      }
     }
-    return Logger.instance;
-  }
-
-  private formatMetadata(metadata?: LogMetadata): LogMetadata {
-    return {
-      timestamp: new Date().toISOString(),
-      ...metadata,
-    };
-  }
-
-  public error(message: string, metadata?: LogMetadata): void {
-    this.logger.error(message, this.formatMetadata(metadata));
-  }
-
-  public warn(message: string, metadata?: LogMetadata): void {
-    this.logger.warn(message, this.formatMetadata(metadata));
-  }
-
-  public info(message: string, metadata?: LogMetadata): void {
-    this.logger.info(message, this.formatMetadata(metadata));
-  }
-
-  public debug(message: string, metadata?: LogMetadata): void {
-    this.logger.debug(message, this.formatMetadata(metadata));
-  }
-
-  // Helper method for API logging
-  public logApiRequest(req: ApiRequest, metadata?: LogMetadata): void {
-    this.info(`API Request: ${req.method} ${req.url}`, {
-      ...this.formatMetadata(metadata),
-      method: req.method,
-      path: req.url,
-      query: req.query,
-      body: req.body,
-      headers: {
-        'user-agent': req.headers['user-agent'],
-        'content-type': req.headers['content-type'],
-      },
-    });
-  }
-
-  // Helper method for API response logging
-  public logApiResponse(req: ApiRequest, res: ApiResponse, responseTime: number, metadata?: LogMetadata): void {
-    this.info(`API Response: ${req.method} ${req.url}`, {
-      ...this.formatMetadata(metadata),
-      method: req.method,
-      path: req.url,
-      statusCode: res.statusCode,
-      responseTime: `${responseTime}ms`,
-    });
   }
 }
 
 // Export a singleton instance
-export const logger = Logger.getInstance();
-
-// Export a middleware for API routes
-export const apiLogger = (handler: (req: ApiRequest, res: ApiResponse) => Promise<unknown>) => 
-  async (req: ApiRequest, res: ApiResponse): Promise<unknown> => {
-    const start = Date.now();
-    
-    try {
-      logger.logApiRequest(req);
-      const result = await handler(req, res);
-      logger.logApiResponse(req, res, Date.now() - start);
-      return result;
-    } catch (error) {
-      logger.error('API Error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        method: req.method,
-        path: req.url,
-      });
-      throw error;
-    }
-  };
+export const logger = new Logger();

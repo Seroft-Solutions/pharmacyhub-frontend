@@ -1,7 +1,7 @@
+'use client';
+
 import React from 'react';
-import { ExamLayout } from '@/features/exams/ui/quiz/ExamLayout';
-import { examService } from '@/features/exams/api/examService';
-import { useExamStore } from '@/features/exams/store/examStore';
+import { McqExamLayout } from '@/features/exams/ui/mcq';
 
 interface ExamPageProps {
     params: {
@@ -9,11 +9,19 @@ interface ExamPageProps {
     };
 }
 
-export default async function ExamPage({ params }: ExamPageProps) {
-    const paper = await examService.getPaper(params.id);
+export default function ExamPage({ params }: ExamPageProps) {
+    const examId = parseInt(params.id, 10);
     
-    // Initialize exam in store
-    useExamStore.getState().startExam(paper);
-
-    return <ExamLayout />;
+    if (isNaN(examId)) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="bg-red-50 text-red-600 p-4 rounded-lg max-w-lg text-center">
+                    <h2 className="text-xl font-bold mb-2">Invalid Exam ID</h2>
+                    <p>The exam ID provided is not valid. Please try again with a valid ID.</p>
+                </div>
+            </div>
+        );
+    }
+    
+    return <McqExamLayout examId={examId} />;
 }

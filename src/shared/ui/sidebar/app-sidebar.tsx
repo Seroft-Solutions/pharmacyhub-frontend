@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {BriefcaseMedical, HandCoins, Handshake, UserCog,} from "lucide-react"
+import {BriefcaseMedical, GraduationCap, HandCoins, Handshake, UserCog} from "lucide-react"
 
 import {NavMain} from "@/components/NavSideBar/nav-main"
 import {NavUser} from "@/components/NavSideBar/nav-user"
@@ -75,7 +75,24 @@ const data = {
           url: "pharmacyManagerConnections",
         },
       ],
-    },],
+    },
+    {
+      title: "Exams",
+      url: "#",
+      icon: GraduationCap,
+      isActive: true,
+      items: [
+        {
+          title: "Available Exams",
+          url: "/exams",
+        },
+        {
+          title: "My Results",
+          url: "/exams/results",
+        },
+      ],
+    },
+  ],
   requests:
     [
       {
