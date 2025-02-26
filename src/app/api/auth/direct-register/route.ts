@@ -1,6 +1,5 @@
 import { API_CONFIG } from '@/shared/auth/apiConfig';
 import { NextRequest, NextResponse } from 'next/server';
-import { RegistrationData } from '@/shared/auth/types';
 
 /**
  * Direct Registration Handler
@@ -9,7 +8,18 @@ import { RegistrationData } from '@/shared/auth/types';
  */
 export async function POST(request: NextRequest) {
   try {
-    const userData = (await request.json()) as RegistrationData;
+    const formData = await request.json();
+    
+    // Transform to match backend UserDTO format
+    const userData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      emailAddress: formData.email,
+      password: formData.password,
+      userType: formData.userType || 'USER',
+      registered: true,
+      openToConnect: false
+    };
 
     const response = await fetch(`${API_CONFIG.BASE_URL}/api/auth/signup`, {
       method: 'POST',

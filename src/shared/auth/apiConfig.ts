@@ -38,8 +38,8 @@ export const AUTH_ROUTES = {
 
 // Authentication API Endpoints
 export const AUTH_ENDPOINTS = {
-  LOGIN: '/api/auth/login',
-  REGISTER: '/api/auth/signup',
+  LOGIN: '/api/auth/direct-login',
+  REGISTER: '/api/auth/direct-register',
   LOGOUT: '/logout', // No backend endpoint
   VERIFY_EMAIL: '/api/auth/verify',
   USER_PROFILE: '/api/v1/get-user',
