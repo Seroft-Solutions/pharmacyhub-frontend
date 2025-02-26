@@ -2,8 +2,11 @@ export type Role =
   | 'SUPER_ADMIN'
   | 'ADMIN'
   | 'MANAGER'
+  | 'PHARMACY_MANAGER'
   | 'USER'
   | 'PHARMACIST'
+  | 'PROPRIETOR'
+  | 'SALESMAN'
   | 'INSTRUCTOR';
 
 export type Permission = 
@@ -24,7 +27,8 @@ export type Permission =
   | 'manage:roles'
   | 'manage:exams'
   | 'take:exams'
-  | 'grade:exams';
+  | 'grade:exams'
+  | 'UPDATE_STATUS';
 
 export interface TokenUser {
   id: string;
@@ -32,6 +36,7 @@ export interface TokenUser {
   name: string;
   roles: Role[];
   permissions: Permission[];
+  userType?: string | null;
   accessToken?: string;
 }
 

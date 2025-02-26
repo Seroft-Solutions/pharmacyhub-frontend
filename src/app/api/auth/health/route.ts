@@ -1,151 +1,75 @@
-import { KEYCLOAK_CONFIG } from '@/shared/auth/apiConfig';
-import { NextRequest, NextResponse } from 'next/server';
-import { logger } from '@/shared/lib/logger';
-import { withApiLogger } from '@/shared/lib/api-logger';
-
-interface HealthCheckResponse {
-  status: 'ok' | 'error';
-  message: string;
-  timestamp: string;
-  responseTime: string;
-  details?: Record<string, unknown>;
-}
+import { API_CONFIG } from '@/shared/auth/apiConfig';
+import { NextResponse } from 'next/server';
 
 /**
- * Health check endpoint for Keycloak connectivity
- * This route serves as both a proxy test and a way to verify Keycloak availability
+ * Health Check Handler
+ * 
+ * This API route checks the health of the backend authentication service
  */
-async function handler(request: NextRequest) {
-  const startTime = Date.now();
-
+export async function GET() {
   try {
-    logger.info('Starting Keycloak health check', {
-      path: request.nextUrl.pathname,
-      keycloakBaseUrl: KEYCLOAK_CONFIG.BASE_URL
-    });
-
-    // Try to reach the Keycloak well-known endpoint
-    const wellKnownUrl = `${KEYCLOAK_CONFIG.BASE_URL}/realms/${KEYCLOAK_CONFIG.REALM}/.well-known/openid-configuration`;
-    
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
+
     try {
-      const response = await fetch(wellKnownUrl, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/health`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
-      const responseTime = Date.now() - startTime;
-      
+
       if (!response.ok) {
-        const errorResponse: HealthCheckResponse = {
+        return NextResponse.json({
           status: 'error',
-          message: `Keycloak server returned an error: ${response.status} ${response.statusText}`,
-          timestamp: new Date().toISOString(),
-          responseTime: `${responseTime}ms`,
+          message: `API server returned an error: ${response.status} ${response.statusText}`,
           details: {
-            statusCode: response.status,
-            statusText: response.statusText
+            timestamp: new Date().toISOString(),
           }
-        };
-
-        logger.error('Keycloak health check failed - Server Error', {
-          statusCode: response.status,
-          statusText: response.statusText,
-          responseTime,
-          path: request.nextUrl.pathname
-        });
-
-        return NextResponse.json(errorResponse, { status: 502 });
+        }, { status: response.status });
       }
-      
-      const successResponse: HealthCheckResponse = {
-        status: 'ok',
-        message: 'Keycloak server is available',
-        timestamp: new Date().toISOString(),
-        responseTime: `${responseTime}ms`,
-        details: {
-          url: wellKnownUrl
-        }
-      };
 
-      logger.info('Keycloak health check successful', {
-        responseTime,
-        path: request.nextUrl.pathname
+      return NextResponse.json({
+        status: 'ok',
+        message: 'API server is available',
+        details: {
+          timestamp: new Date().toISOString(),
+        }
       });
 
-      return NextResponse.json(successResponse, { status: 200 });
-      
-    } catch (fetchError: Error | unknown) {
+    } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
-      const responseTime = Date.now() - startTime;
-      
-      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-        const timeoutResponse: HealthCheckResponse = {
+
+      if (fetchError && typeof fetchError === 'object' && 'name' in fetchError && fetchError.name === 'AbortError') {
+        return NextResponse.json({
           status: 'error',
-          message: 'Connection to Keycloak server timed out',
-          timestamp: new Date().toISOString(),
-          responseTime: `${responseTime}ms`,
+          message: 'Connection to API server timed out',
           details: {
-            timeout: 5000
+            timestamp: new Date().toISOString(),
           }
-        };
-
-        logger.error('Keycloak health check failed - Timeout', {
-          error: 'Connection timeout',
-          responseTime,
-          path: request.nextUrl.pathname
-        });
-
-        return NextResponse.json(timeoutResponse, { status: 504 });
+        }, { status: 504 });
       }
-      
-      const networkResponse: HealthCheckResponse = {
+
+      return NextResponse.json({
         status: 'error',
         message: `Network error: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`,
-        timestamp: new Date().toISOString(),
-        responseTime: `${responseTime}ms`,
         details: {
-          error: fetchError instanceof Error ? fetchError.message : 'Unknown error'
+          timestamp: new Date().toISOString(),
         }
-      };
-
-      logger.error('Keycloak health check failed - Network Error', {
-        error: fetchError instanceof Error ? fetchError.message : 'Unknown error',
-        stack: fetchError instanceof Error ? fetchError.stack : undefined,
-        responseTime,
-        path: request.nextUrl.pathname
-      });
-
-      return NextResponse.json(networkResponse, { status: 502 });
+      }, { status: 503 });
     }
-    
-  } catch (error: Error | unknown) {
-    const responseTime = Date.now() - startTime;
-    const errorResponse: HealthCheckResponse = {
+
+  } catch (error: unknown) {
+    return NextResponse.json({
       status: 'error',
-      message: `Failed to check Keycloak connectivity: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      timestamp: new Date().toISOString(),
-      responseTime: `${responseTime}ms`,
+      message: `Failed to check API connectivity: ${error instanceof Error ? error.message : 'Unknown error'}`,
       details: {
-        error: error instanceof Error ? error.message : 'Unknown error'
+        timestamp: new Date().toISOString(),
       }
-    };
-
-    logger.error('Keycloak health check failed - Internal Error', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      responseTime,
-      path: request.nextUrl.pathname
-    });
-
-    return NextResponse.json(errorResponse, { status: 500 });
+    }, { status: 500 });
   }
 }
-
-export const GET = withApiLogger(handler);

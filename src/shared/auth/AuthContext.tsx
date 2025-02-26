@@ -8,9 +8,10 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import keycloakService, { UserProfile, RegistrationData } from './keycloakService';
+import { authService } from './authService';
+import { UserProfile, RegistrationData } from './types';
 import { Permission, Role } from './permissions';
-import { detectConnectivityIssues } from '../utils/connectivity';
+import { detectConnectivityIssues } from '../utils/api-connectivity';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -81,11 +82,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const connectivityResult = await detectConnectivityIssues();
           setConnectivityStatus({
             isChecking: false,
-            hasIssues: connectivityResult.recommendedApproach === 'none',
+            hasIssues: connectivityResult.status === 'error',
             message: connectivityResult.message || null,
           });
           
-          if (connectivityResult.recommendedApproach === 'none') {
+          if (connectivityResult.status === 'error') {
             console.warn('Auth connectivity issues detected:', connectivityResult.message);
           }
         } catch (connectivityError) {
@@ -97,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
         
-        if (keycloakService.isAuthenticated()) {
+        if (authService.isAuthenticated()) {
           // Try to get user profile from local storage first for faster rendering
           const cachedProfile = localStorage.getItem(USER_PROFILE_KEY);
           
@@ -113,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Auth initialization error:', error);
         // Clear any invalid auth state
-        keycloakService.logout();
+        authService.logout();
         setUser(null);
         setIsAuthenticated(false);
       } finally {
@@ -131,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      const userProfile = await keycloakService.login(username, password);
+      const userProfile = await authService.login(username, password);
       setUser(userProfile);
       setIsAuthenticated(true);
       localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(userProfile));
@@ -148,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * Logout handler
    */
   const logout = () => {
-    keycloakService.logout();
+    authService.logout();
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem(USER_PROFILE_KEY);
@@ -162,7 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      await keycloakService.register(data);
+      await authService.register(data);
       // Note: We don't automatically log in after registration
       // because email verification might be required
     } catch (error) {
@@ -188,7 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // If not found in cache, check with the service 
     // (this will get fresh data from the token if needed)
-    return keycloakService.hasPermission(permission);
+    return authService.hasPermission(permission);
   };
   
   /**
@@ -205,7 +206,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     // If not found in cache, check with the service
-    return keycloakService.hasRole(role);
+    return authService.hasRole(role);
   };
   
   /**
@@ -213,13 +214,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    */
   const refreshUser = async (): Promise<void> => {
     try {
-      const userProfile = await keycloakService.getUserProfile();
+      const userProfile = await authService.getUserProfile();
       setUser(userProfile);
       setIsAuthenticated(true);
       localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(userProfile));
     } catch (error) {
       console.error('Profile refresh error:', error);
-      keycloakService.logout();
+      authService.logout();
       setUser(null);
       setIsAuthenticated(false);
       localStorage.removeItem(USER_PROFILE_KEY);

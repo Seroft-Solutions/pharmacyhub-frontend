@@ -8,9 +8,11 @@
 // Export permission constants
 export * from './permissions';
 
-// Export Keycloak service
-export { default as keycloakService } from './keycloakService';
-export type { UserProfile, RegistrationData } from './keycloakService';
+// Export types
+export * from './types';
+
+// Export auth service
+export { default as authService } from './authService';
 
 // Export authentication context and hook
 export { AuthProvider, useAuth, default as AuthContext } from './AuthContext';

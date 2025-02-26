@@ -9,11 +9,9 @@ const envSchema = z.object({
   NEXTAUTH_URL: z.string().url().default('http://localhost:3000'),
   NEXTAUTH_SECRET: z.string().min(32),
 
-  // Keycloak Configuration
-  KEYCLOAK_CLIENT_ID: z.string().default('pharmacyhub-client'),
-  KEYCLOAK_CLIENT_SECRET: z.string().default('your-client-secret'),
-  KEYCLOAK_ISSUER: z.string().url().default('http://localhost:8080/realms/pharmacyhub'),
-  KEYCLOAK_BASE_URL: z.string().url().default('http://localhost:8080'),
+  // Backend API Configuration
+  API_BASE_URL: z.string().url().default('http://localhost:8081'),
+  API_AUTH_SECRET: z.string().optional(),
 
   // Frontend URLs
   NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
@@ -92,12 +90,10 @@ function validateEnv(): Env {
 // Create a validated env object
 const env = validateEnv();
 
-// Keycloak specific configuration
-export const keycloakConfig = {
-  clientId: env.KEYCLOAK_CLIENT_ID,
-  clientSecret: env.KEYCLOAK_CLIENT_SECRET,
-  issuer: env.KEYCLOAK_ISSUER,
-  baseUrl: env.KEYCLOAK_BASE_URL,
+// API Configuration
+export const apiConfig = {
+  baseUrl: env.API_BASE_URL,
+  authSecret: env.API_AUTH_SECRET,
 } as const;
 
 // Auth specific configuration

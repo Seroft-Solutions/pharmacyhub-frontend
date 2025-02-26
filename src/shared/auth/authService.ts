@@ -1,14 +1,17 @@
-import { KEYCLOAK_CONFIG, TOKEN_CONFIG, KEYCLOAK_ENDPOINTS } from './apiConfig';
+import { TOKEN_CONFIG, AUTH_ENDPOINTS, AUTH_ROUTES } from './apiConfig';
 import { formatAuthError } from './utils';
+import { UserProfile, RegistrationData } from './types';
+import { Permission, Role } from './permissions';
 
-interface KeycloakTokenResponse {
+interface TokenResponse {
   access_token: string;
   refresh_token: string;
   expires_in: number;
   token_type: string;
 }
 
-class KeycloakService {
+class AuthService {
+  private userProfile: UserProfile | null = null;
   private sessionCheckInterval: NodeJS.Timeout | null = null;
   private lastCheck = 0;
   private readonly CHECK_INTERVAL = 60000; // 1 minute
@@ -43,9 +46,9 @@ class KeycloakService {
     }
   };
 
-  login = async (username: string, password: string) => {
+  login = async (username: string, password: string): Promise<UserProfile> => {
     try {
-      const response = await fetch('/api/auth/token', {
+      const response = await fetch(AUTH_ENDPOINTS.LOGIN, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -58,27 +61,91 @@ class KeycloakService {
 
       const data = await response.json();
       this.saveTokens(data);
-      return data;
+      const userProfile = await this.getUserProfile();
+      this.userProfile = userProfile;
+      return userProfile;
     } catch (error) {
       console.error('Login error:', error);
+      throw new Error(formatAuthError(error));
+    }
+  };
+
+  register = async (data: RegistrationData): Promise<void> => {
+    try {
+      const response = await fetch(AUTH_ENDPOINTS.REGISTER, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw new Error(formatAuthError(error));
+    }
+  };
+
+  getUserProfile = async (): Promise<UserProfile> => {
+    try {
+      const response = await fetch(AUTH_ENDPOINTS.USER_PROFILE, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY)}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+
+      const profile = await response.json();
+      this.userProfile = profile;
+      return profile;
+    } catch (error) {
+      console.error('Get user profile error:', error);
       throw error;
+    }
+  };
+
+  hasPermission = async (permission: Permission): Promise<boolean> => {
+    try {
+      if (!this.userProfile) {
+        await this.getUserProfile();
+      }
+      return this.userProfile?.permissions.includes(permission) || false;
+    } catch (error) {
+      console.error('Permission check error:', error);
+      return false;
+    }
+  };
+
+  hasRole = async (role: Role): Promise<boolean> => {
+    try {
+      if (!this.userProfile) {
+        await this.getUserProfile();
+      }
+      return this.userProfile?.roles.includes(role) || false;
+    } catch (error) {
+      console.error('Role check error:', error);
+      return false;
     }
   };
 
   logout = async () => {
     try {
-      const refreshToken = localStorage.getItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY);
-      
-      if (refreshToken) {
-        const logoutUrl = `${KEYCLOAK_CONFIG.BASE_URL}/realms/${KEYCLOAK_CONFIG.REALM}/protocol/openid-connect/logout`;
-        await fetch(logoutUrl, {
+      // Call backend logout endpoint if it exists
+      try {
+        await fetch(AUTH_ENDPOINTS.LOGOUT, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            'client_id': KEYCLOAK_CONFIG.CLIENT_ID,
-            'refresh_token': refreshToken
-          })
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY)}`
+          }
         });
+      } catch (error) {
+        console.warn('Logout endpoint error:', error);
       }
 
       if (this.sessionCheckInterval) {
@@ -87,12 +154,11 @@ class KeycloakService {
       }
 
       this.clearStorage();
-      const finalRedirectUrl = encodeURIComponent(window.location.origin + '/login');
-      window.location.href = `${KEYCLOAK_CONFIG.BASE_URL}/realms/${KEYCLOAK_CONFIG.REALM}/protocol/openid-connect/logout?client_id=${KEYCLOAK_CONFIG.CLIENT_ID}&post_logout_redirect_uri=${finalRedirectUrl}`;
+      window.location.href = AUTH_ROUTES.LOGIN;
     } catch (error) {
       console.error('Logout error:', error);
       this.clearStorage();
-      window.location.href = '/login';
+      window.location.href = AUTH_ROUTES.LOGIN;
     }
   };
 
@@ -126,7 +192,7 @@ class KeycloakService {
     }
   };
 
-  private saveTokens = (data: KeycloakTokenResponse) => {
+  private saveTokens = (data: TokenResponse) => {
     localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, data.access_token);
     localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, data.refresh_token);
     localStorage.setItem(
@@ -146,13 +212,12 @@ class KeycloakService {
 
   resetPassword = async (token: string, newPassword: string): Promise<void> => {
     try {
-      const response = await fetch(`${KEYCLOAK_ENDPOINTS.TOKEN}/reset-credentials`, {
+      const response = await fetch(`/api/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          client_id: KEYCLOAK_CONFIG.CLIENT_ID,
           token,
-          new_password: newPassword
+          newPassword
         })
       });
 
@@ -174,6 +239,6 @@ class KeycloakService {
   };
 }
 
-const keycloakService = new KeycloakService();
-export { keycloakService };
-export default keycloakService;
+const authService = new AuthService();
+export { authService };
+export default authService;
