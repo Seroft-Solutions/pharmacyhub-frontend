@@ -1,43 +1,32 @@
-export type ExamStatusType = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+// Base types for exam entities
 
-export const ExamStatus = {
-  DRAFT: 'DRAFT',
-  PUBLISHED: 'PUBLISHED',
-  ARCHIVED: 'ARCHIVED'
-} as const;
+export interface Option {
+  id: string;
+  text: string;
+  isCorrect?: boolean; // Only provided during creation or for instructors
+}
 
 export interface Question {
   id: number;
+  questionNumber: number;
   text: string;
-  options: string[];
-  correctOption: number;
-}
-
-export interface ExamQuestion {
-  id: number;
-  text: string;
-  options: ExamOption[];
-  explanation: string;
-  points: number;
-}
-
-export interface ExamOption {
-  id: string;
-  text: string;
-  key: string;
-  isCorrect: boolean;
+  options: Option[];
+  explanation?: string;
+  marks: number;
 }
 
 export interface Exam {
   id: number;
   title: string;
   description: string;
-  status: ExamStatusType;
-  questions: ExamQuestion[];
   duration: number; // in minutes
-  passingScore: number;
-  maxScore: number;
+  totalMarks: number;
+  passingMarks: number;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  questions?: Question[];
 }
+
+// Exam attempt related types
 
 export interface ExamAttempt {
   id: number;
@@ -46,20 +35,35 @@ export interface ExamAttempt {
   startTime: string;
   endTime?: string;
   status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
-  answers?: Array<{
-    questionId: number;
-    selectedOptionId: string;
-    timeSpent: number;
-  }>;
+  answers?: UserAnswer[];
 }
 
 export interface UserAnswer {
   questionId: number;
-  selectedOptionId: string;
-  timeSpent: number;
+  selectedOption: number; // index of the selected option
+  timeSpent?: number; // in seconds
+}
+
+export interface FlaggedQuestion {
+  questionId: number;
+  attemptId: number;
+}
+
+// Exam result related types
+
+export interface QuestionResult {
+  questionId: number;
+  questionText: string;
+  userAnswerId: string;
+  correctAnswerId: string;
+  isCorrect: boolean;
+  explanation?: string;
+  points: number;
+  earnedPoints: number;
 }
 
 export interface ExamResult {
+  attemptId: number;
   examId: number;
   examTitle: string;
   score: number;
@@ -67,19 +71,43 @@ export interface ExamResult {
   passingMarks: number;
   isPassed: boolean;
   timeSpent: number; // in seconds
-  questionResults: Array<{
-    questionId: number;
-    questionText: string;
-    userAnswerId: string;
-    correctAnswerId: string;
-    isCorrect: boolean;
-    explanation: string;
-    points: number;
-    earnedPoints: number;
-  }>;
+  totalQuestions: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  unanswered: number;
+  completedAt: string;
+  questionResults: QuestionResult[];
 }
 
-export interface FlaggedQuestion {
+// Exam statistics and dashboard types
+
+export interface ExamStats {
+  totalPapers: number;
+  avgDuration: number;
+  completionRate: number;
+  activeUsers: number;
+}
+
+// ExamSession type for Zustand store
+
+export interface ExamSession {
   attemptId: number;
-  questionId: number;
+  startTime: string;
+  endTime?: string;
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
+}
+
+// Types for MCQ exams
+
+export interface MCQPaper {
+  id: number;
+  title: string;
+  description: string;
+  timeLimit: number; // in minutes
+  passingCriteria: {
+    minimumScore: number;
+    minimumQuestions: number;
+  };
+  totalQuestions: number;
+  questions: Question[];
 }

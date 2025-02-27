@@ -1,42 +1,74 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useExamSession } from '../hooks/useExamQueries';
-import { useMcqExamStore } from '@/features/exams/store/mcqExamStore';
-import { UserAnswer } from '../model/mcqTypes';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+
+import { useExamSession } from '../hooks/useExamQueries';
+import { QuestionDisplay } from './components/QuestionDisplay';
+import { QuestionNavigation } from './components/QuestionNavigation';
+import { ExamProgress } from './components/ExamProgress';
+import { ExamTimer } from './components/ExamTimer';
+import { ExamSummary } from './components/ExamSummary';
+import { ExamResults } from './components/ExamResults';
 
 interface ExamContainerProps {
   examId: number;
-  userId: number;
+  userId: string;
+  onExit?: () => void;
 }
 
-export function ExamContainer({ examId, userId }: ExamContainerProps) {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<Record<number, UserAnswer>>({});
+export function ExamContainer({ 
+  examId, 
+  userId,
+  onExit 
+}: ExamContainerProps) {
   const [attemptId, setAttemptId] = useState<number | null>(null);
-  const [isExamComplete, setIsExamComplete] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   
-  // Get exam session data and mutation functions
   const {
+    // Data
     exam,
     questions,
+    currentQuestionIndex,
+    answers,
+    flaggedQuestions,
+    timeRemaining,
+    isCompleted,
+    showSummary,
+    
+    // Loading states
     isLoading,
     error,
-    startExam,
-    submitExam,
     isStarting,
     isSubmitting,
+    isSaving,
+    isFlagging,
     startError,
-    submitError
+    submitError,
+    
+    // Actions
+    startExam,
+    answerQuestion,
+    toggleFlagQuestion,
+    navigateToQuestion,
+    nextQuestion,
+    previousQuestion,
+    toggleSummary,
+    submitExam,
+    handleTimeExpired,
+    
+    // Helpers
+    hasAnswer,
+    isFlagged,
+    getAnsweredQuestionsCount,
+    getFlaggedQuestionsCount,
+    getCompletionPercentage
   } = useExamSession(examId);
-  
-  // Access to Zustand store for any persistent state not handled by React Query
-  const examStore = useMcqExamStore();
   
   // Handle exam start
   const handleStartExam = () => {
@@ -48,63 +80,47 @@ export function ExamContainer({ examId, userId }: ExamContainerProps) {
           toast.success('Exam started successfully!');
         },
         onError: (error) => {
-          toast.error('Failed to start exam: ' + error.message);
+          toast.error('Failed to start exam: ' + (error instanceof Error ? error.message : 'Unknown error'));
         }
       }
     );
   };
   
-  // Handle answer selection
-  const handleAnswerSelect = (questionId: number, option: number) => {
-    setUserAnswers((prev) => ({
-      ...prev,
-      [questionId]: { questionId, selectedOption: option }
-    }));
-  };
-  
-  // Navigate to next question
-  const handleNextQuestion = () => {
-    if (questions && currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    }
-  };
-  
-  // Navigate to previous question
-  const handlePrevQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
-    }
-  };
-  
-  // Submit the exam
+  // Handle exam submission
   const handleSubmitExam = () => {
-    // Convert userAnswers object to array
-    const answersArray = Object.values(userAnswers);
-    
-    // Check if user has answered all questions
-    if (questions && answersArray.length < questions.length) {
-      toast.warning('Please answer all questions before submitting');
-      return;
-    }
-    
     submitExam(
-      { userId, answers: answersArray },
+      undefined,
       {
         onSuccess: (data) => {
-          setIsExamComplete(true);
+          setShowResults(true);
           toast.success('Exam submitted successfully!');
         },
         onError: (error) => {
-          toast.error('Failed to submit exam: ' + error.message);
+          toast.error('Failed to submit exam: ' + (error instanceof Error ? error.message : 'Unknown error'));
         }
       }
     );
   };
   
-  // Track progress
-  const progress = questions ? (userAnswers ? 
-    Math.round((Object.keys(userAnswers).length / questions.length) * 100) : 0) : 0;
+  // Return to dashboard
+  const handleReturnToDashboard = () => {
+    if (onExit) {
+      onExit();
+    } else {
+      // Fallback navigation if onExit isn't provided
+      window.location.href = '/dashboard';
+    }
+  };
   
+  // Handle timer expiration
+  useEffect(() => {
+    if (timeRemaining === 0 && !isCompleted && attemptId) {
+      toast.warning('Time is up! Your exam will be submitted automatically.');
+      submitExam();
+    }
+  }, [timeRemaining, isCompleted, attemptId, submitExam]);
+  
+  // Loading state
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -120,6 +136,7 @@ export function ExamContainer({ examId, userId }: ExamContainerProps) {
     );
   }
   
+  // Error state
   if (error) {
     return (
       <Alert variant="destructive">
@@ -131,7 +148,8 @@ export function ExamContainer({ examId, userId }: ExamContainerProps) {
     );
   }
   
-  if (!exam || !questions) {
+  // If no exam data is available
+  if (!exam || !questions || questions.length === 0) {
     return (
       <Alert>
         <AlertTitle>No exam found</AlertTitle>
@@ -142,114 +160,196 @@ export function ExamContainer({ examId, userId }: ExamContainerProps) {
     );
   }
   
-  // Display exam completion screen
-  if (isExamComplete) {
+  // Current question
+  const currentQuestion = questions[currentQuestionIndex];
+  const answeredQuestionsSet = new Set(
+    Object.values(answers).map(answer => answer.questionId)
+  );
+  
+  // Show exam results
+  if (showResults) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Exam Completed</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>You have successfully completed the exam!</p>
-          <p>Your answers have been submitted and will be processed.</p>
-          <Button className="mt-4" onClick={() => window.location.href = '/exams'}>
-            Return to Exams
-          </Button>
-        </CardContent>
-      </Card>
+      <ExamResults
+        result={{
+          attemptId: attemptId as number,
+          examId: exam.id,
+          examTitle: exam.title,
+          score: 75, // TODO: Get actual score from API
+          totalMarks: exam.totalMarks,
+          passingMarks: exam.passingMarks,
+          isPassed: true, // TODO: Get actual pass status from API
+          timeSpent: 1800, // TODO: Calculate actual time spent
+          totalQuestions: questions.length,
+          correctAnswers: 15, // TODO: Get actual count from API
+          incorrectAnswers: 5, // TODO: Get actual count from API
+          unanswered: 0, // TODO: Get actual count from API
+          completedAt: new Date().toISOString(),
+          questionResults: [] // TODO: Get actual results from API
+        }}
+        questions={questions}
+        userAnswers={answers}
+        onReturnToDashboard={handleReturnToDashboard}
+      />
+    );
+  }
+  
+  // Show exam summary
+  if (showSummary) {
+    return (
+      <ExamSummary
+        questions={questions}
+        answeredQuestionIds={answeredQuestionsSet}
+        flaggedQuestionIds={flaggedQuestions}
+        onNavigateToQuestion={(index) => {
+          toggleSummary();
+          navigateToQuestion(index);
+        }}
+        onSubmitExam={handleSubmitExam}
+      />
     );
   }
   
   // Display exam start screen if not started
-  if (!attemptId) {
+  if (!attemptId && !isStarting) {
     return (
       <Card className="w-full">
         <CardHeader>
           <CardTitle>{exam.title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="mb-4">{exam.description}</p>
-          <div className="mb-4">
-            <p><strong>Duration:</strong> {exam.duration} minutes</p>
-            <p><strong>Total Questions:</strong> {questions.length}</p>
-            <p><strong>Passing Score:</strong> {exam.passingScore}</p>
+          <div className="space-y-6">
+            <div>
+              <p className="text-gray-600">{exam.description}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-md">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Duration</h3>
+                <p className="text-lg">{exam.duration} minutes</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Total Questions</h3>
+                <p className="text-lg">{questions.length}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Total Marks</h3>
+                <p className="text-lg">{exam.totalMarks}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Passing Marks</h3>
+                <p className="text-lg">{exam.passingMarks}</p>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+              <h3 className="text-blue-800 font-medium">Instructions:</h3>
+              <ul className="list-disc list-inside text-blue-700 mt-2 space-y-1">
+                <li>Read each question carefully before answering.</li>
+                <li>You can flag questions to review later.</li>
+                <li>Once the time is up, the exam will be submitted automatically.</li>
+                <li>You can review all your answers before final submission.</li>
+              </ul>
+            </div>
+            
+            <Button 
+              onClick={handleStartExam} 
+              disabled={isStarting}
+              className="w-full"
+              size="lg"
+            >
+              {isStarting ? 'Starting...' : 'Start Exam'}
+            </Button>
+            
+            {startError && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  {startError instanceof Error ? startError.message : 'Failed to start exam'}
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
-          <Button 
-            onClick={handleStartExam} 
-            disabled={isStarting}
-            className="w-full"
-          >
-            {isStarting ? 'Starting...' : 'Start Exam'}
-          </Button>
-          {startError && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertDescription>
-                {startError instanceof Error ? startError.message : 'Failed to start exam'}
-              </AlertDescription>
-            </Alert>
-          )}
         </CardContent>
       </Card>
     );
   }
   
-  // Display the current question
-  const currentQuestion = questions[currentQuestionIndex];
-  
+  // Main exam interface
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>{exam.title} - Question {currentQuestionIndex + 1} of {questions.length}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-4">{currentQuestion.text}</h3>
-          <div className="space-y-2">
-            {currentQuestion.options.map((option, index) => (
-              <div 
-                key={index}
-                className={`p-3 border rounded cursor-pointer hover:bg-gray-100 ${
-                  userAnswers[currentQuestion.id]?.selectedOption === index ? 'bg-blue-100 border-blue-500' : ''
-                }`}
-                onClick={() => handleAnswerSelect(currentQuestion.id, index)}
+    <div className="space-y-4">
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-center">
+            <CardTitle>{exam.title}</CardTitle>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleSummary}
               >
-                {option}
-              </div>
-            ))}
+                Review Answers
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleSubmitExam}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Exam'}
+              </Button>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex justify-between mt-6">
-          <Button
-            variant="outline"
-            onClick={handlePrevQuestion}
-            disabled={currentQuestionIndex === 0}
-          >
-            Previous
-          </Button>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex gap-4 mb-4">
+            <div className="flex-grow">
+              <ExamProgress 
+                currentQuestion={currentQuestionIndex}
+                totalQuestions={questions.length}
+                answeredQuestions={answeredQuestionsSet.size}
+              />
+            </div>
+            <div>
+              <ExamTimer 
+                durationInMinutes={exam.duration}
+                onTimeExpired={handleTimeExpired}
+              />
+            </div>
+          </div>
           
-          {currentQuestionIndex < questions.length - 1 ? (
-            <Button onClick={handleNextQuestion}>
-              Next
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleSubmitExam}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Exam'}
-            </Button>
-          )}
-        </div>
-        
-        {submitError && (
-          <Alert variant="destructive" className="mt-4">
-            <AlertDescription>
-              {submitError instanceof Error ? submitError.message : 'Failed to submit exam'}
-            </AlertDescription>
-          </Alert>
-        )}
-      </CardContent>
-    </Card>
+          <Separator className="my-4" />
+        </CardContent>
+      </Card>
+      
+      {currentQuestion && (
+        <QuestionDisplay
+          question={currentQuestion}
+          userAnswer={answers[currentQuestion.id]?.selectedOption}
+          isFlagged={isFlagged(currentQuestion.id)}
+          onAnswerSelect={answerQuestion}
+          onFlagQuestion={toggleFlagQuestion}
+        />
+      )}
+      
+      <Card>
+        <CardContent className="py-4">
+          <QuestionNavigation
+            currentIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+            answeredQuestions={answeredQuestionsSet}
+            flaggedQuestions={flaggedQuestions}
+            onNavigate={navigateToQuestion}
+            onFinishExam={toggleSummary}
+          />
+        </CardContent>
+      </Card>
+      
+      {submitError && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            {submitError instanceof Error ? submitError.message : 'Failed to submit exam'}
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
   );
 }

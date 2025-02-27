@@ -1,27 +1,53 @@
 'use client';
 
 import React from 'react';
-import { McqExamLayout } from '@/features/exams/ui/mcq';
+import { useRouter } from 'next/navigation';
+import { Container } from '@/components/layout/container';
+import { ExamContainer } from '@/features/exams/ui/ExamContainer';
+import { Button } from '@/components/ui/button';
 
 interface ExamPageProps {
-    params: {
-        id: string;
-    };
+  params: {
+    id: string;
+  };
 }
 
 export default function ExamPage({ params }: ExamPageProps) {
-    const examId = parseInt(params.id, 10);
-    
-    if (isNaN(examId)) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="bg-red-50 text-red-600 p-4 rounded-lg max-w-lg text-center">
-                    <h2 className="text-xl font-bold mb-2">Invalid Exam ID</h2>
-                    <p>The exam ID provided is not valid. Please try again with a valid ID.</p>
-                </div>
-            </div>
-        );
-    }
-    
-    return <McqExamLayout examId={examId} />;
+  const router = useRouter();
+  const examId = parseInt(params.id, 10);
+  
+  // In a real application, you would get the user ID from authentication context
+  const userId = "current-user-id"; // This should come from auth context
+  
+  const handleExit = () => {
+    router.push('/exams');
+  };
+  
+  if (isNaN(examId)) {
+    return (
+      <Container>
+        <div className="my-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">Invalid Exam ID</h1>
+          <p className="text-gray-600 mb-4">The exam ID provided is not valid.</p>
+          <Button 
+            onClick={() => router.push('/exams')}
+          >
+            Return to Exams
+          </Button>
+        </div>
+      </Container>
+    );
+  }
+  
+  return (
+    <Container>
+      <div className="my-8">
+        <ExamContainer
+          examId={examId}
+          userId={userId}
+          onExit={handleExit}
+        />
+      </div>
+    </Container>
+  );
 }
