@@ -4,7 +4,7 @@ import { adaptBackendExam, BackendExam } from './adapter';
 import { apiClient } from '@/shared/api';
 
 // Updated path to match backend API controller
-const BASE_PATH = '/v1/exams';
+const BASE_PATH = '/api/v1/exams';
 
 /**
  * Service for handling exam-related API operations
