@@ -1,4 +1,4 @@
-import { Exam, ExamStatusType, ExamAttempt, UserAnswer, ExamResult } from '../model/mcqTypes';
+import { Exam, ExamStatusType, ExamAttempt, UserAnswer, ExamResult, FlaggedQuestion } from '../model/mcqTypes';
 import { adaptBackendExam, BackendExam } from './adapter';
 import { apiClient } from '@/shared/api';
 import { tokenManager } from '@/shared/api/tokenManager';
@@ -229,6 +229,102 @@ export const examService = {
         error: error instanceof Error ? error.message : 'Unknown error'
       });
       throw error;
+    }
+  },
+
+  /**
+   * Flag a question for review later
+   */
+  async flagQuestion(attemptId: number, questionId: number): Promise<void> {
+    try {
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) || tokenManager.getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const response = await apiClient.post<void>(
+        `${BASE_PATH}/attempts/${attemptId}/flag/${questionId}`,
+        undefined,
+        {
+          requiresAuth: true,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.error) {
+        throw response.error;
+      }
+    } catch (error) {
+      console.error(`Failed to flag question ${questionId} for attempt ${attemptId}`, {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Unflag a previously flagged question
+   */
+  async unflagQuestion(attemptId: number, questionId: number): Promise<void> {
+    try {
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) || tokenManager.getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const response = await apiClient.delete<void>(
+        `${BASE_PATH}/attempts/${attemptId}/flag/${questionId}`,
+        {
+          requiresAuth: true,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.error) {
+        throw response.error;
+      }
+    } catch (error) {
+      console.error(`Failed to unflag question ${questionId} for attempt ${attemptId}`, {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Get all flagged questions for an attempt
+   */
+  async getFlaggedQuestions(attemptId: number): Promise<FlaggedQuestion[]> {
+    try {
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) || tokenManager.getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const response = await apiClient.get<FlaggedQuestion[]>(
+        `${BASE_PATH}/attempts/${attemptId}/flags`,
+        {
+          requiresAuth: true,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.error) {
+        throw response.error;
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error(`Failed to get flagged questions for attempt ${attemptId}`, {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      return [];
     }
   }
 };

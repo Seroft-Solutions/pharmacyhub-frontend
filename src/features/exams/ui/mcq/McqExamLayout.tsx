@@ -30,11 +30,14 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
         currentQuestionIndex,
         timeRemaining,
         userAnswers,
+        flaggedQuestions,
         isPaused,
         isLoading,
         error,
         startExam,
         answerQuestion,
+        flagQuestion,
+        unflagQuestion,
         nextQuestion,
         previousQuestion,
         pauseExam,
@@ -43,7 +46,6 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
         updateTimeRemaining
     } = useMcqExamStore();
 
-    const [flaggedQuestions, setFlaggedQuestions] = useState<Set<number>>(new Set());
     const [showSubmitDialog, setShowSubmitDialog] = useState(false);
     const [showTimeUpDialog, setShowTimeUpDialog] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
@@ -100,16 +102,22 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
         }, 1000);
     };
 
-    const handleFlag = () => {
-        setFlaggedQuestions(prev => {
-            const newFlags = new Set(prev);
-            if (newFlags.has(currentQuestionIndex)) {
-                newFlags.delete(currentQuestionIndex);
+    const handleFlag = async () => {
+        if (!currentExam?.questions) return;
+        
+        const question = currentExam.questions[currentQuestionIndex];
+        const questionId = question.id;
+        
+        try {
+            // If already flagged, unflag it, otherwise flag it
+            if (flaggedQuestions.has(questionId)) {
+                await unflagQuestion(questionId);
             } else {
-                newFlags.add(currentQuestionIndex);
+                await flagQuestion(questionId);
             }
-            return newFlags;
-        });
+        } catch (err) {
+            console.error('Error toggling flag:', err);
+        }
     };
 
     const handleTimeUp = () => {
@@ -132,7 +140,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
             }
 
             await completeExam();
-            router.push('/exam/results');
+            router.push('/exam-practice/results');
         } catch (err) {
             setSubmitError(err instanceof Error ? err.message : 'Failed to submit exam');
         }
@@ -201,7 +209,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                         currentAnswer={userAnswers[currentQuestion.id]}
                         onAnswer={handleAnswer}
                         onFlag={handleFlag}
-                        isFlagged={flaggedQuestions.has(currentQuestionIndex)}
+                        isFlagged={flaggedQuestions.has(currentQuestion.id)}
                     />
                 </div>
 
@@ -262,7 +270,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Time&apos;s Up!</AlertDialogTitle>
+                        <AlertDialogTitle>Time's Up!</AlertDialogTitle>
                         <AlertDialogDescription>
                             Your exam time has ended. Your answers will be submitted automatically.
                         </AlertDialogDescription>

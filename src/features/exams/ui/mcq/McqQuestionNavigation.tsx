@@ -71,7 +71,10 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
                                 {isAnswered ? (
                                     <CheckCircle className="h-4 w-4" />
                                 ) : isFlagged ? (
-                                    <Flag className="h-4 w-4 text-destructive" />
+                                    <div className="flex flex-col items-center">
+                                        <Flag className="h-3 w-3 text-destructive" />
+                                        <span className="text-[10px]">{index + 1}</span>
+                                    </div>
                                 ) : (
                                     <span>{index + 1}</span>
                                 )}

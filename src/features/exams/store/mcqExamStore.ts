@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { examService } from '../api/examService';
-import { Exam, ExamAttempt, UserAnswer, ExamResult } from '../model/mcqTypes';
+import { Exam, ExamAttempt, UserAnswer, ExamResult, FlaggedQuestion } from '../model/mcqTypes';
 import { logger } from '@/shared/lib/logger';
 
 interface McqExamState {
@@ -10,6 +10,7 @@ interface McqExamState {
   currentQuestionIndex: number;
   timeRemaining: number;
   userAnswers: { [questionId: number]: UserAnswer };
+  flaggedQuestions: Set<number>;
   isPaused: boolean;
   isCompleted: boolean;
   isLoading: boolean;
@@ -23,6 +24,8 @@ interface McqExamState {
   answerQuestion: (answer: UserAnswer) => void;
   nextQuestion: () => void;
   previousQuestion: () => void;
+  flagQuestion: (questionId: number) => Promise<void>;
+  unflagQuestion: (questionId: number) => Promise<void>;
   pauseExam: () => void;
   resumeExam: () => void;
   completeExam: () => Promise<void>;
@@ -34,6 +37,7 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
   currentQuestionIndex: 0,
   timeRemaining: 0,
   userAnswers: {},
+  flaggedQuestions: new Set<number>(),
   isPaused: false,
   isCompleted: false,
   isLoading: false,
@@ -93,10 +97,21 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
         const currentExam = get().currentExam;
         const timeRemainingSeconds = currentExam ? currentExam.duration * 60 : 0;
         
+        // Also fetch flagged questions if any exist
+        let flaggedQuestions = new Set<number>();
+        try {
+          const flagged = await examService.getFlaggedQuestions(attempt.id);
+          flaggedQuestions = new Set(flagged.map(f => f.questionId));
+        } catch (err) {
+          // Ignore errors fetching flagged questions
+          console.warn('Could not fetch flagged questions', err);
+        }
+        
         set({
           currentAttempt: attempt,
           currentQuestionIndex: 0,
           userAnswers: {},
+          flaggedQuestions,
           timeRemaining: timeRemainingSeconds,
           isPaused: false,
           isCompleted: false,
@@ -149,6 +164,80 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
     }
   },
   
+  flagQuestion: async (questionId) => {
+    const { currentAttempt, flaggedQuestions } = get();
+    
+    if (!currentAttempt) {
+      logger.error('No active exam attempt');
+      throw new Error('No active exam attempt');
+    }
+    
+    try {
+      set({ isLoading: true });
+      
+      // Add to local state immediately for responsive UI
+      const newFlagged = new Set(flaggedQuestions);
+      newFlagged.add(questionId);
+      set({ flaggedQuestions: newFlagged });
+      
+      // Then persist to server
+      await examService.flagQuestion(currentAttempt.id, questionId);
+      set({ isLoading: false });
+    } catch (error) {
+      logger.error('Failed to flag question', {
+        questionId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      // Rollback if server call fails
+      const rollbackFlagged = new Set(get().flaggedQuestions);
+      rollbackFlagged.delete(questionId);
+      
+      set({
+        flaggedQuestions: rollbackFlagged,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Failed to flag question'
+      });
+    }
+  },
+  
+  unflagQuestion: async (questionId) => {
+    const { currentAttempt, flaggedQuestions } = get();
+    
+    if (!currentAttempt) {
+      logger.error('No active exam attempt');
+      throw new Error('No active exam attempt');
+    }
+    
+    try {
+      set({ isLoading: true });
+      
+      // Remove from local state immediately for responsive UI
+      const newFlagged = new Set(flaggedQuestions);
+      newFlagged.delete(questionId);
+      set({ flaggedQuestions: newFlagged });
+      
+      // Then persist to server
+      await examService.unflagQuestion(currentAttempt.id, questionId);
+      set({ isLoading: false });
+    } catch (error) {
+      logger.error('Failed to unflag question', {
+        questionId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      // Rollback if server call fails
+      const rollbackFlagged = new Set(get().flaggedQuestions);
+      rollbackFlagged.add(questionId);
+      
+      set({
+        flaggedQuestions: rollbackFlagged,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Failed to unflag question'
+      });
+    }
+  },
+  
   pauseExam: () => set({ isPaused: true }),
   
   resumeExam: () => set({ isPaused: false }),
@@ -198,6 +287,7 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
       currentQuestionIndex: 0,
       timeRemaining: 0,
       userAnswers: {},
+      flaggedQuestions: new Set(),
       isPaused: false,
       isCompleted: false,
       examResult: undefined,

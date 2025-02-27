@@ -42,7 +42,7 @@ export interface Exam {
 export interface ExamAttempt {
   id: number;
   examId: number;
-  userId: string; // Changed from number to string
+  userId: string;
   startTime: string;
   endTime?: string;
   status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
@@ -55,18 +55,31 @@ export interface ExamAttempt {
 
 export interface UserAnswer {
   questionId: number;
-  selectedOption: number;
+  selectedOptionId: string;
+  timeSpent: number;
 }
 
 export interface ExamResult {
-  attemptId: number;
   examId: number;
+  examTitle: string;
   score: number;
+  totalMarks: number;
+  passingMarks: number;
   isPassed: boolean;
-  completedAt: string;
-  answers: Array<{
+  timeSpent: number; // in seconds
+  questionResults: Array<{
     questionId: number;
-    selectedOption: number;
+    questionText: string;
+    userAnswerId: string;
+    correctAnswerId: string;
     isCorrect: boolean;
+    explanation: string;
+    points: number;
+    earnedPoints: number;
   }>;
+}
+
+export interface FlaggedQuestion {
+  attemptId: number;
+  questionId: number;
 }
