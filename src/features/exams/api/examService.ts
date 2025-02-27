@@ -148,6 +148,8 @@ export const examService = {
         throw new Error('Failed to start exam attempt');
       }
 
+      console.log('Exam attempt response:', response.data);
+
       return response.data;
     } catch (error) {
       console.error(`Failed to start exam with ID ${examId}`, {

@@ -50,7 +50,21 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
 
     // Start the exam when the component mounts
     useEffect(() => {
-        startExam(examId);
+        const loadExam = async () => {
+            try {
+                await startExam(examId);
+            } catch (err) {
+                console.error('Failed to start exam:', err);
+            }
+        };
+        
+        loadExam();
+        
+        // Cleanup when unmounting
+        return () => {
+            // Reset exam state when leaving the page
+            useMcqExamStore.getState().resetExam();
+        };
     }, [examId, startExam]);
 
     // Timer effect
@@ -136,10 +150,13 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                <div className="bg-red-50 text-red-600 p-4 rounded-lg max-w-lg text-center">
-                    <h2 className="text-xl font-bold mb-2">Error</h2>
-                    <p>{error}</p>
-                    <Button className="mt-4" onClick={() => router.push('/exam')}>
+                <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-lg text-center shadow-md">
+                    <h2 className="text-xl font-bold mb-4">Error</h2>
+                    <p className="mb-4">{error}</p>
+                    <Button 
+                        className="mt-4 bg-red-600 hover:bg-red-700 text-white" 
+                        onClick={() => router.push('/exam-practice')}
+                    >
                         Return to Exams
                     </Button>
                 </div>

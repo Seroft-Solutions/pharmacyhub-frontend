@@ -42,10 +42,15 @@ export interface Exam {
 export interface ExamAttempt {
   id: number;
   examId: number;
-  userId: number;
+  userId: string; // Changed from number to string
   startTime: string;
   endTime?: string;
   status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
+  answers?: Array<{
+    questionId: number;
+    selectedOptionId: string;
+    timeSpent: number;
+  }>;
 }
 
 export interface UserAnswer {

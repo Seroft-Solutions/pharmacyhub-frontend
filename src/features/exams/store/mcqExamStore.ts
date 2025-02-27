@@ -85,17 +85,35 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
         await get().fetchExamById(examId);
       }
       
-      const attempt = await examService.startExam(examId);
-      
-      set({
-        currentAttempt: attempt,
-        currentQuestionIndex: 0,
-        userAnswers: {},
-        isPaused: false,
-        isCompleted: false,
-        examResult: undefined,
-        isLoading: false
-      });
+      try {
+        const attempt = await examService.startExam(examId);
+        console.log('Exam attempt in store:', attempt);
+        
+        // Set timeRemaining based on current exam duration if it exists
+        const currentExam = get().currentExam;
+        const timeRemainingSeconds = currentExam ? currentExam.duration * 60 : 0;
+        
+        set({
+          currentAttempt: attempt,
+          currentQuestionIndex: 0,
+          userAnswers: {},
+          timeRemaining: timeRemainingSeconds,
+          isPaused: false,
+          isCompleted: false,
+          examResult: undefined,
+          isLoading: false,
+          error: undefined // Clear any previous errors
+        });
+      } catch (error) {
+        logger.error('Failed to start exam', { 
+          examId,
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        });
+        set({ 
+          isLoading: false, 
+          error: error instanceof Error ? error.message : `Failed to start exam ${examId}` 
+        });
+      }
     } catch (error) {
       logger.error('Failed to start exam', { 
         examId,
