@@ -21,13 +21,24 @@ export interface BackendExam {
   id: number;
   title: string;
   description: string;
-  durationMinutes: number;
-  maxScore: number;
-  passingScore: number;
+  duration: number;
+  totalMarks: number;
+  passingMarks: number;
   status: string;
-  createdAt: string;
-  updatedAt: string;
-  questions: BackendExamQuestion[];
+  questions: {
+    id: number;
+    questionNumber: number;
+    questionText: string;
+    options: {
+      id: number;
+      optionKey: string;
+      optionText: string;
+      isCorrect: boolean;
+    }[];
+    correctAnswer: string;
+    explanation: string;
+    marks: number;
+  }[];
 }
 
 export interface BackendExamQuestion {
@@ -81,13 +92,22 @@ export function adaptBackendExam(backendExam: BackendExam): Exam {
     id: backendExam.id,
     title: backendExam.title,
     description: backendExam.description,
-    duration: backendExam.durationMinutes,
-    maxScore: backendExam.maxScore,
-    passingScore: backendExam.passingScore,
+    duration: backendExam.duration,
+    maxScore: backendExam.totalMarks,
+    passingScore: backendExam.passingMarks,
     status: mapBackendStatus(backendExam.status),
-    createdAt: backendExam.createdAt,
-    updatedAt: backendExam.updatedAt,
-    questions: backendExam.questions.map(adaptBackendQuestion)
+    questions: backendExam.questions.map(q => ({
+      id: q.id,
+      text: q.questionText,
+      options: q.options.map(o => ({
+        id: o.id.toString(),
+        text: o.optionText,
+        key: o.optionKey,
+        isCorrect: o.isCorrect
+      })),
+      explanation: q.explanation,
+      points: q.marks
+    }))
   };
 }
 

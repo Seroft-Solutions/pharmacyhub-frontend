@@ -4,13 +4,17 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 import { useRouter } from "next/navigation";
 import { AuthState, AuthUser, Permission, Role } from "../types/auth";
 import { validateAccessRights } from "../lib/auth";
-import { authService } from "../services/authService";
+import { authService } from "@/shared/auth/authService";
+import { UserProfile, RegistrationData } from "@/shared/auth/types";
 import { toast } from "sonner";
 import { USER_TYPES } from "@/shared/auth/apiConfig";
+import { tokenManager } from "@/shared/api/tokenManager";
+import { TOKEN_CONFIG } from "@/shared/auth/apiConfig";
 
 // Valid roles and permissions arrays for runtime checks
 const VALID_ROLES = [
-  'SUPER_ADMIN', 'ADMIN', 'MANAGER', 'PHARMACY_MANAGER', 'USER', 'PHARMACIST', 'PROPRIETOR', 'SALESMAN'
+  'SUPER_ADMIN', 'ADMIN', 'MANAGER', 'PHARMACY_MANAGER', 'USER', 'PHARMACIST', 'PROPRIETOR', 'SALESMAN',
+  'INSTRUCTOR' // Adding missing role
 ] as const;
 
 const VALID_PERMISSIONS = [
@@ -26,18 +30,9 @@ interface LoginCredentials {
   password: string;
 }
 
-interface RegisterData {
-  firstName: string;
-  lastName: string;
-  emailAddress: string;
-  password: string;
-  contactNumber?: string;
-  userType?: string;
-}
-
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
+  register: (userData: RegistrationData) => Promise<void>;
   logout: () => Promise<void>;
   hasPermission: (permission: Permission) => boolean;
   hasRole: (role: Role) => boolean;
@@ -70,29 +65,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Check if we have a token
-        const tokenData = authService.getToken();
-        
-        if (tokenData.access && !authService.isAuthenticated()) {
-          await logout();
-          return;
-        }
-        
-        if (tokenData.access) {
-          // Get user data from localStorage
-          const userData = authService.getUserData();
-          
-          if (userData) {
-            updateStateWithToken(tokenData.access, userData);
-          } else {
-            // Fetch user profile if we have token but no user data
-            try {
-              const userProfile = await authService.getProfile();
-              updateUserProfile(userProfile);
-            } catch (error) {
-              console.error("Error fetching user profile:", error);
-              await logout();
-            }
+        if (authService.isAuthenticated()) {
+          try {
+            const userProfile = await authService.getUserProfile();
+            updateUserState(userProfile);
+          } catch (error) {
+            console.error("Error fetching user profile:", error);
+            await logout();
           }
         }
       } catch (error) {
@@ -104,101 +83,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth();
   }, []);
 
-  const updateStateWithToken = (accessToken: string, userData: any = null) => {
+  const updateUserState = (profile: UserProfile) => {
     try {
       // Extract roles and permissions for a proper auth state
-      const roles = validateRoles(userData?.roles || []);
-      const permissions = validatePermissions(userData?.permissions || []);
+      const roles = validateRoles(profile.roles || []);
+      const permissions = validatePermissions(profile.permissions || []);
       
       // Create user structure
       const user: AuthUser = {
-        id: userData?.id || "",
-        email: userData?.emailAddress || "",
+        id: profile.id || "",
+        email: profile.email || "",
         roles,
         permissions,
-        name: userData?.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : "",
-        firstName: userData?.firstName || "",
-        lastName: userData?.lastName || "",
-        userType: userData?.userType || null
+        name: profile.firstName ? `${profile.firstName} ${profile.lastName || ''}`.trim() : "",
+        firstName: profile.firstName || "",
+        lastName: profile.lastName || "",
+        userType: profile.userType || null
       };
 
-      // Update state with token and user data
-      setState(prev => ({
-        ...prev,
+      // Get token info from localStorage since that's where authService stores it
+      const accessToken = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
+      const expiry = localStorage.getItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY);
+
+      // Sync with tokenManager
+      if (accessToken) {
+        tokenManager.setToken(accessToken);
+      }
+      if (expiry) {
+        tokenManager.setTokenExpiry(parseInt(expiry));
+      }
+
+      // Update state with user data and token info
+      setState({
         user,
         isAuthenticated: true,
         token: {
-          ...prev.token,
           access: accessToken,
-          expires: userData?.exp ? userData.exp * 1000 : 0
+          refresh: localStorage.getItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY),
+          expires: expiry ? parseInt(expiry) : 0
         }
-      }));
+      });
     } catch (error) {
-      console.error("Error updating state with token:", error);
+      console.error("Error updating user state:", error);
       logout();
     }
   };
   
   // Validate and filter roles to ensure only valid roles are stored
   const validateRoles = (roles: string[]): Role[] => {
-    return roles.filter(role => 
+    return roles.filter((role): role is Role => 
       VALID_ROLES.includes(role as Role)
-    ) as Role[];
+    );
   };
   
   // Validate and filter permissions to ensure only valid permissions are stored
   const validatePermissions = (permissions: string[]): Permission[] => {
-    return permissions.filter(permission => 
+    return permissions.filter((permission): permission is Permission => 
       VALID_PERMISSIONS.includes(permission as Permission)
-    ) as Permission[];
-  };
-
-  const updateUserProfile = (profile: any) => {
-    const userData = authService.getUserData() || {};
-    const roles = validateRoles(userData?.roles || []);
-    const permissions = validatePermissions(userData?.permissions || []);
-    
-    setState(prev => ({
-      ...prev,
-      user: {
-        ...prev.user,
-        id: profile.id || prev.user?.id || "",
-        email: profile.emailAddress || prev.user?.email || "",
-        firstName: profile.firstName || prev.user?.firstName || "",
-        lastName: profile.lastName || prev.user?.lastName || "",
-        name: `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || prev.user?.name || "",
-        userType: profile.userType || userData?.userType || prev.user?.userType || null,
-        roles,
-        permissions
-      }
-    }));
+    );
   };
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
     try {
-      const tokenData = await authService.login(credentials);
+      // Use authService login which returns UserProfile
+      const profile = await authService.login(credentials.emailAddress, credentials.password);
+      updateUserState(profile);
       
-      if (tokenData.access) {
-        // Get user data from localStorage after login
-        const userData = authService.getUserData();
-        
-        if (userData) {
-          updateStateWithToken(tokenData.access, userData);
-        } else {
-          // Fetch user profile if no user data in localStorage
-          try {
-            const profile = await authService.getProfile();
-            updateUserProfile(profile);
-          } catch (error) {
-            console.error("Error fetching user profile after login:", error);
-          }
-        }
-
-        toast.success("Login successful");
-        router.push('/dashboard');
-      } else {
-        throw new Error("No token received from login");
-      }
+      toast.success("Login successful");
+      router.push('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       toast.error("Login failed. Please check your credentials and try again.");
@@ -206,7 +158,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (userData: RegisterData): Promise<void> => {
+  const register = async (userData: RegistrationData): Promise<void> => {
     try {
       await authService.register(userData);
       toast.success("Registration successful! Please check your email for verification.");
@@ -221,9 +173,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async (): Promise<void> => {
     try {
       await authService.logout();
+      // Clean up tokenManager
+      tokenManager.removeToken();
+      setState(INITIAL_STATE);
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
       setState(INITIAL_STATE);
       router.push('/login');
     }
@@ -258,23 +212,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   // Convenience methods for common role checks
   const isAdmin = (): boolean => {
-    return hasRole('ADMIN') || hasRole('SUPER_ADMIN');
+    return hasRole('ADMIN' as Role) || hasRole('SUPER_ADMIN' as Role);
   };
   
   const isPharmacist = (): boolean => {
-    return hasRole('PHARMACIST') || getUserType() === USER_TYPES.PHARMACIST;
+    return hasRole('PHARMACIST' as Role) || getUserType() === USER_TYPES.PHARMACIST;
   };
   
   const isProprietor = (): boolean => {
-    return hasRole('PROPRIETOR') || getUserType() === USER_TYPES.PROPRIETOR;
+    return hasRole('PROPRIETOR' as Role) || getUserType() === USER_TYPES.PROPRIETOR;
   };
   
   const isPharmacyManager = (): boolean => {
-    return hasRole('PHARMACY_MANAGER') || getUserType() === USER_TYPES.PHARMACY_MANAGER;
+    return hasRole('PHARMACY_MANAGER' as Role) || getUserType() === USER_TYPES.PHARMACY_MANAGER;
   };
   
   const isSalesman = (): boolean => {
-    return hasRole('SALESMAN') || getUserType() === USER_TYPES.SALESMAN;
+    return hasRole('SALESMAN' as Role) || getUserType() === USER_TYPES.SALESMAN;
   };
 
   return (

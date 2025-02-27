@@ -1,18 +1,9 @@
 import { TokenManager } from './types';
 import { logger } from '../lib/logger';
+import { TOKEN_CONFIG, API_CONFIG } from '../auth/apiConfig';
 
 /**
- * Constants for token storage
- */
-export const TOKEN_CONSTANTS = {
-  ACCESS_TOKEN_KEY: 'access_token',
-  REFRESH_TOKEN_KEY: 'refresh_token',
-  TOKEN_EXPIRY_KEY: 'token_expiry',
-  USER_PROFILE_KEY: 'user_profile'
-};
-
-/**
- * Improved TokenManager implementation with:
+ * Enhanced TokenManager implementation with:
  * - Better error handling
  * - Consistent token storage and retrieval
  * - Proper memory/local storage synchronization
@@ -23,13 +14,13 @@ class EnhancedTokenManager implements TokenManager {
   private readonly refreshTokenKey: string;
   private readonly expiryKey: string;
   private accessToken: string | null = null;
-  private refreshToken: string | null = null;
+  private storedRefreshToken: string | null = null;
   private tokenExpiry: number | null = null;
 
   constructor(
-    accessTokenKey: string = TOKEN_CONSTANTS.ACCESS_TOKEN_KEY, 
-    refreshTokenKey: string = TOKEN_CONSTANTS.REFRESH_TOKEN_KEY,
-    expiryKey: string = TOKEN_CONSTANTS.TOKEN_EXPIRY_KEY
+    accessTokenKey: string = TOKEN_CONFIG.ACCESS_TOKEN_KEY, 
+    refreshTokenKey: string = TOKEN_CONFIG.REFRESH_TOKEN_KEY,
+    expiryKey: string = TOKEN_CONFIG.TOKEN_EXPIRY_KEY
   ) {
     this.accessTokenKey = accessTokenKey;
     this.refreshTokenKey = refreshTokenKey;
@@ -47,7 +38,7 @@ class EnhancedTokenManager implements TokenManager {
   private loadFromStorage(): void {
     try {
       this.accessToken = localStorage.getItem(this.accessTokenKey);
-      this.refreshToken = localStorage.getItem(this.refreshTokenKey);
+      this.storedRefreshToken = localStorage.getItem(this.refreshTokenKey);
       const expiryStr = localStorage.getItem(this.expiryKey);
       this.tokenExpiry = expiryStr ? parseInt(expiryStr) : null;
     } catch (error) {
@@ -109,7 +100,7 @@ class EnhancedTokenManager implements TokenManager {
     if (typeof window === 'undefined') return;
 
     try {
-      this.refreshToken = token;
+      this.storedRefreshToken = token;
       localStorage.setItem(this.refreshTokenKey, token);
     } catch (error) {
       logger.error('Failed to save refresh token', { error });
@@ -117,16 +108,16 @@ class EnhancedTokenManager implements TokenManager {
   }
 
   /**
-   * Get refresh token
+   * Get stored refresh token
    */
-  getRefreshToken(): string | null {
+  private getStoredRefreshToken(): string | null {
     if (typeof window === 'undefined') return null;
 
-    if (this.refreshToken === null) {
-      this.refreshToken = localStorage.getItem(this.refreshTokenKey);
+    if (this.storedRefreshToken === null) {
+      this.storedRefreshToken = localStorage.getItem(this.refreshTokenKey);
     }
 
-    return this.refreshToken;
+    return this.storedRefreshToken;
   }
 
   /**
@@ -152,15 +143,16 @@ class EnhancedTokenManager implements TokenManager {
     try {
       // Clear memory
       this.accessToken = null;
-      this.refreshToken = null;
+      this.storedRefreshToken = null;
       this.tokenExpiry = null;
       
       // Clear storage
       localStorage.removeItem(this.accessTokenKey);
       localStorage.removeItem(this.refreshTokenKey);
       localStorage.removeItem(this.expiryKey);
+      localStorage.removeItem(TOKEN_CONFIG.USER_PROFILE_KEY); // Also clear user profile
       
-      logger.debug('Tokens removed from storage');
+      logger.debug('Tokens and user profile removed from storage');
     } catch (error) {
       logger.error('Failed to remove tokens', { error });
     }
@@ -175,7 +167,12 @@ class EnhancedTokenManager implements TokenManager {
     
     // Check expiration
     if (this.tokenExpiry) {
-      return Date.now() < this.tokenExpiry;
+      const isExpired = Date.now() >= this.tokenExpiry;
+      if (isExpired) {
+        logger.debug('Token is expired', { expiry: new Date(this.tokenExpiry).toISOString() });
+        return false;
+      }
+      return true;
     }
     
     // If no expiry info, just check token existence
@@ -183,20 +180,17 @@ class EnhancedTokenManager implements TokenManager {
   }
 
   /**
-   * Refresh token implementation
-   * This is a placeholder that should be replaced with your actual token refresh logic
+   * Refresh token implementation using configured endpoint
    */
   async refreshToken(): Promise<string | null> {
     try {
-      // Implement token refresh logic here
-      // This is just a placeholder
-      const refreshToken = this.getRefreshToken();
+      const refreshToken = this.getStoredRefreshToken();
       if (!refreshToken) {
         logger.error('No refresh token available for token refresh');
         return null;
       }
 
-      const response = await fetch('/api/auth/refresh', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/auth/token/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

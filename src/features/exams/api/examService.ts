@@ -1,7 +1,8 @@
-import { Exam, ExamStatus, ExamAttempt, UserAnswer, ExamResult } from '../model/mcqTypes';
-import { logger } from '@/shared/lib/logger';
+import { Exam, ExamStatusType, ExamAttempt, UserAnswer, ExamResult } from '../model/mcqTypes';
 import { adaptBackendExam, BackendExam } from './adapter';
 import { apiClient } from '@/shared/api';
+import { tokenManager } from '@/shared/api/tokenManager';
+import { TOKEN_CONFIG } from '@/shared/auth/apiConfig';
 
 // Updated path to match backend API controller
 const BASE_PATH = '/api/v1/exams';
@@ -15,21 +16,24 @@ export const examService = {
    */
   async getAllExams(): Promise<Exam[]> {
     try {
-      console.log('Fetching all exams');
-      
+      // Always try to get stored token first
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) || tokenManager.getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
       const response = await apiClient.get<BackendExam[]>(BASE_PATH, {
-        // Enable deduplication for better performance
-        deduplicate: true
+        requiresAuth: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (response.error) {
-        console.error('Error response from API:', response.error);
         throw response.error;
       }
 
       const exams = (response.data || []).map(adaptBackendExam);
-      console.log('Successfully fetched all exams', { count: exams.length });
-      
       return exams;
     } catch (error) {
       console.error('Failed to fetch all exams', {
@@ -44,40 +48,35 @@ export const examService = {
    */
   async getPublishedExams(): Promise<Exam[]> {
     try {
-      console.log('Fetching published exams');
-
-      // For debugging purposes, check if we have a token
-      if (typeof window !== 'undefined') {
-        const authToken = localStorage.getItem('auth_token');
-        const accessToken = localStorage.getItem('access_token');
-        
-        console.log('Tokens available:', { 
-          authToken: authToken ? 'yes' : 'no', 
-          accessToken: accessToken ? 'yes' : 'no' 
-        });
-      }
-
-      // Making an explicit public request without auth requirement
+      // First try without auth
       const response = await apiClient.get<BackendExam[]>(`${BASE_PATH}/published`, {
         requiresAuth: false
       });
-      
-      if (response.error) {
-        // For error debugging
-        console.error('Error fetching published exams', {
-          status: response.status,
-          errorMessage: response.error.message,
-          errorData: response.error.data
-        });
-        throw response.error;
+
+      // If successful without auth, return the data
+      if (!response.error) {
+        return (response.data || []).map(adaptBackendExam);
       }
 
-      const exams = (response.data || []).map(adaptBackendExam);
-      console.log('Successfully fetched published exams', { count: exams.length });
-      
-      return exams;
+      // If we get here, try with auth
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) || tokenManager.getToken();
+      if (!token) {
+        throw new Error('Unable to fetch exams: Authentication required');
+      }
+
+      const authResponse = await apiClient.get<BackendExam[]>(`${BASE_PATH}/published`, {
+        requiresAuth: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (authResponse.error) {
+        throw authResponse.error;
+      }
+
+      return (authResponse.data || []).map(adaptBackendExam);
     } catch (error) {
-      // More detailed error logging
       console.error('Failed to fetch published exams', {
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined
@@ -91,14 +90,19 @@ export const examService = {
    */
   async getExamById(id: number): Promise<Exam> {
     try {
-      console.log('Fetching exam by ID', { examId: id });
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) || tokenManager.getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
 
       const response = await apiClient.get<BackendExam>(`${BASE_PATH}/${id}`, {
-        deduplicate: true
+        requiresAuth: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (response.error) {
-        console.error('Error response when fetching exam by ID:', response.error);
         throw response.error;
       }
 
@@ -120,18 +124,23 @@ export const examService = {
    */
   async startExam(examId: number): Promise<ExamAttempt> {
     try {
-      console.log('Starting exam attempt', { examId });
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) || tokenManager.getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
 
       const response = await apiClient.post<ExamAttempt>(
         `${BASE_PATH}/${examId}/start`, 
         undefined,
         {
-          deduplicate: false
+          requiresAuth: true,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
       );
       
       if (response.error) {
-        console.error('Error starting exam:', response.error);
         throw response.error;
       }
 
@@ -153,9 +162,11 @@ export const examService = {
    */
   async submitExam(attemptId: number, answers: UserAnswer[]): Promise<ExamResult> {
     try {
-      console.log('Submitting exam attempt', { attemptId, answersCount: answers.length });
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) || tokenManager.getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
 
-      // Validate answers before submission
       if (!answers || answers.length === 0) {
         throw new Error('Cannot submit an exam with no answers');
       }
@@ -164,12 +175,14 @@ export const examService = {
         `${BASE_PATH}/attempts/${attemptId}/submit`,
         { answers },
         {
-          deduplicate: false
+          requiresAuth: true,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
       );
       
       if (response.error) {
-        console.error('Error submitting exam:', response.error);
         throw response.error;
       }
 
@@ -189,16 +202,21 @@ export const examService = {
   /**
    * Get exams by status
    */
-  async getExamsByStatus(status: ExamStatus): Promise<Exam[]> {
+  async getExamsByStatus(status: ExamStatusType): Promise<Exam[]> {
     try {
-      console.log('Fetching exams by status', { status });
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) || tokenManager.getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
 
       const response = await apiClient.get<BackendExam[]>(`${BASE_PATH}/status/${status}`, {
-        deduplicate: true
+        requiresAuth: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (response.error) {
-        console.error('Error fetching exams by status:', response.error);
         throw response.error;
       }
 

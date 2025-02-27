@@ -2,12 +2,14 @@ import { TOKEN_CONFIG, AUTH_ENDPOINTS, AUTH_ROUTES, API_CONFIG } from './apiConf
 import { formatAuthError, debugJwtToken } from './utils';
 import { UserProfile, RegistrationData } from './types';
 import { Permission, Role } from './permissions';
+import { tokenManager } from '@/shared/api/tokenManager';
 
-interface TokenResponse {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
-  token_type: string;
+interface TokenData {
+  jwtToken?: string;
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
 }
 
 class AuthService {
@@ -15,6 +17,7 @@ class AuthService {
   private sessionCheckInterval: NodeJS.Timeout | null = null;
   private lastCheck = 0;
   private readonly CHECK_INTERVAL = 60000; // 1 minute
+  private readonly DEFAULT_EXPIRY = 8 * 60 * 60; // 8 hours
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -46,37 +49,25 @@ class AuthService {
     }
   };
 
-  login = async (username: string, password: string): Promise<UserProfile> => {
+  login = async (emailAddress: string, password: string): Promise<UserProfile> => {
     try {
-      console.log('Sending login request to:', `${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.LOGIN}`);
-      console.log('With payload:', { emailAddress: username });
-      
       const response = await fetch(`${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.LOGIN}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ emailAddress: username, password })
+        body: JSON.stringify({ emailAddress, password })
       });
 
-      console.log('Login response status:', response.status);
-      console.log('Login response headers:', Object.fromEntries([...response.headers.entries()]));
-      
       if (!response.ok) {
-        console.error('Login failed with status:', response.status);
-        const error = await response.json().catch(e => {
-          console.error('Error parsing login error response:', e);
-          return { error: 'Unknown login error' };
-        });
-        console.error('Login error details:', error);
+        const error = await response.json().catch(() => ({ error: 'Unknown login error' }));
         throw new Error(error.error || 'Login failed');
       }
 
-      const data = await response.json();
-      console.log('Login successful, response data keys:', Object.keys(data));
+      const data: TokenData = await response.json();
       this.saveTokens(data);
-      
+
       // Debug token for troubleshooting
       const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
       const tokenDebug = debugJwtToken(token);
@@ -116,58 +107,25 @@ class AuthService {
         throw new Error('No access token available');
       }
       
-      // Debug token before making profile request
-      const tokenDebug = debugJwtToken(token);
-      console.log('Token debug before profile request:', tokenDebug);
-      
-      console.log('Fetching profile from:', `${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.USER_PROFILE}`);
-      
-      // Log the exact URL and headers we're using
-      console.log('Profile request URL:', `${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.USER_PROFILE}`);
-      console.log('Authorization header:', `Bearer ${token.substring(0, 20)}...`);
-      
-      // Try with standard headers
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      };
-      
-      console.log('Using headers:', headers);
-      
       const response = await fetch(`${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.USER_PROFILE}`, {
         method: 'GET',
-        headers: headers
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
 
       if (!response.ok) {
-        console.error('Profile request failed with status:', response.status, response.statusText);
-        
-        // Try to get more detailed error information
-        let errorMessage = 'Failed to fetch user profile';
-        try {
-          const errorData = await response.json();
-          console.error('Error details:', errorData);
-          errorMessage = errorData.message || errorData.error || errorMessage;
-        } catch (parseError) {
-          console.error('Could not parse error response:', parseError);
-          // Try to get error text if JSON parsing fails
-          try {
-            const errorText = await response.text();
-            if (errorText) {
-              console.error('Error response text:', errorText);
-              errorMessage = errorText;
-            }
-          } catch (textError) {
-            console.error('Could not get error text either:', textError);
-          }
-        }
-        
-        throw new Error(`${errorMessage} (${response.status})`);
+        throw new Error(`Failed to fetch user profile (${response.status})`);
       }
 
       const profile = await response.json();
       this.userProfile = profile;
+      
+      // Save decoded profile data
+      localStorage.setItem(TOKEN_CONFIG.USER_PROFILE_KEY, JSON.stringify(profile));
+      
       return profile;
     } catch (error) {
       console.error('Get user profile error:', error);
@@ -202,16 +160,19 @@ class AuthService {
   logout = async () => {
     try {
       // Call backend logout endpoint if it exists
-      try {
-        await fetch(`${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.LOGOUT}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY)}`
-          }
-        });
-      } catch (error) {
-        console.warn('Logout endpoint error:', error);
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
+      if (token) {
+        try {
+          await fetch(`${API_CONFIG.BASE_URL}${AUTH_ENDPOINTS.LOGOUT}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+        } catch (error) {
+          console.warn('Logout endpoint error:', error);
+        }
       }
 
       if (this.sessionCheckInterval) {
@@ -249,7 +210,7 @@ class AuthService {
 
       if (!response.ok) throw new Error('Token refresh failed');
 
-      const data = await response.json();
+      const data: TokenData = await response.json();
       this.saveTokens(data);
       return true;
     } catch (error) {
@@ -258,39 +219,46 @@ class AuthService {
     }
   };
 
-  private saveTokens = (data: any) => {
-    // Handle different API response formats
-    if (data.jwtToken) {
-      // Direct login response format
-      // Check if the token is inside a jwtToken property or is directly the response
-      const token = typeof data === 'string' ? data : data.jwtToken;
-      
-      console.log('Login response data structure:', JSON.stringify(data, null, 2));
-      console.log('Token value type:', typeof token);
-      
+  private saveTokens = (data: TokenData | string) => {
+    try {
+      let token: string | null = null;
+      let expiresIn = this.DEFAULT_EXPIRY;
+      let refreshToken: string | null = null;
+
+      // Handle different response formats
+      if (typeof data === 'string') {
+        token = data;
+      } else if (data.jwtToken) {
+        token = data.jwtToken;
+      } else if (data.access_token) {
+        token = data.access_token;
+        refreshToken = data.refresh_token || null;
+        expiresIn = data.expires_in || this.DEFAULT_EXPIRY;
+      }
+
       if (!token) {
-        console.error('No token found in response data:', data);
         throw new Error('No token found in response');
       }
-      
+
+      // Save to localStorage
       localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, token);
-      // No refresh token in this format
-      localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, '');
-      // Default to 8 hours expiry if not provided
-      const expiryTime = Date.now() + (8 * 60 * 60 * 1000);
+      if (refreshToken) {
+        localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, refreshToken);
+      }
+      const expiryTime = Date.now() + (expiresIn * 1000);
       localStorage.setItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY, expiryTime.toString());
-      console.log('Saved token from login response', token.substring(0, 20) + '...');
-    } else if (data.access_token) {
-      // Token refresh response format
-      localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, data.access_token);
-      localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, data.refresh_token || '');
-      localStorage.setItem(
-        TOKEN_CONFIG.TOKEN_EXPIRY_KEY, 
-        (Date.now() + (data.expires_in * 1000)).toString()
-      );
-    } else {
-      console.error('Unexpected token response format', data);
-      throw new Error('Unexpected token format received');
+
+      // Sync with tokenManager
+      tokenManager.setToken(token);
+      tokenManager.setTokenExpiry(expiryTime);
+      if (refreshToken) {
+        tokenManager.setRefreshToken(refreshToken);
+      }
+
+      console.log('Tokens saved successfully');
+    } catch (error) {
+      console.error('Error saving tokens:', error);
+      throw error;
     }
   };
 
@@ -299,6 +267,11 @@ class AuthService {
     localStorage.removeItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY);
     localStorage.removeItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY);
     localStorage.removeItem(TOKEN_CONFIG.USER_PROFILE_KEY);
+
+    // Clear tokenManager
+    tokenManager.removeToken();
+
+    // Clear cookies too
     document.cookie.split(';').forEach(cookie => 
       document.cookie = cookie.split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/');
   };

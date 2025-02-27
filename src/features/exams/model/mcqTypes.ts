@@ -24,6 +24,7 @@ export interface ExamQuestion {
 export interface ExamOption {
   id: string;
   text: string;
+  key: string;
   isCorrect: boolean;
 }
 
@@ -32,12 +33,10 @@ export interface Exam {
   title: string;
   description: string;
   status: ExamStatusType;
-  questions?: Question[];
+  questions: ExamQuestion[];
   duration: number; // in minutes
   passingScore: number;
   maxScore: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface ExamAttempt {

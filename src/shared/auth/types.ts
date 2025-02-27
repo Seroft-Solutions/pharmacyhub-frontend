@@ -13,6 +13,7 @@ export interface UserProfile {
   lastName?: string;
   roles: string[];
   permissions: string[];
+  userType?: string | null;
 }
 
 export interface RegistrationData {
