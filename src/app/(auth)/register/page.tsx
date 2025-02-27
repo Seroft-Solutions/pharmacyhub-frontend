@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { RegisterForm } from '@/features/auth/ui/register/RegisterForm';
 import { AuthLayout } from '@/features/auth/ui/layout/AuthLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 
 export default function RegisterPage() {

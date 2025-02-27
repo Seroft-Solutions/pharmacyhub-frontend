@@ -2,7 +2,7 @@
 
 import { usePermissions, useAccess } from "@/hooks/usePermissions";
 import { useSession } from "@/hooks/useSession";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 
 function DashboardMetrics() {
   // Using useAccess for feature-specific checks

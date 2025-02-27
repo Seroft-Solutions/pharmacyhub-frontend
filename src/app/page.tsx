@@ -7,7 +7,7 @@ import { FeatureCardSection } from "@/features/home/ui/FeatureCardSection";
 import { Footer } from "@/features/home/ui/Footer";
 import { useAuth } from '@/shared/auth';
 import { ArrowRight, ChevronRight } from 'lucide-react';
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
 
 interface Router {

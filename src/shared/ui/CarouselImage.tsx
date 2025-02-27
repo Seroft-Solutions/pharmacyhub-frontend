@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import {Carousel, CarouselContent, CarouselItem} from "@/shared/ui/carousel";
+import {Carousel, CarouselContent, CarouselItem} from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
 interface Image {

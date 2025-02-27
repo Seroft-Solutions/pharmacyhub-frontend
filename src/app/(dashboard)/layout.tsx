@@ -7,7 +7,7 @@ import { UserMenu } from "@/components/dashboard/UserMenu";
 import { Breadcrumbs } from "@/components/dashboard/Breadcrumbs";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useIsMobile } from "@/hooks/use-mobile";
 

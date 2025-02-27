@@ -3,14 +3,14 @@
 import React, { useMemo } from 'react';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/shared/ui/sheet";
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Menu, LucideIcon, Home, Settings, Users, Package, FileText, GraduationCap } from "lucide-react";

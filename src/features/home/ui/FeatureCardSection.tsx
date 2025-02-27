@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ChevronRight, Users, Building2, Store, UserCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
