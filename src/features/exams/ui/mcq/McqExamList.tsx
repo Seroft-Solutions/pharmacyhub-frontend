@@ -10,7 +10,9 @@ import {
   Clock,
   BarChart,
   Users,
-  Loader2
+  Loader2,
+  RefreshCcw,
+  AlertTriangle
 } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
@@ -33,33 +35,102 @@ import {
 
 import { examService } from '../../api/examService';
 import { Exam } from '../../model/mcqTypes';
+import { useAuth } from '@/shared/auth';
 
 export const McqExamList: React.FC = () => {
   const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Debug log for authentication state
+  useEffect(() => {
+    console.log('Auth state:', { isAuthenticated, authLoading, user });
+    
+    // Debug tokens in localStorage
+    const authToken = localStorage.getItem('auth_token');
+    const accessToken = localStorage.getItem('access_token');
+    const tokenExpiry = localStorage.getItem('token_expiry');
+    
+    console.log('Tokens:', { 
+      authToken: authToken ? `${authToken.substring(0, 10)}...` : null,
+      accessToken: accessToken ? `${accessToken.substring(0, 10)}...` : null,
+      tokenExpiry
+    });
+  }, [isAuthenticated, authLoading, user]);
+
+  // Fetch exams effect with retry mechanism
   useEffect(() => {
     const fetchExams = async () => {
+      if (authLoading) {
+        console.log('Auth is still loading, waiting...');
+        return;
+      }
+      
       try {
+        console.log('Attempting to fetch exams...');
         setLoading(true);
+        setError(null);
+        setDebugInfo(null);
+        setSuccessMessage(null);
+        
         const publishedExams = await examService.getPublishedExams();
+        console.log('Exams fetched successfully:', publishedExams.length);
         setExams(publishedExams);
         setLoading(false);
+        
+        // Show success message on retry success
+        if (retryCount > 0) {
+          setSuccessMessage('Exam data has been refreshed successfully');
+          // Clear success message after 3 seconds
+          setTimeout(() => setSuccessMessage(null), 3000);
+        }
       } catch (err) {
-        setError('Failed to load exams. Please try again later.');
+        console.error('Failed to load exams:', err);
+        
+        const errorMsg = err instanceof Error ? err.message : 'Failed to load exams. Please try again later.';
+        console.log('Setting error message:', errorMsg);
+        setError(errorMsg);
+        
+        // Store debug info
+        setDebugInfo({
+          error: err,
+          apiUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+          endpoint: '/v1/exams/published',
+          auth: isAuthenticated,
+          timestamp: new Date().toISOString()
+        });
+        
         setLoading(false);
       }
     };
 
     fetchExams();
-  }, []);
+  }, [isAuthenticated, authLoading, retryCount]);
 
   const handleStartExam = (examId: number) => {
     router.push(`/exam/${examId}`);
+  };
+  
+  const handleRetry = () => {
+    console.log('Retrying exam fetch...');
+    setRetryCount(prev => prev + 1);
+  };
+  
+  const handleLogin = () => {
+    console.log('Redirecting to login page...');
+    // Save the current URL to redirect back after login
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('redirectAfterLogin', '/exam');
+    }
+    router.push('/login');
   };
 
   // Filter exams based on search term and difficulty
@@ -76,48 +147,43 @@ export const McqExamList: React.FC = () => {
     return matchesSearch && matchesDifficulty;
   });
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <span className="ml-2 text-lg">Loading exams...</span>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+        <span className="text-lg">{authLoading ? 'Checking authentication...' : 'Loading exams...'}</span>
+        <p className="text-sm text-muted-foreground mt-2">
+          This may take a moment. Please wait.
+        </p>
       </div>
     );
   }
 
   if (error) {
     const isCorsError = error.toString().includes('CORS');
-    const isAuthError = error.toString().includes('403') || error.toString().includes('401') || error.toString().includes('Forbidden') || error.toString().includes('Unauthorized');
+    const isAuthError = error.toString().includes('403') || 
+                        error.toString().includes('401') || 
+                        error.toString().includes('Forbidden') || 
+                        error.toString().includes('Unauthorized');
     
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-lg text-center shadow-md">
+          <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Error</h2>
           <p className="mb-4">{error.toString()}</p>
           <div className="space-y-2">
-            {isAuthError ? (
-              <Button className="w-full" onClick={() => window.location.href = '/auth/login'}>
-                Login to Access Exams
-              </Button>
-            ) : (
-              <Button className="w-full" onClick={() => window.location.reload()}>
-                Try Again
-              </Button>
-            )}
+            <Button className="w-full" onClick={handleRetry}>
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
             <p className="text-xs text-red-500 mt-2">
               Server Status: {navigator.onLine ? 'Your internet connection appears to be working.' : 'You appear to be offline.'}
             </p>
-            <details className="mt-4 text-left" open={isCorsError || isAuthError}>
+            <details className="mt-4 text-left">
               <summary className="cursor-pointer text-sm">Troubleshooting Steps</summary>
               <ul className="list-disc pl-5 mt-2 text-sm">
-                <li>Make sure the backend server is running at {process.env.NEXT_PUBLIC_API_BASE_URL}</li>
-                {isAuthError && (
-                  <>
-                    <li><strong>Authentication Required:</strong> You need to be logged in to access exams</li>
-                    <li>Check if your authentication token is valid</li>
-                    <li>Verify that your user account has the required permissions</li>
-                  </>
-                )}
+                <li>Make sure the backend server is running at {process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api'}</li>
                 <li>Check that published exams exist in the database</li>
                 <li>Check browser console for detailed network errors</li>
                 {isCorsError && (
@@ -125,6 +191,15 @@ export const McqExamList: React.FC = () => {
                 )}
               </ul>
             </details>
+            
+            {debugInfo && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-sm">Debug Information</summary>
+                <pre className="text-xs mt-2 p-2 bg-gray-100 rounded overflow-auto">
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </details>
+            )}
           </div>
         </div>
       </div>
@@ -133,6 +208,14 @@ export const McqExamList: React.FC = () => {
 
   return (
     <div className="container py-8 space-y-8">
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-50 text-green-600 p-4 rounded-lg mb-4 flex items-center shadow-sm">
+          <CheckCircle2 className="h-5 w-5 mr-2" />
+          {successMessage}
+        </div>
+      )}
+      
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
         <div className="space-y-1">
@@ -246,9 +329,13 @@ export const McqExamList: React.FC = () => {
           <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
             <Search className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium">No exams found</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               Try adjusting your search or filter settings
             </p>
+            <Button variant="outline" onClick={handleRetry}>
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Refresh Exams
+            </Button>
           </div>
         )}
       </div>

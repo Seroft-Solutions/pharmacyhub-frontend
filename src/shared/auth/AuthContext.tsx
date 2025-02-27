@@ -1,245 +1,189 @@
-/**
- * Authentication Context
- * 
- * This context provides authentication state and methods to all components
- * in the application. It handles user authentication, permissions checking,
- * and profile management.
- */
-
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { authService } from './authService';
-import { UserProfile, RegistrationData } from './types';
-import { Permission, Role } from './permissions';
-import { detectConnectivityIssues } from '../utils/api-connectivity';
+import { tokenManager } from '../api/tokenManager';
+import { UserProfile } from './types';
+import { logger } from '../lib/logger';
 
 interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  error: Error | null;
   login: (username: string, password: string) => Promise<UserProfile>;
-  logout: () => void;
-  register: (data: RegistrationData) => Promise<void>;
-  hasPermission: (permission: Permission) => Promise<boolean>;
-  hasRole: (role: Role) => Promise<boolean>;
-  refreshUser: () => Promise<void>;
-  connectivityStatus: {
-    isChecking: boolean;
-    hasIssues: boolean;
-    message: string | null;
-  };
+  logout: () => Promise<void>;
+  refreshUserProfile: () => Promise<UserProfile | null>;
 }
 
-// Create the context with a default value
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isAuthenticated: false,
-  isLoading: true,
-  login: async () => {
-    throw new Error('AuthContext not initialized');
-  },
-  logout: () => {
-    throw new Error('AuthContext not initialized');
-  },
-  register: async () => {
-    throw new Error('AuthContext not initialized');
-  },
-  hasPermission: async () => false,
-  hasRole: async () => false,
-  refreshUser: async () => {
-    throw new Error('AuthContext not initialized');
-  },
-  connectivityStatus: {
-    isChecking: false,
-    hasIssues: false,
-    message: null,
-  },
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// User profile storage key
-const USER_PROFILE_KEY = 'pharmacyhub_user_profile';
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
 
-/**
- * Auth Provider Component
- */
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [connectivityStatus, setConnectivityStatus] = useState({
-    isChecking: true,
-    hasIssues: false,
-    message: null as string | null,
-  });
-  const router = useRouter();
+// Check browser storage for existing auth state
+const checkInitialAuthState = (): boolean => {
+  if (typeof window === 'undefined') return false;
   
-  // Initialize auth state on component mount
-  useEffect(() => {
-    const initAuth = async () => {
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
+  if (!token) return false;
+  
+  // Check if token is expired (if expiry is stored)
+  const expiry = localStorage.getItem('token_expiry');
+  if (expiry && Date.now() > parseInt(expiry)) {
+    return false;
+  }
+  
+  return !!token;
+};
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(checkInitialAuthState());
+  const profileRequestRef = useRef<Promise<UserProfile | null> | null>(null);
+
+  // Implement a memoized fetchProfile function that uses a ref to store the promise
+  // This ensures multiple concurrent calls get the same promise
+  const fetchProfile = useCallback(async (): Promise<UserProfile | null> => {
+    // If a profile request is already in progress, return that promise
+    if (profileRequestRef.current) {
+      return profileRequestRef.current;
+    }
+
+    // Create a new promise for the profile request
+    profileRequestRef.current = (async () => {
       try {
-        // Check for connectivity issues first
-        try {
-          const connectivityResult = await detectConnectivityIssues();
-          setConnectivityStatus({
-            isChecking: false,
-            hasIssues: connectivityResult.status === 'error',
-            message: connectivityResult.message || null,
-          });
-          
-          if (connectivityResult.status === 'error') {
-            console.warn('Auth connectivity issues detected:', connectivityResult.message);
-          }
-        } catch (connectivityError) {
-          console.error('Error checking connectivity:', connectivityError);
-          setConnectivityStatus({
-            isChecking: false,
-            hasIssues: false, // Don't block auth if connectivity check fails
-            message: null,
-          });
+        if (!tokenManager.hasToken()) {
+          setIsAuthenticated(false);
+          return null;
         }
-        
-        if (authService.isAuthenticated()) {
-          // Try to get user profile from local storage first for faster rendering
-          const cachedProfile = localStorage.getItem(USER_PROFILE_KEY);
-          
-          if (cachedProfile) {
-            const parsedProfile = JSON.parse(cachedProfile) as UserProfile;
-            setUser(parsedProfile);
-            setIsAuthenticated(true);
-          }
-          
-          // Then refresh from the token to ensure it's up to date
-          await refreshUser();
+
+        const profile = await authService.getUserProfile();
+        setUser(profile);
+        setIsAuthenticated(true);
+        return profile;
+      } catch (err) {
+        logger.error('Error fetching user profile', { error: err });
+        setError(err instanceof Error ? err : new Error('Failed to fetch user profile'));
+        // Only set isAuthenticated to false if it's an auth error (401, 403)
+        if (err instanceof Error && 
+            (err.message.includes('401') || 
+             err.message.includes('403') || 
+             err.message.includes('Unauthorized') || 
+             err.message.includes('Forbidden'))) {
+          setIsAuthenticated(false);
         }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        // Clear any invalid auth state
-        authService.logout();
-        setUser(null);
+        return null;
+      } finally {
+        // Clear the request ref when done
+        profileRequestRef.current = null;
+      }
+    })();
+
+    return profileRequestRef.current;
+  }, []);
+
+  // Initialize auth state on mount
+  useEffect(() => {
+    const initializeAuth = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        if (tokenManager.hasToken()) {
+          await fetchProfile();
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (err) {
+        logger.error('Authentication initialization error', { error: err });
+        setError(err instanceof Error ? err : new Error('Authentication failed'));
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
       }
     };
+
+    initializeAuth();
     
-    initAuth();
-  }, []);
-  
-  /**
-   * Login handler
-   */
+    // Set up an interval to check token expiration
+    const checkTokenInterval = setInterval(() => {
+      const isValid = tokenManager.hasToken();
+      if (!isValid && isAuthenticated) {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(checkTokenInterval);
+  }, [fetchProfile]);
+
+  // Login function
   const login = async (username: string, password: string): Promise<UserProfile> => {
     setIsLoading(true);
-    
+    setError(null);
+
     try {
       const userProfile = await authService.login(username, password);
       setUser(userProfile);
       setIsAuthenticated(true);
-      localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(userProfile));
+      
+      // Force-store the token in all possible locations for compatibility
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
+        if (token) {
+          localStorage.setItem('auth_token', token);
+          localStorage.setItem('access_token', token);
+        }
+      }
+      
       return userProfile;
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (err) {
+      logger.error('Login error', { error: err });
+      const error = err instanceof Error ? err : new Error('Login failed');
+      setError(error);
+      setIsAuthenticated(false);
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
-  
-  /**
-   * Logout handler
-   */
-  const logout = () => {
-    authService.logout();
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem(USER_PROFILE_KEY);
-    router.push('/login');
-  };
-  
-  /**
-   * Registration handler
-   */
-  const register = async (data: RegistrationData): Promise<void> => {
-    setIsLoading(true);
-    
+
+  // Logout function
+  const logout = async (): Promise<void> => {
     try {
-      await authService.register(data);
-      // Note: We don't automatically log in after registration
-      // because email verification might be required
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
+      await authService.logout();
+    } catch (err) {
+      logger.error('Logout error', { error: err });
     } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  /**
-   * Permission check handler
-   */
-  const hasPermission = async (permission: Permission): Promise<boolean> => {
-    if (!isAuthenticated || !user) {
-      return false;
-    }
-    
-    // First check the cached user profile for faster response
-    if (user.permissions.includes(permission)) {
-      return true;
-    }
-    
-    // If not found in cache, check with the service 
-    // (this will get fresh data from the token if needed)
-    return authService.hasPermission(permission);
-  };
-  
-  /**
-   * Role check handler
-   */
-  const hasRole = async (role: Role): Promise<boolean> => {
-    if (!isAuthenticated || !user) {
-      return false;
-    }
-    
-    // First check the cached user profile
-    if (user.roles.includes(role)) {
-      return true;
-    }
-    
-    // If not found in cache, check with the service
-    return authService.hasRole(role);
-  };
-  
-  /**
-   * Refresh user profile from token
-   */
-  const refreshUser = async (): Promise<void> => {
-    try {
-      const userProfile = await authService.getUserProfile();
-      setUser(userProfile);
-      setIsAuthenticated(true);
-      localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(userProfile));
-    } catch (error) {
-      console.error('Profile refresh error:', error);
-      authService.logout();
       setUser(null);
       setIsAuthenticated(false);
-      localStorage.removeItem(USER_PROFILE_KEY);
+      // Clear all token storage locations
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('token_expiry');
+      }
     }
   };
-  
+
+  // Function to refresh user profile
+  const refreshUserProfile = async (): Promise<UserProfile | null> => {
+    return fetchProfile();
+  };
+
   const contextValue: AuthContextType = {
     user,
     isAuthenticated,
     isLoading,
+    error,
     login,
     logout,
-    register,
-    hasPermission,
-    hasRole,
-    refreshUser,
-    connectivityStatus,
+    refreshUserProfile
   };
-  
+
   return (
     <AuthContext.Provider value={contextValue}>
       {children}
@@ -247,9 +191,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-/**
- * Custom hook to use the auth context
- */
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 export default AuthContext;
