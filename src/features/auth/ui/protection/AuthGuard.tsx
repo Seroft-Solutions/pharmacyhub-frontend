@@ -1,18 +1,11 @@
 "use client";
 
 import { ReactNode } from "react";
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { Role, Permission } from "@/features/auth/model/types";
-import { AuthLoading } from "./AuthLoading";
-import { Unauthorized } from "./Unauthorized";
-
-export interface AuthGuardProps {
-  children: ReactNode;
-  requiredRoles?: Role[];
-  requiredPermissions?: Permission[];
-  loadingComponent?: ReactNode;
-  unauthorizedComponent?: ReactNode;
-}
+import { useAuth } from "@/features/auth/hooks";
+import { Role, Permission } from "@/types/auth";
+import { AuthLoading } from "../feedback/AuthLoading";
+import { Unauthorized } from "../feedback/Unauthorized";
+import { AuthGuardProps } from "./types";
 
 export function AuthGuard({
   children,
@@ -27,7 +20,7 @@ export function AuthGuard({
     return loadingComponent;
   }
 
-  const hasRequiredAccess = hasAccess(requiredRoles, requiredPermissions);
+  const hasRequiredAccess = hasAccess(requiredRoles as Role[], requiredPermissions as Permission[]);
   if (!hasRequiredAccess) {
     return unauthorizedComponent;
   }

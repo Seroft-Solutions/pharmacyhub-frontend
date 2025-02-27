@@ -1,7 +1,7 @@
 "use client";
 
-import { AuthGuard } from './AuthGuard';
-import type { GuardProps, FeatureGuardProps } from '../../model/guards';
+import { AuthGuard } from '../protection/AuthGuard';
+import { GuardProps, FeatureGuardProps } from '../protection/types';
 
 export function AdminGuard({ children }: GuardProps) {
   return (
@@ -26,6 +26,3 @@ export function FeatureGuard({ children, permissions }: FeatureGuardProps) {
     </AuthGuard>
   );
 }
-
-// Re-export types
-export type { GuardProps, FeatureGuardProps } from '../../model/guards';

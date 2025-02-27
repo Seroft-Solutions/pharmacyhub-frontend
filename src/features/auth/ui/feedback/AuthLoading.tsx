@@ -41,22 +41,3 @@ export const TokenRefresh: FC = () => (
 export const ProfileLoading: FC = () => (
   <AuthLoading message="Loading profile..." />
 );
-
-/*
-Usage Examples:
-
-// General loading state
-<AuthLoading message="Logging you in..." />
-
-// Initial auth check
-<InitialAuthCheck />
-
-// Permission verification
-<PermissionCheck />
-
-// Token refresh
-<TokenRefresh />
-
-// Profile loading
-<ProfileLoading />
-*/
