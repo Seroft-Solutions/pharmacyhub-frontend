@@ -1,94 +1,105 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Pause, Play, Clock } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Clock, Pause, Play } from 'lucide-react';
 
 interface ExamTimerProps {
-  durationInMinutes: number;
-  onTimeExpired: () => void;
-  allowPause?: boolean;
+  totalTime: number; // total time in seconds
+  remainingTime: number; // remaining time in seconds
+  isPaused: boolean;
+  onPause: () => void;
+  onResume: () => void;
+  onTimeUp: () => void;
 }
 
 export function ExamTimer({
-  durationInMinutes,
-  onTimeExpired,
-  allowPause = false,
+  totalTime,
+  remainingTime,
+  isPaused,
+  onPause,
+  onResume,
+  onTimeUp
 }: ExamTimerProps) {
-  // Convert duration to seconds
-  const totalSeconds = durationInMinutes * 60;
-  const [timeRemaining, setTimeRemaining] = useState(totalSeconds);
-  const [isPaused, setIsPaused] = useState(false);
-  
-  // Format time as mm:ss
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-  
   // Calculate percentage of time remaining
-  const percentageRemaining = (timeRemaining / totalSeconds) * 100;
+  const progressPercentage = (remainingTime / totalTime) * 100;
   
-  // Determine color based on percentage remaining
-  const getTimerColor = () => {
-    if (percentageRemaining > 50) return 'text-green-500';
-    if (percentageRemaining > 25) return 'text-yellow-500';
-    return 'text-red-500';
+  // Format time display
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    return [
+      hours > 0 ? String(hours).padStart(2, '0') : null,
+      String(minutes).padStart(2, '0'),
+      String(secs).padStart(2, '0')
+    ].filter(Boolean).join(':');
   };
   
-  // Handle timer tick
-  const tick = useCallback(() => {
-    setTimeRemaining((prevTime) => {
-      if (prevTime <= 1) {
-        onTimeExpired();
-        return 0;
-      }
-      return prevTime - 1;
-    });
-  }, [onTimeExpired]);
-  
-  // Toggle pause state
-  const togglePause = () => {
-    setIsPaused((prev) => !prev);
+  // Determine color based on remaining time
+  const getColorClass = () => {
+    const percentRemaining = (remainingTime / totalTime) * 100;
+    if (percentRemaining > 50) return 'text-green-600';
+    if (percentRemaining > 25) return 'text-amber-600';
+    return 'text-red-600';
   };
   
-  // Set up timer
-  useEffect(() => {
-    if (isPaused) return;
-    
-    const timerId = setInterval(tick, 1000);
-    
-    // Clean up interval on unmount
-    return () => clearInterval(timerId);
-  }, [tick, isPaused]);
+  // Determine progress bar color
+  const getProgressColor = () => {
+    const percentRemaining = (remainingTime / totalTime) * 100;
+    if (percentRemaining > 50) return 'bg-green-600';
+    if (percentRemaining > 25) return 'bg-amber-600';
+    return 'bg-red-600';
+  };
   
   return (
-    <Card className="w-full">
-      <CardContent className="p-4 flex justify-between items-center">
-        <div className="flex items-center">
-          <Clock className={`mr-2 h-5 w-5 ${getTimerColor()}`} />
-          <span className={`font-mono text-lg font-bold ${getTimerColor()}`}>
-            {formatTime(timeRemaining)}
+    <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
+      <div className="flex items-center space-x-2">
+        <Clock className="h-5 w-5 text-muted-foreground" />
+        <span className="text-sm font-medium">Time Remaining:</span>
+      </div>
+      
+      <div className="flex-1 space-y-1">
+        <div className="flex justify-between items-center">
+          <span className={`text-lg font-bold ${getColorClass()}`}>
+            {formatTime(remainingTime)}
           </span>
-        </div>
-        
-        {allowPause && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={togglePause}
-            aria-label={isPaused ? "Resume timer" : "Pause timer"}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={isPaused ? onResume : onPause}
+            className="h-8 px-2"
           >
             {isPaused ? (
-              <Play className="h-4 w-4" />
+              <>
+                <Play className="h-4 w-4 mr-1" />
+                Resume
+              </>
             ) : (
-              <Pause className="h-4 w-4" />
+              <>
+                <Pause className="h-4 w-4 mr-1" />
+                Pause
+              </>
             )}
           </Button>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+        <Progress 
+          value={progressPercentage} 
+          className="h-2"
+          // Apply the appropriate color class
+          style={{ backgroundColor: 'rgba(0,0,0,0.1)' }}
+        >
+          <div 
+            className={`h-full rounded-full transition-all`}
+            style={{ 
+              width: `${progressPercentage}%`,
+              backgroundColor: getProgressColor().replace('bg-', '') 
+            }}
+          />
+        </Progress>
+      </div>
+    </div>
   );
 }

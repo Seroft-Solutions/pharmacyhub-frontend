@@ -1,5 +1,28 @@
 // Base types for exam entities
 
+export enum ExamStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED'
+}
+
+export type ExamStatusType = ExamStatus;
+
+export interface ExamOption {
+  id: string;
+  text: string;
+  key?: string;
+  isCorrect: boolean;
+}
+
+export interface ExamQuestion {
+  id: number;
+  text: string;
+  options: ExamOption[];
+  explanation?: string;
+  points: number;
+}
+
 export interface Option {
   id: string;
   text: string;
@@ -22,8 +45,8 @@ export interface Exam {
   duration: number; // in minutes
   totalMarks: number;
   passingMarks: number;
-  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  questions?: Question[];
+  status: ExamStatusType;
+  questions: ExamQuestion[];
 }
 
 // Exam attempt related types
@@ -40,8 +63,8 @@ export interface ExamAttempt {
 
 export interface UserAnswer {
   questionId: number;
-  selectedOption: number; // index of the selected option
-  timeSpent?: number; // in seconds
+  selectedOptionId: string;
+  timeSpent: number; // in seconds
 }
 
 export interface FlaggedQuestion {

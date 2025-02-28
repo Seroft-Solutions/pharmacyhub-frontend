@@ -13,7 +13,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useMcqExamStore } from '../../store/mcqExamStore';
-import { ExamTimer } from '../quiz/ExamTimer';
+import { ExamTimer } from '../components/ExamTimer';
 import { McqQuestionNavigation } from './McqQuestionNavigation';
 import { McqQuestionCard } from './McqQuestionCard';
 import { useRouter } from 'next/navigation';
@@ -84,13 +84,13 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
         return () => clearInterval(timer);
     }, [timeRemaining, isPaused, updateTimeRemaining]);
 
-    const handleAnswer = (answer: string, timeSpent: number) => {
+    const handleAnswer = (optionId: string, timeSpent: number) => {
         if (!currentExam?.questions) return;
 
         const question = currentExam.questions[currentQuestionIndex];
         answerQuestion({
             questionId: question.id,
-            selectedOptionId: answer,
+            selectedOptionId: optionId,
             timeSpent: timeSpent
         });
 
@@ -140,7 +140,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
             }
 
             await completeExam();
-            router.push('/exam-practice/results');
+            router.push('/exams/results');
         } catch (err) {
             setSubmitError(err instanceof Error ? err.message : 'Failed to submit exam');
         }
@@ -163,7 +163,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                     <p className="mb-4">{error}</p>
                     <Button 
                         className="mt-4 bg-red-600 hover:bg-red-700 text-white" 
-                        onClick={() => router.push('/exam-practice')}
+                        onClick={() => router.push('/exams')}
                     >
                         Return to Exams
                     </Button>
@@ -172,11 +172,29 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
         );
     }
 
-    if (!currentExam || !currentExam.questions) {
-        return <div>No exam data available</div>;
+    if (!currentExam || !currentExam.questions || currentExam.questions.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <div className="bg-yellow-50 text-yellow-600 p-6 rounded-lg max-w-lg text-center shadow-md">
+                    <h2 className="text-xl font-bold mb-4">No Exam Data</h2>
+                    <p className="mb-4">This exam has no questions available or could not be loaded.</p>
+                    <Button 
+                        className="mt-4" 
+                        onClick={() => router.push('/exams')}
+                    >
+                        Return to Exams
+                    </Button>
+                </div>
+            </div>
+        );
     }
 
     const currentQuestion = currentExam.questions[currentQuestionIndex];
+
+    // Find user answer for the current question if it exists
+    const currentAnswer = Object.values(userAnswers).find(
+        answer => answer.questionId === currentQuestion.id
+    );
 
     return (
         <div className="flex h-screen">
@@ -206,7 +224,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                 <div className="flex-1 overflow-auto p-4">
                     <McqQuestionCard
                         question={currentQuestion}
-                        currentAnswer={userAnswers[currentQuestion.id]}
+                        currentAnswer={currentAnswer}
                         onAnswer={handleAnswer}
                         onFlag={handleFlag}
                         isFlagged={flaggedQuestions.has(currentQuestion.id)}

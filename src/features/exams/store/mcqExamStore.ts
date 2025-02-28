@@ -31,6 +31,7 @@ interface McqExamState {
   completeExam: () => Promise<void>;
   resetExam: () => void;
   updateTimeRemaining: (seconds: number) => void;
+  setCurrentQuestionIndex: (index: number) => void;
 }
 
 export const useMcqExamStore = create<McqExamState>((set, get) => ({
@@ -162,6 +163,10 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
     if (currentQuestionIndex > 0) {
       set({ currentQuestionIndex: currentQuestionIndex - 1 });
     }
+  },
+  
+  setCurrentQuestionIndex: (index) => {
+    set({ currentQuestionIndex: index });
   },
   
   flagQuestion: async (questionId) => {

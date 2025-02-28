@@ -9,8 +9,8 @@ interface McqQuestionCardProps {
     question: ExamQuestion;
     currentAnswer?: UserAnswer;
     onAnswer: (optionId: string, timeSpent: number) => void;
-    onFlag?: () => void;
-    isFlagged?: boolean;
+    onFlag: () => void;
+    isFlagged: boolean;
     showAnswer?: boolean;
 }
 
@@ -38,10 +38,12 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
         onAnswer(optionId, timeSpent);
     };
 
+    const isAnswered = currentAnswer?.questionId === question.id;
+
     const getOptionClassName = (option: { id: string; isCorrect: boolean; }) => {
         let className = "w-full justify-start p-4 mb-2";
         
-        if (!showAnswer && !currentAnswer) {
+        if (!showAnswer && !isAnswered) {
             return className;
         }
 
@@ -77,16 +79,14 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
                             <Timer className="h-4 w-4 mr-1" />
                             <span>{timeSpent}s</span>
                         </div>
-                        {onFlag && (
-                            <Button
-                                variant={isFlagged ? "destructive" : "ghost"}
-                                size="icon"
-                                onClick={onFlag}
-                                className="h-8 w-8"
-                            >
-                                <Flag className="h-4 w-4" />
-                            </Button>
-                        )}
+                        <Button
+                            variant={isFlagged ? "destructive" : "ghost"}
+                            size="icon"
+                            onClick={onFlag}
+                            className="h-8 w-8"
+                        >
+                            <Flag className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
                 <p className="text-lg">{question.text}</p>
@@ -99,9 +99,9 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
                         variant="outline"
                         className={getOptionClassName(option)}
                         onClick={() => handleOptionSelect(option.id)}
-                        disabled={showAnswer || !!currentAnswer}
+                        disabled={showAnswer || isAnswered}
                     >
-                        <span className="font-bold mr-2">{option.id}.</span>
+                        <span className="font-bold mr-2">{option.key || option.id}.</span>
                         {option.text}
                         {showAnswer && option.isCorrect && (
                             <CheckCircle className="ml-2 h-4 w-4 text-green-500" />
