@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@/hooks/useSession";
+import { useSession } from "@/features/auth/hooks/useSession";
 import Link from "next/link";
 import { Bell } from "lucide-react";
 import { UserMenu } from "@/components/dashboard/UserMenu";
