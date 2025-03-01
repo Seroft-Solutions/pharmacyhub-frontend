@@ -29,7 +29,7 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
     const progressPercentage = (answeredCount / totalQuestions) * 100;
     
     return (
-        <div className="w-64 border-l bg-muted/10 p-4 flex flex-col h-full">
+        <div className="w-64 border-l bg-muted/10 p-4 flex flex-col">
             <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-2">Progress</h2>
                 <Progress value={progressPercentage} className="h-2 mb-2" />
@@ -43,24 +43,21 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
                 </div>
             </div>
             
-            <div className="mb-4 flex-1 overflow-y-auto">
+            <div className="mb-4">
                 <h2 className="text-lg font-semibold mb-2">Questions</h2>
                 <div className="grid grid-cols-4 gap-2">
                     {questionIndexes.map((index) => {
-                        const questionNumber = index + 1;
-                        // Find if there's an answer for this question
-                        const questionAnswered = Object.values(answers).some(
-                            answer => answer.questionId === questionNumber
-                        );
-                        const isFlagged = flaggedQuestions.has(questionNumber);
+                        const questionId = index + 1; // Adjust if your question IDs start from a different number
+                        const isAnswered = !!answers[questionId];
+                        const isFlagged = flaggedQuestions.has(index);
                         const isCurrent = currentQuestion === index;
                         
-                        // Determine the appropriate button variant
+                        let className = "flex items-center justify-center w-full h-10 text-sm";
                         let variant: "default" | "outline" | "secondary" | "ghost" = "outline";
                         
                         if (isCurrent) {
                             variant = "default";
-                        } else if (questionAnswered) {
+                        } else if (isAnswered) {
                             variant = "secondary";
                         }
                         
@@ -68,22 +65,18 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
                             <Button
                                 key={index}
                                 variant={variant}
-                                className="flex items-center justify-center w-full h-10 text-sm relative"
+                                className={className}
                                 onClick={() => onQuestionSelect(index)}
                             >
-                                {questionNumber}
-                                
-                                {/* Status indicators */}
-                                {questionAnswered && (
-                                    <div className="absolute -top-1 -right-1">
-                                        <CheckCircle className="h-3 w-3 text-green-500" />
+                                {isAnswered ? (
+                                    <CheckCircle className="h-4 w-4" />
+                                ) : isFlagged ? (
+                                    <div className="flex flex-col items-center">
+                                        <Flag className="h-3 w-3 text-destructive" />
+                                        <span className="text-[10px]">{index + 1}</span>
                                     </div>
-                                )}
-                                
-                                {isFlagged && (
-                                    <div className="absolute -bottom-1 -right-1">
-                                        <Flag className="h-3 w-3 text-yellow-500" />
-                                    </div>
+                                ) : (
+                                    <span>{index + 1}</span>
                                 )}
                             </Button>
                         );
@@ -100,15 +93,15 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
                             <span>Not Answered</span>
                         </div>
                         <div className="flex items-center">
-                            <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                            <CheckCircle className="h-4 w-4 mr-2 text-primary" />
                             <span>Answered</span>
                         </div>
                         <div className="flex items-center">
-                            <Flag className="h-4 w-4 mr-2 text-yellow-500" />
+                            <Flag className="h-4 w-4 mr-2 text-destructive" />
                             <span>Flagged for Review</span>
                         </div>
                         <div className="flex items-center">
-                            <div className="h-4 w-4 mr-2 bg-primary rounded-sm" />
+                            <AlertCircle className="h-4 w-4 mr-2 text-blue-500" />
                             <span>Current Question</span>
                         </div>
                     </div>

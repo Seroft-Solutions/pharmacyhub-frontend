@@ -1,38 +1,36 @@
 "use client";
 
-import { useAuth } from '@/features/auth/context/AuthContext';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { AuthLayout as AuthPageLayout } from '@/features/auth/ui/layout/AuthLayout';
+import { ROUTES } from '@/config/auth';
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to dashboard if already authenticated
-    if (isAuthenticated) {
-      router.replace('/dashboard');
+    // Only redirect if explicitly authenticated
+    if (status === 'authenticated' && session?.user) {
+      router.replace(ROUTES.DASHBOARD);
     }
-  }, [isAuthenticated, router]);
+  }, [status, session, router]);
 
   // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-      </div>
-    );
+  if (status === 'loading') {
+    return <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+    </div>;
   }
 
-  // Only render children when not authenticated or loading
+  // Only render children when explicitly unauthenticated or checking auth
   return (
-    <AuthPageLayout>
-      {children}
-    </AuthPageLayout>
+    <div className="min-h-screen bg-gray-100">
+      {(status === 'unauthenticated' || status === 'loading') && children}
+    </div>
   );
 }

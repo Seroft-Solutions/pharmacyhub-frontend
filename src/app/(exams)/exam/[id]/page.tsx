@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Container } from '@/components/layout/container';
 import { ExamContainer } from '@/features/exams/ui/ExamContainer';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/features/auth/context/AuthContext';
 
 interface ExamPageProps {
   params: {
@@ -15,11 +14,10 @@ interface ExamPageProps {
 
 export default function ExamPage({ params }: ExamPageProps) {
   const router = useRouter();
-  const { user } = useAuth();
   const examId = parseInt(params.id, 10);
   
-  // Get user ID from auth context
-  const userId = user?.id || "anonymous";
+  // In a real application, you would get the user ID from authentication context
+  const userId = "current-user-id"; // This should come from auth context
   
   const handleExit = () => {
     router.push('/exams');
