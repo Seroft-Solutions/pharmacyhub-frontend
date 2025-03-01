@@ -1,19 +1,13 @@
 /**
- * Exams Feature Hooks
+ * Exam hooks for use in UI components
  * 
- * This module exports all hooks for the exams feature, including
- * both legacy hooks and TanStack Query hooks.
+ * This module re-exports all the exam-related hooks from the API layer
+ * and provides additional feature-level hooks.
  */
 
-// Legacy hooks
-export * from './useExams';
-export * from './useExamQueries';
+// Re-export all API hooks
+export * from '../api/hooks';
 
-// TanStack Query hooks
-export {
-  useTanstackExams,
-  useTanstackExamSession
-} from './useTanstackExams';
-
-// Default export for convenience
-export { default } from './useTanstackExams';
+// Export any feature-specific hooks
+// (if you need any additional hooks that combine API hooks with
+// other functionality, you would define and export them here)

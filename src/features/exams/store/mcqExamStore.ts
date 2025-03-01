@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { examService } from '../api/examService';
+import { examService } from '../api/core/examService';
 import { Exam, ExamAttempt, UserAnswer, ExamResult, FlaggedQuestion } from '../model/mcqTypes';
 import { logger } from '@/shared/lib/logger';
 

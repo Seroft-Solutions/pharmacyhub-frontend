@@ -33,7 +33,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 
-import { examService } from '../../api/examService';
+import { examService } from '../../api/core/examService';
 import { Exam } from '../../model/mcqTypes';
 import { useAuth } from '@/shared/auth';
 

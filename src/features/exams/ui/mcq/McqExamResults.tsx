@@ -28,7 +28,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMcqExamStore } from '../../store/mcqExamStore';
 import { Loader2 } from 'lucide-react';
-import { examService } from '../../api/examService';
+import { examService } from '../../api/core/examService';
 import { FlaggedQuestion } from '../../model/mcqTypes';
 
 export const McqExamResults: React.FC = () => {
