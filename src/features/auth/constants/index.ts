@@ -29,6 +29,9 @@ import {
 
 import { AUTH_REQUIRED_ROLES } from './roles';
 
+// Export all auth-related constants
+export * from './routes';
+export * from './config';
 
 
 /**

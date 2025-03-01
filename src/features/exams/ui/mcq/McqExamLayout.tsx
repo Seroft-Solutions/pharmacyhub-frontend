@@ -270,7 +270,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Time's Up!</AlertDialogTitle>
+                        <AlertDialogTitle>Time&apos;s Up!</AlertDialogTitle>
                         <AlertDialogDescription>
                             Your exam time has ended. Your answers will be submitted automatically.
                         </AlertDialogDescription>

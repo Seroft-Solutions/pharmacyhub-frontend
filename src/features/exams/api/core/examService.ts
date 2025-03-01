@@ -32,6 +32,42 @@ const customMethods = {
   },
 
   /**
+   * Get exam by ID
+   */
+  getExamById: async (examId: number) => {
+    return apiClient.get<BackendExam>(`${BASE_PATH}/${examId}`).then(response => {
+      if (response.error) {
+        throw response.error;
+      }
+      return adaptBackendExam(response.data);
+    });
+  },
+
+  /**
+   * Get user's exam attempts
+   */
+  getUserAttempts: async (userId: string) => {
+    return apiClient.get<ExamAttempt[]>(`${BASE_PATH}/user/${userId}/attempts`).then(response => {
+      if (response.error) {
+        throw response.error;
+      }
+      return response.data || [];
+    });
+  },
+
+  /**
+   * Get a specific attempt
+   */
+  getAttempt: async (attemptId: number) => {
+    return apiClient.get<ExamAttempt>(`${BASE_PATH}/attempts/${attemptId}`).then(response => {
+      if (response.error) {
+        throw response.error;
+      }
+      return response.data;
+    });
+  },
+
+  /**
    * Start an exam attempt
    */
   startExam: async (examId: number) => {

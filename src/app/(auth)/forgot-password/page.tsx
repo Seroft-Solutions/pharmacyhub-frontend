@@ -5,7 +5,7 @@ import { AuthLayout } from '@/features/auth/ui/layout/AuthLayout';
 
 export default function ForgotPasswordPage() {
   return (
-    <AuthLayout>
+    <AuthLayout title="Reset Password">
       <ForgotPasswordForm />
     </AuthLayout>
   );

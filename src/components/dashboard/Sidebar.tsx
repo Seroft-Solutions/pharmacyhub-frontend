@@ -12,14 +12,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { usePermissions } from "@/hooks/usePermissions";
+import { usePermissions } from "@/features/rbac/hooks";
 import { Menu, LucideIcon, Home, Settings, Users, Package, FileText, GraduationCap } from "lucide-react";
 import { FaPhone, FaTachometerAlt, FaUsers } from "react-icons/fa";
 import { Handshake } from "lucide-react";
-import { Permission, Role } from "@/types/auth";
+import { Permission, Role } from "@/features/auth/types";
 import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { menuItems } from "@/shared/config/menuItems";
+import { useIsMobile } from "@/features/ui/hooks";
+import { menuItems } from "@/features/shared/config/menuItems";
 
 // Enhanced MenuItem type to support more flexible permissions and roles
 interface EnhancedMenuItem {
@@ -223,7 +223,7 @@ export function Sidebar() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="default" className="md:hidden">
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>

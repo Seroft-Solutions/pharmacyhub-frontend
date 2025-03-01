@@ -23,7 +23,7 @@ export const useAuth = () => {
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      const response = await loginMutation.mutateAsync({ email, password });
+      const response = await loginMutation.mutateAsync({ emailAddress: email, password });
       return response;
     } catch (error) {
       throw error;

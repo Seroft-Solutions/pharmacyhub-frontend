@@ -1,11 +1,10 @@
+"use client";
+
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { authService } from '../api/services/authService';
 import { tokenManager } from './tokenManager';
 import { UserProfile } from '../types';
 import { logger } from '@/shared/lib/logger';
-
-// Import types from the RBAC feature
-import type { Permission, Role } from '@/features/rbac/constants/permissions';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -121,7 +120,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       try {
         if (tokenManager.hasToken()) {
-          await fetchProfile();
+          try {
+            await fetchProfile();
+          } catch (profileErr) {
+            // If profile fetch fails, just set authenticated to false
+            logger.warn('Failed to fetch profile on init, clearing auth state', { error: profileErr });
+            setIsAuthenticated(false);
+            tokenManager.removeToken();
+            tokenManager.removeRefreshToken();
+          }
         } else {
           setIsAuthenticated(false);
         }
@@ -155,7 +162,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     try {
       const response = await authService.login({ 
-        email: username, 
+        emailAddress: username,
         password 
       });
       

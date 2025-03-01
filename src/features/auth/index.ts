@@ -18,7 +18,7 @@ export * from './types';
 
 // Export constants 
 // Note: RBAC permissions moved to @/features/rbac
-export * from './api/apiConfig';
+export { AUTH_ENDPOINTS as apiRoutes } from './api/apiConfig';
 
 // Export utility functions
 export * from './utils';

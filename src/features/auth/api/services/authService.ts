@@ -1,12 +1,13 @@
 import { apiClient } from '@/features/tanstack-query-api/core/apiClient';
 import type { ApiResponse } from '@/features/tanstack-query-api/core/apiClient';
 import { User } from './userService';
+import { AUTH_ROUTES } from '../../constants/routes';
 
 /**
  * Login request interface
  */
 export interface LoginRequest {
-  email: string;
+  emailAddress: string;
   password: string;
   rememberMe?: boolean;
 }
@@ -49,42 +50,42 @@ export const authService = {
    * Login with email and password
    */
   login: async (data: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
-    return apiClient.post<AuthResponse>('/auth/login', data, { requiresAuth: false });
+    return apiClient.post<AuthResponse>(AUTH_ROUTES.LOGIN, data, { requiresAuth: false });
   },
 
   /**
    * Register a new user
    */
   register: async (data: RegisterRequest): Promise<ApiResponse<AuthResponse>> => {
-    return apiClient.post<AuthResponse>('/auth/register', data, { requiresAuth: false });
+    return apiClient.post<AuthResponse>(AUTH_ROUTES.REGISTER, data, { requiresAuth: false });
   },
 
   /**
    * Logout the current user
    */
   logout: async (): Promise<ApiResponse<void>> => {
-    return apiClient.post<void>('/auth/logout');
+    return apiClient.post<void>(AUTH_ROUTES.LOGOUT);
   },
 
   /**
    * Refresh the authentication token
    */
   refreshToken: async (refreshToken: string): Promise<ApiResponse<AuthTokens>> => {
-    return apiClient.post<AuthTokens>('/auth/token/refresh', { refreshToken }, { requiresAuth: false });
+    return apiClient.post<AuthTokens>(AUTH_ROUTES.REFRESH_TOKEN, { refreshToken }, { requiresAuth: false });
   },
 
   /**
    * Verify email with token
    */
   verifyEmail: async (token: string): Promise<ApiResponse<void>> => {
-    return apiClient.post<void>('/auth/verify-email', { token }, { requiresAuth: false });
+    return apiClient.post<void>(AUTH_ROUTES.VERIFY_EMAIL, { token }, { requiresAuth: false });
   },
 
   /**
    * Request password reset
    */
   requestPasswordReset: async (email: string): Promise<ApiResponse<void>> => {
-    return apiClient.post<void>('/auth/request-password-reset', { email }, { requiresAuth: false });
+    return apiClient.post<void>(AUTH_ROUTES.REQUEST_PASSWORD_RESET, { email }, { requiresAuth: false });
   },
 
   /**
@@ -92,7 +93,7 @@ export const authService = {
    */
   resetPassword: async (token: string, newPassword: string, confirmPassword: string): Promise<ApiResponse<void>> => {
     return apiClient.post<void>(
-      '/auth/reset-password', 
+      AUTH_ROUTES.RESET_PASSWORD, 
       { token, newPassword, confirmPassword }, 
       { requiresAuth: false }
     );
@@ -102,7 +103,7 @@ export const authService = {
    * Get the current user profile
    */
   getCurrentUser: async (): Promise<ApiResponse<User>> => {
-    return apiClient.get<User>('/auth/me');
+    return apiClient.get<User>(AUTH_ROUTES.PROFILE);
   },
 
   /**

@@ -1,3 +1,12 @@
+/**
+ * Auth Types for UI components
+ */
+
+// Password reset form steps
+export type ResetStep = 'request' | 'verification' | 'success';
+
+// Password reset status
+export type ResetStatus = 'validating' | 'valid' | 'invalid' | 'resetting' | 'success';
 export interface User {
   id: string;
   email: string;
@@ -10,7 +19,7 @@ export interface User {
 export type UserRole = 'admin' | 'pharmacist' | 'manager' | 'proprietor' | 'salesman';
 
 export interface LoginCredentials {
-  email: string;
+  emailAddress: string;
   password: string;
   rememberMe?: boolean;
 }

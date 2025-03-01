@@ -240,8 +240,13 @@ export class ApiClient {
         throw new Error('No refresh token available');
       }
       
+      // Import the auth routes constants to get the correct path
+      const AUTH_ROUTES = {
+        REFRESH_TOKEN: '/auth/token/refresh'
+      };
+      
       // Call refresh token endpoint
-      const response = await fetch(`${this.baseURL}/auth/token/refresh`, {
+      const response = await fetch(`${this.baseURL}${AUTH_ROUTES.REFRESH_TOKEN}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -352,7 +357,8 @@ export class ApiClient {
     if (requiresAuth) {
       const token = this.getToken();
       if (!token) {
-        throw new Error('Authentication required but no token available');
+        console.warn('Authentication required but token not available. Proceeding with unauthenticated request.');
+        return headers;
       }
       headers.set('Authorization', token);
     }

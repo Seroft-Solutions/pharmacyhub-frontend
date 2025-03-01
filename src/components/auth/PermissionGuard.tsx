@@ -1,10 +1,10 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { isAuthorized, type AuthConfig } from "@/utils/auth-utils";
 import { LoadingSpinner, LoadingOverlay } from "@/components/ui/loading-spinner";
+import { useAuth } from "@/features/auth/hooks";
 
 interface PermissionGuardProps extends AuthConfig {
   children: ReactNode;
@@ -29,17 +29,17 @@ export function PermissionGuard({
   loadingMessage = "Checking permissions...",
   loadingType = "inline"
 }: PermissionGuardProps) {
-  const { data: session, status } = useSession();
+  const { user, isLoadingUser } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!isLoadingUser && !user) {
       router.push(redirectTo || "/login");
     }
-  }, [status, router, redirectTo]);
+  }, [isLoadingUser, user, router, redirectTo]);
 
   // Show loader while checking authentication
-  if (status === "loading" && showLoading) {
+  if (isLoadingUser && showLoading) {
     if (loader) {
       return <>{loader}</>;
     }
@@ -57,14 +57,14 @@ export function PermissionGuard({
   }
 
   // Not authenticated
-  if (!session?.user) {
+  if (!user) {
     return null;
   }
 
   // Check authorization
   const hasAccess = isAuthorized(
-    session.user.roles,
-    session.user.permissions,
+    user.roles,
+    user.permissions,
     { roles, permissions, requireAllRoles, requireAllPermissions }
   );
 
@@ -119,13 +119,13 @@ export function IfHasPermission({
   fallback?: ReactNode;
   loadingElement?: ReactNode;
 }) {
-  const { data: session, status } = useSession();
+  const { user, isLoadingUser } = useAuth();
   
-  if (status === "loading") {
+  if (isLoadingUser) {
     return loadingElement || <LoadingSpinner size="sm" className="mx-auto" />;
   }
 
-  if (!session?.user?.permissions.includes(permission)) {
+  if (!user?.permissions.includes(permission)) {
     return fallback || null;
   }
 
@@ -143,13 +143,13 @@ export function IfHasRole({
   fallback?: ReactNode;
   loadingElement?: ReactNode;
 }) {
-  const { data: session, status } = useSession();
+  const { user, isLoadingUser } = useAuth();
   
-  if (status === "loading") {
+  if (isLoadingUser) {
     return loadingElement || <LoadingSpinner size="sm" className="mx-auto" />;
   }
 
-  if (!session?.user?.roles.includes(role)) {
+  if (!user?.roles.includes(role)) {
     return fallback || null;
   }
 

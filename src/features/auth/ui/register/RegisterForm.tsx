@@ -103,7 +103,7 @@ export const RegisterForm = () => {
   const [passwordStrength, setPasswordStrength] = useState(calculatePasswordStrength(''));
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   
-  const { register, login, connectivityStatus } = useAuth();
+  const { register, login, connectivityStatus = { hasIssues: false } } = useAuth();
   const router = useRouter();
 
   const validateStep = (step: FormStep): boolean => {
@@ -637,7 +637,7 @@ export const RegisterForm = () => {
 
   return (
     <Card className="border-none shadow-2xl backdrop-blur-sm bg-white/90">
-      {connectivityStatus.hasIssues && (
+      {connectivityStatus?.hasIssues && (
         <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-4">
           <div className="flex items-start">
             <div className="flex-shrink-0">

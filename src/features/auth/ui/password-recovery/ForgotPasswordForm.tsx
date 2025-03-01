@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRequestPasswordReset } from '../../api/mutations';
+import { usePasswordResetRequestMutation as useRequestPasswordReset } from '@/features/auth/api/mutations';
 import { ResetStep } from '../../model/types';
 
 // Import shadcn UI components
@@ -124,7 +124,7 @@ export const ForgotPasswordForm = () => {
     <form onSubmit={handleVerifyCode} className="space-y-6">
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4">
         <p className="text-sm text-blue-800">
-          We've sent a verification code to <strong>{email}</strong>. 
+          We&apos;ve sent a verification code to <strong>{email}</strong>. 
           Please check your inbox and enter the code below.
         </p>
       </div>
@@ -257,7 +257,7 @@ export const ForgotPasswordForm = () => {
         <CardDescription className="text-center text-gray-600">
           {currentStep === 'request' && "Enter your email to receive a password reset link"}
           {currentStep === 'verification' && "Enter the verification code and set a new password"}
-          {currentStep === 'success' && "You've successfully reset your password"}
+          {currentStep === 'success' && "You&apos;ve successfully reset your password"}
         </CardDescription>
       </CardHeader>
 

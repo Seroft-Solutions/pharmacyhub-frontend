@@ -1,25 +1,25 @@
 import { useApiMutation } from '@/features/tanstack-query-api';
-import { tokenManager } from '../../core';
-import type { LoginResponse, RegistrationData } from '../../types';
+import { AUTH_ROUTES } from '../../constants/routes';
+import type { 
+  AuthResponse, 
+  AuthTokens, 
+  LoginRequest, 
+  RegisterRequest 
+} from '../services/authService';
 
 /**
  * Hook for handling login mutations
  */
 export const useLoginMutation = () => {
-  return useApiMutation<LoginResponse, { email: string; password: string }>(
-    '/auth/login',
+  return useApiMutation<AuthResponse, LoginRequest>(
+    AUTH_ROUTES.LOGIN,
     {
       onSuccess: (data) => {
         // Save tokens on successful login
-        if (data.token) {
-          tokenManager.setToken(data.token);
-          if (data.refreshToken) {
-            tokenManager.setRefreshToken(data.refreshToken);
-          }
-          if (data.expiresIn) {
-            const expiryTime = Date.now() + (data.expiresIn * 1000);
-            tokenManager.setTokenExpiry(expiryTime);
-          }
+        if (data.tokens) {
+          // Store tokens using authService
+          const authService = require('../services/authService').default;
+          authService.storeTokens(data.tokens);
         }
       }
     }
@@ -30,8 +30,17 @@ export const useLoginMutation = () => {
  * Hook for handling registration mutations
  */
 export const useRegisterMutation = () => {
-  return useApiMutation<void, RegistrationData>(
-    '/auth/register'
+  return useApiMutation<AuthResponse, RegisterRequest>(
+    AUTH_ROUTES.REGISTER,
+    {
+      onSuccess: (data) => {
+        // Save tokens on successful registration
+        if (data.tokens) {
+          const authService = require('../services/authService').default;
+          authService.storeTokens(data.tokens);
+        }
+      }
+    }
   );
 };
 
@@ -40,7 +49,7 @@ export const useRegisterMutation = () => {
  */
 export const usePasswordResetRequestMutation = () => {
   return useApiMutation<{ success: boolean }, { email: string }>(
-    '/auth/forgot-password'
+    AUTH_ROUTES.REQUEST_PASSWORD_RESET
   );
 };
 
@@ -48,8 +57,8 @@ export const usePasswordResetRequestMutation = () => {
  * Hook for handling password reset completion
  */
 export const usePasswordResetCompleteMutation = () => {
-  return useApiMutation<void, { token: string; newPassword: string }>(
-    '/auth/reset-password'
+  return useApiMutation<void, { token: string; newPassword: string; confirmPassword: string }>(
+    AUTH_ROUTES.RESET_PASSWORD
   );
 };
 
@@ -58,10 +67,11 @@ export const usePasswordResetCompleteMutation = () => {
  */
 export const useLogoutMutation = () => {
   return useApiMutation<void, void>(
-    '/auth/logout',
+    AUTH_ROUTES.LOGOUT,
     {
       onSuccess: () => {
-        tokenManager.removeToken();
+        const authService = require('../services/authService').default;
+        authService.clearTokens();
         window.location.href = '/login';
       }
     }
@@ -72,19 +82,13 @@ export const useLogoutMutation = () => {
  * Hook for refreshing auth token
  */
 export const useRefreshTokenMutation = () => {
-  return useApiMutation<{ token: string; refreshToken?: string; expiresIn?: number }, { refreshToken: string }>(
-    '/auth/token/refresh',
+  return useApiMutation<AuthTokens, { refreshToken: string }>(
+    AUTH_ROUTES.REFRESH_TOKEN,
     {
       onSuccess: (data) => {
-        if (data.token) {
-          tokenManager.setToken(data.token);
-          if (data.refreshToken) {
-            tokenManager.setRefreshToken(data.refreshToken);
-          }
-          if (data.expiresIn) {
-            const expiryTime = Date.now() + (data.expiresIn * 1000);
-            tokenManager.setTokenExpiry(expiryTime);
-          }
+        if (data) {
+          const authService = require('../services/authService').default;
+          authService.storeTokens(data);
         }
       }
     }

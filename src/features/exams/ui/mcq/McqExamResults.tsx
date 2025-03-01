@@ -272,7 +272,7 @@ export const McqExamResults: React.FC = () => {
                                 </h3>
                                 <p className="text-muted-foreground text-center max-w-md">
                                     {reviewMode === 'incorrect' 
-                                        ? 'Great job! You didn\'t miss any questions on this exam.' 
+                                        ? 'Great job! You didn&apos;t miss any questions on this exam.' 
                                         : reviewMode === 'flagged' 
                                             ? 'You can flag questions during the exam for later review' 
                                             : 'Try selecting a different filter option'}

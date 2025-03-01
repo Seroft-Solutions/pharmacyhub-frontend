@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { AuthLoading } from '@/components/auth';
+import { AuthLoading } from '@/features/auth/ui/feedback';
 import { validatePassword, calculatePasswordStrength } from '@/utils/password';
-import { ROUTES } from '@/config/auth';
-import { authService } from '@/shared/auth';
+import { ROUTES } from '@/features/auth/config/auth';
+import { authService } from '@/features/auth/api/services/authService';
 
 export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('');

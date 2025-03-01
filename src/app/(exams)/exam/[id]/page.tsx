@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Container } from '@/components/layout/container';
 import { ExamContainer } from '@/features/exams/ui/ExamContainer';
 import { Button } from '@/components/ui/button';
-import { QueryProvider } from '@/shared/lib/providers/QueryProvider';
+import { QueryProvider } from '@/features/tanstack-query-api/components/QueryProvider';
 
 interface ExamPageProps {
   params: Promise<{

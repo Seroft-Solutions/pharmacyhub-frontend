@@ -1,61 +1,113 @@
-// Browser-compatible logger implementation
-const isDevelopment = process.env.NODE_ENV === 'development';
+/**
+ * Application logger
+ * 
+ * This module provides logging utilities for the application
+ * with different log levels and environments support.
+ */
 
-type LogLevel = 'info' | 'warn' | 'error' | 'debug';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-interface LogParams {
-  [key: string]: any;
+interface LoggerOptions {
+  prefix?: string;
+  enabled?: boolean;
+  level?: LogLevel;
 }
 
 class Logger {
   private prefix: string;
+  private enabled: boolean;
+  private level: LogLevel;
+  private levels: Record<LogLevel, number>;
 
-  constructor(prefix: string = 'PharmacyHub') {
-    this.prefix = prefix;
+  constructor(options: LoggerOptions = {}) {
+    this.prefix = options.prefix || '';
+    this.enabled = options.enabled ?? (process.env.NODE_ENV !== 'production');
+    this.level = options.level || 'info';
+    
+    this.levels = {
+      debug: 0,
+      info: 1,
+      warn: 2,
+      error: 3
+    };
   }
 
-  info(message: string, params?: LogParams): void {
-    this.log('info', message, params);
+  /**
+   * Format message with prefix
+   */
+  private format(message: string): string {
+    return this.prefix ? `[${this.prefix}] ${message}` : message;
   }
 
-  warn(message: string, params?: LogParams): void {
-    this.log('warn', message, params);
+  /**
+   * Check if the given log level should be displayed
+   */
+  private shouldLog(level: LogLevel): boolean {
+    return this.enabled && this.levels[level] >= this.levels[this.level];
   }
 
-  error(message: string, params?: LogParams): void {
-    this.log('error', message, params);
-  }
-
-  debug(message: string, params?: LogParams): void {
-    if (isDevelopment) {
-      this.log('debug', message, params);
+  /**
+   * Log debug message
+   */
+  debug(message: string, ...args: any[]): void {
+    if (this.shouldLog('debug')) {
+      console.debug(this.format(message), ...args);
     }
   }
 
-  private log(level: LogLevel, message: string, params?: LogParams): void {
-    // Only log in development or use browser's console in production
-    // This ensures no server-side code is imported in the client
-    if (typeof window !== 'undefined') {
-      const timestamp = new Date().toISOString();
-      const logPrefix = `[${this.prefix}] [${timestamp}] [${level.toUpperCase()}]`;
-      
-      switch (level) {
-        case 'info':
-          console.info(logPrefix, message, params ? params : '');
-          break;
-        case 'warn':
-          console.warn(logPrefix, message, params ? params : '');
-          break;
-        case 'error':
-          console.error(logPrefix, message, params ? params : '');
-          break;
-        case 'debug':
-          console.debug(logPrefix, message, params ? params : '');
-          break;
+  /**
+   * Log info message
+   */
+  info(message: string, ...args: any[]): void {
+    if (this.shouldLog('info')) {
+      console.info(this.format(message), ...args);
+    }
+  }
+
+  /**
+   * Log warning message
+   */
+  warn(message: string, ...args: any[]): void {
+    if (this.shouldLog('warn')) {
+      console.warn(this.format(message), ...args);
+    }
+  }
+
+  /**
+   * Log error message
+   */
+  error(message: string | Error, ...args: any[]): void {
+    if (this.shouldLog('error')) {
+      if (message instanceof Error) {
+        console.error(this.format(message.message), message.stack, ...args);
+      } else {
+        console.error(this.format(message), ...args);
       }
     }
   }
+
+  /**
+   * Create a child logger with a new prefix
+   */
+  child(prefix: string): Logger {
+    return new Logger({
+      prefix: this.prefix ? `${this.prefix}:${prefix}` : prefix,
+      enabled: this.enabled,
+      level: this.level
+    });
+  }
 }
 
-// Export a singleton instance
-export const logger = new Logger();
+/**
+ * Default application logger
+ */
+export const logger = new Logger({ prefix: 'app' });
+
+/**
+ * Create a feature logger with the given name
+ */
+export function createFeatureLogger(feature: string): Logger {
+  return logger.child(feature);
+}
+
+export default logger;

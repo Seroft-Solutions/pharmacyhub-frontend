@@ -1,6 +1,6 @@
 "use client";
 
-import { EmailVerificationView } from '@/features/auth/ui/verification/EmailVerificationView';
+import { EmailVerificationView } from '@/features/auth/ui';
 import { AuthLayout } from '@/features/auth/ui/layout/AuthLayout';
 
 interface VerifyEmailPageProps {
@@ -13,7 +13,7 @@ export default function VerifyEmailPage({ params }: VerifyEmailPageProps) {
   const { token } = params;
   
   return (
-    <AuthLayout>
+    <AuthLayout title="Verify Email">
       <EmailVerificationView token={token} />
     </AuthLayout>
   );

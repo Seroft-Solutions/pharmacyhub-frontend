@@ -66,9 +66,6 @@ export {
   rbacQueryKeys
 } from './api';
 
-// Export services
-export { featureFlagService } from './services/featureFlagService';
-
 // Export types
 export type {
   AccessProfile,

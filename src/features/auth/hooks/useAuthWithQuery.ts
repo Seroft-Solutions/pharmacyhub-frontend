@@ -1,56 +1,44 @@
 /**
- * Auth Hooks
+ * Auth Hooks with Query Integration
  * 
  * Hooks for authentication and authorization using TanStack Query
  */
-import {signOut, useSession} from "next-auth/react";
-import {Permission, Role} from "@/types/auth";
-import {redirect} from "next/navigation";
+import { Permission, Role } from "@/types/auth";
+import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { queryClient } from '@/features/tanstack-query-api';
 import { useUserProfile } from "../api/hooks/queries";
-import { authQueryKeys } from "../api/queryKeys";
-import { securityService } from "../api/services/securityService";
+import authKeys from "../api/queryKeys";
+import { useAuth as useBaseAuth } from './useAuth';
+import { tokenManager } from '../core';
 
 /**
- * Main hook for auth state and operations
+ * Main hook for auth state and operations with query integration
  */
 export function useAuth() {
-  const {data: session, status} = useSession({
-    required: false,
-    onUnauthenticated() {
-      redirect("/login");
-    },
-  });
+  const baseAuth = useBaseAuth();
 
   // Use TanStack Query to fetch the user profile
   const { 
     data: extendedProfile, 
     isLoading: isProfileLoading, 
     refetch: refetchProfile
-  } = useUserProfile({
-    // Only fetch profile when user is authenticated
-    enabled: !!session?.user,
-    // Suppress automatic error handling since we handle it here
-    onError: (error) => {
-      console.error('Failed to load user profile', error);
-    }
-  });
+  } = useUserProfile();
 
-  // Get roles either from extended profile or session
+  // Get roles from extended profile or base auth
   const getRoles = (): Role[] => {
     if (extendedProfile?.roles) {
       return extendedProfile.roles as Role[];
     }
-    return session?.user?.roles as Role[] || [];
+    return baseAuth.user?.roles as Role[] || [];
   };
 
-  // Get permissions either from extended profile or session
+  // Get permissions from extended profile or base auth
   const getPermissions = (): Permission[] => {
     if (extendedProfile?.permissions) {
       return extendedProfile.permissions as Permission[];
     }
-    return session?.user?.permissions as Permission[] || [];
+    return baseAuth.user?.permissions as Permission[] || [];
   };
 
   const hasPermission = (permission: Permission) => {
@@ -89,35 +77,44 @@ export function useAuth() {
     }
   };
 
-  const logout = async () => {
-    // Clear query cache for auth-related queries
-    queryClient.removeQueries({ queryKey: authQueryKeys.user.profile() });
-    
-    await signOut({
-      callbackUrl: "/login",
-      redirect: true
-    });
+  const extendedLogout = async () => {
+    try {
+      // Clear query cache for auth-related queries
+      queryClient.removeQueries({ queryKey: authKeys.me() });
+      
+      // Call base auth logout
+      await baseAuth.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear tokens even if server call fails
+      tokenManager.removeToken();
+      window.location.href = '/login';
+    }
   };
 
-  // Combined user data from session and extended profile
-  const user = extendedProfile ? {
-    ...session?.user,
-    ...extendedProfile,
-  } : session?.user;
-
-  return {
-    user,
-    isAuthenticated: !!session?.user,
-    isLoading: status === "loading" || isProfileLoading,
+  const combinedAuth = {
+    ...baseAuth,
+    user: extendedProfile ? {
+      ...baseAuth.user,
+      ...extendedProfile,
+    } : baseAuth.user,
+    isLoading: baseAuth.isLoggingIn || isProfileLoading,
     hasPermission,
     hasRole,
     hasAccess,
     refreshProfile,
-    logout,
-    session,
-    status
+    logout: extendedLogout,
   };
+
+  return combinedAuth;
 }
+
+type BackendVerification = {
+  error?: string;
+  data?: {
+    hasAccess: boolean;
+  };
+};
 
 /**
  * Custom hook to protect components
@@ -137,17 +134,26 @@ export function useRequireAuth(
       if (options?.verifyOnBackend && !isLoading && !backendVerified) {
         setIsVerifying(true);
         try {
-          const response = await securityService.checkAccess(
-            requiredRoles || [], 
-            requiredPermissions || []
-          );
+          // Make API call to verify access
+          const response = await fetch('/api/auth/verify-access', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              roles: requiredRoles || [],
+              permissions: requiredPermissions || [],
+            }),
+          });
+
+          const result = (await response.json()) as BackendVerification;
           
-          if (response.error) {
-            console.error('Error verifying access:', response.error);
+          if (result.error) {
+            console.error('Error verifying access:', result.error);
             redirect("/unauthorized");
           }
           
-          if (!response.data?.hasAccess) {
+          if (!result.data?.hasAccess) {
             redirect("/unauthorized");
           }
           

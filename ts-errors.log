@@ -1,0 +1,301 @@
+.next/types/app/(auth)/reset-password/[token]/page.ts(34,29): error TS2344: Type 'ResetPasswordPageProps' does not satisfy the constraint 'PageProps'.
+  Types of property 'params' are incompatible.
+    Type '{ token: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/(auth)/verify-email/[token]/page.ts(34,29): error TS2344: Type 'VerifyEmailPageProps' does not satisfy the constraint 'PageProps'.
+  Types of property 'params' are incompatible.
+    Type '{ token: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+src/app/(auth)/reset-password/page.tsx(47,25): error TS2554: Expected 3 arguments, but got 2.
+src/app/(auth)/verify-email/[token]/page.tsx(3,39): error TS2307: Cannot find module '@/features/auth/ui/verification/EmailVerificationView' or its corresponding type declarations.
+src/app/(dashboard)/dashboard/page.tsx(3,43): error TS2307: Cannot find module '@/hooks/usePermissions' or its corresponding type declarations.
+src/app/(dashboard)/dashboard/page.tsx(4,28): error TS2307: Cannot find module '@/hooks/useSession' or its corresponding type declarations.
+src/app/(dashboard)/layout.tsx(32,42): error TS2554: Expected 0 arguments, but got 1.
+src/app/(dashboard)/settings/page.tsx(3,10): error TS2305: Module '"@/components/auth"' has no exported member 'AdminGuard'.
+src/app/(dashboard)/settings/page.tsx(3,22): error TS2305: Module '"@/components/auth"' has no exported member 'FeatureGuard'.
+src/app/(dashboard)/settings/page.tsx(4,25): error TS2307: Cannot find module '@/hooks/useAuth' or its corresponding type declarations.
+src/app/(exams)/exam/[id]/page.tsx(8,31): error TS2307: Cannot find module '@/shared/lib/providers/QueryProvider' or its corresponding type declarations.
+src/app/(exams)/exam/review/[id]/page.tsx(16,37): error TS2339: Property 'getExamById' does not exist on type 'ApiService<Exam> & { getPublishedExams: () => Promise<Exam[]>; startExam: (examId: number) => Promise<ExamAttempt>; submitExam: (attemptId: number, answers: UserAnswer[]) => Promise<...>; getExamsByStatus: (status: ExamStatusType) => Promise<...>; flagQuestion: (attemptId: number, questionId: number) => Promise<...>...'.
+src/app/(exams)/exam/review/[id]/page.tsx(27,37): error TS2339: Property 'getExamById' does not exist on type 'ApiService<Exam> & { getPublishedExams: () => Promise<Exam[]>; startExam: (examId: number) => Promise<ExamAttempt>; submitExam: (attemptId: number, answers: UserAnswer[]) => Promise<...>; getExamsByStatus: (status: ExamStatusType) => Promise<...>; flagQuestion: (attemptId: number, questionId: number) => Promise<...>...'.
+src/app/(licensing)/connections/pharmacist/page.tsx(1,9): error TS2614: Module '"@/features/licensing/ui/pages/connections/pharmacist/page"' has no exported member 'PharmacistConnectionsPage'. Did you mean to use 'import PharmacistConnectionsPage from "@/features/licensing/ui/pages/connections/pharmacist/page"' instead?
+src/app/(licensing)/connections/pharmacy-manager/page.tsx(1,9): error TS2614: Module '"@/features/licensing/ui/pages/connections/pharmacy-manager/page"' has no exported member 'PharmacyManagerConnectionsPage'. Did you mean to use 'import PharmacyManagerConnectionsPage from "@/features/licensing/ui/pages/connections/pharmacy-manager/page"' instead?
+src/app/(licensing)/connections/proprietor/page.tsx(1,9): error TS2614: Module '"@/features/licensing/ui/pages/connections/proprietor/page"' has no exported member 'ProprietorConnectionsPage'. Did you mean to use 'import ProprietorConnectionsPage from "@/features/licensing/ui/pages/connections/proprietor/page"' instead?
+src/app/(licensing)/connections/salesman/page.tsx(1,9): error TS2614: Module '"@/features/licensing/ui/pages/connections/salesman/page"' has no exported member 'SalesmanConnectionsPage'. Did you mean to use 'import SalesmanConnectionsPage from "@/features/licensing/ui/pages/connections/salesman/page"' instead?
+src/app/(licensing)/pharmacy-manager/page.tsx(1,31): error TS2307: Cannot find module '@/features/licensing/ui/pages/pharmacy-manager/page' or its corresponding type declarations.
+src/app/(licensing)/proprietor/page.tsx(1,26): error TS2307: Cannot find module '@/features/licensing/ui/pages/proprietor/page' or its corresponding type declarations.
+src/app/(licensing)/requests/pharmacist/page.tsx(1,9): error TS2614: Module '"@/features/licensing/ui/pages/requests/pharmacist/page"' has no exported member 'PharmacistRequestsPage'. Did you mean to use 'import PharmacistRequestsPage from "@/features/licensing/ui/pages/requests/pharmacist/page"' instead?
+src/app/(licensing)/requests/pharmacy-manager/page.tsx(1,9): error TS2614: Module '"@/features/licensing/ui/pages/requests/pharmacy-manager/page"' has no exported member 'PharmacyManagerRequestsPage'. Did you mean to use 'import PharmacyManagerRequestsPage from "@/features/licensing/ui/pages/requests/pharmacy-manager/page"' instead?
+src/app/(licensing)/requests/proprietor/page.tsx(1,9): error TS2614: Module '"@/features/licensing/ui/pages/requests/proprietor/page"' has no exported member 'ProprietorRequestsPage'. Did you mean to use 'import ProprietorRequestsPage from "@/features/licensing/ui/pages/requests/proprietor/page"' instead?
+src/app/(licensing)/requests/salesman/page.tsx(1,9): error TS2614: Module '"@/features/licensing/ui/pages/requests/salesman/page"' has no exported member 'SalesmanRequestsPage'. Did you mean to use 'import SalesmanRequestsPage from "@/features/licensing/ui/pages/requests/salesman/page"' instead?
+src/app/(licensing)/salesman/page.tsx(1,24): error TS2307: Cannot find module '@/features/licensing/ui/pages/salesman/page' or its corresponding type declarations.
+src/app/admin/permissions/page.tsx(4,33): error TS2307: Cannot find module '@/services/api' or its corresponding type declarations.
+src/app/admin/permissions/page.tsx(5,39): error TS2307: Cannot find module '@/constants/permissions' or its corresponding type declarations.
+src/app/admin/permissions/page.tsx(6,29): error TS2307: Cannot find module '@/components/security/PermissionCheck' or its corresponding type declarations.
+src/app/auth/callback/page.tsx(5,23): error TS2307: Cannot find module '@/hooks/useAuth' or its corresponding type declarations.
+src/app/dashboard1/page.tsx(4,25): error TS2307: Cannot find module '@/context/AuthContext' or its corresponding type declarations.
+src/app/dashboard1/page.tsx(5,23): error TS2307: Cannot find module '@/components/guards/RBACGuard' or its corresponding type declarations.
+src/app/dashboard1/page.tsx(6,25): error TS2307: Cannot find module '@/components/guards/RequireAuth' or its corresponding type declarations.
+src/app/exams/page.tsx(10,35): error TS2307: Cannot find module '@/features/exams/hooks/useExamQueries' or its corresponding type declarations.
+src/app/exams/page.tsx(74,25): error TS7006: Parameter 'exam' implicitly has an 'any' type.
+src/app/unauthorized/page.tsx(5,25): error TS2307: Cannot find module '@/context/AuthContext' or its corresponding type declarations.
+src/components/auth/index.ts(25,8): error TS2307: Cannot find module '@/features/auth/ui/password-recovery' or its corresponding type declarations.
+src/components/auth/index.ts(29,8): error TS2307: Cannot find module '@/features/auth/ui/register' or its corresponding type declarations.
+src/components/auth/PermissionGuard.tsx(5,47): error TS2307: Cannot find module '@/utils/auth-utils' or its corresponding type declarations.
+src/components/auth/PermissionGuard.tsx(21,3): error TS2339: Property 'roles' does not exist on type 'PermissionGuardProps'.
+src/components/auth/PermissionGuard.tsx(22,3): error TS2339: Property 'permissions' does not exist on type 'PermissionGuardProps'.
+src/components/auth/PermissionGuard.tsx(23,3): error TS2339: Property 'requireAllRoles' does not exist on type 'PermissionGuardProps'.
+src/components/auth/PermissionGuard.tsx(24,3): error TS2339: Property 'requireAllPermissions' does not exist on type 'PermissionGuardProps'.
+src/components/auth/PermissionGuard.tsx(128,8): error TS18048: 'user.permissions' is possibly 'undefined'.
+src/components/auth/PermissionGuard.tsx(152,8): error TS18048: 'user.roles' is possibly 'undefined'.
+src/components/dashboard/MobileSidebar.tsx(8,32): error TS2307: Cannot find module '@/hooks/usePermissions' or its corresponding type declarations.
+src/components/dashboard/MobileSidebar.tsx(9,31): error TS2307: Cannot find module '@/types/shared' or its corresponding type declarations.
+src/components/dashboard/MobileSidebar.tsx(19,26): error TS2307: Cannot find module '@/hooks/useSwipe' or its corresponding type declarations.
+src/components/dashboard/MobileSidebar.tsx(20,30): error TS2307: Cannot find module '@/hooks/useFavorites' or its corresponding type declarations.
+src/components/dashboard/MobileSidebar.tsx(79,13): error TS2322: Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/components/dashboard/MobileSidebar.tsx(201,13): error TS2322: Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/components/dashboard/Sidebar.tsx(182,11): error TS2339: Property 'canAccess' does not exist on type '{ hasPermission: (permission: string, options?: RoleCheckOptions | undefined) => boolean; hasRole: (role: string, options?: RoleCheckOptions | undefined) => boolean; ... 6 more ...; verifyPermissions: (permissions: string[]) => Promise<...>; }'.
+src/components/dashboard/UserMenu.tsx(29,11): error TS2339: Property 'session' does not exist on type '{ user: UserProfile | undefined; isLoadingUser: boolean; isAuthenticated: () => boolean; login: (email: string, password: string) => Promise<LoginResponse>; ... 13 more ...; resetPasswordError: Error | null; }'.
+src/components/dashboard/UserMenu.tsx(30,11): error TS2339: Property 'isAdmin' does not exist on type '{ hasPermission: (permission: string, options?: RoleCheckOptions | undefined) => boolean; hasRole: (role: string, options?: RoleCheckOptions | undefined) => boolean; ... 6 more ...; verifyPermissions: (permissions: string[]) => Promise<...>; }'.
+src/components/dashboard/UserMenu.tsx(30,20): error TS2339: Property 'isManager' does not exist on type '{ hasPermission: (permission: string, options?: RoleCheckOptions | undefined) => boolean; hasRole: (role: string, options?: RoleCheckOptions | undefined) => boolean; ... 6 more ...; verifyPermissions: (permissions: string[]) => Promise<...>; }'.
+src/components/ui/toaster.tsx(3,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+src/components/ui/toaster.tsx(18,31): error TS7031: Binding element 'id' implicitly has an 'any' type.
+src/components/ui/toaster.tsx(18,35): error TS7031: Binding element 'title' implicitly has an 'any' type.
+src/components/ui/toaster.tsx(18,42): error TS7031: Binding element 'description' implicitly has an 'any' type.
+src/components/ui/toaster.tsx(18,55): error TS7031: Binding element 'action' implicitly has an 'any' type.
+src/components/ui/use-toast.ts(21,9): error TS2322: Type 'ReactNode' is not assignable to type 'ToastActionElement | undefined'.
+  Type 'null' is not assignable to type 'ToastActionElement | undefined'.
+src/features/auth/api/hooks/mutations.ts(14,18): error TS2339: Property 'token' does not exist on type 'LoginResponse'.
+src/features/auth/api/hooks/mutations.ts(15,38): error TS2339: Property 'token' does not exist on type 'LoginResponse'.
+src/features/auth/core/AuthContext.tsx(7,24): error TS2307: Cannot find module '@/shared/lib/logger' or its corresponding type declarations.
+src/features/auth/core/AuthContext.tsx(82,11): error TS2353: Object literal may only specify known properties, and 'username' does not exist in type 'UserProfile'.
+src/features/auth/core/AuthContext.tsx(180,9): error TS2353: Object literal may only specify known properties, and 'username' does not exist in type 'UserProfile'.
+src/features/auth/hooks/useAuthWithQuery.ts(6,34): error TS2307: Cannot find module '@/types/auth' or its corresponding type declarations.
+src/features/auth/index.ts(17,1): error TS2308: Module './api/services/authService' has already exported a member named 'LoginRequest'. Consider explicitly re-exporting to resolve the ambiguity.
+src/features/auth/index.ts(21,1): error TS2308: Module './core/tokenManager' has already exported a member named 'TOKEN_CONFIG'. Consider explicitly re-exporting to resolve the ambiguity.
+src/features/auth/model/guards.ts(2,10): error TS2305: Module '"./types"' has no exported member 'Permission'.
+src/features/auth/ui/auth-flow/AuthDebug.tsx(19,34): error TS2339: Property 'isLoading' does not exist on type '{ user: UserProfile | undefined; isLoadingUser: boolean; isAuthenticated: () => boolean; login: (email: string, password: string) => Promise<LoginResponse>; ... 13 more ...; resetPasswordError: Error | null; }'.
+src/features/auth/ui/password-recovery/ForgotPasswordForm.tsx(5,41): error TS2307: Cannot find module '../../api/mutations' or its corresponding type declarations.
+src/features/auth/ui/password-recovery/ResetPasswordForm.tsx(6,57): error TS2307: Cannot find module '../../api/mutations' or its corresponding type declarations.
+src/features/auth/ui/protection/types.ts(2,28): error TS2307: Cannot find module '@/types/auth' or its corresponding type declarations.
+src/features/auth/ui/rbac/index.ts(8,15): error TS2307: Cannot find module './PermissionGuard.deprecated' or its corresponding type declarations.
+src/features/auth/ui/rbac/index.ts(9,15): error TS2307: Cannot find module './PermissionCheck.deprecated' or its corresponding type declarations.
+src/features/auth/ui/rbac/index.ts(10,15): error TS2307: Cannot find module './RoleGuards.deprecated' or its corresponding type declarations.
+src/features/auth/ui/register/RegisterForm.tsx(6,37): error TS2305: Module '"@/shared/auth"' has no exported member 'USER_TYPE_PERMISSIONS'.
+src/features/auth/ui/register/RegisterForm.tsx(106,11): error TS2339: Property 'register' does not exist on type 'AuthContextType'.
+src/features/auth/ui/register/RegisterForm.tsx(106,28): error TS2339: Property 'connectivityStatus' does not exist on type 'AuthContextType'.
+src/features/auth/ui/register/RegisterForm.tsx(184,9): error TS2353: Object literal may only specify known properties, and 'username' does not exist in type 'RegistrationData'.
+src/features/dashboard/api/dashboardApi.ts(5,8): error TS2307: Cannot find module '@/lib/api' or its corresponding type declarations.
+src/features/dashboard/api/dashboardApi.ts(6,27): error TS2307: Cannot find module '@/lib/api/apiClient' or its corresponding type declarations.
+src/features/dashboard/api/dashboardApi.ts(7,36): error TS2307: Cannot find module '@/lib/api/hooks' or its corresponding type declarations.
+src/features/exams/api/core/examService.ts(8,3): error TS2305: Module '"../../model/mcqTypes"' has no exported member 'ExamStatusType'.
+src/features/exams/api/core/queryKeys.ts(2,10): error TS2305: Module '"../../model/mcqTypes"' has no exported member 'ExamStatusType'.
+src/features/exams/api/core/queryKeys.ts(7,14): error TS7022: 'examQueryKeys' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+src/features/exams/api/core/queryKeys.ts(9,3): error TS7023: 'lists' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+src/features/exams/api/hooks/useExamMutations.ts(1,26): error TS2724: '"@/features/tanstack-query-api"' has no exported member named 'useQueryClient'. Did you mean 'queryClient'?
+src/features/exams/api/hooks/useExamQueries.ts(8,28): error TS2305: Module '"../../model/mcqTypes"' has no exported member 'ExamStatusType'.
+src/features/exams/index.ts(5,15): error TS2307: Cannot find module './lib' or its corresponding type declarations.
+src/features/exams/lib/analysis.ts(1,10): error TS2305: Module '"../model/types"' has no exported member 'MCQPaper'.
+src/features/exams/lib/analysis.ts(1,20): error TS2305: Module '"../model/types"' has no exported member 'UserAnswer'.
+src/features/exams/lib/analysis.ts(43,67): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/features/exams/lib/analysis.ts(43,72): error TS7006: Parameter 'q' implicitly has an 'any' type.
+src/features/exams/lib/analysis.ts(74,68): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/features/exams/lib/analysis.ts(74,73): error TS7006: Parameter 'q' implicitly has an 'any' type.
+src/features/exams/progress/api/progressApi.ts(1,27): error TS2307: Cannot find module '@/shared/api/apiClient' or its corresponding type declarations.
+src/features/exams/store/examPaperStore.ts(2,34): error TS2307: Cannot find module '../api/examPaperService' or its corresponding type declarations.
+src/features/exams/store/examPaperStore.ts(3,10): error TS2305: Module '"../model/types"' has no exported member 'ExamPaper'.
+src/features/exams/store/examPaperStore.ts(3,21): error TS2305: Module '"../model/types"' has no exported member 'ExamStats'.
+src/features/exams/store/examPaperStore.ts(4,24): error TS2307: Cannot find module '@/shared/lib/logger' or its corresponding type declarations.
+src/features/exams/store/index.ts(4,15): error TS2307: Cannot find module './examSlice' or its corresponding type declarations.
+src/features/exams/store/mcqExamStore.ts(4,24): error TS2307: Cannot find module '@/shared/lib/logger' or its corresponding type declarations.
+src/features/exams/store/mcqExamStore.ts(45,3): error TS2322: Type '() => Promise<import("D:/code/PharmacyHub/pharmacyhub-frontend/src/features/exams/types/index").Exam[]>' is not assignable to type '() => Promise<import("D:/code/PharmacyHub/pharmacyhub-frontend/src/features/exams/model/mcqTypes").Exam[]>'.
+  Type 'Promise<import("D:/code/PharmacyHub/pharmacyhub-frontend/src/features/exams/types/index").Exam[]>' is not assignable to type 'Promise<import("D:/code/PharmacyHub/pharmacyhub-frontend/src/features/exams/model/mcqTypes").Exam[]>'.
+    Type 'import("D:/code/PharmacyHub/pharmacyhub-frontend/src/features/exams/types/index").Exam[]' is not assignable to type 'import("D:/code/PharmacyHub/pharmacyhub-frontend/src/features/exams/model/mcqTypes").Exam[]'.
+      Type 'Exam' is missing the following properties from type 'Exam': totalMarks, passingMarks
+src/features/exams/store/mcqExamStore.ts(66,38): error TS2339: Property 'getExamById' does not exist on type 'ApiService<Exam> & { getPublishedExams: () => Promise<Exam[]>; startExam: (examId: number) => Promise<ExamAttempt>; submitExam: (attemptId: number, answers: UserAnswer[]) => Promise<...>; getExamsByStatus: (status: ExamStatusType) => Promise<...>; flagQuestion: (attemptId: number, questionId: number) => Promise<...>...'.
+src/features/exams/store/mcqExamStore.ts(88,33): error TS2532: Object is possibly 'undefined'.
+src/features/exams/ui/components/ExamResults.tsx(136,27): error TS2322: Type 'Option' is not assignable to type 'ReactNode'.
+src/features/exams/ui/components/ExamResults.tsx(193,29): error TS2322: Type 'Option' is not assignable to type 'ReactNode'.
+src/features/exams/ui/components/ExamResults.tsx(247,29): error TS2322: Type 'Option' is not assignable to type 'ReactNode'.
+src/features/exams/ui/components/QuestionDisplay.tsx(43,13): error TS2322: Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/features/exams/ui/components/QuestionDisplay.tsx(60,17): error TS2322: Type 'Option' is not assignable to type 'ReactNode'.
+src/features/exams/ui/ExamContainer.tsx(11,32): error TS2307: Cannot find module '../hooks/useExamQueries' or its corresponding type declarations.
+src/features/exams/ui/ExamContainer.tsx(78,21): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/features/exams/ui/ExamContainer.tsx(82,19): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/features/exams/ui/ExamContainer.tsx(94,21): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/features/exams/ui/ExamContainer.tsx(98,19): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/features/exams/ui/ExamContainer.tsx(166,42): error TS18046: 'answer' is of type 'unknown'.
+src/features/exams/ui/ExamList.tsx(3,35): error TS2307: Cannot find module '../hooks/useExamQueries' or its corresponding type declarations.
+src/features/exams/ui/ExamList.tsx(73,19): error TS7006: Parameter 'exam' implicitly has an 'any' type.
+src/features/exams/ui/index.ts(1,10): error TS2305: Module '"./ExamList"' has no exported member 'default'.
+src/features/exams/ui/index.ts(2,15): error TS2305: Module '"./ExamList"' has no exported member 'ExamListProps'.
+src/features/exams/ui/index.ts(5,15): error TS2307: Cannot find module './quiz' or its corresponding type declarations.
+src/features/exams/ui/mcq/McqExamLayout.tsx(93,13): error TS2561: Object literal may only specify known properties, but 'selectedOptionId' does not exist in type 'UserAnswer'. Did you mean to write 'selectedOption'?
+src/features/exams/ui/mcq/McqExamList.tsx(86,18): error TS2345: Argument of type 'Exam[]' is not assignable to parameter of type 'SetStateAction<Exam[]>'.
+  Type 'import("D:/code/PharmacyHub/pharmacyhub-frontend/src/features/exams/types/index").Exam[]' is not assignable to type 'import("D:/code/PharmacyHub/pharmacyhub-frontend/src/features/exams/model/mcqTypes").Exam[]'.
+    Type 'Exam' is missing the following properties from type 'Exam': totalMarks, passingMarks
+src/features/exams/ui/mcq/McqQuestionCard.tsx(6,10): error TS2724: '"../../model/mcqTypes"' has no exported member named 'ExamQuestion'. Did you mean 'Question'?
+src/features/exams/ui/mcq/McqQuestionCard.tsx(51,39): error TS2551: Property 'selectedOptionId' does not exist on type 'UserAnswer'. Did you mean 'selectedOption'?
+src/features/exams/ui/mcq/McqQuestionCard.tsx(54,35): error TS2551: Property 'selectedOptionId' does not exist on type 'UserAnswer'. Did you mean 'selectedOption'?
+src/features/exams/ui/mcq/McqQuestionCard.tsx(83,33): error TS2322: Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/features/exams/ui/mcq/McqQuestionCard.tsx(96,40): error TS7006: Parameter 'option' implicitly has an 'any' type.
+src/features/exams/ui/quiz/ExamLayout.tsx(24,9): error TS2339: Property 'currentPaper' does not exist on type 'ExamState'.
+src/features/exams/ui/quiz/ExamLayout.tsx(60,9): error TS2554: Expected 2 arguments, but got 1.
+src/features/exams/ui/quiz/ExamSettings.tsx(42,41): error TS2322: Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/features/exams/ui/quiz/QuestionCard.tsx(6,10): error TS2305: Module '"../../model/types"' has no exported member 'MCQuestion'.
+src/features/exams/ui/quiz/QuestionCard.tsx(6,22): error TS2305: Module '"../../model/types"' has no exported member 'UserAnswer'.
+src/features/exams/ui/quiz/QuestionCard.tsx(80,33): error TS2322: Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/features/exams/ui/quiz/QuestionCard.tsx(102,25): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/features/exams/ui/quiz/QuestionNavigation.tsx(5,10): error TS2305: Module '"../../model/types"' has no exported member 'UserAnswer'.
+src/features/exams/ui/results/ResultsView.tsx(33,13): error TS2339: Property 'currentPaper' does not exist on type 'ExamState'.
+src/features/exams/ui/results/ResultsView.tsx(42,65): error TS2339: Property 'isCorrect' does not exist on type 'UserAnswer'.
+src/features/exams/ui/results/ResultsView.tsx(50,73): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/features/exams/ui/results/ResultsView.tsx(50,78): error TS7006: Parameter 'q' implicitly has an 'any' type.
+src/features/exams/ui/results/ResultsView.tsx(56,28): error TS2339: Property 'isCorrect' does not exist on type 'UserAnswer'.
+src/features/exams/ui/results/ResultsView.tsx(173,48): error TS18046: 'data' is of type 'unknown'.
+src/features/exams/ui/results/ResultsView.tsx(173,63): error TS18046: 'data' is of type 'unknown'.
+src/features/exams/ui/results/ResultsView.tsx(177,42): error TS18046: 'data' is of type 'unknown'.
+src/features/exams/ui/results/ResultsView.tsx(177,59): error TS18046: 'data' is of type 'unknown'.
+src/features/exams/ui/results/ResultsView.tsx(181,45): error TS18046: 'data' is of type 'unknown'.
+src/features/exams/ui/results/ResultsView.tsx(181,60): error TS18046: 'data' is of type 'unknown'.
+src/features/exams/ui/results/ResultsView.tsx(212,74): error TS7006: Parameter 'q' implicitly has an 'any' type.
+src/features/exams/ui/results/ResultsView.tsx(212,77): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/features/exams/ui/results/ResultsView.tsx(230,60): error TS2339: Property 'isCorrect' does not exist on type 'UserAnswer'.
+src/features/exams/ui/review/ReviewMode.tsx(20,10): error TS2305: Module '"../../model/types"' has no exported member 'MCQPaper'.
+src/features/exams/ui/review/ReviewMode.tsx(20,20): error TS2305: Module '"../../model/types"' has no exported member 'UserAnswer'.
+src/features/exams/ui/review/ReviewMode.tsx(130,43): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/features/exams/ui/review/ReviewMode.tsx(161,74): error TS7006: Parameter 'point' implicitly has an 'any' type.
+src/features/exams/ui/review/ReviewMode.tsx(161,81): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/features/exams/ui/review/ReviewMode.tsx(175,75): error TS7006: Parameter 'ref' implicitly has an 'any' type.
+src/features/exams/ui/review/ReviewMode.tsx(175,80): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/features/licensing/api/licensingService.ts(1,24): error TS2307: Cannot find module '@/shared/lib/logger' or its corresponding type declarations.
+src/features/licensing/index.ts(3,15): error TS2307: Cannot find module './api' or its corresponding type declarations.
+src/features/licensing/index.ts(4,15): error TS2307: Cannot find module './lib' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacistForm.tsx(2,46): error TS2307: Cannot find module '@/api/pharmacist' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacistForm.tsx(4,24): error TS2307: Cannot find module '@/components/ui/InputField' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacistForm.tsx(5,27): error TS2307: Cannot find module '@/components/ui/SelectField' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacistForm.tsx(13,8): error TS2307: Cannot find module '@/components/RegistrationForm/SelectFieldOptons' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacistForm.tsx(14,32): error TS2307: Cannot find module '@/components/ui/RadioButtonField' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacyManagerForm.tsx(2,56): error TS2307: Cannot find module '@/api/pharmacy-manager' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacyManagerForm.tsx(4,24): error TS2307: Cannot find module '@/components/ui/InputField' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacyManagerForm.tsx(6,27): error TS2307: Cannot find module '@/components/ui/SelectField' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacyManagerForm.tsx(7,64): error TS2307: Cannot find module '@/components/RegistrationForm/SelectFieldOptons' or its corresponding type declarations.
+src/features/licensing/ui/forms/PharmacyManagerForm.tsx(8,32): error TS2307: Cannot find module '@/components/ui/RadioButtonField' or its corresponding type declarations.
+src/features/licensing/ui/forms/ProprietortForm.tsx(2,46): error TS2307: Cannot find module '@/api/proprietor' or its corresponding type declarations.
+src/features/licensing/ui/forms/ProprietortForm.tsx(4,24): error TS2307: Cannot find module '@/components/ui/InputField' or its corresponding type declarations.
+src/features/licensing/ui/forms/ProprietortForm.tsx(5,27): error TS2307: Cannot find module '@/components/ui/SelectField' or its corresponding type declarations.
+src/features/licensing/ui/forms/ProprietortForm.tsx(6,61): error TS2307: Cannot find module '@/components/RegistrationForm/SelectFieldOptons' or its corresponding type declarations.
+src/features/licensing/ui/forms/ProprietortForm.tsx(7,32): error TS2307: Cannot find module '@/components/ui/RadioButtonField' or its corresponding type declarations.
+src/features/licensing/ui/forms/registration-from.tsx(4,28): error TS2307: Cannot find module '@/components/RegistrationForm/PharmacistForm' or its corresponding type declarations.
+src/features/licensing/ui/forms/registration-from.tsx(5,28): error TS2307: Cannot find module '@/components/RegistrationForm/ProprietortForm' or its corresponding type declarations.
+src/features/licensing/ui/forms/registration-from.tsx(6,26): error TS2307: Cannot find module '@/components/RegistrationForm/SalesmanForm' or its corresponding type declarations.
+src/features/licensing/ui/forms/registration-from.tsx(7,32): error TS2307: Cannot find module '@/components/RegistrationForm/PharmacyManagerForm' or its corresponding type declarations.
+src/features/licensing/ui/forms/SalesmanForm.tsx(2,42): error TS2307: Cannot find module '@/api/salesman' or its corresponding type declarations.
+src/features/licensing/ui/forms/SalesmanForm.tsx(4,24): error TS2307: Cannot find module '@/components/ui/InputField' or its corresponding type declarations.
+src/features/licensing/ui/forms/SalesmanForm.tsx(5,27): error TS2307: Cannot find module '@/components/ui/SelectField' or its corresponding type declarations.
+src/features/licensing/ui/forms/SalesmanForm.tsx(6,64): error TS2307: Cannot find module '@/components/RegistrationForm/SelectFieldOptons' or its corresponding type declarations.
+src/features/licensing/ui/forms/SalesmanForm.tsx(7,32): error TS2307: Cannot find module '@/components/ui/RadioButtonField' or its corresponding type declarations.
+src/features/licensing/ui/index.ts(1,15): error TS2307: Cannot find module './pages' or its corresponding type declarations.
+src/features/licensing/ui/index.ts(2,15): error TS2307: Cannot find module './pharmacist' or its corresponding type declarations.
+src/features/licensing/ui/index.ts(3,15): error TS2307: Cannot find module './pharmacy-manager' or its corresponding type declarations.
+src/features/licensing/ui/index.ts(4,15): error TS2307: Cannot find module './proprietor' or its corresponding type declarations.
+src/features/licensing/ui/index.ts(5,15): error TS2307: Cannot find module './salesman' or its corresponding type declarations.
+src/features/licensing/ui/pages/connections/pharmacist/page.tsx(1,37): error TS2307: Cannot find module '@/features/licensing/ui/pharmacist/PharmacistConnections' or its corresponding type declarations.
+src/features/licensing/ui/pages/connections/pharmacy-manager/page.tsx(1,42): error TS2307: Cannot find module '@/features/licensing/ui/pharmacy-manager/PharmacyManagerConnections' or its corresponding type declarations.
+src/features/licensing/ui/pages/connections/proprietor/page.tsx(1,37): error TS2307: Cannot find module '@/features/licensing/ui/proprietor/ProprietorConnections' or its corresponding type declarations.
+src/features/licensing/ui/pages/connections/salesman/page.tsx(1,35): error TS2307: Cannot find module '@/features/licensing/ui/salesman/SalesmanConnections' or its corresponding type declarations.
+src/features/licensing/ui/pages/requests/pharmacist/page.tsx(1,34): error TS2307: Cannot find module '@/features/licensing/ui/pharmacist/PharmacistRequests' or its corresponding type declarations.
+src/features/licensing/ui/pages/requests/pharmacy-manager/page.tsx(1,39): error TS2307: Cannot find module '@/features/licensing/ui/pharmacy-manager/PharmacyManagerRequests' or its corresponding type declarations.
+src/features/licensing/ui/pages/requests/proprietor/page.tsx(1,34): error TS2307: Cannot find module '@/features/licensing/ui/proprietor/ProprietorRequests' or its corresponding type declarations.
+src/features/licensing/ui/pages/requests/routes.ts(1,15): error TS2307: Cannot find module './pharmacist/route' or its corresponding type declarations.
+src/features/licensing/ui/pages/requests/routes.ts(2,15): error TS2307: Cannot find module './pharmacy-manager/route' or its corresponding type declarations.
+src/features/licensing/ui/pages/requests/routes.ts(3,15): error TS2307: Cannot find module './proprietor/route' or its corresponding type declarations.
+src/features/licensing/ui/pages/requests/routes.ts(4,15): error TS2307: Cannot find module './salesman/route' or its corresponding type declarations.
+src/features/licensing/ui/pages/requests/salesman/page.tsx(1,32): error TS2307: Cannot find module '@/features/licensing/ui/salesman/SalesmanRequests' or its corresponding type declarations.
+src/features/licensing/ui/pharmacist/PharmacistList.tsx(2,78): error TS2307: Cannot find module '@/api/pharmacist' or its corresponding type declarations.
+src/features/licensing/ui/pharmacist/PharmacistList.tsx(4,22): error TS2307: Cannot find module '@/components/ui/UserCard' or its corresponding type declarations.
+src/features/licensing/ui/pharmacy-manager/PharmacyManagerList.tsx(3,22): error TS2307: Cannot find module '@/components/ui/UserCard' or its corresponding type declarations.
+src/features/licensing/ui/pharmacy-manager/PharmacyManagerList.tsx(4,92): error TS2307: Cannot find module '@/api/pharmacy-manager' or its corresponding type declarations.
+src/features/licensing/ui/proprietor/ProprietorList.tsx(3,22): error TS2307: Cannot find module '@/components/ui/UserCard' or its corresponding type declarations.
+src/features/licensing/ui/proprietor/ProprietorList.tsx(4,78): error TS2307: Cannot find module '@/api/proprietor' or its corresponding type declarations.
+src/features/licensing/ui/salesman/SalesmanList.tsx(3,22): error TS2307: Cannot find module '@/components/ui/UserCard' or its corresponding type declarations.
+src/features/licensing/ui/salesman/SalesmanList.tsx(4,71): error TS2307: Cannot find module '@/api/salesman' or its corresponding type declarations.
+src/features/progress/hooks/useProgressQueries.ts(2,66): error TS2307: Cannot find module '../api/progressApi' or its corresponding type declarations.
+src/features/rbac/api/hooks/useRbacQueries.ts(20,5): error TS2345: Argument of type '() => Promise<ApiResponse<AccessProfile>>' is not assignable to parameter of type 'string'.
+src/features/rbac/api/hooks/useRbacQueries.ts(31,5): error TS2345: Argument of type '() => Promise<ApiResponse<AccessProfile>>' is not assignable to parameter of type 'string'.
+src/features/rbac/api/hooks/useRbacQueries.ts(48,5): error TS2345: Argument of type '() => Promise<ApiResponse<PermissionCheckResponse>>' is not assignable to parameter of type 'string'.
+src/features/rbac/api/hooks/useRbacQueries.ts(67,5): error TS2345: Argument of type '() => Promise<ApiResponse<boolean>>' is not assignable to parameter of type 'string'.
+src/features/rbac/api/queryKeys.ts(10,54): error TS2554: Expected 1 arguments, but got 2.
+src/features/rbac/hooks/useAccess.ts(57,33): error TS18048: 'user.roles' is possibly 'undefined'.
+src/features/rbac/hooks/useAccess.ts(70,34): error TS18048: 'user.roles' is possibly 'undefined'.
+src/features/rbac/hooks/useAccess.ts(83,45): error TS18048: 'user.permissions' is possibly 'undefined'.
+src/features/rbac/hooks/useAccess.ts(96,46): error TS18048: 'user.permissions' is possibly 'undefined'.
+src/features/rbac/index.ts(57,3): error TS2300: Duplicate identifier 'featureFlagService'.
+src/features/rbac/index.ts(57,3): error TS2305: Module '"./api"' has no exported member 'featureFlagService'.
+src/features/rbac/index.ts(70,10): error TS2300: Duplicate identifier 'featureFlagService'.
+src/features/rbac/ui/PermissionGuard.tsx(8,34): error TS2307: Cannot find module '../constants/permissions' or its corresponding type declarations.
+src/features/rbac/ui/PermissionGuard.tsx(43,51): error TS18048: 'user.permissions' is possibly 'undefined'.
+src/features/rbac/ui/PermissionGuard.tsx(64,52): error TS18048: 'user.permissions' is possibly 'undefined'.
+src/features/rbac/ui/PermissionGuard.tsx(106,39): error TS18048: 'user.roles' is possibly 'undefined'.
+src/features/rbac/ui/RoleGuards.tsx(5,34): error TS2307: Cannot find module '../constants/permissions' or its corresponding type declarations.
+src/features/tanstack-query-api/components/QueryProvider.tsx(55,51): error TS2322: Type '"bottom-right"' is not assignable to type 'DevtoolsPosition | undefined'.
+src/shared/config/logger.ts(1,30): error TS2307: Cannot find module '../types/logger' or its corresponding type declarations.
+src/shared/index.ts(1,15): error TS2307: Cannot find module './ui' or its corresponding type declarations.
+src/shared/index.ts(2,15): error TS2307: Cannot find module './api' or its corresponding type declarations.
+src/shared/index.ts(3,15): error TS2307: Cannot find module './config' or its corresponding type declarations.
+src/shared/index.ts(4,15): error TS2307: Cannot find module './lib' or its corresponding type declarations.
+src/shared/index.ts(5,15): error TS2307: Cannot find module './types' or its corresponding type declarations.
+src/shared/ui/DebouncedSelect.tsx(3,27): error TS2307: Cannot find module '@/hooks/useDebounce' or its corresponding type declarations.
+src/shared/ui/DebouncedSelect.tsx(28,19): error TS2339: Property 'firstName' does not exist on type '{ id: string | number; name: string; }'.
+src/shared/ui/DebouncedSelect.tsx(29,19): error TS2339: Property 'lastName' does not exist on type '{ id: string | number; name: string; }'.
+src/shared/ui/DebouncedSelect.tsx(69,43): error TS2339: Property 'firstName' does not exist on type '{ id: string | number; name: string; }'.
+src/shared/ui/DebouncedSelect.tsx(69,63): error TS2339: Property 'lastName' does not exist on type '{ id: string | number; name: string; }'.
+src/shared/ui/DialogContentField.tsx(6,33): error TS2307: Cannot find module '@/components/ui/DialogHeaderField' or its corresponding type declarations.
+src/shared/ui/DialogHeaderField.tsx(25,15): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'className' does not exist in type 'Partial<unknown> & Attributes'.
+src/shared/ui/dialogs/adaptive-dialog.tsx(2,29): error TS2307: Cannot find module '@/shared/lib/responsive' or its corresponding type declarations.
+src/shared/ui/forms/adaptive-form.tsx(2,29): error TS2307: Cannot find module '@/shared/lib/responsive' or its corresponding type declarations.
+src/shared/ui/forms/adaptive-input.tsx(4,29): error TS2307: Cannot find module '@/shared/lib/responsive' or its corresponding type declarations.
+src/shared/ui/forms/adaptive-select.tsx(2,29): error TS2307: Cannot find module '@/shared/lib/responsive' or its corresponding type declarations.
+src/shared/ui/navigation/adaptive-nav.tsx(1,29): error TS2307: Cannot find module '@/shared/lib/responsive' or its corresponding type declarations.
+src/shared/ui/navigation/adaptive-nav.tsx(40,41): error TS2322: Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/shared/ui/navigation/adaptive-pagination.tsx(2,29): error TS2307: Cannot find module '@/shared/lib/responsive' or its corresponding type declarations.
+src/shared/ui/navigation/adaptive-pagination.tsx(5,29): error TS2307: Cannot find module '@/shared/lib/hooks/use-gestures' or its corresponding type declarations.
+src/shared/ui/navigation/adaptive-pagination.tsx(73,9): error TS2322: Type '"default" | "icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+  Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/shared/ui/navigation/adaptive-pagination.tsx(88,17): error TS2322: Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/shared/ui/navigation/adaptive-pagination.tsx(109,9): error TS2322: Type '"default" | "icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+  Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/shared/ui/navigation/bottom-nav.tsx(2,29): error TS2307: Cannot find module '@/shared/lib/responsive' or its corresponding type declarations.
+src/shared/ui/navigation/Header.tsx(5,38): error TS2307: Cannot find module '@/shared/ui/logo' or its corresponding type declarations.
+src/shared/ui/navigation/MobileNavItem.tsx(2,28): error TS2307: Cannot find module '@/components/NavigationBar/NavItem' or its corresponding type declarations.
+src/shared/ui/navigation/NavItem.tsx(2,24): error TS2307: Cannot find module '@/types/menuItem' or its corresponding type declarations.
+src/shared/ui/navigation/UserMenu.tsx(4,30): error TS2307: Cannot find module '@/context/AuthContext' or its corresponding type declarations.
+src/shared/ui/search/adaptive-search.tsx(2,29): error TS2307: Cannot find module '@/shared/lib/responsive' or its corresponding type declarations.
+src/shared/ui/search/adaptive-search.tsx(7,38): error TS2307: Cannot find module '@/shared/lib/hooks/use-debounced-callback' or its corresponding type declarations.
+src/shared/ui/search/adaptive-search.tsx(65,13): error TS2322: Type '"icon"' is not assignable to type '"default" | "sm" | "lg" | null | undefined'.
+src/shared/ui/sidebar/app-sidebar.tsx(6,23): error TS2307: Cannot find module '@/components/NavSideBar/nav-main' or its corresponding type declarations.
+src/shared/ui/sidebar/app-sidebar.tsx(7,23): error TS2307: Cannot find module '@/components/NavSideBar/nav-user' or its corresponding type declarations.
+src/shared/ui/sidebar/app-sidebar.tsx(8,29): error TS2307: Cannot find module '@/components/NavSideBar/sidebar-header' or its corresponding type declarations.
+src/shared/ui/sidebar/app-sidebar.tsx(10,23): error TS2307: Cannot find module '@/components/NavSideBar/nav-tabs' or its corresponding type declarations.
+src/shared/ui/sidebar/nav-user.tsx(16,23): error TS2307: Cannot find module '@/hooks/useAuth' or its corresponding type declarations.
+src/shared/ui/sidebar/nav-user.tsx(18,30): error TS2307: Cannot find module '@/components/RegistrationForm/registration-from' or its corresponding type declarations.
+src/shared/ui/sidebar/nav-user.tsx(19,30): error TS2307: Cannot find module '@/context/AuthContext' or its corresponding type declarations.
+src/shared/ui/sidebar/SideBarLayout.tsx(4,26): error TS2307: Cannot find module '@/components/NavSideBar/app-sidebar' or its corresponding type declarations.
+src/shared/ui/tables/adaptive-table.tsx(2,29): error TS2307: Cannot find module '@/shared/lib/responsive' or its corresponding type declarations.
+src/shared/ui/UserCard.tsx(4,23): error TS2307: Cannot find module '@/hooks/useAuth' or its corresponding type declarations.
+src/shared/ui/UserCard.tsx(5,30): error TS2307: Cannot find module '@/components/ui/DetailedUserCard' or its corresponding type declarations.
+src/shared/ui/UserCard.tsx(6,30): error TS2307: Cannot find module '@/components/RegistrationForm/registration-from' or its corresponding type declarations.
+src/utils/password.ts(18,34): error TS2551: Property 'MIN_LENGTH' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'minLength'?
+src/utils/password.ts(19,55): error TS2551: Property 'MIN_LENGTH' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'minLength'?
+src/utils/password.ts(23,16): error TS2551: Property 'REQUIRE_UPPERCASE' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'requireUppercase'?
+src/utils/password.ts(28,16): error TS2551: Property 'REQUIRE_LOWERCASE' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'requireLowercase'?
+src/utils/password.ts(33,16): error TS2551: Property 'REQUIRE_NUMBER' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'requireNumbers'?
+src/utils/password.ts(38,16): error TS2339: Property 'REQUIRE_SPECIAL' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'.
+src/utils/password.ts(53,35): error TS2551: Property 'MIN_LENGTH' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'minLength'?
+src/utils/password.ts(55,37): error TS2551: Property 'MIN_LENGTH' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'minLength'?
+src/utils/password.ts(111,27): error TS2551: Property 'MIN_LENGTH' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'minLength'?
+src/utils/password.ts(122,16): error TS2551: Property 'REQUIRE_UPPERCASE' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'requireUppercase'?
+src/utils/password.ts(125,16): error TS2551: Property 'REQUIRE_LOWERCASE' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'requireLowercase'?
+src/utils/password.ts(128,16): error TS2551: Property 'REQUIRE_NUMBER' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'. Did you mean 'requireNumbers'?
+src/utils/password.ts(131,16): error TS2339: Property 'REQUIRE_SPECIAL' does not exist on type '{ minLength: number; requireUppercase: boolean; requireLowercase: boolean; requireNumbers: boolean; requireSpecialChars: boolean; maxLength: number; }'.
+tailwind.config.ts(125,16): error TS7031: Binding element 'addUtilities' implicitly has an 'any' type.
+tailwind.config.ts(125,30): error TS7031: Binding element 'addBase' implicitly has an 'any' type.

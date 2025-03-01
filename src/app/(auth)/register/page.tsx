@@ -27,7 +27,7 @@ export default function RegisterPage() {
 
   if (error) {
     return (
-      <AuthLayout>
+      <AuthLayout title="Registration Error">
         <Card className="border-red-200 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center text-red-600">
@@ -50,7 +50,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthLayout>
+    <AuthLayout title="Create Account">
       <RegisterForm />
     </AuthLayout>
   );

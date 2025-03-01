@@ -5,7 +5,6 @@
  * with optimal defaults for caching, retries, and error handling.
  */
 import { QueryClient } from '@tanstack/react-query';
-import { toast } from '@/components/ui/use-toast';
 import { ApiError } from './apiClient';
 
 /**
@@ -13,43 +12,22 @@ import { ApiError } from './apiClient';
  */
 export const defaultQueryErrorHandler = (error: unknown) => {
   if (!error) return;
-  
-  // Extract error message
-  const message = error instanceof Error 
-    ? error.message 
-    : 'An unexpected error occurred';
-  
+
   // Handle API errors with more context
   if ((error as ApiError).status && (error as ApiError).data) {
     const apiError = error as ApiError;
     const errorData = apiError.data;
-    const errorMessage = 
-      errorData?.message || 
-      errorData?.error || 
-      `Request failed with status ${apiError.status}`;
-    
-    toast({
-      variant: 'destructive',
-      title: 'API Error',
-      description: errorMessage,
-    });
     
     console.error('[TanStack Query] API Error:', {
       status: apiError.status,
-      data: errorData
+      data: errorData,
+      message: errorData?.message || errorData?.error || `Request failed with status ${apiError.status}`
     });
-    
     return;
   }
-  
+
   // Generic error handling
-  toast({
-    variant: 'destructive',
-    title: 'Error',
-    description: message,
-  });
-  
-  console.error('[TanStack Query] Error:', error);
+  console.error('[TanStack Query] Error:', error instanceof Error ? error.message : 'An unexpected error occurred');
 };
 
 /**
@@ -58,12 +36,10 @@ export const defaultQueryErrorHandler = (error: unknown) => {
 export const createQueryClient = (options: {
   defaultStaleTime?: number;
   defaultGcTime?: number;
-  errorHandler?: (error: unknown) => void;
 } = {}) => {
   const {
     defaultStaleTime = 5 * 60 * 1000, // 5 minutes
-    defaultGcTime = 10 * 60 * 1000,   // 10 minutes
-    errorHandler = defaultQueryErrorHandler
+    defaultGcTime = 10 * 60 * 1000    // 10 minutes
   } = options;
 
   return new QueryClient({
@@ -84,7 +60,6 @@ export const createQueryClient = (options: {
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
         refetchOnWindowFocus: process.env.NODE_ENV === 'production',
         refetchOnMount: true,
-        onError: errorHandler,
       },
       mutations: {
         retry: (failureCount, error) => {
@@ -94,7 +69,6 @@ export const createQueryClient = (options: {
           }
           return failureCount < 2;
         },
-        onError: errorHandler,
       },
     },
   });

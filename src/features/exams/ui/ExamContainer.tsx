@@ -8,7 +8,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
-import { useExamSession } from '../hooks/useExamQueries';
+import { useExamQueries } from '@/features/exams/hooks';
+const useExamSession = useExamQueries.useExam;
 import { QuestionDisplay } from './components/QuestionDisplay';
 import { QuestionNavigation } from './components/QuestionNavigation';
 import { ExamProgress } from './components/ExamProgress';
@@ -154,7 +155,7 @@ export function ExamContainer({
       <Alert>
         <AlertTitle>No exam found</AlertTitle>
         <AlertDescription>
-          We couldn't find the requested exam. Please check the exam ID and try again.
+          We couldn&apos;t find the requested exam. Please check the exam ID and try again.
         </AlertDescription>
       </Alert>
     );

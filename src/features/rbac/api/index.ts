@@ -4,6 +4,7 @@
 
 // Export service
 export { rbacService } from './services/rbacService';
+export { featureFlagService } from '../services/featureFlagService';
 
 // Export query hooks
 export {

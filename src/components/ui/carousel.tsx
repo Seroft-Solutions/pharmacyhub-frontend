@@ -4,7 +4,7 @@ import * as React from "react"
 import useEmblaCarousel, {type UseEmblaCarouselType,} from "embla-carousel-react"
 import {ArrowLeft, ArrowRight} from "lucide-react"
 
-import {cn} from "@/shared/lib/utils"
+import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/button"
 
 type CarouselApi = UseEmblaCarouselType[1]
@@ -195,7 +195,7 @@ CarouselItem.displayName = "CarouselItem"
 const CarouselPrevious = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<typeof Button>
->(({className, variant = "outline", size = "icon", ...props}, ref) => {
+>(({className, variant = "outline", size = "default", ...props}, ref) => {
   const {orientation, scrollPrev, canScrollPrev} = useCarousel()
 
   return (
@@ -224,7 +224,7 @@ CarouselPrevious.displayName = "CarouselPrevious"
 const CarouselNext = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<typeof Button>
->(({className, variant = "outline", size = "icon", ...props}, ref) => {
+>(({className, variant = "outline", size = "default", ...props}, ref) => {
   const {orientation, scrollNext, canScrollNext} = useCarousel()
 
   return (

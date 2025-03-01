@@ -13,7 +13,7 @@ export default function ResetPasswordPage({ params }: ResetPasswordPageProps) {
   const { token } = params;
   
   return (
-    <AuthLayout>
+    <AuthLayout title="Set New Password">
       <ResetPasswordForm token={token} />
     </AuthLayout>
   );
