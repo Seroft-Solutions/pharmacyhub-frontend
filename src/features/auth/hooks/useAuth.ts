@@ -1,165 +1,100 @@
-import {signOut, useSession} from "next-auth/react";
-import {Permission, Role} from "@/types/auth";
-import {redirect} from "next/navigation";
-import { useEffect, useState } from "react";
-import { userService, securityService } from "../api";
+import { useCallback } from 'react';
+import { 
+  useLoginMutation, 
+  useLogoutMutation, 
+  useRegisterMutation,
+  usePasswordResetRequestMutation,
+  usePasswordResetCompleteMutation
+} from '../api/hooks/mutations';
+import { useUserProfile } from '../api/hooks/queries';
+import { tokenManager } from '../core';
+import type { RegistrationData } from '../types';
 
-export function useAuth() {
-  const {data: session, status} = useSession({
-    required: false,
-    onUnauthenticated() {
-      redirect("/login");
-    },
-  });
+/**
+ * Main auth hook that combines all auth-related functionality
+ */
+export const useAuth = () => {
+  const loginMutation = useLoginMutation();
+  const logoutMutation = useLogoutMutation();
+  const registerMutation = useRegisterMutation();
+  const resetRequestMutation = usePasswordResetRequestMutation();
+  const resetCompleteMutation = usePasswordResetCompleteMutation();
+  const { data: profile, isLoading: isLoadingProfile } = useUserProfile();
 
-  const [extendedProfile, setExtendedProfile] = useState<any>(null);
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
-
-  // Load the extended profile from the backend
-  useEffect(() => {
-    if (session?.user && !extendedProfile) {
-      setIsProfileLoading(true);
-      userService.getUserProfile()
-        .then(profile => {
-          setExtendedProfile(profile);
-        })
-        .catch(error => {
-          console.error('Failed to load user profile', error);
-        })
-        .finally(() => {
-          setIsProfileLoading(false);
-        });
-    }
-  }, [session, extendedProfile]);
-
-  // Get roles either from extended profile or session
-  const getRoles = (): Role[] => {
-    if (extendedProfile?.roles) {
-      return extendedProfile.roles as Role[];
-    }
-    return session?.user?.roles as Role[] || [];
-  };
-
-  // Get permissions either from extended profile or session
-  const getPermissions = (): Permission[] => {
-    if (extendedProfile?.permissions) {
-      return extendedProfile.permissions as Permission[];
-    }
-    return session?.user?.permissions as Permission[] || [];
-  };
-
-  const hasPermission = (permission: Permission) => {
-    const permissions = getPermissions();
-    return permissions.includes(permission);
-  };
-
-  const hasRole = (role: Role) => {
-    const roles = getRoles();
-    return roles.includes(role);
-  };
-
-  const hasAccess = (requiredRoles?: Role[], requiredPermissions?: Permission[]) => {
-    if (!requiredRoles?.length && !requiredPermissions?.length) {
-      return true;
-    }
-
-    const hasRequiredRole = requiredRoles?.some(role => hasRole(role)) ?? true;
-    const hasRequiredPermission = requiredPermissions?.every(permission =>
-      hasPermission(permission)
-    ) ?? true;
-
-    return hasRequiredRole && hasRequiredPermission;
-  };
-
-  const refreshProfile = async () => {
-    setIsProfileLoading(true);
+  const login = useCallback(async (email: string, password: string) => {
     try {
-      const profile = await userService.refreshPermissions();
-      setExtendedProfile(profile);
-      return profile;
+      const response = await loginMutation.mutateAsync({ email, password });
+      return response;
     } catch (error) {
-      console.error('Failed to refresh user profile', error);
       throw error;
-    } finally {
-      setIsProfileLoading(false);
     }
-  };
+  }, [loginMutation]);
 
-  const logout = async () => {
-    await signOut({
-      callbackUrl: "/login",
-      redirect: true
-    });
-  };
+  const register = useCallback(async (data: RegistrationData) => {
+    try {
+      await registerMutation.mutateAsync(data);
+    } catch (error) {
+      throw error;
+    }
+  }, [registerMutation]);
 
-  // Combined user data from session and extended profile
-  const user = extendedProfile ? {
-    ...session?.user,
-    ...extendedProfile,
-  } : session?.user;
+  const logout = useCallback(async () => {
+    try {
+      await logoutMutation.mutateAsync();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear tokens even if server call fails
+      tokenManager.removeToken();
+      window.location.href = '/login';
+    }
+  }, [logoutMutation]);
+
+  const requestPasswordReset = useCallback(async (email: string) => {
+    try {
+      const response = await resetRequestMutation.mutateAsync({ email });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }, [resetRequestMutation]);
+
+  const resetPassword = useCallback(async (token: string, newPassword: string) => {
+    try {
+      await resetCompleteMutation.mutateAsync({ token, newPassword });
+    } catch (error) {
+      throw error;
+    }
+  }, [resetCompleteMutation]);
+
+  const isAuthenticated = useCallback(() => {
+    return tokenManager.hasToken();
+  }, []);
 
   return {
-    user,
-    isAuthenticated: !!session?.user,
-    isLoading: status === "loading" || isProfileLoading,
-    hasPermission,
-    hasRole,
-    hasAccess,
-    refreshProfile,
+    // User state
+    user: profile,
+    isLoadingUser: isLoadingProfile,
+    isAuthenticated,
+
+    // Auth actions
+    login,
+    register,
     logout,
-    session,
-    status
-  } as const;
-}
+    requestPasswordReset,
+    resetPassword,
 
-// Custom hook to protect components
-export function useRequireAuth(
-  requiredRoles?: Role[],
-  requiredPermissions?: Permission[],
-  options?: { verifyOnBackend?: boolean }
-) {
-  const {hasAccess, isLoading, refreshProfile} = useAuth();
-  const [backendVerified, setBackendVerified] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
+    // Loading states
+    isLoggingIn: loginMutation.isPending,
+    isRegistering: registerMutation.isPending,
+    isLoggingOut: logoutMutation.isPending,
+    isRequestingReset: resetRequestMutation.isPending,
+    isResettingPassword: resetCompleteMutation.isPending,
 
-  useEffect(() => {
-    // If backend verification is requested, check with the backend
-    const verifyAccess = async () => {
-      if (options?.verifyOnBackend && !isLoading && !backendVerified) {
-        setIsVerifying(true);
-        try {
-          const hasAccess = await securityService.checkAccess(
-            requiredRoles || [], 
-            requiredPermissions || []
-          );
-          if (!hasAccess) {
-            redirect("/unauthorized");
-          }
-          setBackendVerified(true);
-        } catch (error) {
-          console.error('Failed to verify access with backend', error);
-          redirect("/unauthorized");
-        } finally {
-          setIsVerifying(false);
-        }
-      }
-    };
-
-    verifyAccess();
-  }, [isLoading, options?.verifyOnBackend, backendVerified, requiredRoles, requiredPermissions]);
-
-  // First do client-side check
-  if (isLoading || isVerifying) {
-    return {isLoading: true};
-  }
-
-  // If not verifying with backend, just check client-side
-  if (!options?.verifyOnBackend) {
-    const hasRequiredAccess = hasAccess(requiredRoles, requiredPermissions);
-    if (!hasRequiredAccess) {
-      redirect("/unauthorized");
-    }
-  }
-
-  return {isLoading: false, refreshProfile};
-}
+    // Error states
+    loginError: loginMutation.error,
+    registerError: registerMutation.error,
+    logoutError: logoutMutation.error,
+    resetRequestError: resetRequestMutation.error,
+    resetPasswordError: resetCompleteMutation.error
+  };
+};
