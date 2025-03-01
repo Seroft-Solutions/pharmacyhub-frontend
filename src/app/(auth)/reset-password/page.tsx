@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { AuthLoading } from '@/components/auth';
 import { validatePassword, calculatePasswordStrength } from '@/utils/password';
 import { ROUTES } from '@/config/auth';
-import { authService } from '@/features/auth/api/authService';
+import { authService } from '@/shared/auth';
 
 export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('');

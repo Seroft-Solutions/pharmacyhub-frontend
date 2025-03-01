@@ -1,7 +1,7 @@
 "use client";
 
 import { usePermissions, useAccess } from "@/hooks/usePermissions";
-import { useSession } from "@/features/auth/hooks/useSession";
+import { useSession } from "@/hooks/useSession";
 import { Button } from "@/components/ui/button";
 
 function DashboardMetrics() {
@@ -84,7 +84,7 @@ export default function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Welcome, {session?.user?.name || 'User'}</h1>
+        <h1 className="text-2xl font-bold">Welcome, {session?.user?.name}</h1>
         <p className="text-gray-600 mt-1">
           {isManager ? 'Manager Dashboard' : 'Dashboard'}
         </p>

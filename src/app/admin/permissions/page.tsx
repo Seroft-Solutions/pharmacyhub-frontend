@@ -1,14 +1,70 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { securityService } from '@/services/api';
+import { PERMISSION_CATEGORIES } from '@/constants/permissions';
 import { AccessCheck } from '@/components/security/PermissionCheck';
+
+interface Permission {
+  name: string;
+  description: string;
+  resourceType: string;
+  operationType: string;
+  requiresApproval: boolean;
+}
 
 /**
  * Admin component for viewing and managing permissions
  * Only accessible to users with MANAGE_PERMISSIONS permission
  */
 export default function PermissionAdmin() {
-  // Simplified version for now
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const loadPermissions = async () => {
+      try {
+        const data = await securityService.getAvailablePermissions();
+        setPermissions(data);
+      } catch (error) {
+        console.error('Failed to load permissions', error);
+        setError('Failed to load permissions. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadPermissions();
+  }, []);
+  
+  // Group permissions by resource type for display
+  const permissionsByResource = permissions.reduce<Record<string, Permission[]>>((acc, permission) => {
+    if (!acc[permission.resourceType]) {
+      acc[permission.resourceType] = [];
+    }
+    acc[permission.resourceType].push(permission);
+    return acc;
+  }, {});
+  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <AccessCheck
       permissions={['manage:permissions']}
@@ -21,12 +77,10 @@ export default function PermissionAdmin() {
     >
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">System Permissions</h1>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="mb-4">This is a placeholder for the permissions management page.</p>
-          <p className="text-gray-600">The complete implementation will load permissions from the API service.</p>
-          
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Sample Permissions</h2>
+        
+        {Object.keys(permissionsByResource).sort().map(resourceType => (
+          <div key={resourceType} className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">{resourceType}</h2>
             <div className="bg-white shadow overflow-hidden rounded-lg">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -38,49 +92,37 @@ export default function PermissionAdmin() {
                       Description
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Resource Type
+                      Operation
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Requires Approval
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      manage:users
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      Allows management of user accounts
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      USER
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      view:reports
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      Allows viewing of system reports
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      REPORT
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      manage:exams
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      Allows creation and management of exams
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      EXAM
-                    </td>
-                  </tr>
+                  {permissionsByResource[resourceType]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(permission => (
+                      <tr key={permission.name}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {permission.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {permission.description}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {permission.operationType}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {permission.requiresApproval ? 'Yes' : 'No'}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
           </div>
-        </div>
+        ))}
       </div>
     </AccessCheck>
   );
