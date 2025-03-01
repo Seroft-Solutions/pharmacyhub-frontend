@@ -6,13 +6,14 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 interface ReviewPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export async function generateMetadata({ params }: ReviewPageProps): Promise<Metadata> {
-    const paper = await examService.getPaper(params.id);
+    const { id } = await params;
+    const paper = await examService.getExamById(parseInt(id));
     
     return {
         title: `Review ${paper.title} | PharmacyHub`,
@@ -22,7 +23,8 @@ export async function generateMetadata({ params }: ReviewPageProps): Promise<Met
 
 export default async function ReviewPage({ params }: ReviewPageProps) {
     // Get the paper and exam state
-    const paper = await examService.getPaper(params.id).catch(() => null);
+    const { id } = await params;
+    const paper = await examService.getExamById(parseInt(id)).catch(() => null);
     const examState = useExamStore.getState();
 
     // If paper doesn't exist or exam state is empty, show 404

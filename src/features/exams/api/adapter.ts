@@ -1,5 +1,12 @@
-import { ExamPaper, ExamPaperMetadata } from '../model/types';
-import { Exam, ExamStatus, ExamQuestion, ExamOption, ExamStatusType } from '../model/mcqTypes';
+import {
+  Exam,
+  ExamOption,
+  ExamPaper,
+  ExamPaperMetadata,
+  ExamQuestion,
+  ExamStatus,
+  ExamStatusType
+} from '../types';
 
 // Define the backend API response types
 export interface BackendExamPaper {
@@ -111,7 +118,7 @@ export function adaptBackendExam(backendExam: BackendExam): Exam {
   };
 }
 
-function adaptBackendQuestion(backendQuestion: BackendExamQuestion): ExamQuestion {
+export function adaptBackendQuestion(backendQuestion: BackendExamQuestion): ExamQuestion {
   return {
     id: backendQuestion.id,
     text: backendQuestion.text,
