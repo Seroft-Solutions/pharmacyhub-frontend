@@ -17,12 +17,12 @@ export * from './api/services/authService';
 export * from './types';
 
 // Export constants 
-export * from './constants/permissions';
+// Note: RBAC permissions moved to @/features/rbac
 export * from './api/apiConfig';
 
 // Export utility functions
 export * from './utils';
 
 // Export UI components
-export * from './ui/rbac/PermissionGuard';
+// Note: RBAC components moved to @/features/rbac
 export * from './ui/protection/RequireAuth';

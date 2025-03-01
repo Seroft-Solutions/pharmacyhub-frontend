@@ -1,14 +1,11 @@
+'use client';
+
 /**
  * Permission-based access control components
- * 
- * These components help restrict access to UI elements based on
- * user permissions. They use the central permission constants
- * to enforce consistent access control throughout the application.
  */
-
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../core/AuthContext';
-import { Permission, Role } from '../../constants/permissions';
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/features/auth';
+import { Permission, Role } from '../constants/permissions';
 
 // Component that renders children only if user has the required permission
 export const PermissionGuard: React.FC<{

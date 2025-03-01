@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { securityService } from '@/features/auth/api';
-import { useAuth } from '@/features/auth/hooks';
+import { useAuth } from '@/features/auth';
+import { rbacService } from '../api/services/rbacService';
+import { useAccess } from '../hooks/useAccess';
 
 interface PermissionCheckProps {
   permission: string;
@@ -23,14 +24,14 @@ export function PermissionCheck({
 }: PermissionCheckProps) {
   const [hasPermission, setHasPermission] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { hasPermission: checkClientPermission } = useAuth();
+  const { hasPermission: checkClientPermission } = useAccess();
   
   useEffect(() => {
     const checkPermission = async () => {
       if (verifyOnBackend) {
         try {
-          const result = await securityService.checkPermissions([permission]);
-          setHasPermission(result[permission] || false);
+          const result = await rbacService.checkPermissions([permission]);
+          setHasPermission(result.data?.[permission] || false);
         } catch (error) {
           console.error(`Failed to check permission: ${permission}`, error);
           setHasPermission(false);
@@ -71,14 +72,14 @@ export function RoleCheck({
 }: RoleCheckProps) {
   const [hasRole, setHasRole] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { hasRole: checkClientRole } = useAuth();
+  const { hasRole: checkClientRole } = useAccess();
   
   useEffect(() => {
     const checkRole = async () => {
       if (verifyOnBackend) {
         try {
-          const result = await securityService.checkAccess([role], [], false);
-          setHasRole(result);
+          const result = await rbacService.checkAccess([role], [], false);
+          setHasRole(result.data || false);
         } catch (error) {
           console.error(`Failed to check role: ${role}`, error);
           setHasRole(false);
@@ -123,14 +124,14 @@ export function AccessCheck({
 }: AccessCheckProps) {
   const [hasAccess, setHasAccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { hasAccess: checkClientAccess } = useAuth();
+  const { hasAccess: checkClientAccess } = useAccess();
   
   useEffect(() => {
     const checkAccess = async () => {
       if (verifyOnBackend) {
         try {
-          const result = await securityService.checkAccess(roles, permissions, requireAll);
-          setHasAccess(result);
+          const result = await rbacService.checkAccess(roles, permissions, requireAll);
+          setHasAccess(result.data || false);
         } catch (error) {
           console.error('Failed to check access', error);
           setHasAccess(false);
@@ -139,7 +140,7 @@ export function AccessCheck({
         }
       } else {
         // Use client-side access check
-        setHasAccess(checkClientAccess(roles as any[], permissions as any[]));
+        setHasAccess(checkClientAccess(roles, permissions, { requireAll }));
         setIsLoading(false);
       }
     };

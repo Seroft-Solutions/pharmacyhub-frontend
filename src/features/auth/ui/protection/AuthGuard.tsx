@@ -1,47 +1,39 @@
-"use client";
+'use client';
 
-import { ReactNode } from "react";
-import { useAuth } from "@/features/auth/hooks";
-import { Role, Permission } from "@/types/auth";
-import { AuthLoading } from "../feedback/AuthLoading";
-import { Unauthorized } from "../feedback/Unauthorized";
-import { AuthGuardProps } from "./types";
+import React from 'react';
+import { RequireAuth } from './RequireAuth';
 
-export function AuthGuard({
+interface AuthGuardProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  requiredRoles?: string[];
+  requiredPermissions?: string[];
+  requireAll?: boolean;
+}
+
+/**
+ * Route guard that combines authentication and authorization
+ * 
+ * Redirects to login if user is not authenticated
+ * Redirects to unauthorized if user is authenticated but doesn't have required access
+ */
+export const AuthGuard: React.FC<AuthGuardProps> = ({
   children,
-  requiredRoles,
-  requiredPermissions,
-  loadingComponent = <AuthLoading />,
-  unauthorizedComponent = <Unauthorized />
-}: AuthGuardProps) {
-  const { isLoading, hasAccess } = useAuth();
+  fallback,
+  requiredRoles = [],
+  requiredPermissions = [],
+  requireAll = true
+}) => {
+  return (
+    <RequireAuth
+      requiredRoles={requiredRoles}
+      requiredPermissions={requiredPermissions}
+      requireAll={requireAll}
+      fallback={fallback}
+    >
+      {children}
+    </RequireAuth>
+  );
+};
 
-  if (isLoading) {
-    return loadingComponent;
-  }
-
-  const hasRequiredAccess = hasAccess(requiredRoles as Role[], requiredPermissions as Permission[]);
-  if (!hasRequiredAccess) {
-    return unauthorizedComponent;
-  }
-
-  return <>{children}</>;
-}
-
-// HOC for protecting components
-export function withAuth<P extends object>(
-  Component: React.ComponentType<P>,
-  requiredRoles?: Role[],
-  requiredPermissions?: Permission[]
-) {
-  return function ProtectedComponent(props: P) {
-    return (
-      <AuthGuard
-        requiredRoles={requiredRoles}
-        requiredPermissions={requiredPermissions}
-      >
-        <Component {...props} />
-      </AuthGuard>
-    );
-  };
-}
+export default AuthGuard;

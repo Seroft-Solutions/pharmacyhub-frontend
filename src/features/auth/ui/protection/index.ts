@@ -1,3 +1,5 @@
-export { AuthGuard, withAuth } from './AuthGuard';
-export { RequireAuth } from './RequireAuth';
-export * from './types';
+/**
+ * Auth Protection Components
+ */
+export * from './RequireAuth';
+export * from './AuthGuard';

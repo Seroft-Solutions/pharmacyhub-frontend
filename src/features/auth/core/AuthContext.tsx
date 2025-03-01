@@ -4,6 +4,9 @@ import { tokenManager } from './tokenManager';
 import { UserProfile } from '../types';
 import { logger } from '@/shared/lib/logger';
 
+// Import types from the RBAC feature
+import type { Permission, Role } from '@/features/rbac/constants/permissions';
+
 interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
@@ -12,6 +15,12 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<UserProfile>;
   logout: () => Promise<void>;
   refreshUserProfile: () => Promise<UserProfile | null>;
+  
+  // Legacy RBAC methods for backward compatibility
+  // These methods will use the new RBAC feature internally
+  hasRole: (role: string) => boolean;
+  hasPermission: (permission: string) => boolean;
+  hasAccess: (roles: string[], permissions: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -213,6 +222,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return fetchProfile();
   };
 
+  // RBAC helper functions for backward compatibility
+  const hasRole = useCallback((role: string): boolean => {
+    if (!user || !user.roles) return false;
+    return user.roles.includes(role);
+  }, [user]);
+  
+  const hasPermission = useCallback((permission: string): boolean => {
+    if (!user || !user.permissions) return false;
+    return user.permissions.includes(permission);
+  }, [user]);
+  
+  const hasAccess = useCallback((roles: string[] = [], permissions: string[] = []): boolean => {
+    if (!user) return false;
+    
+    // If no roles or permissions specified, deny access
+    if (roles.length === 0 && permissions.length === 0) return false;
+    
+    // Check roles
+    const hasRequiredRole = roles.length === 0 || roles.some(role => hasRole(role));
+    
+    // Check permissions
+    const hasRequiredPermission = permissions.length === 0 || 
+      permissions.some(permission => hasPermission(permission));
+      
+    // User must satisfy both role and permission requirements
+    return hasRequiredRole && hasRequiredPermission;
+  }, [user, hasRole, hasPermission]);
+  
   const contextValue: AuthContextType = {
     user,
     isAuthenticated,
@@ -220,7 +257,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     error,
     login,
     logout,
-    refreshUserProfile
+    refreshUserProfile,
+    hasRole,
+    hasPermission,
+    hasAccess
   };
 
   return (
