@@ -1,63 +1,48 @@
-'use client';
-
-import { useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/hooks';
-import { Permission, Role } from '@/types/auth';
-import { AUTH_ROUTES } from '@/shared/auth/apiConfig';
+/**
+ * Authentication guard component
+ * 
+ * This component protects routes by checking if a user is authenticated
+ * and redirecting to the login page if not.
+ */
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../core/AuthContext';
 
 interface RequireAuthProps {
   children: React.ReactNode;
-  roles?: Role[];
-  permissions?: Permission[];
-  requireAll?: boolean;
-  redirectTo?: string;
+  fallback?: React.ReactNode;
 }
 
 /**
- * Middleware component for protecting routes with authentication and authorization
- * 
- * Usage example:
- * ```tsx
- * function DashboardLayout({ children }: { children: React.ReactNode }) {
- *   return (
- *     <RequireAuth roles={['ADMIN', 'MANAGER']}>
- *       {children}
- *     </RequireAuth>
- *   );
- * }
- * ```
+ * Component that redirects to login if user is not authenticated
  */
-export function RequireAuth({
-  children,
-  roles,
-  permissions,
-  requireAll = false,
-  redirectTo = AUTH_ROUTES.LOGIN
-}: RequireAuthProps) {
-  const { isAuthenticated, hasAccess } = useAuth();
+export const RequireAuth: React.FC<RequireAuthProps> = ({ 
+  children, 
+  fallback = null 
+}) => {
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
 
-  useEffect(() => {
-    // Check authentication first
-    if (!isAuthenticated) {
-      // Store the current path for redirect after login
+  React.useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      // Save the current URL to redirect back after login
       if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_redirect', pathname);
+        const currentPath = window.location.pathname;
+        sessionStorage.setItem('redirectAfterLogin', currentPath);
       }
-      router.push(redirectTo);
-      return;
+      
+      // Redirect to login page
+      router.push('/login');
     }
+  }, [isAuthenticated, isLoading, router]);
 
-    // Then check authorization if roles or permissions are specified
-    if ((roles && roles.length > 0) || (permissions && permissions.length > 0)) {
-      const hasRequiredAccess = hasAccess(roles, permissions);
-      if (!hasRequiredAccess) {
-        router.push(AUTH_ROUTES.UNAUTHORIZED || '/unauthorized');
-      }
-    }
-  }, [isAuthenticated, pathname, roles, permissions, requireAll, router, redirectTo, hasAccess]);
+  // Show nothing while checking auth
+  if (isLoading) {
+    return null;
+  }
 
-  return <>{children}</>;
-}
+  // Show fallback or children based on auth status
+  return isAuthenticated ? <>{children}</> : <>{fallback}</>;
+};
+
+export default RequireAuth;

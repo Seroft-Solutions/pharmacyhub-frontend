@@ -1,58 +1,112 @@
-import { ApiErrorResponse } from './types';
+/**
+ * Authentication Utilities
+ * 
+ * Common utility functions used across the authentication system,
+ * with proper type definitions for security and maintainability.
+ */
 
 /**
- * Debug JWT token by decoding and logging its contents
+ * Creates standard authentication headers for API requests
  */
-export function debugJwtToken(token: string | null): object | null {
-  if (!token) return null;
-  
+export const createAuthHeaders = (token: string): Record<string, string> => ({
+  'Authorization': `Bearer ${token}`,
+  'Content-Type': 'application/json'
+});
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  name?: string;
+  roles: string[];
+  permissions: string[];
+  exp: number;
+}
+
+/**
+ * Parse JWT token and extract payload
+ */
+export const parseJwtToken = (token: string): JwtPayload | null => {
   try {
-    // Remove Bearer prefix if present
-    const actualToken = token.startsWith('Bearer ') ? token.slice(7) : token;
-    
-    // Split the token into parts
-    const parts = actualToken.split('.');
-    if (parts.length !== 3) {
-      console.error('Invalid JWT token format');
-      return null;
-    }
-    
-    // Decode the payload (middle part)
-    const payload = JSON.parse(atob(parts[1]));
-    
-    // Add expiry info for debugging
-    if (payload.exp) {
-      payload.expiryDate = new Date(payload.exp * 1000).toISOString();
-      payload.isExpired = Date.now() >= payload.exp * 1000;
-    }
-    
-    return payload;
+    if (!token) return null;
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(window.atob(base64));
   } catch (error) {
-    console.error('Failed to decode JWT:', error);
+    console.error('Failed to parse JWT token:', error);
     return null;
   }
+};
+
+/**
+ * Check if a JWT token is expired
+ */
+export const isTokenExpired = (token: string): boolean => {
+  const payload = parseJwtToken(token);
+  if (!payload?.exp) return true;
+  return Date.now() >= payload.exp * 1000;
+};
+
+interface KeycloakError {
+  error?: string;
+  error_description?: string;
+  message?: string;
+}
+
+function isKeycloakError(error: unknown): error is KeycloakError {
+  return typeof error === 'object' && 
+         error !== null && 
+         ('error_description' in error || 'message' in error);
 }
 
 /**
- * Format authentication errors for consistent error messaging
+ * Format error messages from Keycloak responses
  */
-export function formatAuthError(error: unknown): string {
-  if (!error) return 'An unknown error occurred';
+export const formatAuthError = (error: unknown): string => {
+  if (typeof error === 'string') return error;
   
-  if (error instanceof Error) {
-    // Remove any "Error:" prefix
-    return error.message.replace(/^Error:\s*/, '');
+  if (isKeycloakError(error)) {
+    if (error.error_description) return error.error_description;
+    if (error.message) return error.message;
+    if (error.error) return error.error;
   }
   
-  if (typeof error === 'string') {
-    return error;
+  return 'An unexpected authentication error occurred';
+};
+
+/**
+ * Debug and validate JWT token structure
+ * Returns information about the token for troubleshooting
+ */
+export const debugJwtToken = (token: string | null): { valid: boolean, message: string, payload?: any } => {
+  if (!token) {
+    return { valid: false, message: 'No token provided' };
   }
   
-  // Handle API error responses
-  if (typeof error === 'object' && error !== null) {
-    const apiError = error as ApiErrorResponse;
-    return apiError.message || apiError.error || 'An unknown error occurred';
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    return { valid: false, message: `Invalid JWT structure - expected 3 parts, got ${parts.length}` };
   }
   
-  return 'An unknown error occurred';
-}
+  try {
+    const payload = parseJwtToken(token);
+    if (!payload) {
+      return { valid: false, message: 'Failed to parse token payload' };
+    }
+    
+    return { 
+      valid: true, 
+      message: 'Token structure is valid', 
+      payload: {
+        // Only include non-sensitive parts for logging
+        sub: payload.sub,
+        exp: payload.exp ? new Date(payload.exp * 1000).toISOString() : 'not set',
+        roles: payload.roles || [],
+        hasRoles: Array.isArray(payload.roles) && payload.roles.length > 0,
+        // If token expiry exists, check if token is expired
+        expired: payload.exp ? (Date.now() >= payload.exp * 1000) : false
+      }
+    };
+  } catch (error) {
+    return { valid: false, message: `Error parsing token: ${error}` };
+  }
+};

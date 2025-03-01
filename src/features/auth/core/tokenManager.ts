@@ -1,254 +1,140 @@
-import { TokenManager } from './types';
-import { logger } from '@/shared/lib/logger';
+/**
+ * Token management utilities for handling
+ * authentication tokens securely.
+ */
 
+// Define storage keys for tokens
 export const TOKEN_CONFIG = {
-  ACCESS_TOKEN_KEY: 'access_token',
-  REFRESH_TOKEN_KEY: 'refresh_token',
-  TOKEN_EXPIRY_KEY: 'token_expiry',
-  USER_PROFILE_KEY: 'user_profile'
+  ACCESS_TOKEN_KEY: 'accessToken',
+  REFRESH_TOKEN_KEY: 'refreshToken',
+  TOKEN_EXPIRY_KEY: 'tokenExpiry',
 };
 
 /**
- * Enhanced TokenManager implementation with:
- * - Better error handling
- * - Consistent token storage and retrieval
- * - Proper memory/local storage synchronization
- * - Debug logging
+ * Token manager for handling auth tokens
  */
-class EnhancedTokenManager implements TokenManager {
-  private readonly accessTokenKey: string;
-  private readonly refreshTokenKey: string;
-  private readonly expiryKey: string;
-  private accessToken: string | null = null;
-  private storedRefreshToken: string | null = null;
-  private tokenExpiry: number | null = null;
-
-  constructor(
-    accessTokenKey: string = TOKEN_CONFIG.ACCESS_TOKEN_KEY, 
-    refreshTokenKey: string = TOKEN_CONFIG.REFRESH_TOKEN_KEY,
-    expiryKey: string = TOKEN_CONFIG.TOKEN_EXPIRY_KEY
-  ) {
-    this.accessTokenKey = accessTokenKey;
-    this.refreshTokenKey = refreshTokenKey;
-    this.expiryKey = expiryKey;
+export const tokenManager = {
+  /**
+   * Set the access token in storage
+   */
+  setToken: (token: string): void => {
+    if (typeof window === 'undefined') return;
     
-    // Initialize from localStorage if available
-    if (typeof window !== 'undefined') {
-      this.loadFromStorage();
-    }
-  }
-
+    // Store in standard location
+    localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, token);
+    
+    // Store in legacy locations for compatibility
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('access_token', token);
+  },
+  
   /**
-   * Load tokens from localStorage into memory
+   * Get the current access token
    */
-  private loadFromStorage(): void {
-    try {
-      this.accessToken = localStorage.getItem(this.accessTokenKey);
-      this.storedRefreshToken = localStorage.getItem(this.refreshTokenKey);
-      const expiryStr = localStorage.getItem(this.expiryKey);
-      this.tokenExpiry = expiryStr ? parseInt(expiryStr) : null;
-    } catch (error) {
-      logger.error('Failed to load tokens from storage', { error });
-    }
-  }
-
-  /**
-   * Get access token with Bearer prefix
-   */
-  getToken(): string | null {
+  getToken: (): string | null => {
     if (typeof window === 'undefined') return null;
-
-    // Lazy load from storage if needed
-    if (this.accessToken === null) {
-      this.loadFromStorage();
-    }
-
-    if (!this.accessToken) {
-      logger.debug('No access token available');
-      return null;
-    }
-
-    // Ensure token has Bearer prefix
-    return this.accessToken.startsWith('Bearer ') 
-      ? this.accessToken 
-      : `Bearer ${this.accessToken}`;
-  }
-
+    
+    // Try all possible storage locations
+    return (
+      localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) ||
+      localStorage.getItem('auth_token') ||
+      localStorage.getItem('access_token')
+    );
+  },
+  
   /**
-   * Set access token and save to storage
+   * Remove the access token
    */
-  setToken(token: string): void {
+  removeToken: (): void => {
     if (typeof window === 'undefined') return;
-
-    try {
-      // Remove Bearer prefix if present
-      const cleanToken = token.replace('Bearer ', '');
-      
-      // Update in-memory token
-      this.accessToken = cleanToken;
-      
-      // Save to localStorage
-      localStorage.setItem(this.accessTokenKey, cleanToken);
-      
-      logger.debug('Access token saved', { 
-        tokenStart: cleanToken.substring(0, 10) + '...',
-        length: cleanToken.length
-      });
-    } catch (error) {
-      logger.error('Failed to save access token', { error });
-    }
-  }
-
+    
+    // Remove from all possible storage locations
+    localStorage.removeItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('access_token');
+  },
+  
   /**
-   * Set refresh token
+   * Set the refresh token
    */
-  setRefreshToken(token: string): void {
+  setRefreshToken: (token: string): void => {
     if (typeof window === 'undefined') return;
-
-    try {
-      this.storedRefreshToken = token;
-      localStorage.setItem(this.refreshTokenKey, token);
-    } catch (error) {
-      logger.error('Failed to save refresh token', { error });
-    }
-  }
-
+    
+    localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, token);
+    localStorage.setItem('refresh_token', token); // Legacy
+  },
+  
   /**
-   * Get stored refresh token
+   * Get the current refresh token
    */
-  getStoredRefreshToken(): string | null {
+  getRefreshToken: (): string | null => {
     if (typeof window === 'undefined') return null;
-
-    if (this.storedRefreshToken === null) {
-      this.storedRefreshToken = localStorage.getItem(this.refreshTokenKey);
-    }
-
-    return this.storedRefreshToken;
-  }
-
+    
+    return (
+      localStorage.getItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY) ||
+      localStorage.getItem('refresh_token')
+    );
+  },
+  
   /**
-   * Set token expiry timestamp
+   * Remove the refresh token
    */
-  setTokenExpiry(expiryTime: number): void {
+  removeRefreshToken: (): void => {
     if (typeof window === 'undefined') return;
-
-    try {
-      this.tokenExpiry = expiryTime;
-      localStorage.setItem(this.expiryKey, expiryTime.toString());
-    } catch (error) {
-      logger.error('Failed to save token expiry', { error });
-    }
-  }
-
+    
+    localStorage.removeItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY);
+    localStorage.removeItem('refresh_token');
+  },
+  
   /**
-   * Remove all tokens from storage
+   * Set the token expiry timestamp
    */
-  removeToken(): void {
+  setTokenExpiry: (expiryTime: number): void => {
     if (typeof window === 'undefined') return;
-
-    try {
-      // Clear memory
-      this.accessToken = null;
-      this.storedRefreshToken = null;
-      this.tokenExpiry = null;
-      
-      // Clear storage
-      localStorage.removeItem(this.accessTokenKey);
-      localStorage.removeItem(this.refreshTokenKey);
-      localStorage.removeItem(this.expiryKey);
-      localStorage.removeItem(TOKEN_CONFIG.USER_PROFILE_KEY); // Also clear user profile
-      
-      logger.debug('Tokens and user profile removed from storage');
-    } catch (error) {
-      logger.error('Failed to remove tokens', { error });
-    }
-  }
-
+    
+    localStorage.setItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY, expiryTime.toString());
+    localStorage.setItem('token_expiry', expiryTime.toString()); // Legacy
+  },
+  
   /**
-   * Check if token exists and is not expired
+   * Get the token expiry timestamp
    */
-  hasToken(): boolean {
-    const token = this.getToken();
+  getTokenExpiry: (): number | null => {
+    if (typeof window === 'undefined') return null;
+    
+    const expiry = (
+      localStorage.getItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY) ||
+      localStorage.getItem('token_expiry')
+    );
+    
+    return expiry ? parseInt(expiry, 10) : null;
+  },
+  
+  /**
+   * Check if a valid token exists
+   */
+  hasToken: (): boolean => {
+    const token = tokenManager.getToken();
     if (!token) return false;
     
-    // Check expiration
-    if (this.tokenExpiry) {
-      const isExpired = Date.now() >= this.tokenExpiry;
-      if (isExpired) {
-        logger.debug('Token is expired', { expiry: new Date(this.tokenExpiry).toISOString() });
-        return false;
-      }
-      return true;
+    // Check expiry
+    const expiry = tokenManager.getTokenExpiry();
+    if (expiry && Date.now() >= expiry) {
+      return false;
     }
     
-    // If no expiry info, just check token existence
     return true;
-  }
-
+  },
+  
   /**
-   * Refresh token implementation
+   * Format a token for Authorization header
    */
-  async refreshToken(): Promise<string | null> {
-    try {
-      const refreshToken = this.getStoredRefreshToken();
-      if (!refreshToken) {
-        logger.error('No refresh token available for token refresh');
-        return null;
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/token/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ refreshToken })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Token refresh failed with status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data.token) {
-        throw new Error('No token in refresh response');
-      }
-
-      // Save the new token
-      this.setToken(data.token);
-      
-      // Set new expiry if provided
-      if (data.expiresIn) {
-        const expiryTime = Date.now() + (data.expiresIn * 1000);
-        this.setTokenExpiry(expiryTime);
-      }
-      
-      // Save new refresh token if provided
-      if (data.refreshToken) {
-        this.setRefreshToken(data.refreshToken);
-      }
-
-      return data.token;
-    } catch (error) {
-      logger.error('Token refresh failed', { error });
-      return null;
-    }
+  getAuthHeader: (): string | null => {
+    const token = tokenManager.getToken();
+    if (!token) return null;
+    
+    return `Bearer ${token}`;
   }
-}
-
-// Create a singleton instance with default configuration
-export const tokenManager = new EnhancedTokenManager();
-
-// Factory function for creating custom token managers
-export const createTokenManager = (config?: {
-  accessTokenKey?: string;
-  refreshTokenKey?: string;
-  expiryKey?: string;
-}): TokenManager => {
-  return new EnhancedTokenManager(
-    config?.accessTokenKey,
-    config?.refreshTokenKey,
-    config?.expiryKey
-  );
 };
 
 export default tokenManager;

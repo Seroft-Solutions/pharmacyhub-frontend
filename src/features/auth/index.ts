@@ -1,23 +1,28 @@
 /**
- * Auth Feature API
+ * Auth feature index file
  * 
- * Exports all the necessary components for auth functionality using TanStack Query
+ * This file exports all components, hooks, and utilities
+ * from the auth feature for easy access from other parts
+ * of the application.
  */
 
-// Core functionality
-export * from './core';
+// Export core functionality
+export * from './core/AuthContext';
+export * from './core/tokenManager';
 
-// React hooks
-export * from './hooks';
+// Export API services
+export * from './api/services/authService';
 
-// Types
+// Export types
 export * from './types';
 
-// Constants
+// Export constants 
 export * from './constants/permissions';
+export * from './api/apiConfig';
 
-// Utils
+// Export utility functions
 export * from './utils';
 
-// UI Components
-export * from './ui';
+// Export UI components
+export * from './ui/rbac/PermissionGuard';
+export * from './ui/protection/RequireAuth';
