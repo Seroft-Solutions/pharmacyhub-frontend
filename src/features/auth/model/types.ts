@@ -25,7 +25,7 @@ export interface LoginCredentials {
 }
 
 export interface LoginResponse {
-  token: string;
+  jwtToken: string;
   user: User;
 }
 

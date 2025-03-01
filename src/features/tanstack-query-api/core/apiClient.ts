@@ -29,13 +29,16 @@ export interface RequestOptions extends Omit<RequestInit, 'body'> {
 
 export interface ApiError extends Error {
   status?: number;
-  data?: any;
+  message: string;
+  details?: Record<string, any>;
 }
 
 export interface ApiResponse<T> {
   data: T | null;
   error: ApiError | null;
   status: number;
+  timestamp?: string;
+  metadata?: Record<string, any>;
 }
 
 // Constants
@@ -198,18 +201,23 @@ export class ApiClient {
       if (error instanceof DOMException && error.name === 'AbortError') {
         const timeoutError = new Error(`Request timeout after ${timeout}ms`) as ApiError;
         timeoutError.status = 408;
+        timeoutError.message = `Request timeout after ${timeout}ms`;
         return {
           data: null,
           error: timeoutError,
-          status: 408
+          status: 408,
+          timestamp: new Date().toISOString()
         };
       }
 
       const apiError = error instanceof Error ? error as ApiError : new Error('Unknown error') as ApiError;
+      apiError.message = apiError.message || 'Unknown error';
+      apiError.status = apiError.status || 0;
       return {
         data: null,
         error: apiError,
-        status: 0
+        status: 0,
+        timestamp: new Date().toISOString()
       };
     }
   }
@@ -370,6 +378,7 @@ export class ApiClient {
    * Parse response based on content type and status
    */
   private async parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
+    let responseBody: any = null;
     let data: T | null = null;
     
     try {
@@ -377,11 +386,27 @@ export class ApiClient {
       if (response.status !== 204 && response.headers.get('content-length') !== '0') {
         const contentType = response.headers.get('content-type');
         if (contentType?.includes('application/json')) {
-          data = await response.json();
+          responseBody = await response.json();
+          
+          // Check if the response follows our standard format
+          if (responseBody && typeof responseBody === 'object' && 'data' in responseBody) {
+            // Response is already in the ApiResponse format
+            return {
+              data: responseBody.data,
+              error: responseBody.error,
+              status: response.status,
+              timestamp: responseBody.timestamp || new Date().toISOString(),
+              metadata: responseBody.metadata
+            };
+          } else {
+            // Treat the entire response body as the data
+            data = responseBody;
+          }
         } else {
           // Handle non-JSON responses
           const textContent = await response.text();
           console.log(`[API] Non-JSON response: ${textContent.substring(0, 100)}...`);
+          data = textContent as any;
         }
       }
     } catch (error) {
@@ -392,19 +417,28 @@ export class ApiClient {
     if (!response.ok) {
       const error = new Error(response.statusText || 'Request failed') as ApiError;
       error.status = response.status;
-      error.data = data as any;
+      error.message = responseBody?.message || response.statusText || 'Request failed';
+      
+      // Add details from response body if available
+      if (responseBody?.details) {
+        error.details = responseBody.details;
+      }
       
       return { 
         data: null, 
         error, 
-        status: response.status 
+        status: response.status,
+        timestamp: responseBody?.timestamp || new Date().toISOString(),
+        metadata: responseBody?.metadata
       };
     }
 
     return { 
       data, 
       error: null, 
-      status: response.status 
+      status: response.status,
+      timestamp: responseBody?.timestamp || new Date().toISOString(),
+      metadata: responseBody?.metadata
     };
   }
 
