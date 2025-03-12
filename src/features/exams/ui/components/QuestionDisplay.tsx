@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Question, UserAnswer } from '../../model/mcqTypes';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { BookmarkIcon } from 'lucide-react';
+import { BookmarkIcon, ChevronLeftIcon, ChevronRightIcon, FlagIcon, CheckCircleIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface QuestionDisplayProps {
   question: Question;
@@ -31,34 +32,81 @@ export function QuestionDisplay({
     onFlagQuestion(question.id);
   };
 
+  const [selectedOption, setSelectedOption] = useState<string | undefined>(userAnswer?.toString());
+  
+  // Update selected option when userAnswer prop changes
+  useEffect(() => {
+    setSelectedOption(userAnswer?.toString());
+  }, [userAnswer]);
+
   return (
-    <Card className="w-full">
-      <CardContent className="pt-6">
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-medium leading-6">
-            {question.text}
-          </h3>
+    <Card className="w-full shadow-md border border-gray-100">
+      <CardHeader className="pb-2 border-b">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center">
+            <span className="bg-primary text-white text-sm font-medium rounded-full w-6 h-6 flex items-center justify-center mr-2">
+              {question.id}
+            </span>
+            <CardTitle className="text-lg font-semibold">
+              Question
+            </CardTitle>
+          </div>
           <Button 
-            variant="ghost" 
-            size="icon" 
+            variant={isFlagged ? "secondary" : "ghost"}
+            size="sm" 
             onClick={handleFlagToggle}
+            className={isFlagged ? "bg-yellow-50 text-yellow-600 hover:bg-yellow-100" : "text-gray-500"}
             aria-label={isFlagged ? "Unflag question" : "Flag question for review"}
           >
-            <BookmarkIcon className={`h-5 w-5 ${isFlagged ? "fill-yellow-400 text-yellow-400" : ""}`} />
+            {isFlagged ? (
+              <>
+                <FlagIcon className="h-4 w-4 mr-1.5 text-yellow-500" />
+                <span>Flagged</span>
+              </>
+            ) : (
+              <>
+                <FlagIcon className="h-4 w-4 mr-1.5" />
+                <span>Flag</span>
+              </>
+            )}
           </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <div className="mb-6">
+          <h3 className="text-lg font-medium leading-7 text-gray-800">
+            {question.text}
+          </h3>
         </div>
 
         <RadioGroup
-          value={userAnswer?.toString() || ''}
-          onValueChange={handleAnswerSelect}
+          value={selectedOption || ''}
+          onValueChange={(value) => {
+            setSelectedOption(value);
+            handleAnswerSelect(value);
+          }}
           className="space-y-3 mt-4"
         >
           {question.options.map((option, index) => (
-            <div key={index} className="flex items-center space-x-2 border p-3 rounded-md">
+            <div 
+              key={index} 
+              className={cn(
+                "flex items-center space-x-2 border p-4 rounded-md transition-colors",
+                selectedOption === index.toString() 
+                  ? "border-primary bg-primary/5" 
+                  : "hover:border-gray-300 hover:bg-gray-50"
+              )}
+            >
               <RadioGroupItem value={index.toString()} id={`option-${question.id}-${index}`} />
-              <Label htmlFor={`option-${question.id}-${index}`} className="flex-grow cursor-pointer">
+              <Label 
+                htmlFor={`option-${question.id}-${index}`} 
+                className="flex-grow cursor-pointer"
+              >
                 {option}
               </Label>
+              {selectedOption === index.toString() && (
+                <CheckCircleIcon className="h-5 w-5 text-primary flex-shrink-0" />
+              )}
             </div>
           ))}
         </RadioGroup>

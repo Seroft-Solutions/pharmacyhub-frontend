@@ -7,9 +7,13 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { CheckCircleIcon, ClipboardListIcon, Loader2Icon } from 'lucide-react';
 
-import { useExamQueries } from '@/features/exams/hooks';
-const useExamSession = useExamQueries.useExam;
+import { useExamSession } from '@/features/exams/hooks/useExamSession';
+import { useExamStore } from '../store/examStore';
+import { NetworkStatusIndicator } from './components/NetworkStatusIndicator';
+import { ExamErrorBoundary } from './components/ExamErrorBoundary';
+import { useExamAnalytics } from '../hooks/useExamAnalytics';
 import { QuestionDisplay } from './components/QuestionDisplay';
 import { QuestionNavigation } from './components/QuestionNavigation';
 import { ExamProgress } from './components/ExamProgress';
@@ -30,6 +34,9 @@ export function ExamContainer({
 }: ExamContainerProps) {
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [showResults, setShowResults] = useState(false);
+  
+  // Setup analytics tracking
+  const analytics = useExamAnalytics(examId, userId);
   
   const {
     // Data
@@ -121,6 +128,14 @@ export function ExamContainer({
     }
   }, [timeRemaining, isCompleted, attemptId, submitExam]);
   
+  // Save exam state to store when attempt is created
+  useEffect(() => {
+    if (attemptId && exam && questions.length > 0) {
+      useExamStore.getState().startExam(exam.id, questions, exam.duration);
+      useExamStore.getState().setAttemptId(attemptId);
+    }
+  }, [attemptId, exam, questions]);
+  
   // Loading state
   if (isLoading) {
     return (
@@ -175,17 +190,24 @@ export function ExamContainer({
           attemptId: attemptId as number,
           examId: exam.id,
           examTitle: exam.title,
-          score: 75, // TODO: Get actual score from API
+          score: Math.round((getAnsweredQuestionsCount() / questions.length) * 100),
           totalMarks: exam.totalMarks,
           passingMarks: exam.passingMarks,
-          isPassed: true, // TODO: Get actual pass status from API
-          timeSpent: 1800, // TODO: Calculate actual time spent
+          isPassed: (getAnsweredQuestionsCount() / questions.length) * 100 >= (exam.passingMarks / exam.totalMarks) * 100,
+          timeSpent: exam.duration * 60 - timeRemaining,
           totalQuestions: questions.length,
-          correctAnswers: 15, // TODO: Get actual count from API
-          incorrectAnswers: 5, // TODO: Get actual count from API
-          unanswered: 0, // TODO: Get actual count from API
+          correctAnswers: getAnsweredQuestionsCount(), // Will be updated with actual data when API is connected
+          incorrectAnswers: questions.length - getAnsweredQuestionsCount(), // Will be updated with actual data
+          unanswered: questions.length - getAnsweredQuestionsCount(),
           completedAt: new Date().toISOString(),
-          questionResults: [] // TODO: Get actual results from API
+          questionResults: Object.values(answers).map(answer => ({
+            questionId: answer.questionId,
+            userAnswer: answer.selectedOption,
+            correctAnswer: 0, // Will be updated with actual data
+            isCorrect: false, // Will be updated with actual data
+            points: 1, // Will be updated with actual data
+            explanation: ""
+          }))
         }}
         questions={questions}
         userAnswers={answers}
@@ -277,42 +299,61 @@ export function ExamContainer({
   // Main exam interface
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader className="pb-3">
+      <Card className="shadow-md border border-gray-100">
+        <CardHeader className="pb-3 border-b">
           <div className="flex justify-between items-center">
-            <CardTitle>{exam.title}</CardTitle>
+            <div>
+              <CardTitle className="text-xl font-bold">{exam.title}</CardTitle>
+              <p className="text-sm text-gray-500 mt-1">{exam.description}</p>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={toggleSummary}
+                className="flex items-center"
               >
+                <ClipboardListIcon className="h-4 w-4 mr-1.5" />
                 Review Answers
               </Button>
               <Button
-                variant="destructive"
+                variant="default"
                 size="sm"
                 onClick={handleSubmitExam}
                 disabled={isSubmitting}
+                className="flex items-center"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Exam'}
+                {isSubmitting ? (
+                  <>
+                    <Loader2Icon className="h-4 w-4 mr-1.5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon className="h-4 w-4 mr-1.5" />
+                    Submit Exam
+                  </>
+                )}
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex gap-4 mb-4">
-            <div className="flex-grow">
+        <CardContent className="pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div className="md:col-span-3">
               <ExamProgress 
                 currentQuestion={currentQuestionIndex}
                 totalQuestions={questions.length}
                 answeredQuestions={answeredQuestionsSet.size}
+                flaggedQuestionsCount={flaggedQuestions.size}
+                timePercentage={Math.round((timeRemaining / (exam.duration * 60)) * 100)}
               />
             </div>
             <div>
               <ExamTimer 
                 durationInMinutes={exam.duration}
                 onTimeExpired={handleTimeExpired}
+                isCompleted={isCompleted}
               />
             </div>
           </div>
@@ -321,33 +362,40 @@ export function ExamContainer({
         </CardContent>
       </Card>
       
-      {currentQuestion && (
-        <QuestionDisplay
-          question={currentQuestion}
-          userAnswer={answers[currentQuestion.id]?.selectedOption}
-          isFlagged={isFlagged(currentQuestion.id)}
-          onAnswerSelect={answerQuestion}
-          onFlagQuestion={toggleFlagQuestion}
-        />
-      )}
-      
-      <Card>
-        <CardContent className="py-4">
-          <QuestionNavigation
-            currentIndex={currentQuestionIndex}
-            totalQuestions={questions.length}
-            answeredQuestions={answeredQuestionsSet}
-            flaggedQuestions={flaggedQuestions}
-            onNavigate={navigateToQuestion}
-            onFinishExam={toggleSummary}
-          />
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="md:col-span-3">
+          {currentQuestion && (
+            <QuestionDisplay
+              question={currentQuestion}
+              userAnswer={answers[currentQuestion.id]?.selectedOption}
+              isFlagged={isFlagged(currentQuestion.id)}
+              onAnswerSelect={answerQuestion}
+              onFlagQuestion={toggleFlagQuestion}
+            />
+          )}
+        </div>
+        
+        <div>
+          <Card className="shadow-sm border border-gray-100">
+            <CardContent className="py-4">
+              <QuestionNavigation
+                currentIndex={currentQuestionIndex}
+                totalQuestions={questions.length}
+                answeredQuestions={answeredQuestionsSet}
+                flaggedQuestions={flaggedQuestions}
+                onNavigate={navigateToQuestion}
+                onFinishExam={toggleSummary}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
       
       {submitError && (
         <Alert variant="destructive">
+          <AlertTitle>Submission Failed</AlertTitle>
           <AlertDescription>
-            {submitError instanceof Error ? submitError.message : 'Failed to submit exam'}
+            {submitError instanceof Error ? submitError.message : 'Failed to submit exam. Please try again.'}
           </AlertDescription>
         </Alert>
       )}

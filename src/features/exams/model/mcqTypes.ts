@@ -1,3 +1,23 @@
+// Exam status type for type safety
+export type ExamStatusType = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+
+// Exam status enum-like object for consistency
+export const ExamStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
+} as const;
+
+// Attempt status type for type safety
+export type AttemptStatusType = 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
+
+// Attempt status enum-like object for consistency
+export const AttemptStatus = {
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  ABANDONED: 'ABANDONED'
+} as const;
+
 // Base types for exam entities
 
 export interface Option {
@@ -22,7 +42,7 @@ export interface Exam {
   duration: number; // in minutes
   totalMarks: number;
   passingMarks: number;
-  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  status: ExamStatusType;
   questions?: Question[];
 }
 
@@ -34,7 +54,7 @@ export interface ExamAttempt {
   userId: string;
   startTime: string;
   endTime?: string;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
+  status: AttemptStatusType;
   answers?: UserAnswer[];
 }
 
@@ -94,7 +114,7 @@ export interface ExamSession {
   attemptId: number;
   startTime: string;
   endTime?: string;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
+  status: AttemptStatusType;
 }
 
 // Types for MCQ exams

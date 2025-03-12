@@ -1,94 +1,90 @@
-'use client';
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Pause, Play, Clock } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { TimerIcon, AlertCircleIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ExamTimerProps {
   durationInMinutes: number;
   onTimeExpired: () => void;
-  allowPause?: boolean;
+  isCompleted?: boolean;
 }
 
 export function ExamTimer({
   durationInMinutes,
   onTimeExpired,
-  allowPause = false,
+  isCompleted = false
 }: ExamTimerProps) {
-  // Convert duration to seconds
-  const totalSeconds = durationInMinutes * 60;
-  const [timeRemaining, setTimeRemaining] = useState(totalSeconds);
+  const [secondsRemaining, setSecondsRemaining] = useState(durationInMinutes * 60);
   const [isPaused, setIsPaused] = useState(false);
   
-  // Format time as mm:ss
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  // Calculate hours, minutes, seconds
+  const hours = Math.floor(secondsRemaining / 3600);
+  const minutes = Math.floor((secondsRemaining % 3600) / 60);
+  const seconds = secondsRemaining % 60;
+  
+  // Format time with leading zeros
+  const formattedTime = `${hours > 0 ? `${hours}:` : ''}${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   
   // Calculate percentage of time remaining
-  const percentageRemaining = (timeRemaining / totalSeconds) * 100;
+  const percentageRemaining = (secondsRemaining / (durationInMinutes * 60)) * 100;
   
-  // Determine color based on percentage remaining
-  const getTimerColor = () => {
-    if (percentageRemaining > 50) return 'text-green-500';
-    if (percentageRemaining > 25) return 'text-yellow-500';
-    return 'text-red-500';
+  // Determine urgency level based on remaining time
+  const getUrgencyLevel = () => {
+    if (percentageRemaining > 50) return 'normal';
+    if (percentageRemaining > 25) return 'warning';
+    return 'critical';
   };
   
-  // Handle timer tick
-  const tick = useCallback(() => {
-    setTimeRemaining((prevTime) => {
-      if (prevTime <= 1) {
-        onTimeExpired();
-        return 0;
-      }
-      return prevTime - 1;
-    });
-  }, [onTimeExpired]);
+  const urgencyLevel = getUrgencyLevel();
   
-  // Toggle pause state
-  const togglePause = () => {
-    setIsPaused((prev) => !prev);
-  };
-  
-  // Set up timer
+  // Update timer every second
   useEffect(() => {
-    if (isPaused) return;
+    if (isCompleted || isPaused || secondsRemaining <= 0) return;
     
-    const timerId = setInterval(tick, 1000);
+    const timer = setInterval(() => {
+      setSecondsRemaining(prev => {
+        const newValue = prev - 1;
+        if (newValue <= 0) {
+          clearInterval(timer);
+          onTimeExpired();
+          return 0;
+        }
+        return newValue;
+      });
+    }, 1000);
     
-    // Clean up interval on unmount
-    return () => clearInterval(timerId);
-  }, [tick, isPaused]);
+    return () => clearInterval(timer);
+  }, [secondsRemaining, isPaused, isCompleted, onTimeExpired]);
   
   return (
-    <Card className="w-full">
-      <CardContent className="p-4 flex justify-between items-center">
-        <div className="flex items-center">
-          <Clock className={`mr-2 h-5 w-5 ${getTimerColor()}`} />
-          <span className={`font-mono text-lg font-bold ${getTimerColor()}`}>
-            {formatTime(timeRemaining)}
+    <div className={cn(
+      "relative px-3 py-2 rounded-md flex items-center",
+      urgencyLevel === 'normal' ? 'bg-blue-50 text-blue-700' :
+      urgencyLevel === 'warning' ? 'bg-amber-50 text-amber-700' :
+      'bg-red-50 text-red-700'
+    )}>
+      {urgencyLevel === 'critical' && (
+        <div className="absolute inset-0 bg-red-100 animate-pulse rounded-md" style={{ opacity: 0.3 }} />
+      )}
+      
+      <div className="relative flex items-center">
+        {urgencyLevel === 'critical' ? (
+          <AlertCircleIcon className="h-5 w-5 mr-2 text-red-500" />
+        ) : (
+          <TimerIcon className={cn(
+            "h-5 w-5 mr-2",
+            urgencyLevel === 'normal' ? 'text-blue-500' : 'text-amber-500'
+          )} />
+        )}
+        
+        <div>
+          <span className="font-mono text-lg font-semibold">{formattedTime}</span>
+          <span className="ml-2 text-sm font-medium">
+            {urgencyLevel === 'critical' ? 'Time running out!' :
+             urgencyLevel === 'warning' ? 'Time alert' : 'Remaining'}
           </span>
         </div>
-        
-        {allowPause && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={togglePause}
-            aria-label={isPaused ? "Resume timer" : "Pause timer"}
-          >
-            {isPaused ? (
-              <Play className="h-4 w-4" />
-            ) : (
-              <Pause className="h-4 w-4" />
-            )}
-          </Button>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

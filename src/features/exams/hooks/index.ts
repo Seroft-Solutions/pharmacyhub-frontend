@@ -1,5 +1,8 @@
 /**
- * Export all exam hooks
+ * Exams Hooks
+ * 
+ * This module exports all exam-related hooks for easy importing.
  */
 
-export * from './useExamQueries';
+// Export hooks
+export { useExamSession } from './useExamSession';

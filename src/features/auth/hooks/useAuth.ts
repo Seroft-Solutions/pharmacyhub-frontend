@@ -1,53 +1,44 @@
 import { useCallback } from 'react';
 import { 
-  useLoginMutation, 
-  useLogoutMutation, 
   useRegisterMutation,
   usePasswordResetRequestMutation,
   usePasswordResetCompleteMutation
 } from '../api/hooks/mutations';
-import { useUserProfile } from '../api/hooks/queries';
-import { tokenManager } from '../core';
 import type { RegistrationData } from '../types';
+import type { RegisterRequest } from '../api/services/authService';
+import { useAuthContext } from '../core/AuthContext';
 
 /**
- * Main auth hook that combines all auth-related functionality
+ * Main auth hook that combines context and mutations functionality
  */
 export const useAuth = () => {
-  const loginMutation = useLoginMutation();
-  const logoutMutation = useLogoutMutation();
+  const authContext = useAuthContext();
   const registerMutation = useRegisterMutation();
   const resetRequestMutation = usePasswordResetRequestMutation();
   const resetCompleteMutation = usePasswordResetCompleteMutation();
-  const { data: profile, isLoading: isLoadingProfile } = useUserProfile();
 
-  const login = useCallback(async (email: string, password: string) => {
+  const register = useCallback(async (data: any) => {
     try {
-      const response = await loginMutation.mutateAsync({ emailAddress: email, password });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  }, [loginMutation]);
-
-  const register = useCallback(async (data: RegistrationData) => {
-    try {
-      await registerMutation.mutateAsync(data);
+      // If data is already in the correct format, use it directly
+      if (data.emailAddress) {
+        await registerMutation.mutateAsync(data);
+      } else {
+        // Convert from old format to new format if needed
+        const registerRequest: RegisterRequest = {
+          emailAddress: data.email,
+          password: data.password,
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          contactNumber: data.phoneNumber,
+          userType: data.userType,
+          openToConnect: false
+        };
+        await registerMutation.mutateAsync(registerRequest);
+      }
     } catch (error) {
       throw error;
     }
   }, [registerMutation]);
-
-  const logout = useCallback(async () => {
-    try {
-      await logoutMutation.mutateAsync();
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Still clear tokens even if server call fails
-      tokenManager.removeToken();
-      window.location.href = '/login';
-    }
-  }, [logoutMutation]);
 
   const requestPasswordReset = useCallback(async (email: string) => {
     try {
@@ -60,40 +51,32 @@ export const useAuth = () => {
 
   const resetPassword = useCallback(async (token: string, newPassword: string) => {
     try {
-      await resetCompleteMutation.mutateAsync({ token, newPassword });
+      await resetCompleteMutation.mutateAsync({ 
+        token, 
+        newPassword,
+        confirmPassword: newPassword 
+      });
     } catch (error) {
       throw error;
     }
   }, [resetCompleteMutation]);
 
-  const isAuthenticated = useCallback(() => {
-    return tokenManager.hasToken();
-  }, []);
-
   return {
-    // User state
-    user: profile,
-    isLoadingUser: isLoadingProfile,
-    isAuthenticated,
+    // Context state and methods
+    ...authContext,
 
-    // Auth actions
-    login,
+    // Additional mutation actions
     register,
-    logout,
     requestPasswordReset,
     resetPassword,
 
-    // Loading states
-    isLoggingIn: loginMutation.isPending,
+    // Additional loading states
     isRegistering: registerMutation.isPending,
-    isLoggingOut: logoutMutation.isPending,
     isRequestingReset: resetRequestMutation.isPending,
     isResettingPassword: resetCompleteMutation.isPending,
 
-    // Error states
-    loginError: loginMutation.error,
+    // Additional error states
     registerError: registerMutation.error,
-    logoutError: logoutMutation.error,
     resetRequestError: resetRequestMutation.error,
     resetPasswordError: resetCompleteMutation.error
   };

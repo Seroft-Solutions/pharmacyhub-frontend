@@ -8,7 +8,7 @@
 export const AUTH_ROUTES = {
   // Auth endpoints
   LOGIN: '/api/auth/login',
-  REGISTER: '/auth/register',
+  REGISTER: '/api/auth/signup',
   LOGOUT: '/auth/logout',
   REFRESH_TOKEN: '/auth/token/refresh',
   VERIFY_EMAIL: '/auth/verify-email',

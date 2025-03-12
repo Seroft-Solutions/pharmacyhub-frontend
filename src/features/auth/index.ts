@@ -23,6 +23,9 @@ export { AUTH_ENDPOINTS as apiRoutes } from './api/apiConfig';
 // Export utility functions
 export * from './utils';
 
+// Export hooks
+export * from './hooks';
+
 // Export UI components
 // Note: RBAC components moved to @/features/rbac
 export * from './ui/protection/RequireAuth';

@@ -1,25 +1,28 @@
 /**
- * Unified API Module
+ * Exams API Feature
  * 
- * This module exports all of the exam-related API functionality
- * in an organized, consistent way.
+ * This module exports all exam-related API components, hooks, and utilities.
  */
 
-// Export core API client, service, and query keys
-export * from './core';
+// Export API endpoints and service
+export { examEndpoints, examService } from './core/examService';
 
-// Export hooks for React components
-export * from './hooks';
+// Export query keys
+export { examQueryKeys } from './core/queryKeys';
 
-// Export adapter functions for backend data
-export * from './adapter';
-
-// Export types from the model
-export type {
-  Exam,
-  ExamAttempt,
-  ExamResult,
-  FlaggedQuestion,
-  Question,
-  UserAnswer
-} from '../model/mcqTypes';
+// Export API hooks
+export {
+  useExams,
+  usePublishedExams,
+  useExam,
+  useExamQuestions,
+  useExamsByStatus,
+  useUserExamAttempts,
+  useExamAttempt,
+  useExamResult,
+  useStartExamMutation,
+  useAnswerQuestionMutation,
+  useFlagQuestionMutation,
+  useSubmitExamMutation,
+  examApiHooks
+} from './hooks/useExamApi';

@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../core/AuthContext';
+import { useAuth } from '../../hooks';
 import { useAccess } from '@/features/rbac/hooks';
 
 interface RequireAuthProps {

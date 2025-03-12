@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth, RegistrationData, USER_TYPE_PERMISSIONS } from '@/shared/auth';
@@ -67,6 +67,8 @@ const validateRegistrationForm = (data: typeof initialFormData) => {
     errors.password = 'Password is required';
   } else if (data.password.length < 8) {
     errors.password = 'Password must be at least 8 characters';
+  } else if (!/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\S+$).{8,}$/.test(data.password)) {
+    errors.password = 'Password must contain at least one digit, lowercase letter, uppercase letter, special character (@#$%^&+=!), and no spaces';
   }
   
   // Confirm password validation
@@ -155,6 +157,18 @@ export const RegisterForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Clear any expired tokens when starting registration
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Clear any tokens that might be causing authentication issues
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('tokenExpiry');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('token_expiry');
+    }
+  }, []);
+
   const nextStep = () => {
     if (currentStep === 'account' && validateStep('account')) {
       setCurrentStep('personal');
@@ -179,16 +193,24 @@ export const RegisterForm = () => {
     }
 
     try {
+      // Map GENERAL_USER to PHARMACIST for backend compatibility
+      let userTypeForBackend = formData.userType;
+      if (userTypeForBackend === 'GENERAL_USER') {
+        userTypeForBackend = 'PHARMACIST'; // Use PHARMACIST as the default for general users
+      }
+
       // Prepare data for API
-      const registrationData: RegistrationData = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
+      const registrationData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        userType: formData.userType as any,
-        phoneNumber: formData.phoneNumber || undefined,
+        emailAddress: formData.email, // Changed from email to emailAddress
+        password: formData.password,
+        userType: userTypeForBackend, // Use the mapped user type
+        contactNumber: formData.phoneNumber || undefined,
+        openToConnect: false
       };
+      
+      console.log('Registering with data:', JSON.stringify(registrationData, null, 2));
       
       await register(registrationData);
       
@@ -500,10 +522,10 @@ export const RegisterForm = () => {
           <SelectContent>
             <SelectItem value="GENERAL_USER">General User</SelectItem>
             <SelectItem value="PHARMACIST">Pharmacist</SelectItem>
+            <SelectItem value="PHARMACY_MANAGER">Pharmacy Manager</SelectItem>
             <SelectItem value="PROPRIETOR">Pharmacy Proprietor</SelectItem>
-            <SelectItem value="MANAGER">Pharmacy Manager</SelectItem>
             <SelectItem value="SALESMAN">Pharmacy Salesperson</SelectItem>
-            <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+            <SelectItem value="ADMIN">Administrator</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-xs text-gray-500 mt-1">Your account type determines which features you can access</p>

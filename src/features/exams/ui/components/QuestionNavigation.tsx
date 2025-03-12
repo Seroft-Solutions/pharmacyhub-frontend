@@ -1,14 +1,7 @@
-'use client';
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  CheckCircle, 
-  BookmarkIcon as Bookmark,
-  Circle
-} from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, CheckIcon, LifeBuoyIcon, FlagIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface QuestionNavigationProps {
   currentIndex: number;
@@ -25,90 +18,160 @@ export function QuestionNavigation({
   answeredQuestions,
   flaggedQuestions,
   onNavigate,
-  onFinishExam,
+  onFinishExam
 }: QuestionNavigationProps) {
-  // Create array of question numbers from 0 to totalQuestions - 1
-  const questionIndices = Array.from({ length: totalQuestions }, (_, i) => i);
+  const questionsPerRow = 5;
+  const rows = Math.ceil(totalQuestions / questionsPerRow);
+  
+  // Get question number at specific index
+  const getQuestionNumber = (index: number) => index + 1;
+  
+  // Get question status
+  const getQuestionStatus = (index: number) => {
+    const questionId = index + 1; // Assuming question IDs start at 1
+    const isAnswered = Array.from(answeredQuestions).some(id => id === questionId);
+    const isFlagged = flaggedQuestions.has(questionId);
+    const isCurrent = index === currentIndex;
+    
+    if (isCurrent) return 'current';
+    if (isAnswered && isFlagged) return 'answered-flagged';
+    if (isAnswered) return 'answered';
+    if (isFlagged) return 'flagged';
+    return 'unanswered';
+  };
+  
+  // Get status classes
+  const getStatusClasses = (status: string) => {
+    switch (status) {
+      case 'current':
+        return 'bg-primary text-white ring-2 ring-primary ring-offset-2';
+      case 'answered':
+        return 'bg-green-100 text-green-800 border-green-300';
+      case 'flagged':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'answered-flagged':
+        return 'bg-gradient-to-br from-green-100 to-yellow-100 text-green-900 border-green-300';
+      default:
+        return 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+    }
+  };
+  
+  // Get status icon
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'answered':
+        return <CheckIcon className="h-3 w-3" />;
+      case 'flagged':
+        return <FlagIcon className="h-3 w-3" />;
+      case 'answered-flagged':
+        return <CheckIcon className="h-3 w-3" />;
+      default:
+        return null;
+    }
+  };
+  
+  // Generate grid of question buttons
+  const renderQuestionGrid = () => {
+    const grid = [];
+    
+    for (let row = 0; row < rows; row++) {
+      const rowItems = [];
+      
+      for (let col = 0; col < questionsPerRow; col++) {
+        const index = row * questionsPerRow + col;
+        if (index >= totalQuestions) break;
+        
+        const status = getQuestionStatus(index);
+        const statusClasses = getStatusClasses(status);
+        const statusIcon = getStatusIcon(status);
+        
+        rowItems.push(
+          <Button
+            key={index}
+            variant="outline"
+            size="sm"
+            onClick={() => onNavigate(index)}
+            className={cn(
+              "w-10 h-10 p-0 flex items-center justify-center relative font-medium",
+              statusClasses
+            )}
+            aria-label={`Go to question ${getQuestionNumber(index)}`}
+          >
+            {getQuestionNumber(index)}
+            {statusIcon && (
+              <span className="absolute -top-1 -right-1 text-xs">
+                {statusIcon}
+              </span>
+            )}
+          </Button>
+        );
+      }
+      
+      grid.push(
+        <div key={row} className="flex gap-2 justify-center">
+          {rowItems}
+        </div>
+      );
+    }
+    
+    return <div className="grid gap-2">{grid}</div>;
+  };
   
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-4">
+    <div className="space-y-6">
+      <div className="flex justify-between gap-2 mb-4">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onNavigate(currentIndex - 1)}
+          onClick={() => onNavigate(Math.max(0, currentIndex - 1))}
           disabled={currentIndex === 0}
+          className="px-2.5"
         >
-          <ChevronLeft className="h-4 w-4 mr-2" />
+          <ChevronLeftIcon className="h-4 w-4 mr-1" />
           Previous
         </Button>
-        {currentIndex < totalQuestions - 1 ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onNavigate(currentIndex + 1)}
-            disabled={currentIndex === totalQuestions - 1}
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            variant="default"
-            size="sm"
-            onClick={onFinishExam}
-          >
-            Finish Exam
-          </Button>
-        )}
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onNavigate(Math.min(totalQuestions - 1, currentIndex + 1))}
+          disabled={currentIndex === totalQuestions - 1}
+          className="px-2.5"
+        >
+          Next
+          <ChevronRightIcon className="h-4 w-4 ml-1" />
+        </Button>
       </div>
       
-      <div className="flex flex-wrap gap-2 mt-6">
-        {questionIndices.map((index) => {
-          const isAnswered = answeredQuestions.has(index);
-          const isFlagged = flaggedQuestions.has(index);
-          const isCurrent = index === currentIndex;
-          
-          return (
-            <Button
-              key={index}
-              variant={isCurrent ? "default" : "outline"}
-              size="sm"
-              className={`relative w-10 h-10 p-0 ${
-                isFlagged ? "border-yellow-500" : ""
-              }`}
-              onClick={() => onNavigate(index)}
-            >
-              <span>{index + 1}</span>
-              
-              {isAnswered && (
-                <CheckCircle 
-                  className="absolute -top-1 -right-1 h-3 w-3 text-green-500"
-                />
-              )}
-              
-              {isFlagged && (
-                <Bookmark 
-                  className="absolute -bottom-1 -right-1 h-3 w-3 text-yellow-500"
-                />
-              )}
-            </Button>
-          );
-        })}
+      {renderQuestionGrid()}
+      
+      <div className="pt-4 border-t mt-6">
+        <Button 
+          onClick={onFinishExam}
+          className="w-full"
+          variant="default"
+        >
+          <LifeBuoyIcon className="h-4 w-4 mr-2" />
+          Review & Finish
+        </Button>
       </div>
       
-      <div className="flex justify-between text-sm text-muted-foreground mt-4">
-        <div className="flex items-center gap-1">
-          <CheckCircle className="h-3 w-3 text-green-500" />
-          <span>Answered ({answeredQuestions.size})</span>
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="flex items-center">
+          <div className="w-3 h-3 rounded-full bg-green-100 border border-green-300 mr-1.5"></div>
+          <span>Answered</span>
         </div>
-        <div className="flex items-center gap-1">
-          <Bookmark className="h-3 w-3 text-yellow-500" />
-          <span>Flagged ({flaggedQuestions.size})</span>
+        <div className="flex items-center">
+          <div className="w-3 h-3 rounded-full bg-yellow-100 border border-yellow-300 mr-1.5"></div>
+          <span>Flagged</span>
         </div>
-        <div className="flex items-center gap-1">
-          <Circle className="h-3 w-3 text-gray-300" />
-          <span>Unanswered ({totalQuestions - answeredQuestions.size})</span>
+        <div className="flex items-center">
+          <div className="w-3 h-3 rounded-full bg-gray-100 border border-gray-300 mr-1.5"></div>
+          <span>Unanswered</span>
+        </div>
+        <div className="flex items-center">
+          <div className="w-3 h-3 rounded-full bg-primary mr-1.5"></div>
+          <span>Current</span>
         </div>
       </div>
     </div>

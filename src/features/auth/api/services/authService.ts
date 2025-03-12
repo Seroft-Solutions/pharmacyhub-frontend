@@ -13,15 +13,16 @@ export interface LoginRequest {
 }
 
 /**
- * Registration request interface
+ * Updated Registration request interface to match backend
  */
 export interface RegisterRequest {
-  email: string;
-  password: string;
-  confirmPassword: string;
   firstName: string;
   lastName: string;
-  termsAccepted: boolean;
+  emailAddress: string;
+  password: string;
+  contactNumber?: string;
+  userType?: string;
+  openToConnect?: boolean;
 }
 
 /**
