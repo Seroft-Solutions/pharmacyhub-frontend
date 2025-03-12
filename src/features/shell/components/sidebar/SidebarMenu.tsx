@@ -46,11 +46,13 @@ export function SidebarMenu({ items, featureId }: SidebarMenuProps) {
     
     menuItems.forEach(item => {
       if (item.subItems) {
+        // Always expand exam items and any active navigation
         const isActive = item.href === pathname || 
           pathname?.startsWith(`${item.href}/`) ||
           item.subItems.some(subItem => 
             subItem.href === pathname || pathname?.startsWith(`${subItem.href}/`)
-          );
+          ) ||
+          item.id === "exams";
           
         if (isActive) {
           newExpandedState[item.id] = true;
@@ -110,6 +112,7 @@ export function SidebarMenu({ items, featureId }: SidebarMenuProps) {
                   <SidebarMenuButton 
                     isActive={isActive}
                     className="flex items-center justify-between w-full"
+                    tooltip={item.label}
                   >
                     <div className="flex items-center">
                       <Icon className="h-4 w-4 mr-2" />
@@ -129,6 +132,7 @@ export function SidebarMenu({ items, featureId }: SidebarMenuProps) {
                         <SidebarMenuSubButton
                           onClick={() => router.push(subItem.href)}
                           isActive={pathname === subItem.href || pathname?.startsWith(`${subItem.href}/`)}
+                          tooltip={subItem.label}
                         >
                           <subItem.icon className="h-4 w-4 mr-2" />
                           <span>{subItem.label}</span>
@@ -140,6 +144,32 @@ export function SidebarMenu({ items, featureId }: SidebarMenuProps) {
                             </span>
                           </div>
                         )}
+                        
+                        {/* Handle nested sub-items (third level) */}
+                        {subItem.subItems && subItem.subItems.length > 0 && (
+                          <SidebarMenuSub>
+                            {subItem.subItems.map((nestedItem) => (
+                              <SidebarMenuSubItem key={nestedItem.id}>
+                                <SidebarMenuSubButton
+                                  onClick={() => router.push(nestedItem.href)}
+                                  isActive={pathname === nestedItem.href || pathname?.startsWith(`${nestedItem.href}/`)}
+                                  tooltip={nestedItem.label}
+                                  size="sm"
+                                >
+                                  <nestedItem.icon className="h-3.5 w-3.5 mr-1.5" />
+                                  <span>{nestedItem.label}</span>
+                                </SidebarMenuSubButton>
+                                {nestedItem.badge && (
+                                  <div className="ml-auto flex h-4 items-center gap-0.5">
+                                    <span className="rounded-full bg-primary/10 px-1.5 text-xs font-semibold text-primary">
+                                      {nestedItem.badge}
+                                    </span>
+                                  </div>
+                                )}
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        )}
                       </SidebarMenuSubItem>
                     ))}
                   </SidebarMenuSub>
@@ -150,6 +180,7 @@ export function SidebarMenu({ items, featureId }: SidebarMenuProps) {
                 <SidebarMenuButton
                   onClick={() => router.push(item.href)}
                   isActive={isActive}
+                  tooltip={item.label}
                 >
                   <Icon className="h-4 w-4 mr-2" />
                   {item.label}

@@ -13,16 +13,19 @@ interface ContentAreaProps {
  * 
  * This component renders the main content area where feature-specific content is displayed.
  * It applies proper styling for margins, padding, and background.
+ * Designed to work with SidebarInset for proper layout.
  */
 export function ContentArea({ children, className }: ContentAreaProps) {
   return (
     <main 
       className={cn(
-        "flex-1 overflow-auto p-4 md:p-6",
+        "flex-1 overflow-auto p-4 md:p-6 relative w-full h-full",
         className
       )}
     >
-      {children}
+      <div className="mx-auto max-w-7xl w-full h-full">
+        {children}
+      </div>
     </main>
   );
 }

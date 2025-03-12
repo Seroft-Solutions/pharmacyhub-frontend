@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useSession } from "@/features/auth/hooks";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AppSidebar } from "../sidebar/AppSidebar";
@@ -54,20 +54,15 @@ export function AppLayout({
 
   return (
     <NavigationProvider initialFeatures={features}>
-      <SidebarProvider defaultOpen={!isMobile}>
-        <div className="min-h-screen bg-background flex flex-col">
-          <AppTopbar appName={appName} logoComponent={logoComponent} />
-          
-          <div className="flex flex-1 overflow-hidden">
-            {/* Hide sidebar on mobile - it's shown in the Sheet component */}
-            <div className="hidden md:block">
-              <AppSidebar showFeatureGroups={showFeatureGroups} />
-            </div>
-
+      <SidebarProvider defaultOpen={true} className="bg-background w-full min-h-screen">
+        <div className="min-h-screen flex w-full h-full">
+          <AppSidebar showFeatureGroups={showFeatureGroups} variant="sidebar" collapsible="icon" className="flex-shrink-0" />
+          <SidebarInset className="flex flex-col flex-1 w-full h-full">
+            <AppTopbar appName={appName} logoComponent={logoComponent} />
             <ContentArea>
               {children}
             </ContentArea>
-          </div>
+          </SidebarInset>
         </div>
       </SidebarProvider>
     </NavigationProvider>
