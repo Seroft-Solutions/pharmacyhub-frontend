@@ -8,7 +8,9 @@ import {
   ClipboardCheck,
   BarChart3,
   Clock,
-  Layers
+  Layers,
+  Upload,
+  Settings
 } from "lucide-react";
 import { FeatureNavigation } from "@/features/shell";
 
@@ -21,6 +23,14 @@ export const EXAMS_NAVIGATION: FeatureNavigation = {
   rootPath: "/exam",
   order: 10,
   items: [
+    {
+      id: "admin-exams",
+      label: "Admin: Exams",
+      href: "/admin/exams",
+      icon: Settings,
+      roles: ["ADMIN", "INSTRUCTOR"],
+      order: -10
+    },
     {
       id: "exam-dashboard",
       label: "Exam Dashboard",
