@@ -7,7 +7,8 @@ import {
   BookMarked,
   ClipboardCheck,
   BarChart3,
-  Clock
+  Clock,
+  Layers
 } from "lucide-react";
 import { FeatureNavigation } from "@/features/shell";
 
@@ -89,6 +90,13 @@ export const EXAMS_NAVIGATION: FeatureNavigation = {
       href: "/exam/progress",
       icon: BarChart3,
       order: 60
+    },
+    {
+      id: "summary",
+      label: "Overview",
+      href: "/summary",
+      icon: Layers,
+      order: 70
     }
   ]
 };

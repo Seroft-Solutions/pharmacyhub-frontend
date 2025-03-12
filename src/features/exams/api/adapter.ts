@@ -1,16 +1,24 @@
+/**
+ * Adapters for converting between backend and frontend models
+ */
+
 import {
   Exam,
-  ExamOption,
   ExamPaper,
   ExamPaperMetadata,
-  ExamQuestion,
   ExamStatus,
-  ExamStatusType
-} from '../types';
+  ExamResult,
+  Question,
+  Option,
+  Difficulty,
+  PaperType
+} from '../model/standardTypes';
 
-// Define the backend API response types
+/**
+ * Backend response types
+ */
 export interface BackendExamPaper {
-  id: string;
+  id: string | number;
   title: string;
   description: string;
   difficulty: string;
@@ -21,7 +29,8 @@ export interface BackendExamPaper {
   attemptCount: number;
   successRatePercent: number;
   lastUpdatedDate: string;
-  type: 'MODEL' | 'PAST';
+  type: string;
+  examId?: number;
 }
 
 export interface BackendExam {
@@ -32,7 +41,7 @@ export interface BackendExam {
   totalMarks: number;
   passingMarks: number;
   status: string;
-  questions: {
+  questions?: {
     id: number;
     questionNumber: number;
     questionText: string;
@@ -48,95 +57,95 @@ export interface BackendExam {
   }[];
 }
 
-export interface BackendExamQuestion {
-  id: number;
-  text: string;
-  options: BackendExamOption[];
-  explanation: string;
-  maxPoints: number;
-}
+/**
+ * Adapter functions
+ */
 
-export interface BackendExamOption {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-}
-
-// Adapter functions
+/**
+ * Convert backend exam paper to frontend model
+ */
 export function adaptBackendExamPaper(backendPaper: BackendExamPaper): ExamPaper {
   return {
     id: backendPaper.id,
     title: backendPaper.title,
     description: backendPaper.description,
-    difficulty: backendPaper.difficulty as 'easy' | 'medium' | 'hard',
-    totalQuestions: backendPaper.questionCount,
-    duration: backendPaper.durationMinutes,
-    topics: backendPaper.tags,
-    isPremium: backendPaper.premium,
-    attempts: backendPaper.attemptCount,
-    successRate: backendPaper.successRatePercent,
-    lastUpdated: backendPaper.lastUpdatedDate,
-    source: backendPaper.type.toLowerCase() as 'model' | 'past'
+    difficulty: backendPaper.difficulty.toLowerCase() as keyof typeof Difficulty,
+    questionCount: backendPaper.questionCount,
+    durationMinutes: backendPaper.durationMinutes,
+    tags: backendPaper.tags || [],
+    premium: backendPaper.premium,
+    attemptCount: backendPaper.attemptCount || 0,
+    successRatePercent: backendPaper.successRatePercent || 0,
+    lastUpdatedDate: backendPaper.lastUpdatedDate,
+    type: backendPaper.type as keyof typeof PaperType,
+    examId: backendPaper.examId
   };
 }
 
+/**
+ * Convert backend exam paper to frontend metadata model
+ */
 export function adaptToExamPaperMetadata(backendPaper: BackendExamPaper): ExamPaperMetadata {
   return {
     id: backendPaper.id,
     title: backendPaper.title,
     description: backendPaper.description,
-    difficulty: backendPaper.difficulty as 'easy' | 'medium' | 'hard',
-    topics_covered: backendPaper.tags,
+    difficulty: backendPaper.difficulty.toLowerCase(),
+    topics_covered: backendPaper.tags || [],
     total_questions: backendPaper.questionCount,
     time_limit: backendPaper.durationMinutes,
     is_premium: backendPaper.premium,
-    source: backendPaper.type.toLowerCase() as 'model' | 'past'
+    source: backendPaper.type.toLowerCase() as 'model' | 'past' | 'subject' | 'practice'
   };
 }
 
+/**
+ * Convert backend exam to frontend model
+ */
 export function adaptBackendExam(backendExam: BackendExam): Exam {
   return {
     id: backendExam.id,
     title: backendExam.title,
     description: backendExam.description,
     duration: backendExam.duration,
-    maxScore: backendExam.totalMarks,
-    passingScore: backendExam.passingMarks,
+    totalMarks: backendExam.totalMarks,
+    passingMarks: backendExam.passingMarks,
     status: mapBackendStatus(backendExam.status),
-    questions: backendExam.questions.map(q => ({
-      id: q.id,
-      text: q.questionText,
-      options: q.options.map(o => ({
-        id: o.id.toString(),
-        text: o.optionText,
-        key: o.optionKey,
-        isCorrect: o.isCorrect
-      })),
-      explanation: q.explanation,
-      points: q.marks
-    }))
+    questions: backendExam.questions?.map(adaptBackendQuestion) || []
   };
 }
 
-export function adaptBackendQuestion(backendQuestion: BackendExamQuestion): ExamQuestion {
+/**
+ * Convert backend question to frontend model
+ */
+export function adaptBackendQuestion(backendQuestion: BackendExam['questions'][0]): Question {
   return {
     id: backendQuestion.id,
-    text: backendQuestion.text,
+    questionNumber: backendQuestion.questionNumber,
+    text: backendQuestion.questionText,
     options: backendQuestion.options.map(adaptBackendOption),
+    correctAnswer: backendQuestion.correctAnswer,
     explanation: backendQuestion.explanation,
-    points: backendQuestion.maxPoints
+    marks: backendQuestion.marks
   };
 }
 
-function adaptBackendOption(backendOption: BackendExamOption): ExamOption {
+/**
+ * Convert backend option to frontend model
+ */
+function adaptBackendOption(backendOption: BackendExam['questions'][0]['options'][0]): Option {
   return {
     id: backendOption.id,
-    text: backendOption.text,
+    label: backendOption.optionKey,
+    text: backendOption.optionText,
     isCorrect: backendOption.isCorrect
   };
 }
 
-function mapBackendStatus(status: string): ExamStatusType {
+/**
+ * Map backend status to frontend status
+ */
+function mapBackendStatus(status: string): ExamStatus {
   switch (status.toUpperCase()) {
     case 'DRAFT':
       return ExamStatus.DRAFT;
@@ -147,4 +156,43 @@ function mapBackendStatus(status: string): ExamStatusType {
     default:
       return ExamStatus.DRAFT;
   }
+}
+
+/**
+ * Convert mock data to frontend models
+ * This is used for development only
+ */
+export function adaptMockExamPaper(mockPaper: any): ExamPaper {
+  return {
+    id: mockPaper.id || `mock-${Date.now()}`,
+    title: mockPaper.title,
+    description: mockPaper.description || '',
+    difficulty: (mockPaper.difficulty || 'medium').toLowerCase() as keyof typeof Difficulty,
+    questionCount: mockPaper.totalQuestions || 0,
+    durationMinutes: mockPaper.duration || 0,
+    tags: mockPaper.topics || [],
+    premium: mockPaper.isPremium || false,
+    attemptCount: mockPaper.attempts || 0,
+    successRatePercent: mockPaper.successRate || 0,
+    lastUpdatedDate: mockPaper.lastUpdated || new Date().toISOString().split('T')[0],
+    type: (mockPaper.source || 'MODEL').toUpperCase() as keyof typeof PaperType
+  };
+}
+
+/**
+ * Convert mock data to frontend metadata
+ * This is used for development only
+ */
+export function adaptMockToMetadata(mockPaper: any): ExamPaperMetadata {
+  return {
+    id: mockPaper.id || `mock-${Date.now()}`,
+    title: mockPaper.title,
+    description: mockPaper.description || '',
+    difficulty: (mockPaper.difficulty || 'medium').toLowerCase(),
+    topics_covered: mockPaper.topics || [],
+    total_questions: mockPaper.totalQuestions || 0,
+    time_limit: mockPaper.duration || 0,
+    is_premium: mockPaper.isPremium || false,
+    source: mockPaper.source || 'model'
+  };
 }

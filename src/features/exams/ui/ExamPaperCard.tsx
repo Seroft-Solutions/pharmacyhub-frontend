@@ -21,7 +21,7 @@ import {
   ExamPaperMetadata, 
   ExamPaperProgress, 
   ExamPaperCardProps 
-} from '../model/types';
+} from '../model/standardTypes';
 
 export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({ 
   paper, 
@@ -29,14 +29,19 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
   onStart 
 }) => {
   const difficultyVariants = {
-    'easy': 'bg-green-50 text-green-600',
-    'medium': 'bg-yellow-50 text-yellow-600',
-    'hard': 'bg-red-50 text-red-600'
+    'easy': 'bg-green-50 text-green-600 border-green-200',
+    'medium': 'bg-yellow-50 text-yellow-600 border-yellow-200',
+    'hard': 'bg-red-50 text-red-600 border-red-200'
+  };
+
+  const getDifficultyVariant = () => {
+    const difficulty = paper.difficulty.toLowerCase();
+    return difficultyVariants[difficulty as keyof typeof difficultyVariants] || difficultyVariants.medium;
   };
 
   const renderDifficultyBadge = () => (
     <Badge 
-      className={`${difficultyVariants[paper.difficulty]} px-2 py-1`}
+      className={`${getDifficultyVariant()} px-2 py-1`}
       variant="outline"
     >
       {paper.difficulty.charAt(0).toUpperCase() + paper.difficulty.slice(1)}

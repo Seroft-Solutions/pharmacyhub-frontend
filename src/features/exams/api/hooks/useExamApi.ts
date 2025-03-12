@@ -11,15 +11,20 @@ import {
 } from '@/features/tanstack-query-api';
 import { useQueryClient } from '@tanstack/react-query';
 import { examEndpoints } from '../core/examService';
-import { examQueryKeys } from '../core/queryKeys';
+import { examQueryKeys, paperQueryKeys } from '../core/queryKeys';
 import { 
   Exam, 
+  ExamPaper,
   ExamAttempt, 
   ExamResult, 
   Question, 
   UserAnswer,
-  ExamStatusType 
-} from '../../model/mcqTypes';
+  ExamStatus,
+  FlaggedQuestion,
+  ExamStats
+} from '../../model/standardTypes';
+
+// Exam Queries
 
 /**
  * Hook for fetching all exams (admin/instructor only)
@@ -80,10 +85,10 @@ export const useExamQuestions = (examId: number) => {
 /**
  * Hook for fetching exams by status
  */
-export const useExamsByStatus = (status: ExamStatusType) => {
+export const useExamsByStatus = (status: ExamStatus) => {
   return useApiQuery<Exam[]>(
-    examQueryKeys.byStatus(status),
-    examEndpoints.getExamsByStatus(status),
+    examQueryKeys.byStatus(status.toString()),
+    examEndpoints.getExamsByStatus(status.toString()),
     {
       requiresAuth: true,
       enabled: !!status,
@@ -91,6 +96,76 @@ export const useExamsByStatus = (status: ExamStatusType) => {
     }
   );
 };
+
+// Paper Queries
+
+/**
+ * Hook for fetching all papers
+ */
+export const useAllPapers = () => {
+  return useApiQuery<ExamPaper[]>(
+    paperQueryKeys.lists(),
+    examEndpoints.getAllPapers,
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    }
+  );
+};
+
+/**
+ * Hook for fetching model papers
+ */
+export const useModelPapers = () => {
+  return useApiQuery<ExamPaper[]>(
+    paperQueryKeys.model(),
+    examEndpoints.getModelPapers,
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    }
+  );
+};
+
+/**
+ * Hook for fetching past papers
+ */
+export const usePastPapers = () => {
+  return useApiQuery<ExamPaper[]>(
+    paperQueryKeys.past(),
+    examEndpoints.getPastPapers,
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    }
+  );
+};
+
+/**
+ * Hook for fetching a specific paper by ID
+ */
+export const usePaperById = (id: number) => {
+  return useApiQuery<ExamPaper>(
+    paperQueryKeys.detail(id),
+    examEndpoints.getPaperById(id),
+    {
+      enabled: !!id,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    }
+  );
+};
+
+/**
+ * Hook for fetching exam statistics
+ */
+export const useExamStats = () => {
+  return useApiQuery<ExamStats>(
+    paperQueryKeys.stats(),
+    examEndpoints.getExamStats,
+    {
+      staleTime: 10 * 60 * 1000, // 10 minutes
+    }
+  );
+};
+
+// Attempt Queries
 
 /**
  * Hook for fetching a user's exam attempts
@@ -152,6 +227,23 @@ export const useExamResult = (attemptId: number) => {
 };
 
 /**
+ * Hook for fetching flagged questions for an attempt
+ */
+export const useFlaggedQuestions = (attemptId: number) => {
+  return useApiQuery<FlaggedQuestion[]>(
+    examQueryKeys.flags(attemptId),
+    examEndpoints.getFlaggedQuestions(attemptId),
+    {
+      requiresAuth: true,
+      enabled: !!attemptId,
+      staleTime: 60 * 1000, // 1 minute
+    }
+  );
+};
+
+// Mutation Hooks
+
+/**
  * Hook for starting an exam
  */
 export const useStartExamMutation = (examId: number) => {
@@ -177,21 +269,6 @@ export const useAnswerQuestionMutation = (examId: number, questionId: number) =>
     examEndpoints.answerQuestion(examId, questionId),
     {
       requiresAuth: true
-    }
-  );
-};
-
-/**
- * Hook for fetching flagged questions for an attempt
- */
-export const useFlaggedQuestions = (attemptId: number) => {
-  return useApiQuery<{ questionId: number, attemptId: number }[]>(
-    examQueryKeys.flags(attemptId),
-    examEndpoints.getFlaggedQuestions(attemptId),
-    {
-      requiresAuth: true,
-      enabled: !!attemptId,
-      staleTime: 60 * 1000, // 1 minute
     }
   );
 };
@@ -254,12 +331,21 @@ export const useSubmitExamMutation = (examId: number) => {
  * Grouped export for convenience
  */
 export const examApiHooks = {
-  // Query hooks
+  // Exam queries
   useExams,
   usePublishedExams,
   useExam,
   useExamQuestions,
   useExamsByStatus,
+  
+  // Paper queries  
+  useAllPapers,
+  useModelPapers,
+  usePastPapers,
+  usePaperById,
+  useExamStats,
+  
+  // Attempt queries
   useUserExamAttempts,
   useUserExamAttemptsForExam,
   useExamAttempt,

@@ -17,7 +17,9 @@ import { ExamTimer } from '../quiz/ExamTimer';
 import { McqQuestionNavigation } from './McqQuestionNavigation';
 import { McqQuestionCard } from './McqQuestionCard';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
+import { Card, CardContent } from '@/components/ui/card';
+import { Exam } from '../../model/standardTypes';
 
 interface McqExamLayoutProps {
     examId: number;
@@ -40,6 +42,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
         unflagQuestion,
         nextQuestion,
         previousQuestion,
+        navigateToQuestion,
         pauseExam,
         resumeExam,
         completeExam,
@@ -49,6 +52,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
     const [showSubmitDialog, setShowSubmitDialog] = useState(false);
     const [showTimeUpDialog, setShowTimeUpDialog] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [showSummary, setShowSummary] = useState(false);
 
     // Start the exam when the component mounts
     useEffect(() => {
@@ -69,39 +73,19 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
         };
     }, [examId, startExam]);
 
-    // Timer effect
-    useEffect(() => {
-        let timer: NodeJS.Timeout;
-        if (!isPaused && timeRemaining > 0) {
-            timer = setInterval(() => {
-                if (timeRemaining <= 1) {
-                    handleTimeUp();
-                } else {
-                    updateTimeRemaining(timeRemaining - 1);
-                }
-            }, 1000);
-        }
-        return () => clearInterval(timer);
-    }, [timeRemaining, isPaused, updateTimeRemaining]);
-
-    const handleAnswer = (answer: string, timeSpent: number) => {
+    // Handle answer selection
+    const handleAnswer = (optionId: string) => {
         if (!currentExam?.questions) return;
 
         const question = currentExam.questions[currentQuestionIndex];
         answerQuestion({
             questionId: question.id,
-            selectedOptionId: answer,
-            timeSpent: timeSpent
+            selectedOptionId: optionId,
+            timeSpent: 0 // We could track time per question if needed
         });
-
-        // Auto-advance to next question after a brief delay
-        setTimeout(() => {
-            if (currentQuestionIndex < (currentExam.questions?.length || 0) - 1) {
-                nextQuestion();
-            }
-        }, 1000);
     };
 
+    // Handle flagging/unflagging a question
     const handleFlag = async () => {
         if (!currentExam?.questions) return;
         
@@ -109,7 +93,6 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
         const questionId = question.id;
         
         try {
-            // If already flagged, unflag it, otherwise flag it
             if (flaggedQuestions.has(questionId)) {
                 await unflagQuestion(questionId);
             } else {
@@ -120,19 +103,19 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
         }
     };
 
+    // Handle time expiration
     const handleTimeUp = () => {
         pauseExam();
         setShowTimeUpDialog(true);
     };
 
+    // Handle exam submission
     const handleSubmit = async () => {
         try {
             if (!currentExam) return;
 
             const answeredCount = Object.keys(userAnswers).length;
-            // Check if the user has answered enough questions based on exam requirements
-            // This is just a placeholder. You should define your own criteria
-            const minimumRequired = Math.ceil((currentExam.questions?.length || 0) * 0.5) || 1;
+            const minimumRequired = Math.ceil((currentExam.questions?.length || 0) * 0.5);
             
             if (answeredCount < minimumRequired) {
                 setSubmitError(`Please attempt at least ${minimumRequired} questions`);
@@ -140,51 +123,98 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
             }
 
             await completeExam();
-            router.push('/exam-practice/results');
+            
+            // Get the attempt ID from the store
+            const attemptId = useMcqExamStore.getState().currentAttempt?.id;
+            
+            if (attemptId) {
+                router.push(`/exam/results/${attemptId}`);
+            } else {
+                // Fallback to dashboard if we don't have an attempt ID
+                router.push('/exam/dashboard');
+            }
         } catch (err) {
             setSubmitError(err instanceof Error ? err.message : 'Failed to submit exam');
         }
     };
 
+    // Handle navigation between questions
+    const handleNavigateToQuestion = (index: number) => {
+        navigateToQuestion(index);
+    };
+
+    // Loading state
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                <span className="ml-2 text-lg">Loading exam...</span>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-lg text-center shadow-md">
-                    <h2 className="text-xl font-bold mb-4">Error</h2>
-                    <p className="mb-4">{error}</p>
-                    <Button 
-                        className="mt-4 bg-red-600 hover:bg-red-700 text-white" 
-                        onClick={() => router.push('/exam-practice')}
-                    >
-                        Return to Exams
-                    </Button>
+                <div className="text-center">
+                    <Spinner className="w-12 h-12 mb-4" />
+                    <p className="text-lg">Loading exam...</p>
                 </div>
             </div>
         );
     }
 
-    if (!currentExam || !currentExam.questions) {
-        return <div>No exam data available</div>;
+    // Error state
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <Card className="max-w-lg w-full">
+                    <CardContent className="pt-6">
+                        <div className="bg-red-50 text-red-600 p-6 rounded-lg text-center">
+                            <h2 className="text-xl font-bold mb-4">Error</h2>
+                            <p className="mb-4">{error}</p>
+                            <Button 
+                                className="mt-4 bg-red-600 hover:bg-red-700 text-white" 
+                                onClick={() => router.push('/exam/dashboard')}
+                            >
+                                Return to Dashboard
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
     }
 
+    // No exam data
+    if (!currentExam || !currentExam.questions || currentExam.questions.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <Card className="max-w-lg w-full">
+                    <CardContent className="pt-6 text-center">
+                        <h2 className="text-xl font-bold mb-4">No Exam Data Available</h2>
+                        <p className="mb-4">The exam could not be loaded or contains no questions.</p>
+                        <Button onClick={() => router.push('/exam/dashboard')}>
+                            Return to Dashboard
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    // Get the current question
     const currentQuestion = currentExam.questions[currentQuestionIndex];
+    const questionId = currentQuestion?.id;
+    
+    // Check if the current question is flagged
+    const isCurrentQuestionFlagged = flaggedQuestions.has(questionId);
+    
+    // Get the user's answer for the current question
+    const currentQuestionAnswer = userAnswers[questionId]?.selectedOptionId;
 
     return (
         <div className="flex h-screen">
+            {/* Main content area */}
             <div className="flex-1 flex flex-col">
-                {/* Header */}
-                <div className="p-4 border-b">
-                    <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-xl font-bold">{currentExam.title}</h1>
+                {/* Header with timer and exam info */}
+                <div className="p-4 border-b bg-white">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-4">
+                        <div>
+                            <h1 className="text-xl font-bold">{currentExam.title}</h1>
+                            <p className="text-sm text-gray-600">{currentExam.description}</p>
+                        </div>
                         <Button 
                             variant="destructive"
                             onClick={() => setShowSubmitDialog(true)}
@@ -192,6 +222,8 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                             Submit Exam
                         </Button>
                     </div>
+                    
+                    {/* Timer */}
                     <ExamTimer
                         totalTime={currentExam.duration * 60}
                         remainingTime={timeRemaining}
@@ -202,26 +234,46 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                     />
                 </div>
 
-                {/* Question Area */}
-                <div className="flex-1 overflow-auto p-4">
-                    <McqQuestionCard
-                        question={currentQuestion}
-                        currentAnswer={userAnswers[currentQuestion.id]}
-                        onAnswer={handleAnswer}
-                        onFlag={handleFlag}
-                        isFlagged={flaggedQuestions.has(currentQuestion.id)}
-                    />
+                {/* Question display area */}
+                <div className="flex-1 overflow-auto p-4 bg-gray-50">
+                    {currentQuestion && (
+                        <McqQuestionCard
+                            question={currentQuestion}
+                            questionNumber={currentQuestionIndex + 1}
+                            totalQuestions={currentExam.questions.length}
+                            currentAnswer={currentQuestionAnswer}
+                            isFlagged={isCurrentQuestionFlagged}
+                            onAnswer={handleAnswer}
+                            onFlag={handleFlag}
+                        />
+                    )}
                 </div>
 
-                {/* Navigation Controls */}
-                <div className="p-4 border-t">
+                {/* Navigation controls */}
+                <div className="p-4 border-t bg-white">
                     <div className="flex justify-between">
                         <Button
+                            variant="outline"
                             onClick={previousQuestion}
                             disabled={currentQuestionIndex === 0}
                         >
                             Previous
                         </Button>
+                        
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => router.push('/exam/dashboard')}
+                            >
+                                Exit Exam
+                            </Button>
+                            <Button
+                                onClick={() => setShowSubmitDialog(true)}
+                            >
+                                Submit Exam
+                            </Button>
+                        </div>
+                        
                         <Button
                             onClick={nextQuestion}
                             disabled={currentQuestionIndex === currentExam.questions.length - 1}
@@ -232,17 +284,17 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                 </div>
             </div>
 
-            {/* Question Navigation Sidebar */}
+            {/* Question navigation sidebar */}
             <McqQuestionNavigation
                 totalQuestions={currentExam.questions.length}
                 currentQuestion={currentQuestionIndex}
                 answers={userAnswers}
                 flaggedQuestions={flaggedQuestions}
-                onQuestionSelect={(index) => useMcqExamStore.setState({ currentQuestionIndex: index })}
-                minimumRequired={Math.ceil(currentExam.questions.length * 0.5)} // Placeholder, define your criteria
+                onQuestionSelect={handleNavigateToQuestion}
+                minimumRequired={Math.ceil(currentExam.questions.length * 0.5)}
             />
 
-            {/* Submit Confirmation Dialog */}
+            {/* Submit confirmation dialog */}
             <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -255,7 +307,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={() => setSubmitError(null)}>Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={handleSubmit}>
                             Submit
                         </AlertDialogAction>
@@ -263,7 +315,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Time Up Dialog */}
+            {/* Time up dialog */}
             <AlertDialog 
                 open={showTimeUpDialog} 
                 onOpenChange={setShowTimeUpDialog}

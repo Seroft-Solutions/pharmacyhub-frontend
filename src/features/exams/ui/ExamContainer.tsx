@@ -1,404 +1,230 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import { CheckCircleIcon, ClipboardListIcon, Loader2Icon } from 'lucide-react';
-
-import { useExamSession } from '@/features/exams/hooks/useExamSession';
-import { useExamStore } from '../store/examStore';
-import { NetworkStatusIndicator } from './components/NetworkStatusIndicator';
-import { ExamErrorBoundary } from './components/ExamErrorBoundary';
-import { useExamAnalytics } from '../hooks/useExamAnalytics';
-import { QuestionDisplay } from './components/QuestionDisplay';
-import { QuestionNavigation } from './components/QuestionNavigation';
-import { ExamProgress } from './components/ExamProgress';
-import { ExamTimer } from './components/ExamTimer';
-import { ExamSummary } from './components/ExamSummary';
-import { ExamResults } from './components/ExamResults';
+import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Loader2, CheckCircle2 } from 'lucide-react';
+import { useExam, useStartExamMutation } from '../api/hooks/useExamApi';
+import { McqExamLayout } from './mcq/McqExamLayout';
+import { examService } from '../api/core/examService';
+import { useMcqExamStore } from '../store/mcqExamStore';
+import { Exam, ExamAttempt } from '../model/standardTypes';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ExamContainerProps {
   examId: number;
   userId: string;
-  onExit?: () => void;
+  onExit: () => void;
 }
 
-export function ExamContainer({ 
+export const ExamContainer: React.FC<ExamContainerProps> = ({ 
   examId, 
   userId,
-  onExit 
-}: ExamContainerProps) {
-  const [attemptId, setAttemptId] = useState<number | null>(null);
-  const [showResults, setShowResults] = useState(false);
+  onExit
+}) => {
+  const [showStartDialog, setShowStartDialog] = useState<boolean>(false);
+  const [examStarted, setExamStarted] = useState<boolean>(false);
+  const [currentAttempt, setCurrentAttempt] = useState<ExamAttempt | null>(null);
+  const [isStarting, setIsStarting] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // Setup analytics tracking
-  const analytics = useExamAnalytics(examId, userId);
+  const { 
+    data: exam,
+    isLoading: isExamLoading,
+    error: examError
+  } = useExam(examId);
   
-  const {
-    // Data
-    exam,
-    questions,
-    currentQuestionIndex,
-    answers,
-    flaggedQuestions,
-    timeRemaining,
-    isCompleted,
-    showSummary,
-    
-    // Loading states
-    isLoading,
-    error,
-    isStarting,
-    isSubmitting,
-    isSaving,
-    isFlagging,
-    startError,
-    submitError,
-    
-    // Actions
-    startExam,
-    answerQuestion,
-    toggleFlagQuestion,
-    navigateToQuestion,
-    nextQuestion,
-    previousQuestion,
-    toggleSummary,
-    submitExam,
-    handleTimeExpired,
-    
-    // Helpers
-    hasAnswer,
-    isFlagged,
-    getAnsweredQuestionsCount,
-    getFlaggedQuestionsCount,
-    getCompletionPercentage
-  } = useExamSession(examId);
-  
-  // Handle exam start
-  const handleStartExam = () => {
-    startExam(
-      { userId },
-      {
-        onSuccess: (data) => {
-          setAttemptId(data.id);
-          toast.success('Exam started successfully!');
-        },
-        onError: (error) => {
-          toast.error('Failed to start exam: ' + (error instanceof Error ? error.message : 'Unknown error'));
-        }
-      }
-    );
-  };
-  
-  // Handle exam submission
-  const handleSubmitExam = () => {
-    submitExam(
-      undefined,
-      {
-        onSuccess: (data) => {
-          setShowResults(true);
-          toast.success('Exam submitted successfully!');
-        },
-        onError: (error) => {
-          toast.error('Failed to submit exam: ' + (error instanceof Error ? error.message : 'Unknown error'));
-        }
-      }
-    );
-  };
-  
-  // Return to dashboard
-  const handleReturnToDashboard = () => {
-    if (onExit) {
-      onExit();
-    } else {
-      // Fallback navigation if onExit isn't provided
-      window.location.href = '/dashboard';
-    }
-  };
-  
-  // Handle timer expiration
+  // Reset store when component unmounts
   useEffect(() => {
-    if (timeRemaining === 0 && !isCompleted && attemptId) {
-      toast.warning('Time is up! Your exam will be submitted automatically.');
-      submitExam();
-    }
-  }, [timeRemaining, isCompleted, attemptId, submitExam]);
+    return () => {
+      useMcqExamStore.getState().resetExam();
+    };
+  }, []);
   
-  // Save exam state to store when attempt is created
-  useEffect(() => {
-    if (attemptId && exam && questions.length > 0) {
-      useExamStore.getState().startExam(exam.id, questions, exam.duration);
-      useExamStore.getState().setAttemptId(attemptId);
+  const handleStartExam = async () => {
+    setIsStarting(true);
+    setError(null);
+    
+    try {
+      // Start the exam and get attempt
+      const attempt = await examService.startExam(examId);
+      setCurrentAttempt(attempt);
+      
+      // Initialize Zustand store with exam data
+      if (exam) {
+        const examStore = useMcqExamStore.getState();
+        await examStore.fetchExamById(examId);
+        await examStore.startExam(examId);
+      }
+      
+      setExamStarted(true);
+    } catch (err) {
+      console.error('Failed to start exam:', err);
+      setError(err instanceof Error ? err.message : 'Failed to start exam. Please try again.');
+    } finally {
+      setIsStarting(false);
+      setShowStartDialog(false);
     }
-  }, [attemptId, exam, questions]);
+  };
   
-  // Loading state
-  if (isLoading) {
+  if (isExamLoading) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>
-            <Skeleton className="h-8 w-3/4" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-64 w-full" />
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <Spinner className="w-12 h-12 text-primary mb-4" />
+        <p className="text-lg">Loading exam...</p>
+      </div>
     );
   }
   
-  // Error state
+  if (examError || !exam) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-lg text-center shadow-md">
+          <h2 className="text-xl font-bold mb-4">Error</h2>
+          <p className="mb-4">
+            {examError instanceof Error 
+              ? examError.message 
+              : 'Failed to load exam. The exam may not exist or you may not have access.'}
+          </p>
+          <Button 
+            className="mt-4 bg-red-600 hover:bg-red-700 text-white" 
+            onClick={onExit}
+          >
+            Return to Exams
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  
   if (error) {
     return (
-      <Alert variant="destructive">
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          {error instanceof Error ? error.message : 'An unknown error occurred'}
-        </AlertDescription>
-      </Alert>
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-lg text-center shadow-md">
+          <h2 className="text-xl font-bold mb-4">Error Starting Exam</h2>
+          <p className="mb-4">{error}</p>
+          <Button 
+            className="mt-4" 
+            onClick={() => setError(null)}
+          >
+            Try Again
+          </Button>
+          <Button 
+            className="mt-4 ml-4" 
+            variant="outline"
+            onClick={onExit}
+          >
+            Return to Exams
+          </Button>
+        </div>
+      </div>
     );
   }
   
-  // If no exam data is available
-  if (!exam || !questions || questions.length === 0) {
-    return (
-      <Alert>
-        <AlertTitle>No exam found</AlertTitle>
-        <AlertDescription>
-          We couldn&apos;t find the requested exam. Please check the exam ID and try again.
-        </AlertDescription>
-      </Alert>
-    );
+  if (examStarted && exam) {
+    return <McqExamLayout examId={examId} />;
   }
   
-  // Current question
-  const currentQuestion = questions[currentQuestionIndex];
-  const answeredQuestionsSet = new Set(
-    Object.values(answers).map(answer => answer.questionId)
-  );
-  
-  // Show exam results
-  if (showResults) {
-    return (
-      <ExamResults
-        result={{
-          attemptId: attemptId as number,
-          examId: exam.id,
-          examTitle: exam.title,
-          score: Math.round((getAnsweredQuestionsCount() / questions.length) * 100),
-          totalMarks: exam.totalMarks,
-          passingMarks: exam.passingMarks,
-          isPassed: (getAnsweredQuestionsCount() / questions.length) * 100 >= (exam.passingMarks / exam.totalMarks) * 100,
-          timeSpent: exam.duration * 60 - timeRemaining,
-          totalQuestions: questions.length,
-          correctAnswers: getAnsweredQuestionsCount(), // Will be updated with actual data when API is connected
-          incorrectAnswers: questions.length - getAnsweredQuestionsCount(), // Will be updated with actual data
-          unanswered: questions.length - getAnsweredQuestionsCount(),
-          completedAt: new Date().toISOString(),
-          questionResults: Object.values(answers).map(answer => ({
-            questionId: answer.questionId,
-            userAnswer: answer.selectedOption,
-            correctAnswer: 0, // Will be updated with actual data
-            isCorrect: false, // Will be updated with actual data
-            points: 1, // Will be updated with actual data
-            explanation: ""
-          }))
-        }}
-        questions={questions}
-        userAnswers={answers}
-        onReturnToDashboard={handleReturnToDashboard}
-      />
-    );
-  }
-  
-  // Show exam summary
-  if (showSummary) {
-    return (
-      <ExamSummary
-        questions={questions}
-        answeredQuestionIds={answeredQuestionsSet}
-        flaggedQuestionIds={flaggedQuestions}
-        onNavigateToQuestion={(index) => {
-          toggleSummary();
-          navigateToQuestion(index);
-        }}
-        onSubmitExam={handleSubmitExam}
-      />
-    );
-  }
-  
-  // Display exam start screen if not started
-  if (!attemptId && !isStarting) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{exam.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <p className="text-gray-600">{exam.description}</p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-md">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Duration</h3>
-                <p className="text-lg">{exam.duration} minutes</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Total Questions</h3>
-                <p className="text-lg">{questions.length}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Total Marks</h3>
-                <p className="text-lg">{exam.totalMarks}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Passing Marks</h3>
-                <p className="text-lg">{exam.passingMarks}</p>
-              </div>
-            </div>
-            
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
-              <h3 className="text-blue-800 font-medium">Instructions:</h3>
-              <ul className="list-disc list-inside text-blue-700 mt-2 space-y-1">
-                <li>Read each question carefully before answering.</li>
-                <li>You can flag questions to review later.</li>
-                <li>Once the time is up, the exam will be submitted automatically.</li>
-                <li>You can review all your answers before final submission.</li>
-              </ul>
-            </div>
-            
-            <Button 
-              onClick={handleStartExam} 
-              disabled={isStarting}
-              className="w-full"
-              size="lg"
-            >
-              {isStarting ? 'Starting...' : 'Start Exam'}
-            </Button>
-            
-            {startError && (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {startError instanceof Error ? startError.message : 'Failed to start exam'}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  // Main exam interface
   return (
-    <div className="space-y-4">
-      <Card className="shadow-md border border-gray-100">
-        <CardHeader className="pb-3 border-b">
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle className="text-xl font-bold">{exam.title}</CardTitle>
-              <p className="text-sm text-gray-500 mt-1">{exam.description}</p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleSummary}
-                className="flex items-center"
-              >
-                <ClipboardListIcon className="h-4 w-4 mr-1.5" />
-                Review Answers
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleSubmitExam}
-                disabled={isSubmitting}
-                className="flex items-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2Icon className="h-4 w-4 mr-1.5 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircleIcon className="h-4 w-4 mr-1.5" />
-                    Submit Exam
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+    <div className="max-w-3xl mx-auto py-8">
+      <Card className="border-2 border-gray-200">
+        <CardHeader className="bg-gray-50">
+          <CardTitle className="text-2xl">{exam.title}</CardTitle>
+          <CardDescription>{exam.description}</CardDescription>
         </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div className="md:col-span-3">
-              <ExamProgress 
-                currentQuestion={currentQuestionIndex}
-                totalQuestions={questions.length}
-                answeredQuestions={answeredQuestionsSet.size}
-                flaggedQuestionsCount={flaggedQuestions.size}
-                timePercentage={Math.round((timeRemaining / (exam.duration * 60)) * 100)}
-              />
+        <CardContent className="pt-6 space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Total Questions</span>
+              <span className="text-lg font-semibold">{exam.questions?.length || 'Not specified'}</span>
             </div>
-            <div>
-              <ExamTimer 
-                durationInMinutes={exam.duration}
-                onTimeExpired={handleTimeExpired}
-                isCompleted={isCompleted}
-              />
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Time Limit</span>
+              <span className="text-lg font-semibold">{exam.duration} minutes</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Total Marks</span>
+              <span className="text-lg font-semibold">{exam.totalMarks}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Passing Score</span>
+              <span className="text-lg font-semibold">{exam.passingMarks} ({(exam.passingMarks / exam.totalMarks * 100).toFixed(0)}%)</span>
             </div>
           </div>
           
-          <Separator className="my-4" />
+          <div className="rounded-md border p-4">
+            <h3 className="font-medium mb-2">Instructions</h3>
+            <ul className="text-sm text-gray-600 space-y-2">
+              <li className="flex items-start">
+                <CheckCircle2 className="h-4 w-4 mr-2 text-green-500 mt-0.5" />
+                <span>Read each question carefully and select the best answer.</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle2 className="h-4 w-4 mr-2 text-green-500 mt-0.5" />
+                <span>You can flag questions to review later.</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle2 className="h-4 w-4 mr-2 text-green-500 mt-0.5" />
+                <span>The timer will begin as soon as you start the exam.</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle2 className="h-4 w-4 mr-2 text-green-500 mt-0.5" />
+                <span>Results will be available immediately after submission.</span>
+              </li>
+            </ul>
+          </div>
         </CardContent>
+        <CardFooter className="bg-gray-50 flex justify-between">
+          <Button variant="outline" onClick={onExit}>
+            Back to Exams
+          </Button>
+          <Button onClick={() => setShowStartDialog(true)}>
+            Begin Exam
+          </Button>
+        </CardFooter>
       </Card>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-3">
-          {currentQuestion && (
-            <QuestionDisplay
-              question={currentQuestion}
-              userAnswer={answers[currentQuestion.id]?.selectedOption}
-              isFlagged={isFlagged(currentQuestion.id)}
-              onAnswerSelect={answerQuestion}
-              onFlagQuestion={toggleFlagQuestion}
-            />
-          )}
-        </div>
-        
-        <div>
-          <Card className="shadow-sm border border-gray-100">
-            <CardContent className="py-4">
-              <QuestionNavigation
-                currentIndex={currentQuestionIndex}
-                totalQuestions={questions.length}
-                answeredQuestions={answeredQuestionsSet}
-                flaggedQuestions={flaggedQuestions}
-                onNavigate={navigateToQuestion}
-                onFinishExam={toggleSummary}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      
-      {submitError && (
-        <Alert variant="destructive">
-          <AlertTitle>Submission Failed</AlertTitle>
-          <AlertDescription>
-            {submitError instanceof Error ? submitError.message : 'Failed to submit exam. Please try again.'}
-          </AlertDescription>
-        </Alert>
-      )}
+      <AlertDialog open={showStartDialog} onOpenChange={setShowStartDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start Exam?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to start "{exam.title}". This exam has a time limit of {exam.duration} minutes.
+              The timer will begin immediately after you start. Are you ready to begin?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleStartExam} disabled={isStarting}>
+              {isStarting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Starting...
+                </>
+              ) : (
+                'Start Exam'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-}
+};

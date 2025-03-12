@@ -1,24 +1,30 @@
-/**
- * Exams Feature
- * 
- * This module exports all components of the exams feature for easy importing.
- * The exams feature provides a complete system for managing, taking, and analyzing exams.
- */
+// Re-export model types
+export * from './model/standardTypes';
 
-// Export types
-export * from './model/mcqTypes';
+// Re-export API hooks
+export * from './api/hooks/useExamApi';
 
-// Export API hooks and utilities
-export * from './api';
+// Re-export core API services
+export * from './api/core/examService';
 
-// Export hooks
-export * from './hooks';
+// Re-export adapters
+export * from './api/adapter';
 
-// Export UI components
-export * from './ui';
+// Re-export stores
+export * from './store/mcqExamStore';
 
-// Export store
-export { useExamStore } from './store/examStore';
+// Re-export UI components
+export * from './ui/ExamContainer';
+export * from './ui/ExamPaperCard';
+export * from './ui/mcq/McqExamLayout';
+export * from './ui/mcq/McqQuestionCard';
+export * from './ui/mcq/McqQuestionNavigation';
+export * from './ui/quiz/ExamTimer';
+export * from './ui/results/ExamResults';
+export * from './ui/review/ExamReview';
 
-// Export sample data
-export * from './data/sampleExamData';
+// Re-export utils
+export * from './utils/formatTime';
+
+// Re-export navigation
+export * from './navigation';

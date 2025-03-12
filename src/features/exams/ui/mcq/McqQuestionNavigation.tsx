@@ -1,112 +1,163 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { Flag, CheckCircle, Circle, AlertCircle } from 'lucide-react';
-import { UserAnswer } from '../../model/mcqTypes';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { UserAnswer } from '../../model/standardTypes';
+import { CheckCircle2, Flag, HelpCircle } from 'lucide-react';
 
 interface McqQuestionNavigationProps {
-    totalQuestions: number;
-    currentQuestion: number;
-    answers: { [questionId: number]: UserAnswer };
-    flaggedQuestions: Set<number>;
-    onQuestionSelect: (index: number) => void;
-    minimumRequired: number;
+  totalQuestions: number;
+  currentQuestion: number;
+  answers: Record<number, UserAnswer>;
+  flaggedQuestions: Set<number>;
+  onQuestionSelect: (index: number) => void;
+  minimumRequired?: number;
 }
 
 export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
-    totalQuestions,
-    currentQuestion,
-    answers,
-    flaggedQuestions,
-    onQuestionSelect,
-    minimumRequired
+  totalQuestions,
+  currentQuestion,
+  answers,
+  flaggedQuestions,
+  onQuestionSelect,
+  minimumRequired = 0
 }) => {
-    // Create an array of question indexes
-    const questionIndexes = Array.from({ length: totalQuestions }, (_, i) => i);
+  const questionNumbers = Array.from({ length: totalQuestions }, (_, i) => i);
+  const answeredCount = Object.keys(answers).length;
+  const flaggedCount = flaggedQuestions.size;
+  
+  // Calculate completion percentage
+  const completionPercentage = (answeredCount / totalQuestions) * 100;
+  
+  // Calculate if the minimum requirement is met
+  const isMinimumMet = answeredCount >= minimumRequired;
+  
+  // Helper function to get button variant based on question state
+  const getButtonVariant = (index: number, questionId: number) => {
+    if (index === currentQuestion) {
+      return "default"; // Currently selected question
+    }
     
-    // Count answered questions
-    const answeredCount = Object.keys(answers).length;
-    const progressPercentage = (answeredCount / totalQuestions) * 100;
+    // Question has been answered
+    if (answers[questionId]) {
+      return "outline";
+    }
     
-    return (
-        <div className="w-64 border-l bg-muted/10 p-4 flex flex-col">
-            <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-2">Progress</h2>
-                <Progress value={progressPercentage} className="h-2 mb-2" />
-                <div className="text-sm text-muted-foreground">
-                    {answeredCount} of {totalQuestions} answered
-                    {minimumRequired > 0 && (
-                        <div className={answeredCount >= minimumRequired ? "text-green-600" : "text-amber-600"}>
-                            Minimum required: {minimumRequired}
-                        </div>
-                    )}
-                </div>
-            </div>
-            
-            <div className="mb-4">
-                <h2 className="text-lg font-semibold mb-2">Questions</h2>
-                <div className="grid grid-cols-4 gap-2">
-                    {questionIndexes.map((index) => {
-                        const questionId = index + 1; // Adjust if your question IDs start from a different number
-                        const isAnswered = !!answers[questionId];
-                        const isFlagged = flaggedQuestions.has(index);
-                        const isCurrent = currentQuestion === index;
-                        
-                        let className = "flex items-center justify-center w-full h-10 text-sm";
-                        let variant: "default" | "outline" | "secondary" | "ghost" = "outline";
-                        
-                        if (isCurrent) {
-                            variant = "default";
-                        } else if (isAnswered) {
-                            variant = "secondary";
-                        }
-                        
-                        return (
-                            <Button
-                                key={index}
-                                variant={variant}
-                                className={className}
-                                onClick={() => onQuestionSelect(index)}
-                            >
-                                {isAnswered ? (
-                                    <CheckCircle className="h-4 w-4" />
-                                ) : isFlagged ? (
-                                    <div className="flex flex-col items-center">
-                                        <Flag className="h-3 w-3 text-destructive" />
-                                        <span className="text-[10px]">{index + 1}</span>
-                                    </div>
-                                ) : (
-                                    <span>{index + 1}</span>
-                                )}
-                            </Button>
-                        );
-                    })}
-                </div>
-            </div>
-            
-            <div className="mt-auto">
-                <div className="bg-muted/20 p-3 rounded-lg">
-                    <h3 className="font-medium mb-2">Legend</h3>
-                    <div className="space-y-2 text-sm">
-                        <div className="flex items-center">
-                            <Circle className="h-4 w-4 mr-2" />
-                            <span>Not Answered</span>
-                        </div>
-                        <div className="flex items-center">
-                            <CheckCircle className="h-4 w-4 mr-2 text-primary" />
-                            <span>Answered</span>
-                        </div>
-                        <div className="flex items-center">
-                            <Flag className="h-4 w-4 mr-2 text-destructive" />
-                            <span>Flagged for Review</span>
-                        </div>
-                        <div className="flex items-center">
-                            <AlertCircle className="h-4 w-4 mr-2 text-blue-500" />
-                            <span>Current Question</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    // Question is flagged but not answered
+    if (flaggedQuestions.has(questionId)) {
+      return "outline";
+    }
+    
+    // Default: Not answered, not flagged, not current
+    return "ghost";
+  };
+  
+  // Helper function to get button color styles based on question state
+  const getButtonStyles = (index: number, questionId: number) => {
+    if (index === currentQuestion) {
+      return ""; // Use default button styles for current question
+    }
+    
+    // Question has been answered
+    if (answers[questionId]) {
+      return "border-green-300 text-green-700 bg-green-50 hover:bg-green-100 hover:text-green-800";
+    }
+    
+    // Question is flagged but not answered
+    if (flaggedQuestions.has(questionId)) {
+      return "border-yellow-300 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 hover:text-yellow-800";
+    }
+    
+    // Default: Not answered, not flagged, not current
+    return "";
+  };
+  
+  return (
+    <div className="w-72 border-l bg-gray-50 flex flex-col h-full p-4">
+      <div className="mb-4">
+        <h2 className="font-semibold mb-2">Question Navigator</h2>
+        <div className="mb-4">
+          <div className="flex justify-between text-sm mb-1">
+            <span>Completion</span>
+            <span className={isMinimumMet ? 'text-green-600' : 'text-gray-600'}>
+              {answeredCount}/{totalQuestions} 
+              {minimumRequired > 0 && ` (min: ${minimumRequired})`}
+            </span>
+          </div>
+          <Progress 
+            value={completionPercentage} 
+            className="h-2"
+            indicatorClassName={isMinimumMet ? 'bg-green-600' : undefined}
+          />
         </div>
-    );
+        
+        <div className="flex gap-3 mb-4 text-sm">
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-full bg-green-500 mr-1.5"></div>
+            <span>Answered</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-full bg-yellow-500 mr-1.5"></div>
+            <span>Flagged</span>
+          </div>
+        </div>
+      </div>
+      
+      <Separator className="mb-4" />
+      
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-medium text-sm">Questions</h3>
+          <div className="text-xs text-gray-500">
+            {currentQuestion + 1} of {totalQuestions}
+          </div>
+        </div>
+        
+        <ScrollArea className="h-[300px] pr-4">
+          <div className="grid grid-cols-4 gap-2">
+            {questionNumbers.map((index) => {
+              const questionId = index + 1; // Assuming question IDs start from 1
+              
+              return (
+                <Button
+                  key={index}
+                  size="sm"
+                  variant={getButtonVariant(index, questionId)}
+                  className={`h-10 w-10 p-0 relative ${getButtonStyles(index, questionId)}`}
+                  onClick={() => onQuestionSelect(index)}
+                >
+                  {index + 1}
+                  {flaggedQuestions.has(questionId) && (
+                    <div className="absolute -top-1 -right-1">
+                      <Flag className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                    </div>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </div>
+      
+      <Separator className="mb-4" />
+      
+      <div className="space-y-2 mt-auto">
+        <div className="flex items-center gap-2 text-sm">
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <span>{answeredCount} questions answered</span>
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm">
+          <Flag className="h-4 w-4 text-yellow-500" />
+          <span>{flaggedCount} questions flagged</span>
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm">
+          <HelpCircle className="h-4 w-4 text-gray-500" />
+          <span>{totalQuestions - answeredCount} questions unanswered</span>
+        </div>
+      </div>
+    </div>
+  );
 };

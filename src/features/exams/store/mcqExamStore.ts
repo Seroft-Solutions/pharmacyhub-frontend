@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { examService } from '../api/core/examService';
-import { Exam, ExamAttempt, UserAnswer, ExamResult, FlaggedQuestion } from '../model/mcqTypes';
+import { 
+  Exam, 
+  ExamAttempt, 
+  UserAnswer, 
+  ExamResult, 
+  Question
+} from '../model/standardTypes';
 import logger from '@/shared/lib/logger';
 
 interface McqExamState {
@@ -24,13 +30,18 @@ interface McqExamState {
   answerQuestion: (answer: UserAnswer) => void;
   nextQuestion: () => void;
   previousQuestion: () => void;
+  navigateToQuestion: (index: number) => void;
   flagQuestion: (questionId: number) => Promise<void>;
   unflagQuestion: (questionId: number) => Promise<void>;
+  toggleFlagQuestion: (questionId: number) => Promise<void>;
   pauseExam: () => void;
   resumeExam: () => void;
   completeExam: () => Promise<void>;
   resetExam: () => void;
   updateTimeRemaining: (seconds: number) => void;
+  decrementTimer: () => void;
+  toggleSummary: () => void;
+  setAttemptId: (attemptId: number) => void;
 }
 
 export const useMcqExamStore = create<McqExamState>((set, get) => ({
@@ -164,6 +175,13 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
     }
   },
   
+  navigateToQuestion: (index) => {
+    const { currentExam } = get();
+    if (currentExam?.questions && index >= 0 && index < currentExam.questions.length) {
+      set({ currentQuestionIndex: index });
+    }
+  },
+  
   flagQuestion: async (questionId) => {
     const { currentAttempt, flaggedQuestions } = get();
     
@@ -238,6 +256,15 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
     }
   },
   
+  toggleFlagQuestion: async (questionId) => {
+    const { flaggedQuestions } = get();
+    if (flaggedQuestions.has(questionId)) {
+      await get().unflagQuestion(questionId);
+    } else {
+      await get().flagQuestion(questionId);
+    }
+  },
+  
   pauseExam: () => set({ isPaused: true }),
   
   resumeExam: () => set({ isPaused: false }),
@@ -297,5 +324,24 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
   
   updateTimeRemaining: (seconds) => {
     set({ timeRemaining: seconds });
+  },
+  
+  decrementTimer: () => {
+    set((state) => ({ 
+      timeRemaining: Math.max(0, state.timeRemaining - 1) 
+    }));
+  },
+  
+  toggleSummary: () => {
+    // Implementation will depend on how you want to handle summary view
+    // For now, just a placeholder
+  },
+  
+  setAttemptId: (attemptId) => {
+    set((state) => ({
+      currentAttempt: state.currentAttempt 
+        ? { ...state.currentAttempt, id: attemptId }
+        : undefined
+    }));
   }
 }));

@@ -1,82 +1,147 @@
 import React, { useEffect, useState } from 'react';
-import { Progress } from "@/components/ui/progress";
-import { Timer, Pause, Play } from 'lucide-react';
+import { 
+  Clock, 
+  Pause, 
+  Play,
+  AlertTriangle
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { formatTimeDisplay } from '../../utils/formatTime';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ExamTimerProps {
-    totalTime: number; // in seconds
-    remainingTime: number;
-    isPaused: boolean;
-    onPause?: () => void;
-    onResume?: () => void;
-    onTimeUp: () => void;
+  totalTime: number; // Total time in seconds
+  remainingTime: number; // Remaining time in seconds
+  isPaused: boolean;
+  onPause: () => void;
+  onResume: () => void;
+  onTimeUp: () => void;
 }
 
-export const ExamTimer = ({
-    totalTime,
-    remainingTime,
-    isPaused,
-    onPause,
-    onResume,
-    onTimeUp,
-}: ExamTimerProps) => {
-    const [showWarning, setShowWarning] = useState(false);
-    const progress = (remainingTime / totalTime) * 100;
-
-    useEffect(() => {
-        if (remainingTime <= 300 && !showWarning) { // 5 minutes warning
-            setShowWarning(true);
-        }
-    }, [remainingTime, showWarning]);
-
-    const formatTime = (seconds: number) => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-
-        return `${hours > 0 ? `${hours}:` : ''}${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    };
-
-    const getTimerColor = () => {
-        if (remainingTime <= 300) return 'text-red-500'; // 5 minutes
-        if (remainingTime <= 600) return 'text-yellow-500'; // 10 minutes
-        return 'text-green-500';
-    };
-
-    return (
-        <div className="w-full space-y-2">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <Timer className={`h-5 w-5 ${getTimerColor()}`} />
-                    <span className={`font-mono text-lg ${getTimerColor()}`}>
-                        {formatTime(remainingTime)}
-                    </span>
-                </div>
-                {(onPause || onResume) && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={isPaused ? onResume : onPause}
-                    >
-                        {isPaused ? (
-                            <Play className="h-4 w-4" />
-                        ) : (
-                            <Pause className="h-4 w-4" />
-                        )}
-                    </Button>
-                )}
-            </div>
-
-            <Progress value={progress} className="h-2" />
-
-            {showWarning && remainingTime <= 300 && (
-                <Alert variant="destructive" className="mt-2">
-                    <AlertDescription>
-                        Less than {Math.ceil(remainingTime / 60)} minutes remaining!
-                    </AlertDescription>
-                </Alert>
-            )}
+export const ExamTimer: React.FC<ExamTimerProps> = ({
+  totalTime,
+  remainingTime,
+  isPaused,
+  onPause,
+  onResume,
+  onTimeUp
+}) => {
+  const [isWarning, setIsWarning] = useState(false);
+  const [isDanger, setIsDanger] = useState(false);
+  
+  // Check time thresholds for warnings
+  useEffect(() => {
+    // Warning at 25% remaining time
+    if (remainingTime <= totalTime * 0.25 && remainingTime > totalTime * 0.1) {
+      setIsWarning(true);
+      setIsDanger(false);
+    } 
+    // Danger at 10% remaining time
+    else if (remainingTime <= totalTime * 0.1) {
+      setIsWarning(false);
+      setIsDanger(true);
+    } else {
+      setIsWarning(false);
+      setIsDanger(false);
+    }
+    
+    // Time's up
+    if (remainingTime <= 0 && !isPaused) {
+      onTimeUp();
+    }
+  }, [remainingTime, totalTime, isPaused, onTimeUp]);
+  
+  // Calculate progress percentage
+  const progressPercentage = Math.max(0, (remainingTime / totalTime) * 100);
+  
+  return (
+    <div className={`rounded-lg p-4 ${
+      isDanger 
+        ? 'bg-red-50 border border-red-200' 
+        : isWarning 
+        ? 'bg-yellow-50 border border-yellow-200' 
+        : 'bg-slate-50 border border-slate-200'
+    }`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center">
+          <Clock className={`h-5 w-5 mr-2 ${
+            isDanger 
+              ? 'text-red-600' 
+              : isWarning 
+              ? 'text-yellow-600' 
+              : 'text-slate-600'
+          }`} />
+          <span className="font-medium">Time Remaining</span>
         </div>
-    );
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className={`${
+                  isDanger 
+                    ? 'border-red-300 text-red-700 hover:bg-red-100' 
+                    : isWarning 
+                    ? 'border-yellow-300 text-yellow-700 hover:bg-yellow-100' 
+                    : ''
+                }`}
+                onClick={isPaused ? onResume : onPause}
+              >
+                {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isPaused ? 'Resume timer' : 'Pause timer'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      
+      <div className="text-center mb-2">
+        <span className={`text-3xl font-bold ${
+          isDanger 
+            ? 'text-red-700' 
+            : isWarning 
+            ? 'text-yellow-700' 
+            : 'text-slate-700'
+        }`}>
+          {formatTimeDisplay(remainingTime)}
+        </span>
+      </div>
+      
+      <Progress 
+        value={progressPercentage} 
+        className={`h-2 ${
+          isDanger 
+            ? 'bg-red-200' 
+            : isWarning 
+            ? 'bg-yellow-200' 
+            : 'bg-slate-200'
+        }`}
+        indicatorClassName={
+          isDanger 
+            ? 'bg-red-600' 
+            : isWarning 
+            ? 'bg-yellow-600' 
+            : 'bg-blue-600'
+        }
+      />
+      
+      {(isWarning || isDanger) && (
+        <div className="flex items-center justify-center mt-2 text-sm">
+          <AlertTriangle className={`h-3 w-3 mr-1 ${isDanger ? 'text-red-600' : 'text-yellow-600'}`} />
+          <span className={isDanger ? 'text-red-600' : 'text-yellow-600'}>
+            {isDanger ? 'Time almost up!' : 'Time running low'}
+          </span>
+        </div>
+      )}
+    </div>
+  );
 };

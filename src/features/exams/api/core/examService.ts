@@ -5,6 +5,18 @@
  * with the tanstack-query-api hooks.
  */
 
+import { apiClient } from '@/features/tanstack-query-api';
+import {
+  Exam,
+  ExamPaper,
+  ExamAttempt,
+  UserAnswer,
+  ExamResult,
+  FlaggedQuestion,
+  PaperType,
+  ExamStats
+} from '../../model/standardTypes';
+
 // Define API endpoints
 export const examEndpoints = {
   // Read endpoints
@@ -19,6 +31,13 @@ export const examEndpoints = {
   getExamResult: (attemptId: number) => `/api/v1/exams/attempts/${attemptId}/result`,
   getFlaggedQuestions: (attemptId: number) => `/api/v1/exams/attempts/${attemptId}/flags`,
   
+  // Paper endpoints
+  getAllPapers: '/api/exams/papers',
+  getModelPapers: '/api/exams/papers/model',
+  getPastPapers: '/api/exams/papers/past',
+  getPaperById: (id: number) => `/api/exams/papers/${id}`,
+  getExamStats: '/api/exams/papers/stats',
+  
   // Mutation endpoints
   startExam: (examId: number) => `/api/v1/exams/${examId}/start`,
   answerQuestion: (examId: number, questionId: number) => `/api/v1/exams/attempts/${examId}/answer/${questionId}`,
@@ -28,10 +47,6 @@ export const examEndpoints = {
   publishExam: (examId: number) => `/api/v1/exams/${examId}/publish`,
   archiveExam: (examId: number) => `/api/v1/exams/${examId}/archive`,
 };
-
-// Import the required modules
-import { apiClient } from '@/features/tanstack-query-api';
-import { Exam, ExamAttempt, UserAnswer, ExamResult, FlaggedQuestion } from '../../model/mcqTypes';
 
 /**
  * Direct service implementation for use with Zustand store
@@ -51,6 +66,46 @@ export const examService = {
    */
   async getExamById(examId: number): Promise<Exam> {
     const response = await apiClient.get<Exam>(examEndpoints.getExamById(examId));
+    return response.data;
+  },
+  
+  /**
+   * Get all papers
+   */
+  async getAllPapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getAllPapers);
+    return response.data;
+  },
+  
+  /**
+   * Get model papers
+   */
+  async getModelPapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getModelPapers);
+    return response.data;
+  },
+  
+  /**
+   * Get past papers
+   */
+  async getPastPapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getPastPapers);
+    return response.data;
+  },
+  
+  /**
+   * Get paper by ID
+   */
+  async getPaperById(id: number): Promise<ExamPaper> {
+    const response = await apiClient.get<ExamPaper>(examEndpoints.getPaperById(id));
+    return response.data;
+  },
+  
+  /**
+   * Get exam statistics
+   */
+  async getExamStats(): Promise<ExamStats> {
+    const response = await apiClient.get<ExamStats>(examEndpoints.getExamStats);
     return response.data;
   },
   
