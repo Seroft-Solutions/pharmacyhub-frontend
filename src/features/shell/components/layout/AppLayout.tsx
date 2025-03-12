@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useSession } from "@/features/auth/hooks";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AppSidebar } from "../sidebar/AppSidebar";
 import { AppTopbar } from "../topbar/AppTopbar";
 import { ContentArea } from "./ContentArea";
@@ -47,7 +46,6 @@ export function AppLayout({
   if (!isMounted || (requireAuth && (isLoadingUser || !isAuthenticated))) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <LoadingSpinner size="lg" />
       </div>
     );
   }
