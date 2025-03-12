@@ -5,54 +5,157 @@ import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
   SidebarHeader,
   SidebarFooter,
   SidebarRail,
-  SidebarTrigger,
   useSidebar
 } from "@/components/ui/sidebar";
-import { Pill, Search, Settings, HelpCircle, GraduationCap, FileText, Medal, BookOpen, FileQuestion, LayoutDashboard, Clock, BookMarked } from "lucide-react";
-import { SidebarInput } from "@/components/ui/sidebar";
+import { 
+  Pill, 
+  LayoutDashboard,
+  GraduationCap,
+  FileText,
+  Medal,
+  BookOpen,
+  FileQuestion,
+  ClipboardList,
+  ChevronRight,
+  BarChart,
+} from "lucide-react";
 import Link from "next/link";
-import { useIsMobile } from "@/features/ui/hooks";
-import { SidebarMenu } from "./SidebarMenu";
-import { useNavigation } from '../../navigation';
+import { usePathname, useRouter } from "next/navigation";
 
 interface AppSidebarProps {
   className?: string;
   collapsible?: 'offcanvas' | 'icon' | 'none';
   variant?: 'sidebar' | 'floating' | 'inset';
   side?: 'left' | 'right';
-  showFeatureGroups?: boolean;
 }
 
 /**
  * AppSidebar component - The main application sidebar
- * 
- * This component provides a fully featured sidebar for navigating the application,
- * with support for nested items, badges, permissions, and responsive design.
- * It uses the NavigationContext to get navigation items from all registered features.
  */
 export function AppSidebar({
   className,
   collapsible = 'icon',
   variant = 'sidebar',
   side = 'left',
-  showFeatureGroups = true
 }: AppSidebarProps) {
-  const isMobile = useIsMobile();
-  const { features } = useNavigation();
   const { state } = useSidebar();
-  const isCollapsed = state === 'collapsed';
+  const pathname = usePathname();
+  const router = useRouter();
+  const [expandedItems, setExpandedItems] = React.useState<Record<string, boolean>>({
+    examPreparation: true,
+    practiceExams: false,
+    examTools: false,
+  });
 
+  const toggleExpanded = (id: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
+  // Main menu item
+  const MenuItem = ({ 
+    id, 
+    icon: Icon, 
+    label, 
+    href, 
+    isActive, 
+    hasChildren,
+    badge,
+    onClick
+  }: { 
+    id: string; 
+    icon: React.ElementType; 
+    label: string; 
+    href?: string; 
+    isActive?: boolean;
+    hasChildren?: boolean;
+    badge?: string;
+    onClick?: () => void;
+  }) => (
+    <div 
+      className={cn(
+        "flex items-center justify-between py-1.5 px-3 rounded-md cursor-pointer mb-0.5 transition-colors",
+        isActive ? "text-primary font-medium" : "hover:bg-muted"
+      )}
+      onClick={onClick || (href ? () => router.push(href) : undefined)}
+    >
+      <div className="flex items-center gap-2">
+        <Icon className={cn(
+          "h-4 w-4", 
+          isActive ? "text-primary" : "text-muted-foreground"
+        )} />
+        <span className="text-sm">{label}</span>
+      </div>
+      <div className="flex items-center">
+        {badge && (
+          <span className="rounded-full px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary mr-1">
+            {badge}
+          </span>
+        )}
+        {hasChildren && (
+          <ChevronRight className={cn(
+            "h-3.5 w-3.5 text-muted-foreground transition-transform",
+            expandedItems[id] ? "rotate-90" : ""
+          )} />
+        )}
+      </div>
+    </div>
+  );
 
+  // Submenu container with vertical line
+  const SubMenuContainer = ({ children }: { children: React.ReactNode }) => (
+    <div className="relative ml-4 pl-3">
+      {/* Vertical line */}
+      <div className="absolute left-0 top-0 bottom-0 w-px bg-border"></div>
+      {children}
+    </div>
+  );
 
+  // Submenu item
+  const SubMenuItem = ({ 
+    id, 
+    icon: Icon, 
+    label, 
+    href, 
+    isActive,
+    badge
+  }: { 
+    id: string; 
+    icon: React.ElementType; 
+    label: string; 
+    href: string; 
+    isActive?: boolean;
+    badge?: string;
+  }) => (
+    <div 
+      className="py-1.5 pr-3 rounded-md cursor-pointer mb-0.5 transition-colors flex items-center justify-between"
+      onClick={() => router.push(href)}
+    >
+      <div className="flex items-center gap-2">
+        <Icon className={cn(
+          "h-3.5 w-3.5", 
+          isActive ? "text-primary" : "text-muted-foreground"
+        )} />
+        <span className={cn(
+          "text-sm",
+          isActive ? "text-primary font-medium" : ""
+        )}>
+          {label}
+        </span>
+      </div>
+      {badge && (
+        <span className="rounded-full px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary">
+          {badge}
+        </span>
+      )}
+    </div>
+  );
 
-  // For desktop, render the full sidebar
   return (
     <Sidebar 
       className={cn("border-r", className)}
@@ -60,123 +163,96 @@ export function AppSidebar({
       variant={variant}
       side={side}
     >
-      <SidebarHeader className="flex items-center p-4 border-b bg-sidebar">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="bg-primary h-8 w-8 rounded-md flex items-center justify-center text-white">
-            <Pill className="h-5 w-5" />
+      <SidebarHeader className="flex items-center p-3 border-b">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="bg-primary h-7 w-7 rounded-md flex items-center justify-center text-primary-foreground">
+            <Pill className="h-4 w-4" />
           </div>
-          <span className="font-bold text-base">Pharmacy Hub</span>
+          <span className="font-semibold text-sm">Pharmacy Hub</span>
         </Link>
       </SidebarHeader>
       
-      <SidebarContent className="py-2">
-        {/* Search functionality */}
-        <div className="px-4 py-3 mb-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <SidebarInput 
-              placeholder="Search..." 
-              className="h-9 pl-8 bg-background border shadow-sm hover:border-input focus-visible:ring-1"
+      <SidebarContent className="py-2 px-2">
+        {/* Dashboard */}
+        <MenuItem 
+          id="dashboard"
+          icon={LayoutDashboard} 
+          label="Dashboard" 
+          href="/dashboard"
+          isActive={pathname === "/dashboard"}
+        />
+        
+        {/* Exam Preparation with nested items */}
+        <MenuItem 
+          id="examPreparation"
+          icon={GraduationCap} 
+          label="Exam Preparation" 
+          isActive={pathname.startsWith("/exam")}
+          hasChildren={true}
+          onClick={() => toggleExpanded("examPreparation")}
+        />
+        
+        {expandedItems.examPreparation && (
+          <SubMenuContainer>
+            <SubMenuItem 
+              id="studyProgress"
+              icon={BarChart} 
+              label="Your Progress" 
+              href="/exam/dashboard"
+              isActive={pathname === "/exam/dashboard"}
             />
-          </div>
-        </div>
-        
-        {/* Dashboard navigation */}
-        <div className="px-4 mb-2">
-          <h3 className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center">
-            <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
-            Dashboard
-          </h3>
-        </div>
-        <SidebarMenu items={[
-          {
-            id: "dashboard",
-            label: "Dashboard",
-            href: "/dashboard",
-            icon: LayoutDashboard,
-            permissions: [],
-            roles: []
-          }
-        ]} />
-
-        {/* Exams section */}
-        <div className="mt-4 px-4 mb-2">
-          <h3 className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center">
-            <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
-            Exam Preparation
-          </h3>
-        </div>
-        
-        <SidebarMenu items={[
-          {
-            id: "exams",
-            label: "Exams",
-            href: "/exam/dashboard",
-            icon: GraduationCap,
-            permissions: [],
-            roles: [],
-          },
-          {
-            id: "past-papers",
-            label: "Past Papers",
-            href: "/exam/past-papers",
-            icon: FileText,
-            permissions: [],
-            roles: []
-          },
-          {
-            id: "model-papers",
-            label: "Model Papers",
-            href: "/exam/model-papers",
-            icon: Medal,
-            permissions: [],
-            roles: []
-          },
-          {
-            id: "subject-papers",
-            label: "Subject Papers",
-            href: "/exam/subject-papers",
-            icon: BookOpen,
-            permissions: [],
-            roles: []
-          },
-          {
-            id: "practice-exams",
-            label: "Practice Exams",
-            href: "/exam/practice",
-            icon: FileQuestion,
-            permissions: [],
-            roles: [],
-            badge: "New",
-            subItems: [
-              {
-                id: "timed-exams",
-                label: "Timed Exams",
-                href: "/exam/practice/timed",
-                icon: Clock,
-                permissions: [],
-                roles: []
-              },
-              {
-                id: "topic-exams",
-                label: "Topic Based",
-                href: "/exam/practice/topics",
-                icon: BookMarked,
-                permissions: [],
-                roles: []
-              }
-            ]
-          }
-        ]} />
+            
+            <SubMenuItem 
+              id="pastPapers"
+              icon={FileText} 
+              label="Past Papers" 
+              href="/exam/past-papers"
+              isActive={pathname === "/exam/past-papers"}
+            />
+            
+            <SubMenuItem 
+              id="modelPapers"
+              icon={Medal} 
+              label="Model Papers" 
+              href="/exam/model-papers"
+              isActive={pathname === "/exam/model-papers"}
+            />
+            
+            <SubMenuItem 
+              id="subjectPapers"
+              icon={BookOpen} 
+              label="Subject Papers" 
+              href="/exam/subject-papers"
+              isActive={pathname === "/exam/subject-papers"}
+            />
+            
+            <SubMenuItem 
+              id="practiceExams"
+              icon={FileQuestion} 
+              label="Practice Exams" 
+              href="/exam/practice"
+              isActive={pathname.startsWith("/exam/practice")}
+              badge="New"
+            />
+            
+            <SubMenuItem 
+              id="examTools"
+              icon={ClipboardList} 
+              label="Exam Tools" 
+              href="/exam/tools"
+              isActive={pathname.startsWith("/exam/tools")}
+            />
+          </SubMenuContainer>
+        )}
       </SidebarContent>
       
-      <SidebarFooter className="p-4 text-xs text-muted-foreground border-t bg-sidebar/80">
+      <SidebarFooter className="p-3 text-xs text-muted-foreground border-t">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium">© {new Date().getFullYear()} Pharmacy Hub</span>
-          <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-bold">v1.0.0</span>
+          <span className="text-xs">© {new Date().getFullYear()} Pharmacy Hub</span>
+          <span className="text-xs px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">v1.0.0</span>
         </div>
       </SidebarFooter>
-      <SidebarRail className="bg-muted hover:bg-primary/10" />
+      <SidebarRail className="bg-muted hover:bg-primary/10 transition-colors duration-300" />
     </Sidebar>
   );
 }

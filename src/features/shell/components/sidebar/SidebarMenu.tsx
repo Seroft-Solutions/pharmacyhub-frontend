@@ -101,7 +101,7 @@ export function SidebarMenu({ items, featureId }: SidebarMenuProps) {
         const isExpanded = expandedItems[item.id];
 
         return (
-          <SidebarMenuItem key={item.id}>
+          <SidebarMenuItem key={item.id} className="relative">
             {hasSubItems ? (
               <Collapsible
                 open={isExpanded}
@@ -111,67 +111,86 @@ export function SidebarMenu({ items, featureId }: SidebarMenuProps) {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton 
                     isActive={isActive}
-                    className="flex items-center justify-between w-full"
+                    className="flex items-center justify-between w-full group transition-all"
                     tooltip={item.label}
                   >
-                    <div className="flex items-center">
-                      <Icon className="h-4 w-4 mr-2" />
-                      {item.label}
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1 rounded-md ${isActive ? 'bg-primary/10' : 'bg-transparent group-hover:bg-muted'} transition-all`}>
+                        <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                      </div>
+                      <span className={`${isActive ? 'font-medium' : ''}`}>{item.label}</span>
                     </div>
                     {isExpanded ? (
-                      <ChevronUp className="ml-auto h-4 w-4" />
+                      <ChevronUp className="ml-auto h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <ChevronDown className="ml-auto h-4 w-4" />
+                      <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
+                    )}
+                    {item.badge && (
+                      <span className="ml-2 px-1.5 py-0.5 text-xs rounded-md bg-primary/10 text-primary font-medium">
+                        {item.badge}
+                      </span>
                     )}
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {item.subItems?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.id}>
-                        <SidebarMenuSubButton
-                          onClick={() => router.push(subItem.href)}
-                          isActive={pathname === subItem.href || pathname?.startsWith(`${subItem.href}/`)}
-                          tooltip={subItem.label}
-                        >
-                          <subItem.icon className="h-4 w-4 mr-2" />
-                          <span>{subItem.label}</span>
-                        </SidebarMenuSubButton>
-                        {subItem.badge && (
-                          <div className="ml-auto flex h-5 items-center gap-0.5">
-                            <span className="rounded-full bg-primary/10 px-2 text-xs font-semibold text-primary">
-                              {subItem.badge}
-                            </span>
-                          </div>
-                        )}
-                        
-                        {/* Handle nested sub-items (third level) */}
-                        {subItem.subItems && subItem.subItems.length > 0 && (
-                          <SidebarMenuSub>
-                            {subItem.subItems.map((nestedItem) => (
-                              <SidebarMenuSubItem key={nestedItem.id}>
-                                <SidebarMenuSubButton
-                                  onClick={() => router.push(nestedItem.href)}
-                                  isActive={pathname === nestedItem.href || pathname?.startsWith(`${nestedItem.href}/`)}
-                                  tooltip={nestedItem.label}
-                                  size="sm"
-                                >
-                                  <nestedItem.icon className="h-3.5 w-3.5 mr-1.5" />
-                                  <span>{nestedItem.label}</span>
-                                </SidebarMenuSubButton>
-                                {nestedItem.badge && (
-                                  <div className="ml-auto flex h-4 items-center gap-0.5">
-                                    <span className="rounded-full bg-primary/10 px-1.5 text-xs font-semibold text-primary">
-                                      {nestedItem.badge}
-                                    </span>
-                                  </div>
-                                )}
-                              </SidebarMenuSubItem>
-                            ))}
-                          </SidebarMenuSub>
-                        )}
-                      </SidebarMenuSubItem>
-                    ))}
+                  <SidebarMenuSub className="ml-4 mt-1 pl-2 border-l-2 border-sidebar-border">
+                    {item.subItems?.map((subItem) => {
+                      const isSubActive = pathname === subItem.href || pathname?.startsWith(`${subItem.href}/`);
+                      return (
+                        <SidebarMenuSubItem key={subItem.id}>
+                          <SidebarMenuSubButton
+                            onClick={() => router.push(subItem.href)}
+                            isActive={isSubActive}
+                            tooltip={subItem.label}
+                            className="group transition-all"
+                          >
+                            <div className={`p-1 rounded-md ${isSubActive ? 'bg-primary/10' : 'bg-transparent group-hover:bg-muted'} transition-all`}>
+                              <subItem.icon className={`h-3.5 w-3.5 ${isSubActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                            </div>
+                            <span className={`${isSubActive ? 'font-medium' : ''}`}>{subItem.label}</span>
+                          </SidebarMenuSubButton>
+                          {subItem.badge && (
+                            <div className="ml-auto flex h-5 items-center gap-0.5">
+                              <span className="rounded-full bg-primary/10 px-1.5 text-xs font-semibold text-primary">
+                                {subItem.badge}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Handle nested sub-items (third level) */}
+                          {subItem.subItems && subItem.subItems.length > 0 && (
+                            <SidebarMenuSub className="mt-1 ml-2 pl-2 border-l-2 border-sidebar-border/70">
+                              {subItem.subItems.map((nestedItem) => {
+                                const isNestedActive = pathname === nestedItem.href || pathname?.startsWith(`${nestedItem.href}/`);
+                                return (
+                                  <SidebarMenuSubItem key={nestedItem.id}>
+                                    <SidebarMenuSubButton
+                                      onClick={() => router.push(nestedItem.href)}
+                                      isActive={isNestedActive}
+                                      tooltip={nestedItem.label}
+                                      size="sm"
+                                      className="group transition-all"
+                                    >
+                                      <div className={`p-0.5 rounded-md ${isNestedActive ? 'bg-primary/10' : 'bg-transparent group-hover:bg-muted'} transition-all`}>
+                                        <nestedItem.icon className={`h-3 w-3 ${isNestedActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                                      </div>
+                                      <span className={`${isNestedActive ? 'font-medium' : ''}`}>{nestedItem.label}</span>
+                                    </SidebarMenuSubButton>
+                                    {nestedItem.badge && (
+                                      <div className="ml-auto flex h-4 items-center gap-0.5">
+                                        <span className="rounded-full bg-primary/10 px-1 text-xs font-semibold text-primary">
+                                          {nestedItem.badge}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </SidebarMenuSubItem>
+                                );
+                              })}
+                            </SidebarMenuSub>
+                          )}
+                        </SidebarMenuSubItem>
+                      );
+                    })}
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </Collapsible>
@@ -181,12 +200,19 @@ export function SidebarMenu({ items, featureId }: SidebarMenuProps) {
                   onClick={() => router.push(item.href)}
                   isActive={isActive}
                   tooltip={item.label}
+                  className="group transition-all"
                 >
-                  <Icon className="h-4 w-4 mr-2" />
-                  {item.label}
+                  <div className={`p-1 rounded-md ${isActive ? 'bg-primary/10' : 'bg-transparent group-hover:bg-muted'} transition-all`}>
+                    <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                  </div>
+                  <span className={`${isActive ? 'font-medium' : ''}`}>{item.label}</span>
                 </SidebarMenuButton>
                 {item.badge && (
-                  <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
+                  <SidebarMenuBadge>
+                    <span className="px-1.5 py-0.5 text-xs rounded-md bg-primary/10 text-primary font-medium">
+                      {item.badge}
+                    </span>
+                  </SidebarMenuBadge>
                 )}
               </>
             )}

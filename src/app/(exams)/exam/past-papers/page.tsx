@@ -10,7 +10,7 @@ export default function PastPapersPage() {
   ];
 
   return (
-    <div>
+    <main className="p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
         Past Papers
       </h1>
@@ -41,6 +41,6 @@ export default function PastPapersPage() {
           </Card>
         ))}
       </div>
-    </div>
+    </main>
   );
 }

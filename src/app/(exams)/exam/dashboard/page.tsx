@@ -35,7 +35,7 @@ const paperCategories: PaperCategory[] = [
   }
 ];
 
-export default function ExamPage() {
+export default function ExamDashboardPage() {
   const calculateOverallProgress = () => {
     const totalPapers = paperCategories.reduce((sum, category) => sum + category.totalPapers, 0);
     const completedPapers = paperCategories.reduce((sum, category) => sum + category.completedPapers, 0);
@@ -45,7 +45,7 @@ export default function ExamPage() {
   return (
     <main className="p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        Exams
+        Exams Preparation Dashboard
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
