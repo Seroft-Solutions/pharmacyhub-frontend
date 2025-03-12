@@ -1,29 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  Badge,
-} from '@/components/ui';
-import { 
-  FileTextIcon, 
-  EyeIcon, 
-  EditIcon, 
-  ArchiveIcon,
-  CheckCircleIcon,
-  CircleIcon 
-} from 'lucide-react';
-import { Exam } from '../../model/standardTypes';
-import { examService } from '../../api/core/examService';
+"use client"
+
+import React, {useEffect, useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {Card, CardContent, CardHeader, CardTitle,} from '@/components/ui/card';
+import {ArchiveIcon, CheckCircleIcon, CircleIcon, EyeIcon, FileTextIcon} from 'lucide-react';
+import {Exam} from '../../model/standardTypes';
+import {examService} from '../../api/core/examService';
+import { Badge } from '@/components/ui/badge';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 /**
  * Component to display a list of exams
@@ -62,11 +47,13 @@ const ExamsList: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PUBLISHED':
-        return <Badge variant="success" className="flex items-center gap-1"><CheckCircleIcon className="h-3 w-3" /> Published</Badge>;
+        return <Badge variant="success" className="flex items-center gap-1"><CheckCircleIcon
+          className="h-3 w-3"/> Published</Badge>;
       case 'DRAFT':
-        return <Badge variant="secondary" className="flex items-center gap-1"><CircleIcon className="h-3 w-3" /> Draft</Badge>;
+        return <Badge variant="secondary" className="flex items-center gap-1"><CircleIcon
+          className="h-3 w-3"/> Draft</Badge>;
       case 'ARCHIVED':
-        return <Badge variant="outline" className="flex items-center gap-1"><ArchiveIcon className="h-3 w-3" /> Archived</Badge>;
+        return <Badge variant="outline" className="flex items-center gap-1"><ArchiveIcon className="h-3 w-3"/> Archived</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -111,7 +98,7 @@ const ExamsList: React.FC = () => {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <FileTextIcon className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+          <FileTextIcon className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4"/>
           <h3 className="text-lg font-medium mb-2">No exams found</h3>
           <p className="text-muted-foreground mb-4">
             Get started by creating your first exam using the form above.
@@ -125,7 +112,7 @@ const ExamsList: React.FC = () => {
     <Card>
       <CardHeader className="bg-primary-50 dark:bg-primary-950/50">
         <CardTitle className="flex items-center gap-2">
-          <FileTextIcon className="h-5 w-5" />
+          <FileTextIcon className="h-5 w-5"/>
           Available Exams
         </CardTitle>
       </CardHeader>
@@ -147,7 +134,7 @@ const ExamsList: React.FC = () => {
                 <TableRow key={exam.id}>
                   <TableCell className="font-medium">{exam.title}</TableCell>
                   <TableCell>
-                    {exam.tags?.find(tag => 
+                    {exam.tags?.find(tag =>
                       ['MODEL', 'PAST', 'SUBJECT', 'PRACTICE'].includes(tag.toUpperCase())
                     ) || 'Practice'}
                   </TableCell>
@@ -161,7 +148,7 @@ const ExamsList: React.FC = () => {
                       onClick={() => handleViewExam(exam.id)}
                       className="h-8 px-2"
                     >
-                      <EyeIcon className="h-4 w-4" />
+                      <EyeIcon className="h-4 w-4"/>
                       <span className="sr-only">View</span>
                     </Button>
                   </TableCell>

@@ -1,25 +1,18 @@
-import React, { useState, useCallback } from 'react';
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Textarea,
-  Alert,
-  AlertTitle,
-  AlertDescription,
-} from '@/components/ui';
-import { UploadIcon, CheckIcon, AlertCircleIcon, FileTextIcon } from 'lucide-react';
-import { processJsonExam } from '../../utils/jsonExamProcessor';
-import { jsonExamUploadService } from '@/features/exams/api/services/jsonExamUploadService';
-import { Question, Difficulty, PaperType } from '../../model/standardTypes';
+"use client"
+
+import React, {useCallback, useState} from 'react';
+import {AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon} from 'lucide-react';
+import {processJsonExam} from '../../utils/jsonExamProcessor';
+import {jsonExamUploadService} from '@/features/exams/api/services/jsonExamUploadService';
+import {Difficulty, PaperType, Question} from '../../model/standardTypes';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+
+;
 
 /**
  * Component for uploading JSON files and creating exams
@@ -34,7 +27,7 @@ const JsonExamUploader: React.FC = () => {
   const [jsonFile, setJsonFile] = useState<File | null>(null);
   const [jsonContent, setJsonContent] = useState<string>('');
   const [questions, setQuestions] = useState<Question[]>([]);
-  
+
   // State for submission status
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -50,25 +43,25 @@ const JsonExamUploader: React.FC = () => {
     setSuccess(null);
     setPreview(false);
     setQuestions([]);
-    
+
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
       setJsonFile(file);
-      
+
       try {
         setIsProcessing(true);
-        
+
         // Read the file content
         const fileContent = await readFileAsText(file);
         setJsonContent(fileContent);
-        
+
         // Parse and process the JSON data
         const jsonData = JSON.parse(fileContent);
         const processedQuestions = processJsonExam(jsonData);
-        
+
         setQuestions(processedQuestions);
         setSuccess(`Processed ${processedQuestions.length} questions successfully`);
-        
+
       } catch (err) {
         console.error('Error processing file:', err);
         setError(`Error processing file: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -83,23 +76,23 @@ const JsonExamUploader: React.FC = () => {
    */
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!jsonFile || !jsonContent) {
       setError('Please select a JSON file');
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
       setError(null);
       setSuccess(null);
-      
+
       // Create tags based on paperType and difficulty
       const tags = [paperType];
       if (difficulty) {
         tags.push(difficulty);
       }
-      
+
       // Upload the exam
       await jsonExamUploadService.uploadJsonExam({
         title,
@@ -110,9 +103,9 @@ const JsonExamUploader: React.FC = () => {
         tags,
         jsonContent,
       });
-      
+
       setSuccess(`Exam "${title}" successfully created!`);
-      
+
       // Reset form
       setTitle('');
       setDescription('');
@@ -123,7 +116,7 @@ const JsonExamUploader: React.FC = () => {
       setJsonContent('');
       setQuestions([]);
       setPreview(false);
-      
+
       // Reset file input
       const fileInput = document.getElementById('json-file-input') as HTMLInputElement;
       if (fileInput) {
@@ -148,28 +141,28 @@ const JsonExamUploader: React.FC = () => {
     <Card className="shadow-md">
       <CardHeader className="bg-primary-50 dark:bg-primary-950/50">
         <CardTitle className="flex items-center gap-2">
-          <UploadIcon className="h-5 w-5" />
+          <UploadIcon className="h-5 w-5"/>
           Upload MCQ JSON File
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="p-6">
         {error && (
           <Alert variant="destructive" className="mb-4">
-            <AlertCircleIcon className="h-4 w-4" />
+            <AlertCircleIcon className="h-4 w-4"/>
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         {success && (
           <Alert variant="success" className="mb-4">
-            <CheckIcon className="h-4 w-4" />
+            <CheckIcon className="h-4 w-4"/>
             <AlertTitle>Success</AlertTitle>
             <AlertDescription>{success}</AlertDescription>
           </Alert>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-6">
             <div className="space-y-1">
@@ -186,7 +179,7 @@ const JsonExamUploader: React.FC = () => {
                 className="w-full"
               />
             </div>
-            
+
             <div className="space-y-1">
               <label className="text-sm font-medium" htmlFor="description">
                 Description
@@ -201,7 +194,7 @@ const JsonExamUploader: React.FC = () => {
                 className="w-full min-h-[100px]"
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium" htmlFor="duration">
@@ -217,7 +210,7 @@ const JsonExamUploader: React.FC = () => {
                   disabled={isSubmitting}
                 />
               </div>
-              
+
               <div className="space-y-1">
                 <label className="text-sm font-medium" htmlFor="difficulty">
                   Difficulty
@@ -228,7 +221,7 @@ const JsonExamUploader: React.FC = () => {
                   disabled={isSubmitting}
                 >
                   <SelectTrigger id="difficulty">
-                    <SelectValue placeholder="Select difficulty" />
+                    <SelectValue placeholder="Select difficulty"/>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={Difficulty.EASY}>Easy</SelectItem>
@@ -237,7 +230,7 @@ const JsonExamUploader: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-1">
                 <label className="text-sm font-medium" htmlFor="paperType">
                   Paper Type
@@ -248,7 +241,7 @@ const JsonExamUploader: React.FC = () => {
                   disabled={isSubmitting}
                 >
                   <SelectTrigger id="paperType">
-                    <SelectValue placeholder="Select paper type" />
+                    <SelectValue placeholder="Select paper type"/>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={PaperType.PRACTICE}>Practice</SelectItem>
@@ -259,7 +252,7 @@ const JsonExamUploader: React.FC = () => {
                 </Select>
               </div>
             </div>
-            
+
             <div className="space-y-1">
               <label className="text-sm font-medium" htmlFor="json-file-input">
                 JSON File
@@ -277,7 +270,7 @@ const JsonExamUploader: React.FC = () => {
                 Upload a JSON file containing MCQ questions.
               </p>
             </div>
-            
+
             {questions.length > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
@@ -290,12 +283,12 @@ const JsonExamUploader: React.FC = () => {
                   onClick={togglePreview}
                   className="flex items-center gap-1"
                 >
-                  <FileTextIcon className="h-4 w-4" />
+                  <FileTextIcon className="h-4 w-4"/>
                   {preview ? 'Hide Preview' : 'Show Preview'}
                 </Button>
               </div>
             )}
-            
+
             {preview && questions.length > 0 && (
               <div className="border rounded-md p-4 bg-muted/20 max-h-96 overflow-y-auto">
                 <h3 className="font-medium mb-4">Question Preview</h3>
@@ -308,7 +301,9 @@ const JsonExamUploader: React.FC = () => {
                       <div className="pl-4 space-y-1 mb-2">
                         {question.options.map((option, optIdx) => (
                           <div key={optIdx} className="flex items-start">
-                            <span className={`font-medium ${option.label === question.correctAnswer ? 'text-green-600' : ''}`}>
+                            <span className={`font-medium ${option.label === question.correctAnswer ?
+                              'text-green-600' :
+                              ''}`}>
                               {option.label}:
                             </span>
                             <span className="ml-2">{option.text}</span>
@@ -330,7 +325,7 @@ const JsonExamUploader: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             <div className="pt-2">
               <Button
                 type="submit"
