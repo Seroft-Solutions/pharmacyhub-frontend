@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { usePastPapers } from "@/features/exams/api/hooks/useExamApi";
 import { QueryProvider } from "@/features/tanstack-query-api/components/QueryProvider";
 import { ExamPaperCard } from "@/features/exams/ui/ExamPaperCard";
-import { ExamPaperMetadata } from "@/features/exams/model/standardTypes";
-import { adaptToExamPaperMetadata } from "@/features/exams/api/adapter";
+import { Exam, ExamPaperMetadata } from "@/features/exams/model/standardTypes";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function PastPapersPage() {
@@ -56,10 +55,10 @@ function PastPapersContent() {
     );
   }
 
-  // Fallback to mock data if API doesn't return any papers
+  // Convert exams to metadata format for the card component
   const papers = pastPapers && pastPapers.length > 0 
-    ? pastPapers.map(paper => adaptToExamPaperMetadata(paper))
-    : getStaticPastPapers();
+    ? pastPapers.map(exam => convertExamToMetadata(exam))
+    : [];
 
   return (
     <main className="p-6">
@@ -90,30 +89,17 @@ function PastPapersContent() {
   );
 }
 
-// Fallback function to get static past papers if API fails
-function getStaticPastPapers(): ExamPaperMetadata[] {
-  return [
-    {
-      id: 'pp-001',
-      title: '2023 Board Exam Paper 1',
-      description: 'Official board examination from 2023',
-      difficulty: 'hard',
-      topics_covered: ['Comprehensive', 'Clinical Practice', 'Pharmacy Management'],
-      total_questions: 100,
-      time_limit: 180,
-      is_premium: true,
-      source: 'past'
-    },
-    {
-      id: 'pp-002',
-      title: '2023 Board Exam Paper 2',
-      description: 'Second paper from 2023 board examination',
-      difficulty: 'hard',
-      topics_covered: ['Drug Therapy', 'Patient Care', 'Pharmacy Operations'],
-      total_questions: 100,
-      time_limit: 180,
-      is_premium: true,
-      source: 'past'
-    }
-  ];
+// Helper function to convert Exam to ExamPaperMetadata format
+function convertExamToMetadata(exam: Exam): ExamPaperMetadata {
+  return {
+    id: exam.id,
+    title: exam.title,
+    description: exam.description || '',
+    difficulty: 'hard', // Default for past papers
+    topics_covered: exam.tags || [],
+    total_questions: exam.questions?.length || 0,
+    time_limit: exam.duration || 0,
+    is_premium: true, // Default for past papers as they're typically premium
+    source: 'past'
+  };
 }

@@ -8,12 +8,10 @@
 import { apiClient } from '@/features/tanstack-query-api';
 import {
   Exam,
-  ExamPaper,
   ExamAttempt,
   UserAnswer,
   ExamResult,
   FlaggedQuestion,
-  PaperType,
   ExamStats
 } from '../../model/standardTypes';
 
@@ -25,18 +23,12 @@ export const examEndpoints = {
   getExamById: (id: number) => `/api/v1/exams/${id}`,
   getExamsByStatus: (status: string) => `/api/v1/exams/status/${status}`,
   getExamQuestions: (examId: number) => `/api/v1/exams/${examId}/questions`,
-  getUserExamAttempts: () => `/api/v1/exams/attempts/user`, // Changed to match backend
-  getUserExamAttemptsForExam: (examId: number) => `/api/v1/exams/${examId}/attempts`, // Added to match backend
+  getUserExamAttempts: () => `/api/v1/exams/attempts/user`,
+  getUserExamAttemptsForExam: (examId: number) => `/api/v1/exams/${examId}/attempts`,
   getExamAttempt: (attemptId: number) => `/api/v1/exams/attempts/${attemptId}`,
   getExamResult: (attemptId: number) => `/api/v1/exams/attempts/${attemptId}/result`,
   getFlaggedQuestions: (attemptId: number) => `/api/v1/exams/attempts/${attemptId}/flags`,
-  
-  // Paper endpoints
-  getAllPapers: '/api/exams/papers',
-  getModelPapers: '/api/exams/papers/model',
-  getPastPapers: '/api/exams/papers/past',
-  getPaperById: (id: number) => `/api/exams/papers/${id}`,
-  getExamStats: '/api/exams/papers/stats',
+  getExamStats: '/api/v1/exams/stats', // Updated endpoint
   
   // Mutation endpoints
   startExam: (examId: number) => `/api/v1/exams/${examId}/start`,
@@ -46,6 +38,10 @@ export const examEndpoints = {
   submitExam: (attemptId: number) => `/api/v1/exams/attempts/${attemptId}/submit`,
   publishExam: (examId: number) => `/api/v1/exams/${examId}/publish`,
   archiveExam: (examId: number) => `/api/v1/exams/${examId}/archive`,
+  
+  // Model paper endpoints (using exams with tags filtering)
+  getModelPapers: '/api/v1/exams/papers/model',
+  getPastPapers: '/api/v1/exams/papers/past'
 };
 
 /**
@@ -70,34 +66,18 @@ export const examService = {
   },
   
   /**
-   * Get all papers
+   * Get model papers (exams with model tag)
    */
-  async getAllPapers(): Promise<ExamPaper[]> {
-    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getAllPapers);
+  async getModelPapers(): Promise<Exam[]> {
+    const response = await apiClient.get<Exam[]>(examEndpoints.getModelPapers);
     return response.data;
   },
   
   /**
-   * Get model papers
+   * Get past papers (exams with past tag)
    */
-  async getModelPapers(): Promise<ExamPaper[]> {
-    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getModelPapers);
-    return response.data;
-  },
-  
-  /**
-   * Get past papers
-   */
-  async getPastPapers(): Promise<ExamPaper[]> {
-    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getPastPapers);
-    return response.data;
-  },
-  
-  /**
-   * Get paper by ID
-   */
-  async getPaperById(id: number): Promise<ExamPaper> {
-    const response = await apiClient.get<ExamPaper>(examEndpoints.getPaperById(id));
+  async getPastPapers(): Promise<Exam[]> {
+    const response = await apiClient.get<Exam[]>(examEndpoints.getPastPapers);
     return response.data;
   },
   

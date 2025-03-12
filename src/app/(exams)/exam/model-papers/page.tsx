@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { useModelPapers } from "@/features/exams/api/hooks/useExamApi";
 import { QueryProvider } from "@/features/tanstack-query-api/components/QueryProvider";
 import { ExamPaperCard } from "@/features/exams/ui/ExamPaperCard";
-import { ExamPaperMetadata } from "@/features/exams/model/standardTypes";
-import { adaptToExamPaperMetadata } from "@/features/exams/api/adapter";
+import { Exam, ExamPaperMetadata } from "@/features/exams/model/standardTypes";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function ModelPapersPage() {
@@ -56,10 +55,10 @@ function ModelPapersContent() {
     );
   }
 
-  // Fallback to mock data if API doesn't return any papers
+  // Convert exams to metadata format for the card component
   const papers = modelPapers && modelPapers.length > 0 
-    ? modelPapers.map(paper => adaptToExamPaperMetadata(paper))
-    : getStaticModelPapers();
+    ? modelPapers.map(exam => convertExamToMetadata(exam))
+    : [];
 
   return (
     <main className="p-6">
@@ -90,41 +89,17 @@ function ModelPapersContent() {
   );
 }
 
-// Fallback function to get static model papers if API fails
-function getStaticModelPapers(): ExamPaperMetadata[] {
-  return [
-    {
-      id: 'mp-001',
-      title: 'Pharmacology Basics 2024',
-      description: 'Comprehensive review of basic pharmacology principles',
-      difficulty: 'easy',
-      topics_covered: ['Basic Pharmacology', 'Drug Classification', 'Mechanisms of Action'],
-      total_questions: 50,
-      time_limit: 60,
-      is_premium: false,
-      source: 'model'
-    },
-    {
-      id: 'mp-002',
-      title: 'Clinical Pharmacy Practice',
-      description: 'Advanced clinical pharmacy scenarios and case studies',
-      difficulty: 'hard',
-      topics_covered: ['Patient Care', 'Clinical Decision Making', 'Therapeutic Management'],
-      total_questions: 75,
-      time_limit: 90,
-      is_premium: true,
-      source: 'model'
-    },
-    {
-      id: 'mp-003',
-      title: 'Pharmaceutical Calculations',
-      description: 'Essential calculations for pharmacy practice',
-      difficulty: 'medium',
-      topics_covered: ['Dosage Calculations', 'Concentration Calculations', 'Compounding'],
-      total_questions: 40,
-      time_limit: 60,
-      is_premium: false,
-      source: 'model'
-    },
-  ];
+// Helper function to convert Exam to ExamPaperMetadata format
+function convertExamToMetadata(exam: Exam): ExamPaperMetadata {
+  return {
+    id: exam.id,
+    title: exam.title,
+    description: exam.description || '',
+    difficulty: 'medium', // Default or get from tags
+    topics_covered: exam.tags || [],
+    total_questions: exam.questions?.length || 0,
+    time_limit: exam.duration || 0,
+    is_premium: false, // Default or get from a property
+    source: 'model'
+  };
 }
