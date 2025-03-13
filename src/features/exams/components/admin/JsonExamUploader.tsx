@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon} from 'lucide-react';
 import {processJsonExam} from '../../utils/jsonExamProcessor';
 import {jsonExamUploadService} from '@/features/exams/api/services/jsonExamUploadService';
@@ -11,20 +11,30 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import PaperMetadataFields from './PaperMetadataFields';
+import { getRequiredFields, metadataToTags } from '../../utils/paperTypeUtils';
+
+interface JsonExamUploaderProps {
+  defaultPaperType?: string;
+}
 
 /**
  * Component for uploading JSON files and creating exams
  */
-const JsonExamUploader: React.FC = () => {
+const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = PaperType.PRACTICE }) => {
   // State for form fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [duration, setDuration] = useState<number>(60); // Default 60 minutes
   const [difficulty, setDifficulty] = useState<string>(Difficulty.MEDIUM);
-  const [paperType, setPaperType] = useState<string>(PaperType.PRACTICE);
+  const [paperType, setPaperType] = useState<string>(defaultPaperType);
+  const [metadata, setMetadata] = useState<Record<string, any>>({});
   const [jsonFile, setJsonFile] = useState<File | null>(null);
   const [jsonContent, setJsonContent] = useState<string>('');
   const [questions, setQuestions] = useState<Question[]>([]);
+
+  // State for validation
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // State for submission status
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +42,71 @@ const JsonExamUploader: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
+
+  // Update paperType when defaultPaperType changes
+  useEffect(() => {
+    setPaperType(defaultPaperType);
+  }, [defaultPaperType]);
+
+  // Reset metadata when paper type changes
+  useEffect(() => {
+    setMetadata({});
+    setErrors({});
+  }, [paperType]);
+
+  /**
+   * Handle metadata field changes
+   */
+  const handleMetadataChange = (field: string, value: any) => {
+    setMetadata(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    // Clear error for this field if it exists
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  /**
+   * Validate the form
+   */
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    // Validate basic fields
+    if (!title.trim()) {
+      newErrors.title = 'Title is required';
+    }
+    
+    if (!description.trim()) {
+      newErrors.description = 'Description is required';
+    }
+    
+    if (!duration || duration <= 0) {
+      newErrors.duration = 'Valid duration is required';
+    }
+    
+    if (!jsonFile) {
+      newErrors.jsonFile = 'JSON file is required';
+    }
+    
+    // Validate required metadata fields
+    const requiredFields = getRequiredFields(paperType);
+    requiredFields.forEach(field => {
+      if (!metadata[field] || (typeof metadata[field] === 'string' && !metadata[field].trim())) {
+        newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')} is required`;
+      }
+    });
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   /**
    * Handle file selection
@@ -75,8 +150,9 @@ const JsonExamUploader: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!jsonFile || !jsonContent) {
-      setError('Please select a JSON file');
+    // Validate the form
+    if (!validateForm()) {
+      setError('Please fix the form errors before submitting');
       return;
     }
 
@@ -85,11 +161,14 @@ const JsonExamUploader: React.FC = () => {
       setError(null);
       setSuccess(null);
 
-      // Create tags based on paperType and difficulty
-      const tags = [paperType];
-      if (difficulty) {
-        tags.push(difficulty);
-      }
+      // Prepare metadata
+      const fullMetadata = {
+        ...metadata,
+        difficulty
+      };
+
+      // Create tags based on paperType and metadata
+      const tags = metadataToTags(fullMetadata, paperType);
 
       // Upload the exam
       await jsonExamUploadService.uploadJsonExam({
@@ -109,11 +188,13 @@ const JsonExamUploader: React.FC = () => {
       setDescription('');
       setDuration(60);
       setDifficulty(Difficulty.MEDIUM);
-      setPaperType(PaperType.PRACTICE);
+      // Don't reset paperType as it's controlled by the parent
+      setMetadata({});
       setJsonFile(null);
       setJsonContent('');
       setQuestions([]);
       setPreview(false);
+      setErrors({});
 
       // Reset file input
       const fileInput = document.getElementById('json-file-input') as HTMLInputElement;
@@ -165,7 +246,7 @@ const JsonExamUploader: React.FC = () => {
           <div className="grid grid-cols-1 gap-6">
             <div className="space-y-1">
               <label className="text-sm font-medium" htmlFor="title">
-                Paper Title
+                Paper Title <span className="text-red-500">*</span>
               </label>
               <Input
                 id="title"
@@ -174,13 +255,14 @@ const JsonExamUploader: React.FC = () => {
                 placeholder="Enter paper title"
                 required
                 disabled={isSubmitting}
-                className="w-full"
+                className={`w-full ${errors.title ? 'border-red-500' : ''}`}
               />
+              {errors.title && <p className="text-xs text-red-500">{errors.title}</p>}
             </div>
 
             <div className="space-y-1">
               <label className="text-sm font-medium" htmlFor="description">
-                Description
+                Description <span className="text-red-500">*</span>
               </label>
               <Textarea
                 id="description"
@@ -189,14 +271,15 @@ const JsonExamUploader: React.FC = () => {
                 placeholder="Enter paper description"
                 required
                 disabled={isSubmitting}
-                className="w-full min-h-[100px]"
+                className={`w-full min-h-[100px] ${errors.description ? 'border-red-500' : ''}`}
               />
+              {errors.description && <p className="text-xs text-red-500">{errors.description}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium" htmlFor="duration">
-                  Duration (minutes)
+                  Duration (minutes) <span className="text-red-500">*</span>
                 </label>
                 <Input
                   id="duration"
@@ -206,12 +289,14 @@ const JsonExamUploader: React.FC = () => {
                   min={1}
                   required
                   disabled={isSubmitting}
+                  className={errors.duration ? 'border-red-500' : ''}
                 />
+                {errors.duration && <p className="text-xs text-red-500">{errors.duration}</p>}
               </div>
 
               <div className="space-y-1">
                 <label className="text-sm font-medium" htmlFor="difficulty">
-                  Difficulty
+                  Difficulty <span className="text-red-500">*</span>
                 </label>
                 <Select
                   value={difficulty}
@@ -231,7 +316,7 @@ const JsonExamUploader: React.FC = () => {
 
               <div className="space-y-1">
                 <label className="text-sm font-medium" htmlFor="paperType">
-                  Paper Type
+                  Paper Type <span className="text-red-500">*</span>
                 </label>
                 <Select
                   value={paperType}
@@ -251,9 +336,18 @@ const JsonExamUploader: React.FC = () => {
               </div>
             </div>
 
+            {/* Paper Type Specific Metadata Fields */}
+            <PaperMetadataFields
+              paperType={paperType}
+              metadata={metadata}
+              onChange={handleMetadataChange}
+              errors={errors}
+              disabled={isSubmitting}
+            />
+
             <div className="space-y-1">
               <label className="text-sm font-medium" htmlFor="json-file-input">
-                JSON File
+                JSON File <span className="text-red-500">*</span>
               </label>
               <Input
                 id="json-file-input"
@@ -262,8 +356,9 @@ const JsonExamUploader: React.FC = () => {
                 onChange={handleFileChange}
                 disabled={isSubmitting || isProcessing}
                 required
-                className="w-full"
+                className={`w-full ${errors.jsonFile ? 'border-red-500' : ''}`}
               />
+              {errors.jsonFile && <p className="text-xs text-red-500">{errors.jsonFile}</p>}
               <p className="text-xs text-muted-foreground mt-1">
                 Upload a JSON file containing MCQ questions.
               </p>

@@ -10,7 +10,9 @@ import {
   Clock,
   Layers,
   Upload,
-  Settings
+  Settings,
+  ListIcon,
+  FileUp
 } from "lucide-react";
 import { FeatureNavigation } from "@/features/shell";
 
@@ -29,7 +31,23 @@ export const EXAMS_NAVIGATION: FeatureNavigation = {
       href: "/admin/exams",
       icon: Settings,
       roles: ["ADMIN", "INSTRUCTOR"],
-      order: -10
+      order: -10,
+      subItems: [
+        {
+          id: "manage-papers",
+          label: "Paper Management",
+          href: "/admin/exams/manage",
+          icon: ListIcon,
+          roles: ["ADMIN", "INSTRUCTOR"]
+        },
+        {
+          id: "upload-papers",
+          label: "Upload MCQ JSON",
+          href: "/admin/exams/manage?tab=upload",
+          icon: FileUp,
+          roles: ["ADMIN", "INSTRUCTOR"]
+        }
+      ]
     },
     {
       id: "exam-dashboard",

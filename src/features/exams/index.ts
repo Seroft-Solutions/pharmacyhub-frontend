@@ -23,8 +23,13 @@ export * from './ui/quiz/ExamTimer';
 export * from './ui/results/ExamResults';
 export * from './ui/review/ExamReview';
 
+// Re-export admin components
+export * from './components/admin';
+
 // Re-export utils
 export * from './utils/formatTime';
+export * from './utils/paperTypeUtils';
+export * from './utils/jsonExamProcessor';
 
 // Re-export navigation
 export * from './navigation';

@@ -12,7 +12,8 @@ import {
   UserAnswer,
   ExamResult,
   FlaggedQuestion,
-  ExamStats
+  ExamStats,
+  Question
 } from '../../types/StandardTypes';
 
 // Define API endpoints
@@ -38,10 +39,13 @@ export const examEndpoints = {
   submitExam: (attemptId: number) => `/api/v1/exams/attempts/${attemptId}/submit`,
   publishExam: (examId: number) => `/api/v1/exams/${examId}/publish`,
   archiveExam: (examId: number) => `/api/v1/exams/${examId}/archive`,
+  updateQuestion: (examId: number, questionId: number) => `/api/v1/exams/${examId}/questions/${questionId}`,
   
   // Model paper endpoints (using exams with tags filtering)
   getModelPapers: '/api/v1/exams/papers/model',
-  getPastPapers: '/api/v1/exams/papers/past'
+  getPastPapers: '/api/v1/exams/papers/past',
+  getSubjectPapers: '/api/v1/exams/papers/subject',
+  getPracticePapers: '/api/v1/exams/papers/practice'
 };
 
 /**
@@ -78,6 +82,22 @@ export const examService = {
    */
   async getPastPapers(): Promise<Exam[]> {
     const response = await apiClient.get<Exam[]>(examEndpoints.getPastPapers);
+    return response.data;
+  },
+  
+  /**
+   * Get subject papers (exams with subject tag)
+   */
+  async getSubjectPapers(): Promise<Exam[]> {
+    const response = await apiClient.get<Exam[]>(examEndpoints.getSubjectPapers);
+    return response.data;
+  },
+  
+  /**
+   * Get practice papers (exams with practice tag)
+   */
+  async getPracticePapers(): Promise<Exam[]> {
+    const response = await apiClient.get<Exam[]>(examEndpoints.getPracticePapers);
     return response.data;
   },
   
@@ -126,6 +146,17 @@ export const examService = {
     const response = await apiClient.post<ExamResult>(
       examEndpoints.submitExam(attemptId),
       { answers }
+    );
+    return response.data;
+  },
+  
+  /**
+   * Update a question in an exam
+   */
+  async updateQuestion(examId: number, questionId: number, questionData: Question): Promise<Question> {
+    const response = await apiClient.put<Question>(
+      examEndpoints.updateQuestion(examId, questionId),
+      questionData
     );
     return response.data;
   }
