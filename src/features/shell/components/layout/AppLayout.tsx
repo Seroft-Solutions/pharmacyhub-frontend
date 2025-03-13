@@ -5,13 +5,14 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useSession } from "@/features/auth/hooks";
 import { useIsMobile } from "@/features/ui/hooks";
 import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
+import { DEV_CONFIG } from "@/features/auth/constants/config";
 
-import { AppTopbar } from "../Topbar/AppTopbar";
+import { AppTopbar } from "../topbar/AppTopbar";
 import { ContentArea } from "./ContentArea";
-import { AppSidebar } from "../Sidebar/AppSidebar";
-import { NavigationProvider, DEFAULT_FEATURES } from "../../Navigation";
-import { RoleProvider } from "../../Hooks/useRole";
-import { FeatureNavigation } from "../../Models/navigationTypes";
+import { AppSidebar } from "../sidebar/AppSidebar";
+import { NavigationProvider, DEFAULT_FEATURES } from "../../navigation";
+import { RoleProvider, useRole } from "../sidebar/useRole";
+import { FeatureNavigation } from "../../types";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -36,7 +37,12 @@ export function AppLayout({
   logoComponent = <ModernMinimalistLogo />,
   showFeatureGroups = false
 }: AppLayoutProps) {
-  const { isAuthenticated, isLoadingUser } = useSession({ required: requireAuth });
+  // Apply requireAuth setting, but bypass in development mode if configured
+  const actualRequireAuth = process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth 
+    ? false 
+    : requireAuth;
+    
+  const { isAuthenticated, isLoadingUser } = useSession({ required: actualRequireAuth });
   const [isMounted, setIsMounted] = useState(false);
   const isMobile = useIsMobile();
   
@@ -46,7 +52,8 @@ export function AppLayout({
   }, []);
 
   // Show loading indicator while authentication status is being determined
-  if (!isMounted || (requireAuth && (isLoadingUser || !isAuthenticated))) {
+  // Skip this check in development mode if we're bypassing auth
+  if (!isMounted || (actualRequireAuth && (isLoadingUser || !isAuthenticated))) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
       </div>

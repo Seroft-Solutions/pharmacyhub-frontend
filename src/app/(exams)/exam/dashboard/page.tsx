@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Medal, BookOpen, Clock } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
-import { useExamStats } from "@/features/exams/api/hooks/useExamApi";
+import { useExamStats } from "@/features/exams/api/UseExamApi";
 import { QueryProvider } from "@/features/tanstack-query-api/components/QueryProvider";
 import { Spinner } from "@/components/ui/spinner";
 

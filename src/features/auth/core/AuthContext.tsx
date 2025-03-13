@@ -6,6 +6,7 @@ import { logger } from '@/shared/lib/logger';
 import { authService } from '../Api/Services/authService';
 import { tokenManager } from './tokenManager';
 import { UserProfile } from '../Models';
+import { DEV_CONFIG } from '../constants/config';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -31,6 +32,11 @@ interface AuthProviderProps {
 
 // Check browser storage for existing auth state
 const checkInitialAuthState = (): boolean => {
+  // In development mode, bypass auth if configured
+  if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
+    return true;
+  }
+  
   if (typeof window === 'undefined') return false;
   
   const token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
@@ -45,9 +51,28 @@ const checkInitialAuthState = (): boolean => {
   return !!token;
 };
 
+// Create a mock user for development mode
+const createMockUser = (): UserProfile => {
+  return {
+    id: 'dev-user-id',
+    username: 'developer',
+    email: 'dev@example.com',
+    firstName: 'Dev',
+    lastName: 'User',
+    roles: ['ADMIN', 'USER'],
+    permissions: ['view_dashboard', 'manage_users', 'manage_exams'],
+    userType: 'ADMIN'
+  };
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Use mock user in development if auth bypass is enabled
+  const initialUser = (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) 
+    ? createMockUser() 
+    : null;
+    
+  const [user, setUser] = useState<UserProfile | null>(initialUser);
+  const [isLoading, setIsLoading] = useState<boolean>(!initialUser);
   const [error, setError] = useState<Error | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(checkInitialAuthState());
   const profileRequestRef = useRef<Promise<UserProfile | null> | null>(null);
@@ -55,6 +80,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Implement a memoized fetchProfile function that uses a ref to store the promise
   // This ensures multiple concurrent calls get the same promise
   const fetchProfile = useCallback(async (): Promise<UserProfile | null> => {
+    // In development mode with auth bypass, return the mock user
+    if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
+      const mockUser = createMockUser();
+      setUser(mockUser);
+      setIsAuthenticated(true);
+      return mockUser;
+    }
+    
     // If a profile request is already in progress, return that promise
     if (profileRequestRef.current) {
       return profileRequestRef.current;
@@ -115,6 +148,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Initialize auth state on mount
   useEffect(() => {
+    // Skip initialization in development mode with auth bypass
+    if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
+      setIsLoading(false);
+      return;
+    }
+    
     const initializeAuth = async () => {
       setIsLoading(true);
       setError(null);
@@ -146,6 +185,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // Set up an interval to check token expiration
     const checkTokenInterval = setInterval(() => {
+      // Skip token checks in development mode with auth bypass
+      if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
+        return;
+      }
+      
       const isValid = tokenManager.hasToken();
       if (!isValid && isAuthenticated) {
         setIsAuthenticated(false);
@@ -158,6 +202,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Login function
   const login = async (username: string, password: string): Promise<UserProfile> => {
+    // In development mode with auth bypass, return the mock user
+    if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
+      const mockUser = createMockUser();
+      setUser(mockUser);
+      setIsAuthenticated(true);
+      return mockUser;
+    }
+    
     setIsLoading(true);
     setError(null);
 
@@ -212,6 +264,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Logout function
   const logout = async (): Promise<void> => {
+    // In development mode with auth bypass, just maintain the mock user
+    if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
+      return;
+    }
+    
     try {
       await authService.logout();
     } catch (err) {
@@ -232,16 +289,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // RBAC helper functions for backward compatibility
   const hasRole = useCallback((role: string): boolean => {
+    // In development mode with auth bypass, assume all roles for convenience
+    if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
+      return true;
+    }
+    
     if (!user || !user.roles) return false;
     return user.roles.includes(role);
   }, [user]);
   
   const hasPermission = useCallback((permission: string): boolean => {
+    // In development mode with auth bypass, assume all permissions for convenience
+    if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
+      return true;
+    }
+    
     if (!user || !user.permissions) return false;
     return user.permissions.includes(permission);
   }, [user]);
   
   const hasAccess = useCallback((roles: string[] = [], permissions: string[] = []): boolean => {
+    // In development mode with auth bypass, assume all access for convenience
+    if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
+      return true;
+    }
+    
     if (!user) return false;
     
     // If no roles or permissions specified, deny access

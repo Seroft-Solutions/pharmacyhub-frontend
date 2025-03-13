@@ -1,3 +1,3 @@
-export * from './AppSidebar';
-export * from './RoleSwitcher';
-export * from './use-role';
+export * from '../components/sidebar/AppSidebar';
+export * from '../components/sidebar/RoleSwitcher';
+export * from '../components/sidebar/UseRole';

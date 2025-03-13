@@ -15,8 +15,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { usePermissions } from "@/features/rbac/hooks";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-import { useNavigation } from '../../Navigation';
-import { NavItem } from '../../Models/navigationTypes';
+import { useNavigation } from '../../navigation';
+import { NavItem } from '../../types/navigationTypes';
 
 interface SidebarMenuProps {
   items?: NavItem[];

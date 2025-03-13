@@ -1,3 +1,3 @@
-export * from './Layout';
-export * from './Sidebar';
-export * from './Topbar';
+export * from './layout';
+export * from './sidebar';
+export * from './topbar';

@@ -1,6 +1,6 @@
 "use client";
 
-import { ResetPasswordForm } from '@/features/auth/ui/password-recovery/ResetPasswordForm';
+import { ResetPasswordForm } from '@/features/auth/ui/passwordRecovery/ResetPasswordForm';
 import { AuthLayout } from '@/features/auth/ui/layout/AuthLayout';
 
 interface ResetPasswordPageProps {

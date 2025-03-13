@@ -28,7 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 import { UserMenu } from "./UserMenu";
-import { useNavigation } from "../../Navigation";
+import { useNavigation } from "../../navigation";
 
 interface BreadcrumbItem {
   label: string;

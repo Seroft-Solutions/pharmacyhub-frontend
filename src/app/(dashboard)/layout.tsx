@@ -2,7 +2,7 @@
 
 import { AppLayout } from "@/features/shell";
 import { DEFAULT_FEATURES } from "@/features/shell/navigation/features";
-import { RoleProvider } from "@/features/shell/sidebar/use-role";
+import { RoleProvider } from "@/features/shell/components/sidebar/useRole";
 
 /**
  * This layout component wraps all dashboard routes.

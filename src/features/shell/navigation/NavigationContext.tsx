@@ -7,7 +7,7 @@ import {
   NavItem, 
   FeatureNavigation,
   NavigationProviderProps 
-} from "../Models/navigationTypes";
+} from "../types/navigationTypes";
 
 // Create the navigation context
 const NavigationContext = createContext<NavigationContextValue | undefined>(undefined);

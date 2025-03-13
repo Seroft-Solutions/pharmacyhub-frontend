@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Medal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useModelPapers } from "@/features/exams/api/hooks/useExamApi";
+import { useModelPapers } from "@/features/exams/api/UseExamApi";
 import { QueryProvider } from "@/features/tanstack-query-api/components/QueryProvider";
 import { ExamPaperCard } from "@/features/exams/ui/ExamPaperCard";
 import { Exam, ExamPaperMetadata } from "@/features/exams/model/standardTypes";

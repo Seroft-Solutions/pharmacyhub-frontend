@@ -14,7 +14,7 @@ import {
   LayoutDashboard,
   HelpCircle
 } from "lucide-react";
-import { FeatureNavigation } from "../Models/navigationTypes";
+import { FeatureNavigation } from "../types/navigationTypes";
 
 /**
  * Core features navigation configuration

@@ -17,8 +17,8 @@ import { useAuth } from "@/features/auth/hooks";
 
 import { SidebarMenu } from "./SidebarMenu";
 import { RoleSwitcher } from './RoleSwitcher';
-import { useNavigation } from '../../../Shell/Navigation';
-import { useRole } from '../../Hooks/useRole';
+import { useNavigation } from '../../navigation';
+import { useRole } from './useRole';
 
 interface AppSidebarProps {
   className?: string;
