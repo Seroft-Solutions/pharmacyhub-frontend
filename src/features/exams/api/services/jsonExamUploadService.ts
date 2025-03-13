@@ -33,7 +33,10 @@ export const jsonExamUploadService = {
         jsonExamUploadEndpoints.uploadJson, 
         data
       );
-      return response.data.data;
+      if (response?.data?.data) {
+        return response.data.data;
+      }
+      throw new Error('Invalid response format');
     } catch (error) {
       console.error('Error uploading JSON exam:', error);
       throw error;

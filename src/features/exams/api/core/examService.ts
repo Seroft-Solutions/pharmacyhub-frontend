@@ -57,48 +57,78 @@ export const examService = {
    * Get all published exams
    */
   async getPublishedExams(): Promise<Exam[]> {
-    const response = await apiClient.get<Exam[]>(examEndpoints.getPublishedExams);
-    return response.data;
+    try {
+      const response = await apiClient.get<{ data: Exam[] }>(examEndpoints.getPublishedExams);
+      return response?.data?.data || [];
+    } catch (error) {
+      console.error('Error fetching published exams:', error);
+      return [];
+    }
   },
   
   /**
    * Get exam by ID
    */
   async getExamById(examId: number): Promise<Exam> {
-    const response = await apiClient.get<Exam>(examEndpoints.getExamById(examId));
-    return response.data;
+    try {
+      const response = await apiClient.get<{ data: Exam }>(examEndpoints.getExamById(examId));
+      return response?.data?.data;
+    } catch (error) {
+      console.error(`Error fetching exam ${examId}:`, error);
+      throw error;
+    }
   },
   
   /**
    * Get model papers (exams with model tag)
    */
   async getModelPapers(): Promise<Exam[]> {
-    const response = await apiClient.get<Exam[]>(examEndpoints.getModelPapers);
-    return response.data;
+    try {
+      const response = await apiClient.get<{ data: Exam[] }>(examEndpoints.getModelPapers);
+      return response?.data?.data || [];
+    } catch (error) {
+      console.error('Error fetching model papers:', error);
+      return [];
+    }
   },
   
   /**
    * Get past papers (exams with past tag)
    */
   async getPastPapers(): Promise<Exam[]> {
-    const response = await apiClient.get<Exam[]>(examEndpoints.getPastPapers);
-    return response.data;
+    try {
+      const response = await apiClient.get<{ data: Exam[] }>(examEndpoints.getPastPapers);
+      return response?.data?.data || [];
+    } catch (error) {
+      console.error('Error fetching past papers:', error);
+      return [];
+    }
   },
   
   /**
    * Get subject papers (exams with subject tag)
    */
   async getSubjectPapers(): Promise<Exam[]> {
-    const response = await apiClient.get<Exam[]>(examEndpoints.getSubjectPapers);
-    return response.data;
+    try {
+      const response = await apiClient.get<{ data: Exam[] }>(examEndpoints.getSubjectPapers);
+      return response?.data?.data || [];
+    } catch (error) {
+      console.error('Error fetching subject papers:', error);
+      return [];
+    }
   },
   
   /**
    * Get practice papers (exams with practice tag)
    */
   async getPracticePapers(): Promise<Exam[]> {
-    const response = await apiClient.get<Exam[]>(examEndpoints.getPracticePapers);
-    return response.data;
+    try {
+      const response = await apiClient.get<{ data: Exam[] }>(examEndpoints.getPracticePapers);
+      return response?.data?.data || [];
+    } catch (error) {
+      console.error('Error fetching practice papers:', error);
+      return [];
+    }
   },
   
   /**

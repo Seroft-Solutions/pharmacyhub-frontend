@@ -19,8 +19,6 @@ import {
   AlertCircle, 
   CheckCircle, 
   FileText,
-  ChevronLeft,
-  ChevronRight,
   Search
 } from 'lucide-react';
 import { Exam, Question } from '../../types/StandardTypes';
@@ -126,12 +124,8 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
     try {
       if (!exam) return;
       
-      // If API doesn't have updateQuestion endpoint yet, do a local update
-      // When API is available, uncomment the following line
-      // await examService.updateQuestion(examId, editedQuestion.id, editedQuestion);
-      
-      // This is a temporary local update until the API endpoint is available
-      console.log('Updating question locally:', editedQuestion);
+      // Call the API to update the question
+      await examService.updateQuestion(examId, editedQuestion.id, editedQuestion);
       
       // Update the question in the local state
       const updatedQuestions = exam.questions?.map(q => 
