@@ -10,8 +10,8 @@ import {
   useApiMutation
 } from '@/features/tanstack-query-api';
 import { useQueryClient } from '@tanstack/react-query';
-import { examEndpoints } from '../core/examService';
-import { examQueryKeys, paperQueryKeys } from '../core/queryKeys';
+import { examEndpoints } from './core/examService';
+import { examQueryKeys, paperQueryKeys } from '../api/core/queryKeys';
 import { 
   Exam, 
   ExamPaper,
@@ -22,7 +22,7 @@ import {
   ExamStatus,
   FlaggedQuestion,
   ExamStats
-} from '../../model/standardTypes';
+} from '../types/StandardTypes';
 
 // Exam Queries
 

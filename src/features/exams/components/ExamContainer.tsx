@@ -15,9 +15,9 @@ import {
 } from 'lucide-react';
 
 // Import hooks and components
-import { useExamSession } from '../Hooks/UseExamSession';
+import { useExamSession } from '../Hooks/useExamSession';
 import { useExamStore } from '../Store/ExamStore';
-import { useExamAnalytics } from '../Hooks/UseExamAnalytics';
+import { useExamAnalytics } from '../Hooks/useExamAnalytics';
 import { NetworkStatusIndicator } from './NetworkStatusIndicator';
 import { ExamErrorBoundary } from './ExamErrorBoundary';
 import { QuestionDisplay } from './QuestionDisplay';

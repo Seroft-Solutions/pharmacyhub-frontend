@@ -21,7 +21,7 @@ import {
   useFlagQuestionMutation,
   useUnflagQuestionMutation,
   useSubmitExamMutation
-} from '../api/hooks/useExamApi';
+} from '../api/UseExamApi';
 
 export const useExamSession = (examId: number) => {
   const queryClient = useQueryClient();

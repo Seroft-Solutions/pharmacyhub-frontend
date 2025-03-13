@@ -1,8 +1,7 @@
 "use client";
 
-import { AppLayout } from "@/features/shell";
+import { AppLayout, RoleProvider } from "@/features/shell";
 import { ADMIN_FEATURES } from "@/features/shell/navigation/adminFeatures";
-import { RoleProvider } from "@/features/shell/sidebar/use-role";
 
 /**
  * This layout component wraps all admin routes.

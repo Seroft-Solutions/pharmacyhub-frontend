@@ -4,15 +4,13 @@ import React, {useCallback, useState} from 'react';
 import {AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon} from 'lucide-react';
 import {processJsonExam} from '../../utils/jsonExamProcessor';
 import {jsonExamUploadService} from '@/features/exams/api/services/jsonExamUploadService';
-import {Difficulty, PaperType, Question} from '../../model/standardTypes';
+import {Difficulty, PaperType, Question} from '../../types/StandardTypes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-
-;
 
 /**
  * Component for uploading JSON files and creating exams
