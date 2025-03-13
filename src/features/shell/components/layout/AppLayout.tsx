@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useSession } from "@/features/auth/hooks";
-import { AppSidebar } from "../sidebar/AppSidebar";
 import { AppTopbar } from "../topbar/AppTopbar";
 import { ContentArea } from "./ContentArea";
 import { useIsMobile } from "@/features/ui/hooks";
 import { NavigationProvider, DEFAULT_FEATURES, FeatureNavigation } from "../../navigation";
 import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
+import { RoleProvider } from "../../sidebar/use-role";
+import { AppSidebar } from "../../sidebar/AppSidebar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -52,17 +53,19 @@ export function AppLayout({
 
   return (
     <NavigationProvider initialFeatures={features}>
-      <SidebarProvider defaultOpen={true} className="bg-background w-full min-h-screen">
-        <div className="min-h-screen flex w-full h-full">
-          <AppSidebar showFeatureGroups={showFeatureGroups} variant="sidebar" collapsible="icon" className="flex-shrink-0" />
-          <SidebarInset className="flex flex-col flex-1 w-full h-full">
-            <AppTopbar appName={appName} logoComponent={logoComponent} />
-            <ContentArea>
-              {children}
-            </ContentArea>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+      <RoleProvider>
+        <SidebarProvider defaultOpen={true} className="bg-background w-full min-h-screen">
+          <div className="min-h-screen flex w-full h-full">
+            <AppSidebar variant="sidebar" collapsible="icon" className="flex-shrink-0" />
+            <SidebarInset className="flex flex-col flex-1 w-full h-full">
+              <AppTopbar appName={appName} logoComponent={logoComponent} />
+              <ContentArea>
+                {children}
+              </ContentArea>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
+      </RoleProvider>
     </NavigationProvider>
   );
 }

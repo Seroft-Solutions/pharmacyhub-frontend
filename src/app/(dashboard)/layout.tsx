@@ -1,12 +1,12 @@
 "use client";
 
 import { AppLayout } from "@/features/shell";
-import { DASHBOARD_NAVIGATION } from "@/features/dashboard/navigation";
+import { DEFAULT_FEATURES } from "@/features/shell/navigation/features";
+import { RoleProvider } from "@/features/shell/sidebar/use-role";
 
 /**
  * This layout component wraps all dashboard routes.
- * It uses the AppLayout from the shell feature for consistent navigation
- * and directly provides the dashboard navigation items.
+ * It uses the AppLayout from the shell feature for consistent navigation.
  */
 export default function DashboardLayout({
   children,
@@ -14,12 +14,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AppLayout 
-      requireAuth={true} 
-      appName="Dashboard" 
-      features={[DASHBOARD_NAVIGATION]}
-    >
-      {children}
-    </AppLayout>
+    <RoleProvider>
+      <AppLayout 
+        requireAuth={true} 
+        appName="Dashboard" 
+        features={DEFAULT_FEATURES}
+      >
+        {children}
+      </AppLayout>
+    </RoleProvider>
   );
 }

@@ -178,6 +178,13 @@ export const ADMIN_FEATURE: FeatureNavigation = {
           permissions: ["manage_users"]
         },
         {
+          id: "exam-management",
+          label: "Exam Management",
+          href: "/admin/exams",
+          icon: FileText,
+          permissions: ["manage_exams"]
+        },
+        {
           id: "notifications",
           label: "Notifications",
           href: "/admin/notifications",
@@ -198,3 +205,6 @@ export const DEFAULT_FEATURES: FeatureNavigation[] = [
   PROGRESS_FEATURE,
   ADMIN_FEATURE
 ];
+
+// Export admin features
+export * from './admin-features';
