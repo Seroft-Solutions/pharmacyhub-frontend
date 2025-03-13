@@ -301,6 +301,7 @@ src/features/exams/api/index.ts
 src/features/exams/api/services/examService.ts
 src/features/exams/api/services/jsonExamUploadService.ts
 src/features/exams/api/UseExamApi.ts
+src/features/exams/components/admin/ExamDashboard.tsx
 src/features/exams/components/admin/ExamQuestions.tsx
 src/features/exams/components/admin/ExamsList.tsx
 src/features/exams/components/admin/index.ts
@@ -332,6 +333,7 @@ src/features/exams/constants/permissions/index.ts
 src/features/exams/constants/roles/index.ts
 src/features/exams/hooks/index.ts
 src/features/exams/hooks/useExamAnalytics.ts
+src/features/exams/hooks/useExamPermissions.ts
 src/features/exams/hooks/useExamQueries.ts
 src/features/exams/hooks/useExamSession.ts
 src/features/exams/index.ts
@@ -340,6 +342,7 @@ src/features/exams/model/standardTypes.ts
 src/features/exams/navigation.ts
 src/features/exams/progress/api/progressApi.ts
 src/features/exams/progress/hooks/useProgressQueries.ts
+src/features/exams/README.md
 src/features/exams/store/examStore.ts
 src/features/exams/store/index.ts
 src/features/exams/store/mcqExamStore.ts
@@ -366,6 +369,7 @@ src/features/exams/ui/quiz/ExamSettings.tsx
 src/features/exams/ui/quiz/ExamTimer.tsx
 src/features/exams/ui/quiz/QuestionCard.tsx
 src/features/exams/ui/quiz/QuestionNavigation.tsx
+src/features/exams/ui/README.md
 src/features/exams/ui/results/ExamResults.tsx
 src/features/exams/ui/results/PerformanceCharts.tsx
 src/features/exams/ui/results/ResultsView.tsx
@@ -29707,203 +29711,145 @@ export const DASHBOARD_NAVIGATION: FeatureNavigation = {
 
 <file path="src/features/exams/api/adapter.ts">
 /**
- * Adapters for converting between backend and frontend models
+ * Exam Service Adapter
+ * 
+ * This adapter bridges the direct API style with the TanStack Query API
+ * to ensure all API calls follow the project standard.
  */
-
-import {
-  Exam,
-  ExamPaper,
-  ExamPaperMetadata,
-  ExamStatus,
-  ExamResult,
-  Question,
-  Option,
-  Difficulty,
-  PaperType
-} from '../model/standardTypes';
+import { apiClient } from '@/features/tanstack-query-api/core/apiClient';
+import { examEndpoints } from './core/examService';
+import { 
+  Exam, 
+  Question, 
+  ExamAttempt, 
+  UserAnswer, 
+  ExamResult, 
+  FlaggedQuestion, 
+  ExamPaper 
+} from '../types/StandardTypes';
 
 /**
- * Backend response types
+ * Exam Service implementation using the TanStack Query API
+ * 
+ * This service should be used by components that cannot use React Query hooks
+ * directly (e.g., non-React code, Zustand stores).
  */
-export interface BackendExamPaper {
-  id: string | number;
-  title: string;
-  description: string;
-  difficulty: string;
-  questionCount: number;
-  durationMinutes: number;
-  tags: string[];
-  premium: boolean;
-  attemptCount: number;
-  successRatePercent: number;
-  lastUpdatedDate: string;
-  type: string;
-  examId?: number;
-}
-
-export interface BackendExam {
-  id: number;
-  title: string;
-  description: string;
-  duration: number;
-  totalMarks: number;
-  passingMarks: number;
-  status: string;
-  questions?: {
-    id: number;
-    questionNumber: number;
-    questionText: string;
-    options: {
-      id: number;
-      optionKey: string;
-      optionText: string;
-      isCorrect: boolean;
-    }[];
-    correctAnswer: string;
-    explanation: string;
-    marks: number;
-  }[];
-}
-
-/**
- * Adapter functions
- */
-
-/**
- * Convert backend exam paper to frontend model
- */
-export function adaptBackendExamPaper(backendPaper: BackendExamPaper): ExamPaper {
-  return {
-    id: backendPaper.id,
-    title: backendPaper.title,
-    description: backendPaper.description,
-    difficulty: backendPaper.difficulty.toLowerCase() as keyof typeof Difficulty,
-    questionCount: backendPaper.questionCount,
-    durationMinutes: backendPaper.durationMinutes,
-    tags: backendPaper.tags || [],
-    premium: backendPaper.premium,
-    attemptCount: backendPaper.attemptCount || 0,
-    successRatePercent: backendPaper.successRatePercent || 0,
-    lastUpdatedDate: backendPaper.lastUpdatedDate,
-    type: backendPaper.type as keyof typeof PaperType,
-    examId: backendPaper.examId
-  };
-}
-
-/**
- * Convert backend exam paper to frontend metadata model
- */
-export function adaptToExamPaperMetadata(backendPaper: BackendExamPaper): ExamPaperMetadata {
-  return {
-    id: backendPaper.id,
-    title: backendPaper.title,
-    description: backendPaper.description,
-    difficulty: backendPaper.difficulty.toLowerCase(),
-    topics_covered: backendPaper.tags || [],
-    total_questions: backendPaper.questionCount,
-    time_limit: backendPaper.durationMinutes,
-    is_premium: backendPaper.premium,
-    source: backendPaper.type.toLowerCase() as 'model' | 'past' | 'subject' | 'practice'
-  };
-}
-
-/**
- * Convert backend exam to frontend model
- */
-export function adaptBackendExam(backendExam: BackendExam): Exam {
-  return {
-    id: backendExam.id,
-    title: backendExam.title,
-    description: backendExam.description,
-    duration: backendExam.duration,
-    totalMarks: backendExam.totalMarks,
-    passingMarks: backendExam.passingMarks,
-    status: mapBackendStatus(backendExam.status),
-    questions: backendExam.questions?.map(adaptBackendQuestion) || []
-  };
-}
-
-/**
- * Convert backend question to frontend model
- */
-export function adaptBackendQuestion(backendQuestion: BackendExam['questions'][0]): Question {
-  return {
-    id: backendQuestion.id,
-    questionNumber: backendQuestion.questionNumber,
-    text: backendQuestion.questionText,
-    options: backendQuestion.options.map(adaptBackendOption),
-    correctAnswer: backendQuestion.correctAnswer,
-    explanation: backendQuestion.explanation,
-    marks: backendQuestion.marks
-  };
-}
-
-/**
- * Convert backend option to frontend model
- */
-function adaptBackendOption(backendOption: BackendExam['questions'][0]['options'][0]): Option {
-  return {
-    id: backendOption.id,
-    label: backendOption.optionKey,
-    text: backendOption.optionText,
-    isCorrect: backendOption.isCorrect
-  };
-}
-
-/**
- * Map backend status to frontend status
- */
-function mapBackendStatus(status: string): ExamStatus {
-  switch (status.toUpperCase()) {
-    case 'DRAFT':
-      return ExamStatus.DRAFT;
-    case 'PUBLISHED':
-      return ExamStatus.PUBLISHED;
-    case 'ARCHIVED':
-      return ExamStatus.ARCHIVED;
-    default:
-      return ExamStatus.DRAFT;
+export const examServiceAdapter = {
+  /**
+   * Get all published exams
+   */
+  async getPublishedExams(): Promise<Exam[]> {
+    const response = await apiClient.get<Exam[]>(examEndpoints.getPublishedExams);
+    return response.data || [];
+  },
+  
+  /**
+   * Get exam by ID
+   */
+  async getExamById(examId: number): Promise<Exam> {
+    const response = await apiClient.get<Exam>(examEndpoints.getExamById(examId));
+    if (!response.data) {
+      throw new Error(`Exam with ID ${examId} not found`);
+    }
+    return response.data;
+  },
+  
+  /**
+   * Get model papers
+   */
+  async getModelPapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getModelPapers);
+    return response.data || [];
+  },
+  
+  /**
+   * Get past papers
+   */
+  async getPastPapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getPastPapers);
+    return response.data || [];
+  },
+  
+  /**
+   * Get subject papers
+   */
+  async getSubjectPapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getSubjectPapers);
+    return response.data || [];
+  },
+  
+  /**
+   * Get practice papers
+   */
+  async getPracticePapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getPracticePapers);
+    return response.data || [];
+  },
+  
+  /**
+   * Start a new exam attempt
+   */
+  async startExam(examId: number): Promise<ExamAttempt> {
+    const response = await apiClient.post<ExamAttempt>(examEndpoints.startExam(examId));
+    if (!response.data) {
+      throw new Error('Failed to start exam');
+    }
+    return response.data;
+  },
+  
+  /**
+   * Get flagged questions for an attempt
+   */
+  async getFlaggedQuestions(attemptId: number): Promise<FlaggedQuestion[]> {
+    const response = await apiClient.get<FlaggedQuestion[]>(examEndpoints.getFlaggedQuestions(attemptId));
+    return response.data || [];
+  },
+  
+  /**
+   * Flag a question in an attempt
+   */
+  async flagQuestion(attemptId: number, questionId: number): Promise<void> {
+    await apiClient.post(examEndpoints.flagQuestion(attemptId, questionId));
+  },
+  
+  /**
+   * Unflag a question in an attempt
+   */
+  async unflagQuestion(attemptId: number, questionId: number): Promise<void> {
+    await apiClient.delete(examEndpoints.unflagQuestion(attemptId, questionId));
+  },
+  
+  /**
+   * Submit an exam with user answers
+   */
+  async submitExam(attemptId: number, answers: UserAnswer[]): Promise<ExamResult> {
+    const response = await apiClient.post<ExamResult>(
+      examEndpoints.submitExam(attemptId),
+      { answers }
+    );
+    if (!response.data) {
+      throw new Error('Failed to submit exam');
+    }
+    return response.data;
+  },
+  
+  /**
+   * Update a question in an exam
+   */
+  async updateQuestion(examId: number, questionId: number, questionData: Question): Promise<Question> {
+    const response = await apiClient.put<Question>(
+      examEndpoints.updateQuestion(examId, questionId),
+      questionData
+    );
+    if (!response.data) {
+      throw new Error('Failed to update question');
+    }
+    return response.data;
   }
-}
+};
 
-/**
- * Convert mock data to frontend models
- * This is used for development only
- */
-export function adaptMockExamPaper(mockPaper: any): ExamPaper {
-  return {
-    id: mockPaper.id || `mock-${Date.now()}`,
-    title: mockPaper.title,
-    description: mockPaper.description || '',
-    difficulty: (mockPaper.difficulty || 'medium').toLowerCase() as keyof typeof Difficulty,
-    questionCount: mockPaper.totalQuestions || 0,
-    durationMinutes: mockPaper.duration || 0,
-    tags: mockPaper.topics || [],
-    premium: mockPaper.isPremium || false,
-    attemptCount: mockPaper.attempts || 0,
-    successRatePercent: mockPaper.successRate || 0,
-    lastUpdatedDate: mockPaper.lastUpdated || new Date().toISOString().split('T')[0],
-    type: (mockPaper.source || 'MODEL').toUpperCase() as keyof typeof PaperType
-  };
-}
-
-/**
- * Convert mock data to frontend metadata
- * This is used for development only
- */
-export function adaptMockToMetadata(mockPaper: any): ExamPaperMetadata {
-  return {
-    id: mockPaper.id || `mock-${Date.now()}`,
-    title: mockPaper.title,
-    description: mockPaper.description || '',
-    difficulty: (mockPaper.difficulty || 'medium').toLowerCase(),
-    topics_covered: mockPaper.topics || [],
-    total_questions: mockPaper.totalQuestions || 0,
-    time_limit: mockPaper.duration || 0,
-    is_premium: mockPaper.isPremium || false,
-    source: mockPaper.source || 'model'
-  };
-}
+// Export the adapter as the default examService for backward compatibility
+export const examService = examServiceAdapter;
 </file>
 
 <file path="src/features/exams/api/core/examService.ts">
@@ -30488,9 +30434,13 @@ export {
  * 
  * This module provides implementation for exam service functions
  * used by the mcqExamStore and other components.
+ * 
+ * @deprecated Use the hooks from '@/features/exams/api/UseExamApi.ts' instead,
+ * which follow the project standard of using TanStack Query API.
+ * Direct API calls should be avoided in favor of using the TanStack Query hooks.
  */
 
-import { apiClient } from '@/shared/api/client';
+import { apiClient } from '@/features/tanstack-query-api';
 import { examEndpoints } from '../core/examService';
 import { 
   Exam, 
@@ -30974,10 +30924,248 @@ export const examApiHooks = {
 };
 </file>
 
+<file path="src/features/exams/components/admin/ExamDashboard.tsx">
+"use client"
+
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { 
+  BarChart3Icon, 
+  ClipboardListIcon, 
+  FileTextIcon, 
+  InfoIcon, 
+  PlusCircleIcon, 
+  SettingsIcon, 
+  UsersIcon 
+} from 'lucide-react';
+
+// Import permission guards and hooks
+import { PermissionGuard, AnyPermissionGuard, AllPermissionsGuard } from '@/features/rbac/ui';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
+
+// Import API hooks for data fetching
+import { 
+  useExams, 
+  useExamStats, 
+  useAllPapers
+} from '@/features/exams/api/UseExamApi';
+
+// Import components
+import ExamsList from './ExamsList';
+import JsonExamUploader from './JsonExamUploader';
+
+/**
+ * ExamDashboard Component
+ * 
+ * This component demonstrates best practices for permission checks and API calls
+ * including:
+ * - Using PermissionGuard components for UI access control
+ * - Using useExamPermissions hook for permission checks
+ * - Using TanStack Query API hooks for data fetching
+ */
+const ExamDashboard: React.FC = () => {
+  // Use the custom hook for exam-specific permissions
+  const { 
+    canViewExams, 
+    canManageExams, 
+    canAccessAnalytics, 
+    hasPermission 
+  } = useExamPermissions();
+
+  // Use TanStack Query API hooks for data fetching
+  const examsQuery = useExams();
+  const statsQuery = useExamStats();
+  const papersQuery = useAllPapers();
+
+  // Calculate summary statistics
+  const totalExams = examsQuery.data?.length || 0;
+  const totalPapers = papersQuery.data?.length || 0;
+  const statsData = statsQuery.data || { totalAttempts: 0, averageScore: 0 };
+
+  return (
+    <div className="space-y-6">
+      {/* Main content is wrapped in a PermissionGuard to check basic access */}
+      <PermissionGuard 
+        permission={ExamPermission.VIEW_EXAMS}
+        fallback={
+          <Alert variant="destructive">
+            <InfoIcon className="h-4 w-4" />
+            <AlertTitle>Access Denied</AlertTitle>
+            <AlertDescription>
+              You don't have permission to view exam management features.
+            </AlertDescription>
+          </Alert>
+        }
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Statistics Cards */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Exams</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalExams}</div>
+              <p className="text-xs text-muted-foreground">
+                {examsQuery.isLoading ? 'Loading...' : `${totalPapers} papers available`}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Attempts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{statsData.totalAttempts}</div>
+              <p className="text-xs text-muted-foreground">
+                {statsQuery.isLoading ? 'Loading...' : 'From all users'}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Analytics Card - Only visible to users with analytics permission */}
+          <PermissionGuard permission={ExamPermission.VIEW_ANALYTICS}>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Average Score</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{statsData.averageScore?.toFixed(1)}%</div>
+                <p className="text-xs text-muted-foreground">
+                  {statsQuery.isLoading ? 'Loading...' : 'Across all exams'}
+                </p>
+              </CardContent>
+            </Card>
+          </PermissionGuard>
+
+          {/* Example using AnyPermissionGuard with multiple permissions */}
+          <AnyPermissionGuard 
+            permissions={[
+              ExamPermission.CREATE_EXAM, 
+              ExamPermission.EDIT_EXAM, 
+              ExamPermission.DELETE_EXAM
+            ]}
+          >
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">Admin</div>
+                <p className="text-xs text-muted-foreground">
+                  <Badge variant="outline" className="mr-1">
+                    {hasPermission(ExamPermission.CREATE_EXAM) ? 'Create' : ''}
+                  </Badge>
+                  <Badge variant="outline" className="mr-1">
+                    {hasPermission(ExamPermission.EDIT_EXAM) ? 'Edit' : ''}
+                  </Badge>
+                  <Badge variant="outline">
+                    {hasPermission(ExamPermission.DELETE_EXAM) ? 'Delete' : ''}
+                  </Badge>
+                </p>
+              </CardContent>
+            </Card>
+          </AnyPermissionGuard>
+        </div>
+
+        {/* Tabs for different sections of exam management */}
+        <Tabs defaultValue="exams" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="exams" className="flex items-center gap-2">
+              <FileTextIcon className="h-4 w-4" />
+              <span>Exams</span>
+            </TabsTrigger>
+            
+            {/* Only show upload tab for users with create permission */}
+            <PermissionGuard permission={ExamPermission.CREATE_EXAM}>
+              <TabsTrigger value="upload" className="flex items-center gap-2">
+                <PlusCircleIcon className="h-4 w-4" />
+                <span>Upload</span>
+              </TabsTrigger>
+            </PermissionGuard>
+            
+            {/* Only show analytics tab for users with analytics permission */}
+            <PermissionGuard permission={ExamPermission.VIEW_ANALYTICS}>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3Icon className="h-4 w-4" />
+                <span>Analytics</span>
+              </TabsTrigger>
+            </PermissionGuard>
+            
+            {/* Example with AllPermissionsGuard requiring multiple permissions */}
+            <AllPermissionsGuard 
+              permissions={[
+                ExamPermission.PUBLISH_EXAM, 
+                ExamPermission.UNPUBLISH_EXAM
+              ]}
+            >
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <SettingsIcon className="h-4 w-4" />
+                <span>Settings</span>
+              </TabsTrigger>
+            </AllPermissionsGuard>
+          </TabsList>
+          
+          <TabsContent value="exams" className="space-y-4">
+            <ExamsList />
+          </TabsContent>
+          
+          <TabsContent value="upload" className="space-y-4">
+            <PermissionGuard permission={ExamPermission.CREATE_EXAM}>
+              <JsonExamUploader />
+            </PermissionGuard>
+          </TabsContent>
+          
+          <TabsContent value="analytics" className="space-y-4">
+            <PermissionGuard permission={ExamPermission.VIEW_ANALYTICS}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Exam Analytics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Analytics dashboard would be implemented here</p>
+                </CardContent>
+              </Card>
+            </PermissionGuard>
+          </TabsContent>
+          
+          <TabsContent value="settings" className="space-y-4">
+            <AllPermissionsGuard 
+              permissions={[
+                ExamPermission.PUBLISH_EXAM, 
+                ExamPermission.UNPUBLISH_EXAM
+              ]}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Exam Settings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Settings dashboard would be implemented here</p>
+                </CardContent>
+              </Card>
+            </AllPermissionsGuard>
+          </TabsContent>
+        </Tabs>
+      </PermissionGuard>
+    </div>
+  );
+};
+
+export default ExamDashboard;
+</file>
+
 <file path="src/features/exams/components/admin/ExamQuestions.tsx">
 "use client"
 
 import React, { useState, useEffect } from 'react';
+import { PermissionGuard, AnyPermissionGuard } from '@/features/rbac/ui';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -30999,7 +31187,7 @@ import {
   Search
 } from 'lucide-react';
 import { Exam, Question } from '../../types/StandardTypes';
-import { examService } from '../../api/core/examService';
+import { examServiceAdapter } from '../../api/adapter';
 import McqEditor from './McqEditor';
 import {
   Pagination,
@@ -31016,8 +31204,13 @@ interface ExamQuestionsProps {
   examId: number;
 }
 
+/**
+ * Component for managing exam questions
+ * Requires both exams:edit and exams:manage-questions permissions
+ */
 const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   const router = useRouter();
+  const { hasPermission } = useExamPermissions();
   const [exam, setExam] = useState<Exam | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31036,7 +31229,7 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
       try {
         setLoading(true);
         setError(null);
-        const examData = await examService.getExamById(examId);
+        const examData = await examServiceAdapter.getExamById(examId);
         setExam(examData);
       } catch (err) {
         console.error('Error fetching exam:', err);
@@ -31086,6 +31279,11 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
 
   // Handle question edit button click
   const handleEditQuestion = (question: Question) => {
+    // Check if the user has permission to manage questions
+    if (!hasPermission(ExamPermission.MANAGE_QUESTIONS)) {
+      setError('You do not have permission to edit questions');
+      return;
+    }
     setEditingQuestion(question);
     setIsEditorOpen(true);
   };
@@ -31098,11 +31296,16 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
 
   // Handle question save
   const handleSaveQuestion = async (editedQuestion: Question) => {
+    // Check if the user has permission to manage questions
+    if (!hasPermission(ExamPermission.MANAGE_QUESTIONS)) {
+      setError('You do not have permission to edit questions');
+      throw new Error('Permission denied');
+    }
     try {
       if (!exam) return;
       
       // Call the API to update the question
-      await examService.updateQuestion(examId, editedQuestion.id, editedQuestion);
+      await examServiceAdapter.updateQuestion(examId, editedQuestion.id, editedQuestion);
       
       // Update the question in the local state
       const updatedQuestions = exam.questions?.map(q => 
@@ -31157,6 +31360,18 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
 
   if (loading) {
     return (
+    <AnyPermissionGuard
+      permissions={[ExamPermission.EDIT_EXAM, ExamPermission.MANAGE_QUESTIONS]}
+      fallback={
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>
+            You need permission to edit exams or manage questions to access this page.
+          </AlertDescription>
+        </Alert>
+      }
+    >
       <Card>
         <CardContent className="p-8">
           <div className="flex justify-center">
@@ -31303,16 +31518,18 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditQuestion(question)}
-                              className="h-8 w-8 p-0"
-                              title="Edit question"
-                            >
-                              <Edit className="h-4 w-4"/>
-                              <span className="sr-only">Edit</span>
-                            </Button>
+                            <PermissionGuard permission={ExamPermission.MANAGE_QUESTIONS}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditQuestion(question)}
+                                className="h-8 w-8 p-0"
+                                title="Edit question"
+                              >
+                                <Edit className="h-4 w-4"/>
+                                <span className="sr-only">Edit</span>
+                              </Button>
+                            </PermissionGuard>
                           </TableCell>
                         </TableRow>
                       );
@@ -31408,6 +31625,7 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
         onSave={handleSaveQuestion}
       />
     </div>
+    </AnyPermissionGuard>
   );
 };
 
@@ -31418,6 +31636,9 @@ export default ExamQuestions;
 "use client"
 
 import React, { useEffect, useState } from 'react';
+import { PermissionGuard, AllPermissionsGuard, AnyPermissionGuard } from '@/features/rbac/ui';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -31433,7 +31654,7 @@ import {
   InfoIcon
 } from 'lucide-react';
 import { PaperType, Exam } from '../../types/StandardTypes';
-import { examService } from '../../api/core/examService';
+import { examServiceAdapter } from '../../api/adapter';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -31459,6 +31680,10 @@ import {
 /**
  * Component to display a list of exams organized by paper type
  */
+/**
+ * Component to display a list of exams organized by paper type
+ * Requires 'exams:view' permission
+ */
 const ExamsList: React.FC = () => {
   const router = useRouter();
   const [allExams, setAllExams] = useState<Exam[]>([]);
@@ -31475,7 +31700,7 @@ const ExamsList: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const fetchedExams = await examService.getPublishedExams();
+        const fetchedExams = await examServiceAdapter.getPublishedExams();
         setAllExams(fetchedExams);
       } catch (err) {
         console.error('Error fetching exams:', err);
@@ -31530,9 +31755,14 @@ const ExamsList: React.FC = () => {
     return Math.ceil(getFilteredExams().length / itemsPerPage);
   };
 
+  // Permission checks
+  const { hasPermission, canManageExams } = useExamPermissions();
+
   // Handle exam view/edit
   const handleEditExam = (examId: number) => {
-    router.push(`/admin/exams/${examId}/questions`);
+    if (hasPermission(ExamPermission.EDIT_EXAM)) {
+      router.push(`/admin/exams/${examId}/questions`);
+    }
   };
 
   // Handle page change
@@ -31753,24 +31983,26 @@ const ExamsList: React.FC = () => {
                     <TableCell>{exam.duration} min</TableCell>
                     <TableCell>{getStatusBadge(exam.status)}</TableCell>
                     <TableCell className="text-right">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditExam(exam.id)}
-                              className="h-8 px-2"
-                            >
-                              <EditIcon className="h-4 w-4 mr-1"/>
-                              <span className="hidden sm:inline">Edit</span>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit questions and metadata</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <PermissionGuard permission={ExamPermission.EDIT_EXAM}>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditExam(exam.id)}
+                                className="h-8 px-2"
+                              >
+                                <EditIcon className="h-4 w-4 mr-1"/>
+                                <span className="hidden sm:inline">Edit</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit questions and metadata</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </PermissionGuard>
                     </TableCell>
                   </TableRow>
                 );
@@ -31898,6 +32130,16 @@ const ExamsList: React.FC = () => {
   const currentExams = getCurrentPageItems();
 
   return (
+    <PermissionGuard 
+      permission={ExamPermission.VIEW_EXAMS}
+      fallback={
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircleIcon className="h-4 w-4"/>
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>You don't have permission to view exams</AlertDescription>
+        </Alert>
+      }
+    >
     <div className="space-y-6">
       {/* Search input */}
       <div className="relative w-full max-w-md">
@@ -31971,6 +32213,8 @@ const ExamsList: React.FC = () => {
       </Tabs>
     </div>
   );
+    </PermissionGuard>
+  );
 };
 
 export default ExamsList;
@@ -31983,6 +32227,7 @@ import PaperTypeManager from './PaperTypeManager';
 import PaperMetadataFields from './PaperMetadataFields';
 import McqEditor from './McqEditor';
 import ExamQuestions from './ExamQuestions';
+import ExamDashboard from './ExamDashboard';
 
 export {
   ExamsList,
@@ -31990,7 +32235,8 @@ export {
   PaperTypeManager,
   PaperMetadataFields,
   McqEditor,
-  ExamQuestions
+  ExamQuestions,
+  ExamDashboard
 };
 </file>
 
@@ -31998,6 +32244,9 @@ export {
 "use client"
 
 import React, {useCallback, useEffect, useState} from 'react';
+import { PermissionGuard, AnyPermissionGuard } from '@/features/rbac/ui';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import {AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon} from 'lucide-react';
 import {processJsonExam} from '../../utils/jsonExamProcessor';
 import {jsonExamUploadService} from '@/features/exams/api/services/jsonExamUploadService';
@@ -32017,6 +32266,7 @@ interface JsonExamUploaderProps {
 
 /**
  * Component for uploading JSON files and creating exams
+ * Requires exams:create permission
  */
 const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = PaperType.PRACTICE }) => {
   // State for form fields
@@ -32141,10 +32391,18 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
     }
   }, []);
 
+  // Get permissions
+  const { hasPermission } = useExamPermissions();
+
   /**
    * Handle form submission
    */
   const handleSubmit = async (event: React.FormEvent) => {
+    // Check permission before submission
+    if (!hasPermission(ExamPermission.CREATE_EXAM)) {
+      setError('You do not have permission to create exams');
+      return;
+    }
     event.preventDefault();
 
     // Validate the form
@@ -32214,6 +32472,16 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
   };
 
   return (
+    <PermissionGuard 
+      permission={ExamPermission.CREATE_EXAM}
+      fallback={
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircleIcon className="h-4 w-4"/>
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>You don't have permission to create exams</AlertDescription>
+        </Alert>
+      }
+    >
     <Card className="shadow-md">
       <CardHeader className="bg-primary-50 dark:bg-primary-950/50">
         <CardTitle className="flex items-center gap-2">
@@ -32429,6 +32697,7 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
         </form>
       </CardContent>
     </Card>
+    </PermissionGuard>
   );
 };
 
@@ -35293,87 +35562,53 @@ export interface ExamSidebarItemProps {
 /**
  * Exams Feature Flags
  * 
- * Defines feature flags for the exams feature with clear, easy-to-configure settings.
+ * Defines all feature flags related to the exams feature.
  */
 
 /**
- * Feature flags for exam creation and management
+ * Feature flags for the Exams feature
  */
 export enum ExamFeatureFlag {
-  // Core exam features
-  TIMED_EXAMS = 'exams:timed',
-  RANDOMIZED_QUESTIONS = 'exams:randomized',
-  QUESTION_FEEDBACK = 'exams:question-feedback',
-  PARTIAL_GRADING = 'exams:partial-grading',
+  // Core functionality flags
+  ENABLE_EXAM_CREATION = 'exams:enable-creation',
+  ENABLE_EXAM_EDITING = 'exams:enable-editing',
+  ENABLE_EXAM_DELETION = 'exams:enable-deletion',
+  
+  // Paper type flags
+  ENABLE_MODEL_PAPERS = 'exams:enable-model-papers',
+  ENABLE_PAST_PAPERS = 'exams:enable-past-papers',
+  ENABLE_SUBJECT_PAPERS = 'exams:enable-subject-papers',
+  ENABLE_PRACTICE_PAPERS = 'exams:enable-practice-papers',
   
   // Advanced features
-  ADVANCED_QUESTION_TYPES = 'exams:advanced-questions',
-  EXAM_CERTIFICATES = 'exams:certificates',
-  EXAM_STATISTICS = 'exams:statistics',
-  PROCTORING = 'exams:proctoring'
+  ENABLE_ANALYTICS = 'exams:enable-analytics',
+  ENABLE_EXPORT = 'exams:enable-export',
+  ENABLE_QUESTION_BANKING = 'exams:enable-question-banking',
+  
+  // Experiment flags
+  EXPERIMENTAL_NEW_EXAM_UI = 'exams:experimental-new-ui',
+  EXPERIMENTAL_QUESTION_EDITOR = 'exams:experimental-question-editor'
 }
 
 /**
- * Default values for all feature flags
- * Each flag has a separate, clearly named constant for easier configuration
- */
-
-// Basic features - enabled by default
-export const FEATURE_TIMED_EXAMS_ENABLED = true;
-export const FEATURE_RANDOMIZED_QUESTIONS_ENABLED = true;
-export const FEATURE_QUESTION_FEEDBACK_ENABLED = true;
-export const FEATURE_PARTIAL_GRADING_ENABLED = true;
-
-// Advanced features - some disabled by default
-export const FEATURE_ADVANCED_QUESTION_TYPES_ENABLED = true;
-export const FEATURE_EXAM_CERTIFICATES_ENABLED = true;
-export const FEATURE_EXAM_STATISTICS_ENABLED = true;
-export const FEATURE_PROCTORING_ENABLED = false;  // Disabled by default
-
-/**
- * Feature flag metadata with names, descriptions, and default settings
+ * Default status for features (which ones are enabled by default)
  */
 export const EXAM_FEATURE_FLAGS = {
-  [ExamFeatureFlag.TIMED_EXAMS]: {
-    name: 'Timed Exams',
-    description: 'Allow setting time limits for exams',
-    defaultEnabled: FEATURE_TIMED_EXAMS_ENABLED
-  },
-  [ExamFeatureFlag.RANDOMIZED_QUESTIONS]: {
-    name: 'Randomized Questions',
-    description: 'Randomly order questions for each exam session',
-    defaultEnabled: FEATURE_RANDOMIZED_QUESTIONS_ENABLED
-  },
-  [ExamFeatureFlag.QUESTION_FEEDBACK]: {
-    name: 'Question Feedback',
-    description: 'Allow feedback and explanations for each question',
-    defaultEnabled: FEATURE_QUESTION_FEEDBACK_ENABLED
-  },
-  [ExamFeatureFlag.PARTIAL_GRADING]: {
-    name: 'Partial Grading',
-    description: 'Allow partial credit for partially correct answers',
-    defaultEnabled: FEATURE_PARTIAL_GRADING_ENABLED
-  },
-  [ExamFeatureFlag.ADVANCED_QUESTION_TYPES]: {
-    name: 'Advanced Question Types',
-    description: 'Enable complex question types like matching, ordering, and drag-drop',
-    defaultEnabled: FEATURE_ADVANCED_QUESTION_TYPES_ENABLED
-  },
-  [ExamFeatureFlag.EXAM_CERTIFICATES]: {
-    name: 'Completion Certificates',
-    description: 'Generate certificates for completed exams',
-    defaultEnabled: FEATURE_EXAM_CERTIFICATES_ENABLED
-  },
-  [ExamFeatureFlag.EXAM_STATISTICS]: {
-    name: 'Exam Statistics',
-    description: 'Show detailed statistics and analytics for exam results',
-    defaultEnabled: FEATURE_EXAM_STATISTICS_ENABLED
-  },
-  [ExamFeatureFlag.PROCTORING]: {
-    name: 'Exam Proctoring',
-    description: 'Monitor and prevent cheating during exams',
-    defaultEnabled: FEATURE_PROCTORING_ENABLED
-  }
+  [ExamFeatureFlag.ENABLE_EXAM_CREATION]: true,
+  [ExamFeatureFlag.ENABLE_EXAM_EDITING]: true,
+  [ExamFeatureFlag.ENABLE_EXAM_DELETION]: true,
+  
+  [ExamFeatureFlag.ENABLE_MODEL_PAPERS]: true,
+  [ExamFeatureFlag.ENABLE_PAST_PAPERS]: true,
+  [ExamFeatureFlag.ENABLE_SUBJECT_PAPERS]: true,
+  [ExamFeatureFlag.ENABLE_PRACTICE_PAPERS]: true,
+  
+  [ExamFeatureFlag.ENABLE_ANALYTICS]: true,
+  [ExamFeatureFlag.ENABLE_EXPORT]: true,
+  [ExamFeatureFlag.ENABLE_QUESTION_BANKING]: false,
+  
+  [ExamFeatureFlag.EXPERIMENTAL_NEW_EXAM_UI]: false,
+  [ExamFeatureFlag.EXPERIMENTAL_QUESTION_EDITOR]: false
 };
 </file>
 
@@ -35425,7 +35660,8 @@ export function initializeExamsFeature() {
     EXAM_FEATURE_FLAGS
   );
   
-  console.log('Exams feature registered');
+  // Ensure all the exams permissions are registered with the RBAC system
+  console.log(`Exams feature registered with ${Object.keys(ExamPermission).length} permissions`);
 }
 </file>
 
@@ -35594,6 +35830,7 @@ export const EXAMS_ADMIN_ROLES = [
 <file path="src/features/exams/hooks/index.ts">
 export * from './UseExamAnalytics';
 export * from './UseExamSession';
+export * from './useExamPermissions';
 </file>
 
 <file path="src/features/exams/hooks/useExamAnalytics.ts">
@@ -35697,6 +35934,87 @@ export const useExamAnalytics = (examId: number, userId: string) => {
 };
 
 export default useExamAnalytics;
+</file>
+
+<file path="src/features/exams/hooks/useExamPermissions.ts">
+/**
+ * Hook for checking exam-specific permissions
+ * 
+ * This is a wrapper around the RBAC usePermissions hook that makes it easier
+ * to check exam-specific permissions.
+ */
+import { usePermissions } from '@/features/rbac/hooks';
+import { ExamPermission } from '../constants/permissions';
+
+export function useExamPermissions() {
+  const { 
+    hasPermission, 
+    hasAllPermissions, 
+    hasAnyPermission,
+    hasRole,
+    hasAllRoles,
+    hasAnyRole,
+    hasAccess 
+  } = usePermissions();
+
+  // Check if the user can view exams
+  const canViewExams = hasPermission(ExamPermission.VIEW_EXAMS);
+  
+  // Check if the user can take exams
+  const canTakeExams = hasPermission(ExamPermission.TAKE_EXAM);
+  
+  // Check if the user can manage exams (create, edit, delete)
+  const canManageExams = hasAnyPermission([
+    ExamPermission.CREATE_EXAM,
+    ExamPermission.EDIT_EXAM,
+    ExamPermission.DELETE_EXAM
+  ]);
+  
+  // Check if the user can administer exams (publish, unpublish, assign)
+  const canAdministerExams = hasAnyPermission([
+    ExamPermission.PUBLISH_EXAM,
+    ExamPermission.UNPUBLISH_EXAM,
+    ExamPermission.ASSIGN_EXAM
+  ]);
+  
+  // Check if the user can manage results (grade, view results, export results)
+  const canManageResults = hasAnyPermission([
+    ExamPermission.GRADE_EXAM,
+    ExamPermission.VIEW_RESULTS,
+    ExamPermission.EXPORT_RESULTS
+  ]);
+  
+  // Check if the user can access analytics
+  const canAccessAnalytics = hasPermission(ExamPermission.VIEW_ANALYTICS);
+  
+  // Check if the user is an exams admin (has most admin permissions)
+  const isExamsAdmin = hasAllPermissions([
+    ExamPermission.CREATE_EXAM,
+    ExamPermission.EDIT_EXAM,
+    ExamPermission.PUBLISH_EXAM,
+    ExamPermission.UNPUBLISH_EXAM
+  ]);
+
+  return {
+    // Specific permission checks
+    canViewExams,
+    canTakeExams,
+    canManageExams,
+    canAdministerExams,
+    canManageResults,
+    canAccessAnalytics,
+    isExamsAdmin,
+    
+    // Original permission check methods for more specific checks
+    hasPermission,
+    hasAllPermissions,
+    hasAnyPermission,
+    hasRole,
+    hasAllRoles,
+    hasAnyRole,
+    hasAccess
+  };
+}
 </file>
 
 <file path="src/features/exams/hooks/useExamQueries.ts">
@@ -36652,6 +36970,168 @@ export function useProgress(userId: string) {
     }
   };
 }
+</file>
+
+<file path="src/features/exams/README.md">
+# Exams Feature
+
+This module provides exam management and taking functionality for the PharmacyHub application.
+
+## Features
+
+- Exam creation and management
+- Questions and answer management
+- Exam taking and submission
+- Results viewing and analysis
+- Support for different paper types (Practice, Model, Past, Subject)
+
+## Architecture
+
+The Exams feature follows the project's architecture guidelines, including:
+
+- **Feature-based organization**: All exam-related code is in this feature directory
+- **Separation of concerns**: UI, API, state management, etc. are separated
+- **RBAC integration**: All components use the RBAC system for permission checks
+- **TanStack Query API**: All API calls go through the TanStack Query API hooks
+
+## Permissions
+
+All permissions for this feature are defined in `src/features/exams/constants/permissions/index.ts` and registered with the RBAC system through `initializeExamsFeature()` in `constants/index.ts`. These permissions are also added to the global permissions in `src/features/rbac/constants/permissions.ts`.
+
+The following permissions are available:
+
+### Basic Exam Access
+- `exams:view` - View available exams
+- `exams:take` - Take exams
+
+### Exam Creation & Management
+- `exams:create` - Create new exams
+- `exams:edit` - Edit existing exams
+- `exams:delete` - Delete exams
+- `exams:duplicate` - Duplicate exams
+
+### Question Management
+- `exams:manage-questions` - Manage questions within exams
+
+### Exam Administration
+- `exams:publish` - Publish exams to make them available
+- `exams:unpublish` - Unpublish exams
+- `exams:assign` - Assign exams to users
+
+### Results & Grading
+- `exams:grade` - Grade exam attempts
+- `exams:view-results` - View exam results
+- `exams:export-results` - Export exam results
+
+### Analytics
+- `exams:view-analytics` - View exam analytics
+
+## Permission Usage
+
+To check permissions in components, always use one of these patterns:
+
+### 1. Using PermissionGuard Component
+
+```tsx
+import { PermissionGuard } from '@/features/rbac/ui';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+
+<PermissionGuard permission={ExamPermission.CREATE_EXAM}>
+  <CreateExamButton />
+</PermissionGuard>
+```
+
+### 2. Using usePermissions Hook
+
+```tsx
+import { usePermissions } from '@/features/rbac/hooks';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+
+function Component() {
+  const { hasPermission } = usePermissions();
+  const canCreateExam = hasPermission(ExamPermission.CREATE_EXAM);
+  
+  return canCreateExam ? <CreateExamButton /> : null;
+}
+```
+
+## Feature Flags
+
+Feature flags are defined in `src/features/exams/constants/flags/index.ts`. These control which features are enabled, and can be used to toggle experimental features.
+
+Use the `useFeatureAccess` hook to check if a feature is enabled:
+
+```tsx
+import { useFeatureAccess } from '@/features/rbac/hooks';
+import { ExamFeatureFlag } from '@/features/exams/constants/flags';
+
+function Component() {
+  const { canAccess } = useFeatureAccess('exams', {
+    flagId: ExamFeatureFlag.ENABLE_ANALYTICS
+  });
+  
+  return canAccess ? <AnalyticsPanel /> : null;
+}
+```
+
+## API Integration
+
+All API calls in this feature must be made through the TanStack Query API. Direct API calls are not allowed.
+
+- API endpoints are defined in `src/features/exams/api/core/examService.ts`
+- React Query hooks are in `src/features/exams/api/UseExamApi.ts`
+
+Example usage:
+
+```tsx
+import { useExam } from '@/features/exams/api/UseExamApi';
+
+function ExamDetails({ examId }) {
+  const { data, isLoading, error } = useExam(examId);
+  
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+  
+  return <div>{data.title}</div>;
+}
+```
+
+## State Management
+
+Exam state is managed using:
+
+- React Query for server state
+- React state for local UI state
+- Zustand for complex state that needs to persist across components
+
+## Inputs and Outputs
+
+### Inputs
+- Exam configurations (title, description, time limit, etc.)
+- Questions and answers
+- User responses to questions
+- Metadata for different paper types
+
+### Outputs
+- Exam listings
+- Exam attempt interface
+- Results and analytics
+- Administrative interfaces for exam management
+
+## Testing
+
+Components should have unit tests covering:
+- Rendering with different permission scenarios
+- Interaction with the API
+- State changes
+
+## Getting Started
+
+To work on this feature, familiarize yourself with:
+
+1. The permission model in `constants/permissions/index.ts`
+2. The API hooks in `api/UseExamApi.ts`
+3. The RBAC integration through `usePermissions` and `PermissionGuard`
 </file>
 
 <file path="src/features/exams/store/examStore.ts">
@@ -40661,6 +41141,71 @@ export const QuestionNavigation = ({
 };
 </file>
 
+<file path="src/features/exams/ui/README.md">
+# Exams UI Components
+
+This directory contains UI components specific to the Exams feature.
+
+## Permission Usage
+
+All UI components in this feature should use permission checks to control access to specific functionality. Use the following patterns:
+
+### 1. Using PermissionGuard Component
+
+```tsx
+import { PermissionGuard, AnyPermissionGuard } from '@/features/rbac/ui';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+
+// Example with a single permission
+<PermissionGuard 
+  permission={ExamPermission.CREATE_EXAM}
+  fallback={<p>You do not have permission to create exams</p>}
+>
+  <CreateExamButton />
+</PermissionGuard>
+
+// Example with multiple permissions (any of them)
+<AnyPermissionGuard 
+  permissions={[
+    ExamPermission.EDIT_EXAM,
+    ExamPermission.DUPLICATE_EXAM
+  ]}
+  fallback={<p>You do not have permission to modify exams</p>}
+>
+  <EditExamPanel />
+</AnyPermissionGuard>
+```
+
+### 2. Using usePermissions Hook
+
+```tsx
+import { usePermissions } from '@/features/rbac/hooks';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+
+function ExamComponent() {
+  const { hasPermission, hasAnyPermission } = usePermissions();
+  
+  // Check a single permission
+  const canCreateExam = hasPermission(ExamPermission.CREATE_EXAM);
+  
+  // Check multiple permissions (any of them)
+  const canModifyExam = hasAnyPermission([
+    ExamPermission.EDIT_EXAM,
+    ExamPermission.DUPLICATE_EXAM
+  ]);
+  
+  return (
+    <div>
+      {canCreateExam && <CreateExamButton />}
+      {canModifyExam && <EditExamPanel />}
+    </div>
+  );
+}
+```
+
+Always use these patterns for permission checks rather than implementing custom checks.
+</file>
+
 <file path="src/features/exams/ui/results/ExamResults.tsx">
 import React from 'react';
 import {
@@ -42691,7 +43236,7 @@ export type Permission =
   | 'manage_settings'
   | 'view_settings'
   
-  // Exam permissions
+  // Exam permissions - also defined in src/features/exams/constants/permissions/index.ts
   | 'manage_exams'
   | 'view_exams'
   | 'create_exams'
@@ -42699,6 +43244,20 @@ export type Permission =
   | 'delete_exams'
   | 'grade_exams'
   | 'attempt_exams'
+  | 'exams:view'       // View exams
+  | 'exams:take'       // Take exams
+  | 'exams:create'     // Create exams
+  | 'exams:edit'       // Edit exams
+  | 'exams:delete'     // Delete exams
+  | 'exams:duplicate'  // Duplicate exams
+  | 'exams:manage-questions' // Manage questions
+  | 'exams:publish'    // Publish exams
+  | 'exams:unpublish'  // Unpublish exams
+  | 'exams:assign'     // Assign exams
+  | 'exams:grade'      // Grade exams
+  | 'exams:view-results' // View results
+  | 'exams:export-results' // Export results
+  | 'exams:view-analytics' // View analytics
   
   // Report permissions
   | 'manage_reports'
