@@ -1,6 +1,9 @@
 "use client"
 
 import React, {useCallback, useEffect, useState} from 'react';
+import { PermissionGuard, AnyPermissionGuard } from '@/features/rbac/ui';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import {AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon} from 'lucide-react';
 import {processJsonExam} from '../../utils/jsonExamProcessor';
 import {jsonExamUploadService} from '@/features/exams/api/services/jsonExamUploadService';
@@ -20,6 +23,7 @@ interface JsonExamUploaderProps {
 
 /**
  * Component for uploading JSON files and creating exams
+ * Requires exams:create permission
  */
 const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = PaperType.PRACTICE }) => {
   // State for form fields
@@ -144,10 +148,18 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
     }
   }, []);
 
+  // Get permissions
+  const { hasPermission } = useExamPermissions();
+
   /**
    * Handle form submission
    */
   const handleSubmit = async (event: React.FormEvent) => {
+    // Check permission before submission
+    if (!hasPermission(ExamPermission.CREATE_EXAM)) {
+      setError('You do not have permission to create exams');
+      return;
+    }
     event.preventDefault();
 
     // Validate the form
@@ -217,6 +229,16 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
   };
 
   return (
+    <PermissionGuard 
+      permission={ExamPermission.CREATE_EXAM}
+      fallback={
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircleIcon className="h-4 w-4"/>
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>You don't have permission to create exams</AlertDescription>
+        </Alert>
+      }
+    >
     <Card className="shadow-md">
       <CardHeader className="bg-primary-50 dark:bg-primary-950/50">
         <CardTitle className="flex items-center gap-2">
@@ -432,6 +454,7 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
         </form>
       </CardContent>
     </Card>
+    </PermissionGuard>
   );
 };
 

@@ -3,9 +3,13 @@
  * 
  * This module provides implementation for exam service functions
  * used by the mcqExamStore and other components.
+ * 
+ * @deprecated Use the hooks from '@/features/exams/api/UseExamApi.ts' instead,
+ * which follow the project standard of using TanStack Query API.
+ * Direct API calls should be avoided in favor of using the TanStack Query hooks.
  */
 
-import { apiClient } from '@/shared/api/client';
+import { apiClient } from '@/features/tanstack-query-api';
 import { examEndpoints } from '../core/examService';
 import { 
   Exam, 

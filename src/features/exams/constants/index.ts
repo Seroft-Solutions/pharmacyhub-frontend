@@ -45,5 +45,6 @@ export function initializeExamsFeature() {
     EXAM_FEATURE_FLAGS
   );
   
-  console.log('Exams feature registered');
+  // Ensure all the exams permissions are registered with the RBAC system
+  console.log(`Exams feature registered with ${Object.keys(ExamPermission).length} permissions`);
 }

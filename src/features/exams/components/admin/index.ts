@@ -4,6 +4,7 @@ import PaperTypeManager from './PaperTypeManager';
 import PaperMetadataFields from './PaperMetadataFields';
 import McqEditor from './McqEditor';
 import ExamQuestions from './ExamQuestions';
+import ExamDashboard from './ExamDashboard';
 
 export {
   ExamsList,
@@ -11,5 +12,6 @@ export {
   PaperTypeManager,
   PaperMetadataFields,
   McqEditor,
-  ExamQuestions
+  ExamQuestions,
+  ExamDashboard
 };

@@ -1,198 +1,140 @@
 /**
- * Adapters for converting between backend and frontend models
+ * Exam Service Adapter
+ * 
+ * This adapter bridges the direct API style with the TanStack Query API
+ * to ensure all API calls follow the project standard.
  */
-
-import {
-  Exam,
-  ExamPaper,
-  ExamPaperMetadata,
-  ExamStatus,
-  ExamResult,
-  Question,
-  Option,
-  Difficulty,
-  PaperType
-} from '../model/standardTypes';
+import { apiClient } from '@/features/tanstack-query-api/core/apiClient';
+import { examEndpoints } from './core/examService';
+import { 
+  Exam, 
+  Question, 
+  ExamAttempt, 
+  UserAnswer, 
+  ExamResult, 
+  FlaggedQuestion, 
+  ExamPaper 
+} from '../types/StandardTypes';
 
 /**
- * Backend response types
+ * Exam Service implementation using the TanStack Query API
+ * 
+ * This service should be used by components that cannot use React Query hooks
+ * directly (e.g., non-React code, Zustand stores).
  */
-export interface BackendExamPaper {
-  id: string | number;
-  title: string;
-  description: string;
-  difficulty: string;
-  questionCount: number;
-  durationMinutes: number;
-  tags: string[];
-  premium: boolean;
-  attemptCount: number;
-  successRatePercent: number;
-  lastUpdatedDate: string;
-  type: string;
-  examId?: number;
-}
-
-export interface BackendExam {
-  id: number;
-  title: string;
-  description: string;
-  duration: number;
-  totalMarks: number;
-  passingMarks: number;
-  status: string;
-  questions?: {
-    id: number;
-    questionNumber: number;
-    questionText: string;
-    options: {
-      id: number;
-      optionKey: string;
-      optionText: string;
-      isCorrect: boolean;
-    }[];
-    correctAnswer: string;
-    explanation: string;
-    marks: number;
-  }[];
-}
-
-/**
- * Adapter functions
- */
-
-/**
- * Convert backend exam paper to frontend model
- */
-export function adaptBackendExamPaper(backendPaper: BackendExamPaper): ExamPaper {
-  return {
-    id: backendPaper.id,
-    title: backendPaper.title,
-    description: backendPaper.description,
-    difficulty: backendPaper.difficulty.toLowerCase() as keyof typeof Difficulty,
-    questionCount: backendPaper.questionCount,
-    durationMinutes: backendPaper.durationMinutes,
-    tags: backendPaper.tags || [],
-    premium: backendPaper.premium,
-    attemptCount: backendPaper.attemptCount || 0,
-    successRatePercent: backendPaper.successRatePercent || 0,
-    lastUpdatedDate: backendPaper.lastUpdatedDate,
-    type: backendPaper.type as keyof typeof PaperType,
-    examId: backendPaper.examId
-  };
-}
-
-/**
- * Convert backend exam paper to frontend metadata model
- */
-export function adaptToExamPaperMetadata(backendPaper: BackendExamPaper): ExamPaperMetadata {
-  return {
-    id: backendPaper.id,
-    title: backendPaper.title,
-    description: backendPaper.description,
-    difficulty: backendPaper.difficulty.toLowerCase(),
-    topics_covered: backendPaper.tags || [],
-    total_questions: backendPaper.questionCount,
-    time_limit: backendPaper.durationMinutes,
-    is_premium: backendPaper.premium,
-    source: backendPaper.type.toLowerCase() as 'model' | 'past' | 'subject' | 'practice'
-  };
-}
-
-/**
- * Convert backend exam to frontend model
- */
-export function adaptBackendExam(backendExam: BackendExam): Exam {
-  return {
-    id: backendExam.id,
-    title: backendExam.title,
-    description: backendExam.description,
-    duration: backendExam.duration,
-    totalMarks: backendExam.totalMarks,
-    passingMarks: backendExam.passingMarks,
-    status: mapBackendStatus(backendExam.status),
-    questions: backendExam.questions?.map(adaptBackendQuestion) || []
-  };
-}
-
-/**
- * Convert backend question to frontend model
- */
-export function adaptBackendQuestion(backendQuestion: BackendExam['questions'][0]): Question {
-  return {
-    id: backendQuestion.id,
-    questionNumber: backendQuestion.questionNumber,
-    text: backendQuestion.questionText,
-    options: backendQuestion.options.map(adaptBackendOption),
-    correctAnswer: backendQuestion.correctAnswer,
-    explanation: backendQuestion.explanation,
-    marks: backendQuestion.marks
-  };
-}
-
-/**
- * Convert backend option to frontend model
- */
-function adaptBackendOption(backendOption: BackendExam['questions'][0]['options'][0]): Option {
-  return {
-    id: backendOption.id,
-    label: backendOption.optionKey,
-    text: backendOption.optionText,
-    isCorrect: backendOption.isCorrect
-  };
-}
-
-/**
- * Map backend status to frontend status
- */
-function mapBackendStatus(status: string): ExamStatus {
-  switch (status.toUpperCase()) {
-    case 'DRAFT':
-      return ExamStatus.DRAFT;
-    case 'PUBLISHED':
-      return ExamStatus.PUBLISHED;
-    case 'ARCHIVED':
-      return ExamStatus.ARCHIVED;
-    default:
-      return ExamStatus.DRAFT;
+export const examServiceAdapter = {
+  /**
+   * Get all published exams
+   */
+  async getPublishedExams(): Promise<Exam[]> {
+    const response = await apiClient.get<Exam[]>(examEndpoints.getPublishedExams);
+    return response.data || [];
+  },
+  
+  /**
+   * Get exam by ID
+   */
+  async getExamById(examId: number): Promise<Exam> {
+    const response = await apiClient.get<Exam>(examEndpoints.getExamById(examId));
+    if (!response.data) {
+      throw new Error(`Exam with ID ${examId} not found`);
+    }
+    return response.data;
+  },
+  
+  /**
+   * Get model papers
+   */
+  async getModelPapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getModelPapers);
+    return response.data || [];
+  },
+  
+  /**
+   * Get past papers
+   */
+  async getPastPapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getPastPapers);
+    return response.data || [];
+  },
+  
+  /**
+   * Get subject papers
+   */
+  async getSubjectPapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getSubjectPapers);
+    return response.data || [];
+  },
+  
+  /**
+   * Get practice papers
+   */
+  async getPracticePapers(): Promise<ExamPaper[]> {
+    const response = await apiClient.get<ExamPaper[]>(examEndpoints.getPracticePapers);
+    return response.data || [];
+  },
+  
+  /**
+   * Start a new exam attempt
+   */
+  async startExam(examId: number): Promise<ExamAttempt> {
+    const response = await apiClient.post<ExamAttempt>(examEndpoints.startExam(examId));
+    if (!response.data) {
+      throw new Error('Failed to start exam');
+    }
+    return response.data;
+  },
+  
+  /**
+   * Get flagged questions for an attempt
+   */
+  async getFlaggedQuestions(attemptId: number): Promise<FlaggedQuestion[]> {
+    const response = await apiClient.get<FlaggedQuestion[]>(examEndpoints.getFlaggedQuestions(attemptId));
+    return response.data || [];
+  },
+  
+  /**
+   * Flag a question in an attempt
+   */
+  async flagQuestion(attemptId: number, questionId: number): Promise<void> {
+    await apiClient.post(examEndpoints.flagQuestion(attemptId, questionId));
+  },
+  
+  /**
+   * Unflag a question in an attempt
+   */
+  async unflagQuestion(attemptId: number, questionId: number): Promise<void> {
+    await apiClient.delete(examEndpoints.unflagQuestion(attemptId, questionId));
+  },
+  
+  /**
+   * Submit an exam with user answers
+   */
+  async submitExam(attemptId: number, answers: UserAnswer[]): Promise<ExamResult> {
+    const response = await apiClient.post<ExamResult>(
+      examEndpoints.submitExam(attemptId),
+      { answers }
+    );
+    if (!response.data) {
+      throw new Error('Failed to submit exam');
+    }
+    return response.data;
+  },
+  
+  /**
+   * Update a question in an exam
+   */
+  async updateQuestion(examId: number, questionId: number, questionData: Question): Promise<Question> {
+    const response = await apiClient.put<Question>(
+      examEndpoints.updateQuestion(examId, questionId),
+      questionData
+    );
+    if (!response.data) {
+      throw new Error('Failed to update question');
+    }
+    return response.data;
   }
-}
+};
 
-/**
- * Convert mock data to frontend models
- * This is used for development only
- */
-export function adaptMockExamPaper(mockPaper: any): ExamPaper {
-  return {
-    id: mockPaper.id || `mock-${Date.now()}`,
-    title: mockPaper.title,
-    description: mockPaper.description || '',
-    difficulty: (mockPaper.difficulty || 'medium').toLowerCase() as keyof typeof Difficulty,
-    questionCount: mockPaper.totalQuestions || 0,
-    durationMinutes: mockPaper.duration || 0,
-    tags: mockPaper.topics || [],
-    premium: mockPaper.isPremium || false,
-    attemptCount: mockPaper.attempts || 0,
-    successRatePercent: mockPaper.successRate || 0,
-    lastUpdatedDate: mockPaper.lastUpdated || new Date().toISOString().split('T')[0],
-    type: (mockPaper.source || 'MODEL').toUpperCase() as keyof typeof PaperType
-  };
-}
-
-/**
- * Convert mock data to frontend metadata
- * This is used for development only
- */
-export function adaptMockToMetadata(mockPaper: any): ExamPaperMetadata {
-  return {
-    id: mockPaper.id || `mock-${Date.now()}`,
-    title: mockPaper.title,
-    description: mockPaper.description || '',
-    difficulty: (mockPaper.difficulty || 'medium').toLowerCase(),
-    topics_covered: mockPaper.topics || [],
-    total_questions: mockPaper.totalQuestions || 0,
-    time_limit: mockPaper.duration || 0,
-    is_premium: mockPaper.isPremium || false,
-    source: mockPaper.source || 'model'
-  };
-}
+// Export the adapter as the default examService for backward compatibility
+export const examService = examServiceAdapter;

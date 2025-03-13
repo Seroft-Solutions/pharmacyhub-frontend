@@ -1,6 +1,9 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
+import { PermissionGuard, AnyPermissionGuard } from '@/features/rbac/ui';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -22,7 +25,7 @@ import {
   Search
 } from 'lucide-react';
 import { Exam, Question } from '../../types/StandardTypes';
-import { examService } from '../../api/core/examService';
+import { examServiceAdapter } from '../../api/adapter';
 import McqEditor from './McqEditor';
 import {
   Pagination,
@@ -39,8 +42,13 @@ interface ExamQuestionsProps {
   examId: number;
 }
 
+/**
+ * Component for managing exam questions
+ * Requires both exams:edit and exams:manage-questions permissions
+ */
 const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   const router = useRouter();
+  const { hasPermission } = useExamPermissions();
   const [exam, setExam] = useState<Exam | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +67,7 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
       try {
         setLoading(true);
         setError(null);
-        const examData = await examService.getExamById(examId);
+        const examData = await examServiceAdapter.getExamById(examId);
         setExam(examData);
       } catch (err) {
         console.error('Error fetching exam:', err);
@@ -109,6 +117,11 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
 
   // Handle question edit button click
   const handleEditQuestion = (question: Question) => {
+    // Check if the user has permission to manage questions
+    if (!hasPermission(ExamPermission.MANAGE_QUESTIONS)) {
+      setError('You do not have permission to edit questions');
+      return;
+    }
     setEditingQuestion(question);
     setIsEditorOpen(true);
   };
@@ -121,11 +134,16 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
 
   // Handle question save
   const handleSaveQuestion = async (editedQuestion: Question) => {
+    // Check if the user has permission to manage questions
+    if (!hasPermission(ExamPermission.MANAGE_QUESTIONS)) {
+      setError('You do not have permission to edit questions');
+      throw new Error('Permission denied');
+    }
     try {
       if (!exam) return;
       
       // Call the API to update the question
-      await examService.updateQuestion(examId, editedQuestion.id, editedQuestion);
+      await examServiceAdapter.updateQuestion(examId, editedQuestion.id, editedQuestion);
       
       // Update the question in the local state
       const updatedQuestions = exam.questions?.map(q => 
@@ -180,6 +198,18 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
 
   if (loading) {
     return (
+    <AnyPermissionGuard
+      permissions={[ExamPermission.EDIT_EXAM, ExamPermission.MANAGE_QUESTIONS]}
+      fallback={
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>
+            You need permission to edit exams or manage questions to access this page.
+          </AlertDescription>
+        </Alert>
+      }
+    >
       <Card>
         <CardContent className="p-8">
           <div className="flex justify-center">
@@ -326,16 +356,18 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditQuestion(question)}
-                              className="h-8 w-8 p-0"
-                              title="Edit question"
-                            >
-                              <Edit className="h-4 w-4"/>
-                              <span className="sr-only">Edit</span>
-                            </Button>
+                            <PermissionGuard permission={ExamPermission.MANAGE_QUESTIONS}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditQuestion(question)}
+                                className="h-8 w-8 p-0"
+                                title="Edit question"
+                              >
+                                <Edit className="h-4 w-4"/>
+                                <span className="sr-only">Edit</span>
+                              </Button>
+                            </PermissionGuard>
                           </TableCell>
                         </TableRow>
                       );
@@ -431,6 +463,7 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
         onSave={handleSaveQuestion}
       />
     </div>
+    </AnyPermissionGuard>
   );
 };
 

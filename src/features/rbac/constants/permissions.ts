@@ -67,7 +67,7 @@ export type Permission =
   | 'manage_settings'
   | 'view_settings'
   
-  // Exam permissions
+  // Exam permissions - also defined in src/features/exams/constants/permissions/index.ts
   | 'manage_exams'
   | 'view_exams'
   | 'create_exams'
@@ -75,6 +75,20 @@ export type Permission =
   | 'delete_exams'
   | 'grade_exams'
   | 'attempt_exams'
+  | 'exams:view'       // View exams
+  | 'exams:take'       // Take exams
+  | 'exams:create'     // Create exams
+  | 'exams:edit'       // Edit exams
+  | 'exams:delete'     // Delete exams
+  | 'exams:duplicate'  // Duplicate exams
+  | 'exams:manage-questions' // Manage questions
+  | 'exams:publish'    // Publish exams
+  | 'exams:unpublish'  // Unpublish exams
+  | 'exams:assign'     // Assign exams
+  | 'exams:grade'      // Grade exams
+  | 'exams:view-results' // View results
+  | 'exams:export-results' // Export results
+  | 'exams:view-analytics' // View analytics
   
   // Report permissions
   | 'manage_reports'

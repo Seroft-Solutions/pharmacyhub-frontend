@@ -1,85 +1,51 @@
 /**
  * Exams Feature Flags
  * 
- * Defines feature flags for the exams feature with clear, easy-to-configure settings.
+ * Defines all feature flags related to the exams feature.
  */
 
 /**
- * Feature flags for exam creation and management
+ * Feature flags for the Exams feature
  */
 export enum ExamFeatureFlag {
-  // Core exam features
-  TIMED_EXAMS = 'exams:timed',
-  RANDOMIZED_QUESTIONS = 'exams:randomized',
-  QUESTION_FEEDBACK = 'exams:question-feedback',
-  PARTIAL_GRADING = 'exams:partial-grading',
+  // Core functionality flags
+  ENABLE_EXAM_CREATION = 'exams:enable-creation',
+  ENABLE_EXAM_EDITING = 'exams:enable-editing',
+  ENABLE_EXAM_DELETION = 'exams:enable-deletion',
+  
+  // Paper type flags
+  ENABLE_MODEL_PAPERS = 'exams:enable-model-papers',
+  ENABLE_PAST_PAPERS = 'exams:enable-past-papers',
+  ENABLE_SUBJECT_PAPERS = 'exams:enable-subject-papers',
+  ENABLE_PRACTICE_PAPERS = 'exams:enable-practice-papers',
   
   // Advanced features
-  ADVANCED_QUESTION_TYPES = 'exams:advanced-questions',
-  EXAM_CERTIFICATES = 'exams:certificates',
-  EXAM_STATISTICS = 'exams:statistics',
-  PROCTORING = 'exams:proctoring'
+  ENABLE_ANALYTICS = 'exams:enable-analytics',
+  ENABLE_EXPORT = 'exams:enable-export',
+  ENABLE_QUESTION_BANKING = 'exams:enable-question-banking',
+  
+  // Experiment flags
+  EXPERIMENTAL_NEW_EXAM_UI = 'exams:experimental-new-ui',
+  EXPERIMENTAL_QUESTION_EDITOR = 'exams:experimental-question-editor'
 }
 
 /**
- * Default values for all feature flags
- * Each flag has a separate, clearly named constant for easier configuration
- */
-
-// Basic features - enabled by default
-export const FEATURE_TIMED_EXAMS_ENABLED = true;
-export const FEATURE_RANDOMIZED_QUESTIONS_ENABLED = true;
-export const FEATURE_QUESTION_FEEDBACK_ENABLED = true;
-export const FEATURE_PARTIAL_GRADING_ENABLED = true;
-
-// Advanced features - some disabled by default
-export const FEATURE_ADVANCED_QUESTION_TYPES_ENABLED = true;
-export const FEATURE_EXAM_CERTIFICATES_ENABLED = true;
-export const FEATURE_EXAM_STATISTICS_ENABLED = true;
-export const FEATURE_PROCTORING_ENABLED = false;  // Disabled by default
-
-/**
- * Feature flag metadata with names, descriptions, and default settings
+ * Default status for features (which ones are enabled by default)
  */
 export const EXAM_FEATURE_FLAGS = {
-  [ExamFeatureFlag.TIMED_EXAMS]: {
-    name: 'Timed Exams',
-    description: 'Allow setting time limits for exams',
-    defaultEnabled: FEATURE_TIMED_EXAMS_ENABLED
-  },
-  [ExamFeatureFlag.RANDOMIZED_QUESTIONS]: {
-    name: 'Randomized Questions',
-    description: 'Randomly order questions for each exam session',
-    defaultEnabled: FEATURE_RANDOMIZED_QUESTIONS_ENABLED
-  },
-  [ExamFeatureFlag.QUESTION_FEEDBACK]: {
-    name: 'Question Feedback',
-    description: 'Allow feedback and explanations for each question',
-    defaultEnabled: FEATURE_QUESTION_FEEDBACK_ENABLED
-  },
-  [ExamFeatureFlag.PARTIAL_GRADING]: {
-    name: 'Partial Grading',
-    description: 'Allow partial credit for partially correct answers',
-    defaultEnabled: FEATURE_PARTIAL_GRADING_ENABLED
-  },
-  [ExamFeatureFlag.ADVANCED_QUESTION_TYPES]: {
-    name: 'Advanced Question Types',
-    description: 'Enable complex question types like matching, ordering, and drag-drop',
-    defaultEnabled: FEATURE_ADVANCED_QUESTION_TYPES_ENABLED
-  },
-  [ExamFeatureFlag.EXAM_CERTIFICATES]: {
-    name: 'Completion Certificates',
-    description: 'Generate certificates for completed exams',
-    defaultEnabled: FEATURE_EXAM_CERTIFICATES_ENABLED
-  },
-  [ExamFeatureFlag.EXAM_STATISTICS]: {
-    name: 'Exam Statistics',
-    description: 'Show detailed statistics and analytics for exam results',
-    defaultEnabled: FEATURE_EXAM_STATISTICS_ENABLED
-  },
-  [ExamFeatureFlag.PROCTORING]: {
-    name: 'Exam Proctoring',
-    description: 'Monitor and prevent cheating during exams',
-    defaultEnabled: FEATURE_PROCTORING_ENABLED
-  }
+  [ExamFeatureFlag.ENABLE_EXAM_CREATION]: true,
+  [ExamFeatureFlag.ENABLE_EXAM_EDITING]: true,
+  [ExamFeatureFlag.ENABLE_EXAM_DELETION]: true,
+  
+  [ExamFeatureFlag.ENABLE_MODEL_PAPERS]: true,
+  [ExamFeatureFlag.ENABLE_PAST_PAPERS]: true,
+  [ExamFeatureFlag.ENABLE_SUBJECT_PAPERS]: true,
+  [ExamFeatureFlag.ENABLE_PRACTICE_PAPERS]: true,
+  
+  [ExamFeatureFlag.ENABLE_ANALYTICS]: true,
+  [ExamFeatureFlag.ENABLE_EXPORT]: true,
+  [ExamFeatureFlag.ENABLE_QUESTION_BANKING]: false,
+  
+  [ExamFeatureFlag.EXPERIMENTAL_NEW_EXAM_UI]: false,
+  [ExamFeatureFlag.EXPERIMENTAL_QUESTION_EDITOR]: false
 };

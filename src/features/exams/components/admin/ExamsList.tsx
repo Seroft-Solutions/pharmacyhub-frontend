@@ -1,6 +1,9 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
+import { PermissionGuard, AllPermissionsGuard, AnyPermissionGuard } from '@/features/rbac/ui';
+import { ExamPermission } from '@/features/exams/constants/permissions';
+import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -16,7 +19,7 @@ import {
   InfoIcon
 } from 'lucide-react';
 import { PaperType, Exam } from '../../types/StandardTypes';
-import { examService } from '../../api/core/examService';
+import { examServiceAdapter } from '../../api/adapter';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -42,6 +45,10 @@ import {
 /**
  * Component to display a list of exams organized by paper type
  */
+/**
+ * Component to display a list of exams organized by paper type
+ * Requires 'exams:view' permission
+ */
 const ExamsList: React.FC = () => {
   const router = useRouter();
   const [allExams, setAllExams] = useState<Exam[]>([]);
@@ -58,7 +65,7 @@ const ExamsList: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const fetchedExams = await examService.getPublishedExams();
+        const fetchedExams = await examServiceAdapter.getPublishedExams();
         setAllExams(fetchedExams);
       } catch (err) {
         console.error('Error fetching exams:', err);
@@ -113,9 +120,14 @@ const ExamsList: React.FC = () => {
     return Math.ceil(getFilteredExams().length / itemsPerPage);
   };
 
+  // Permission checks
+  const { hasPermission, canManageExams } = useExamPermissions();
+
   // Handle exam view/edit
   const handleEditExam = (examId: number) => {
-    router.push(`/admin/exams/${examId}/questions`);
+    if (hasPermission(ExamPermission.EDIT_EXAM)) {
+      router.push(`/admin/exams/${examId}/questions`);
+    }
   };
 
   // Handle page change
@@ -336,24 +348,26 @@ const ExamsList: React.FC = () => {
                     <TableCell>{exam.duration} min</TableCell>
                     <TableCell>{getStatusBadge(exam.status)}</TableCell>
                     <TableCell className="text-right">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditExam(exam.id)}
-                              className="h-8 px-2"
-                            >
-                              <EditIcon className="h-4 w-4 mr-1"/>
-                              <span className="hidden sm:inline">Edit</span>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit questions and metadata</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <PermissionGuard permission={ExamPermission.EDIT_EXAM}>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditExam(exam.id)}
+                                className="h-8 px-2"
+                              >
+                                <EditIcon className="h-4 w-4 mr-1"/>
+                                <span className="hidden sm:inline">Edit</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit questions and metadata</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </PermissionGuard>
                     </TableCell>
                   </TableRow>
                 );
@@ -481,6 +495,16 @@ const ExamsList: React.FC = () => {
   const currentExams = getCurrentPageItems();
 
   return (
+    <PermissionGuard 
+      permission={ExamPermission.VIEW_EXAMS}
+      fallback={
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircleIcon className="h-4 w-4"/>
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>You don't have permission to view exams</AlertDescription>
+        </Alert>
+      }
+    >
     <div className="space-y-6">
       {/* Search input */}
       <div className="relative w-full max-w-md">
@@ -553,6 +577,8 @@ const ExamsList: React.FC = () => {
         </TabsContent>
       </Tabs>
     </div>
+  );
+    </PermissionGuard>
   );
 };
 
