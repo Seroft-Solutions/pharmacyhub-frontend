@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useSession } from "@/features/auth/hooks";
-import { AppTopbar } from "../topbar/AppTopbar";
-import { ContentArea } from "./ContentArea";
 import { useIsMobile } from "@/features/ui/hooks";
-import { NavigationProvider, DEFAULT_FEATURES, FeatureNavigation } from "../../navigation";
 import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
-import { RoleProvider } from "../../sidebar/use-role";
-import { AppSidebar } from "../../sidebar/AppSidebar";
+
+import { AppTopbar } from "../Topbar/AppTopbar";
+import { ContentArea } from "./ContentArea";
+import { AppSidebar } from "../Sidebar/AppSidebar";
+import { NavigationProvider, DEFAULT_FEATURES } from "../../Navigation";
+import { RoleProvider } from "../../Hooks/useRole";
+import { FeatureNavigation } from "../../Models/navigationTypes";
 
 interface AppLayoutProps {
   children: React.ReactNode;

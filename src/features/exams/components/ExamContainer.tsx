@@ -15,17 +15,17 @@ import {
 } from 'lucide-react';
 
 // Import hooks and components
-import { useExamSession } from '@/features/exams/hooks/useExamSession';
-import { useExamStore } from '../store/examStore';
-import { useExamAnalytics } from '../hooks/useExamAnalytics';
-import { NetworkStatusIndicator } from './components/NetworkStatusIndicator';
-import { ExamErrorBoundary } from './components/ExamErrorBoundary';
-import { QuestionDisplay } from './components/QuestionDisplay';
-import { QuestionNavigation } from './components/QuestionNavigation';
-import { ExamProgress } from './components/ExamProgress';
-import { ExamTimer } from './components/ExamTimer';
-import { ExamSummary } from './components/ExamSummary';
-import { ExamResults } from './components/ExamResults';
+import { useExamSession } from '../Hooks/UseExamSession';
+import { useExamStore } from '../Store/ExamStore';
+import { useExamAnalytics } from '../Hooks/UseExamAnalytics';
+import { NetworkStatusIndicator } from './NetworkStatusIndicator';
+import { ExamErrorBoundary } from './ExamErrorBoundary';
+import { QuestionDisplay } from './QuestionDisplay';
+import { QuestionNavigation } from './QuestionNavigation';
+import { ExamProgress } from './ExamProgress';
+import { ExamTimer } from './ExamTimer';
+import { ExamSummary } from './ExamSummary';
+import { ExamResults } from './ExamResults';
 
 interface ExamContainerProps {
   examId: number;

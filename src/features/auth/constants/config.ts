@@ -27,25 +27,3 @@ export const AUTH_CONFIG = {
     register: AUTH_ROUTES.REGISTER,
     refreshToken: AUTH_ROUTES.REFRESH_TOKEN,
     forgotPassword: AUTH_ROUTES.REQUEST_PASSWORD_RESET,
-    resetPassword: AUTH_ROUTES.RESET_PASSWORD,
-    verifyEmail: AUTH_ROUTES.VERIFY_EMAIL,
-    logout: AUTH_ROUTES.LOGOUT,
-    profile: AUTH_ROUTES.PROFILE,
-  },
-};
-
-// Password validation configuration
-export const PASSWORD_CONFIG = {
-  minLength: 8,
-  requireUppercase: true,
-  requireLowercase: true,
-  requireNumbers: true,
-  requireSpecialChars: true,
-  maxLength: 128,
-};
-
-// Export default configuration object
-export default {
-  AUTH_CONFIG,
-  PASSWORD_CONFIG,
-};

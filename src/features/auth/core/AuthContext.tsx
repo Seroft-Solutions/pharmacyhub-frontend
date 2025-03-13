@@ -1,10 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { authService } from '../api/services/authService';
-import { tokenManager } from './tokenManager';
-import { UserProfile } from '../types';
 import { logger } from '@/shared/lib/logger';
+
+import { authService } from '../Api/Services/authService';
+import { tokenManager } from './tokenManager';
+import { UserProfile } from '../Models';
 
 interface AuthContextType {
   user: UserProfile | null;

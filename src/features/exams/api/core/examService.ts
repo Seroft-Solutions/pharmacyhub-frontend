@@ -13,7 +13,7 @@ import {
   ExamResult,
   FlaggedQuestion,
   ExamStats
-} from '../../model/standardTypes';
+} from '../../types/StandardTypes';
 
 // Define API endpoints
 export const examEndpoints = {

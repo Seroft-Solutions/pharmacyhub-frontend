@@ -14,7 +14,7 @@ import {
   LayoutDashboard,
   HelpCircle
 } from "lucide-react";
-import { FeatureNavigation } from "./types";
+import { FeatureNavigation } from "../Models/navigationTypes";
 
 /**
  * Core features navigation configuration
@@ -207,4 +207,4 @@ export const DEFAULT_FEATURES: FeatureNavigation[] = [
 ];
 
 // Export admin features
-export * from './admin-features';
+export * from './adminFeatures';

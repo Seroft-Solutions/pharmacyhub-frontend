@@ -1,7 +1,8 @@
 import { apiClient } from '@/features/tanstack-query-api/core/apiClient';
 import type { ApiResponse } from '@/features/tanstack-query-api/core/apiClient';
+
 import { User } from './userService';
-import { AUTH_ROUTES } from '../../constants/routes';
+import { AUTH_ROUTES } from '../../Constants/routes';
 
 /**
  * Login request interface

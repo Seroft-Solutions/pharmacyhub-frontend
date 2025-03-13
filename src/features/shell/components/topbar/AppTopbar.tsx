@@ -4,7 +4,6 @@ import { Bell, ChevronRight, MessageSquare, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { UserMenu } from "./UserMenu";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -16,7 +15,6 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { useNavigation } from '../../navigation';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -28,6 +26,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+
+import { UserMenu } from "./UserMenu";
+import { useNavigation } from "../../Navigation";
 
 interface BreadcrumbItem {
   label: string;

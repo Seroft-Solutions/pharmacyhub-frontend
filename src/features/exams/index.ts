@@ -1,5 +1,5 @@
 // Re-export model types
-export * from './model/standardTypes';
+export * from './types/StandardTypes';
 
 // Re-export API hooks
 export * from './api/hooks/useExamApi';
