@@ -19,40 +19,47 @@ export const FEATURE_ACCESS_ENDPOINTS = {
 /**
  * Service for feature access API operations
  */
-export const featureAccessService = createExtendedApiService({
-  /**
-   * Check if the current user has access to a feature
-   * 
-   * @param featureCode Code of the feature to check
-   * @returns Feature access details including allowed operations
-   */
-  checkFeatureAccess: async (featureCode: string) => {
-    return await apiClient.get<FeatureAccessDTO>(
-      FEATURE_ACCESS_ENDPOINTS.checkFeature(featureCode)
-    );
-  },
-  
-  /**
-   * Check if the current user can perform a specific operation on a feature
-   * 
-   * @param featureCode Code of the feature to check
-   * @param operation Operation to check
-   * @returns Boolean indicating if access is allowed
-   */
-  checkOperationAccess: async (featureCode: string, operation: string) => {
-    return await apiClient.get<boolean>(
-      FEATURE_ACCESS_ENDPOINTS.checkOperation(featureCode, operation)
-    );
-  },
-  
-  /**
-   * Get all features the current user has access to
-   * 
-   * @returns List of all features with access details
-   */
-  getUserFeatures: async () => {
-    return await apiClient.get<FeatureAccessDTO[]>(
-      FEATURE_ACCESS_ENDPOINTS.userFeatures
-    );
+export const featureAccessService = createExtendedApiService<FeatureAccessDTO, {
+  checkFeatureAccess: (featureCode: string) => Promise<FeatureAccessDTO>;
+  checkOperationAccess: (featureCode: string, operation: string) => Promise<boolean>;
+  getUserFeatures: () => Promise<FeatureAccessDTO[]>;
+}>(
+  '/api/feature-access', // Adding the baseEndpoint parameter that was missing
+  {
+    /**
+     * Check if the current user has access to a feature
+     * 
+     * @param featureCode Code of the feature to check
+     * @returns Feature access details including allowed operations
+     */
+    checkFeatureAccess: async (featureCode: string) => {
+      return await apiClient.get<FeatureAccessDTO>(
+        FEATURE_ACCESS_ENDPOINTS.checkFeature(featureCode)
+      );
+    },
+    
+    /**
+     * Check if the current user can perform a specific operation on a feature
+     * 
+     * @param featureCode Code of the feature to check
+     * @param operation Operation to check
+     * @returns Boolean indicating if access is allowed
+     */
+    checkOperationAccess: async (featureCode: string, operation: string) => {
+      return await apiClient.get<boolean>(
+        FEATURE_ACCESS_ENDPOINTS.checkOperation(featureCode, operation)
+      );
+    },
+    
+    /**
+     * Get all features the current user has access to
+     * 
+     * @returns List of all features with access details
+     */
+    getUserFeatures: async () => {
+      return await apiClient.get<FeatureAccessDTO[]>(
+        FEATURE_ACCESS_ENDPOINTS.userFeatures
+      );
+    }
   }
-});
+);

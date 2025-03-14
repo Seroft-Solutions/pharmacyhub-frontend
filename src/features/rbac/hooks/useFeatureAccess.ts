@@ -17,7 +17,7 @@ export function useFeatureAccess() {
   
   // Build feature map when data changes
   useEffect(() => {
-    if (userFeatures) {
+    if (userFeatures && Array.isArray(userFeatures)) {
       const map: FeatureAccessMap = {};
       userFeatures.forEach((feature) => {
         map[feature.featureCode] = feature;
@@ -106,7 +106,7 @@ export function useFeatureAccess() {
   return {
     isLoading,
     error,
-    features: userFeatures || [],
+    features: Array.isArray(userFeatures) ? userFeatures : [],
     featureMap,
     hasFeature,
     hasOperation,

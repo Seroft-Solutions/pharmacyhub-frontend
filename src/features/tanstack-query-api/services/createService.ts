@@ -29,10 +29,11 @@ export interface ApiService<T> {
  * @returns A service object with methods for common CRUD operations
  */
 export function createApiService<T>(baseEndpoint: string): ApiService<T> {
-  // Ensure the base endpoint has the correct format
-  const endpoint = baseEndpoint.startsWith('/')
-    ? baseEndpoint
-    : `/${baseEndpoint}`;
+  // Ensure the base endpoint has the correct format and is a string
+  const safeEndpoint = typeof baseEndpoint === 'string' ? baseEndpoint : '';
+  const endpoint = safeEndpoint.startsWith('/')
+    ? safeEndpoint
+    : `/${safeEndpoint}`;
 
   return {
     /**

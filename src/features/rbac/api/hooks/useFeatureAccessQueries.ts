@@ -16,7 +16,32 @@ export const useFeatureAccessQueries = () => {
   const useUserFeatures = () => {
     return useQuery({
       queryKey: ['userFeatures'],
-      queryFn: () => featureAccessService.getUserFeatures(),
+      queryFn: async () => {
+        try {
+          const response = await featureAccessService.getUserFeatures();
+          
+          // Ensure we always return an array
+          if (!response || !response.data) {
+            return [];
+          }
+          
+          // Handle both array and object responses
+          if (Array.isArray(response.data)) {
+            return response.data;
+          } 
+          
+          // If it's an object with data property that's an array
+          if (response.data.data && Array.isArray(response.data.data)) {
+            return response.data.data;
+          }
+          
+          // Last resort - empty array
+          return [];
+        } catch (error) {
+          console.error('Error fetching user features:', error);
+          return [];
+        }
+      },
       staleTime: 5 * 60 * 1000, // 5 minutes
       cacheTime: 10 * 60 * 1000, // 10 minutes
     });
