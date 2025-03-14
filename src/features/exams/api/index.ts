@@ -1,28 +1,51 @@
 /**
  * Exams API Feature
  * 
- * This module exports all exam-related API components, hooks, and utilities.
+ * This module exports all exam-related API components, hooks, and endpoints.
+ * It serves as the primary entry point for API interactions in the exams feature.
  */
 
-// Export API endpoints and service
-export { examEndpoints, examService } from './core/examService';
+// Export API endpoints
+export { EXAM_ENDPOINTS } from './constants';
 
-// Export query keys
-export { examQueryKeys } from './core/queryKeys';
+// Export service implementation
+export { examService } from './services/examService';
 
-// Export API hooks
+// Export all hooks
 export {
-  useExams,
+  // Main hooks object
+  examHooks,
+  examApiHooks,
+  
+  // Exam queries
   usePublishedExams,
-  useExam,
-  useExamQuestions,
   useExamsByStatus,
+  useExamQuestions,
+  
+  // Paper queries
+  useAllPapers,
+  useModelPapers,
+  usePastPapers,
+  useSubjectPapers,
+  usePracticePapers,
+  usePaperById,
+  useExamStats,
+  
+  // Attempt queries
   useUserExamAttempts,
+  useUserExamAttemptsForExam,
   useExamAttempt,
   useExamResult,
+  useFlaggedQuestions,
+  
+  // Mutation hooks
   useStartExamMutation,
   useAnswerQuestionMutation,
   useFlagQuestionMutation,
+  useUnflagQuestionMutation,
   useSubmitExamMutation,
-  examApiHooks
-} from './hooks/useExamApi';
+  usePublishExamMutation,
+  useArchiveExamMutation,
+  useUpdateQuestionMutation,
+  useJsonExamUploadMutation
+} from './hooks';

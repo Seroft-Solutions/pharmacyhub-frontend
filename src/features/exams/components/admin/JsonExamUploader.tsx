@@ -6,7 +6,7 @@ import { ExamPermission } from '@/features/exams/constants/permissions';
 import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import {AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon} from 'lucide-react';
 import {processJsonExam} from '../../utils/jsonExamProcessor';
-import {jsonExamUploadService} from '@/features/exams/api/services/jsonExamUploadService';
+import { useJsonExamUploadMutation } from '@/features/exams/api/hooks';
 import {Difficulty, PaperType, Question} from '../../types/StandardTypes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -26,6 +26,9 @@ interface JsonExamUploaderProps {
  * Requires exams:create permission
  */
 const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = PaperType.PRACTICE }) => {
+  // Get the JSON upload mutation
+  const uploadMutation = useJsonExamUploadMutation();
+  
   // State for form fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -182,8 +185,8 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
       // Create tags based on paperType and metadata
       const tags = metadataToTags(fullMetadata, paperType);
 
-      // Upload the exam
-      await jsonExamUploadService.uploadJsonExam({
+      // Upload the exam using the mutation
+      await uploadMutation.mutateAsync({
         title,
         description,
         duration,

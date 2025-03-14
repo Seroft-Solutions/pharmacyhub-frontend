@@ -1,12 +1,19 @@
+/**
+ * MCQ Exam Store
+ * 
+ * This store manages the state for MCQ exams using Zustand
+ * and leverages the TanStack Query API hooks for data fetching.
+ */
 import { create } from 'zustand';
-import { examService } from '../api/core/examService';
+import { examApiHooks } from '../api/hooks';
 import { 
   Exam, 
   ExamAttempt, 
   UserAnswer, 
   ExamResult, 
+  FlaggedQuestion,
   Question
-} from '../model/standardTypes';
+} from '../types';
 import logger from '@/shared/lib/logger';
 
 interface McqExamState {
@@ -56,7 +63,15 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
   fetchPublishedExams: async () => {
     try {
       set({ isLoading: true });
-      const exams = await examService.getPublishedExams();
+      
+      // Use the usePublishedExams hook result directly
+      // Since this is not in a React component, we need to fetch directly
+      const response = await fetch('/api/v1/exams/published');
+      if (!response.ok) {
+        throw new Error('Failed to fetch exams');
+      }
+      
+      const exams = await response.json();
       set({ isLoading: false });
       return exams;
     } catch (error) {
@@ -74,7 +89,14 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
   fetchExamById: async (examId) => {
     try {
       set({ isLoading: true });
-      const exam = await examService.getExamById(examId);
+      
+      // Use direct fetch since we're outside of React
+      const response = await fetch(`/api/v1/exams/${examId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch exam ${examId}`);
+      }
+      
+      const exam = await response.json();
       set({ 
         currentExam: exam,
         timeRemaining: exam.duration * 60, // Convert minutes to seconds
@@ -101,7 +123,19 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
       }
       
       try {
-        const attempt = await examService.startExam(examId);
+        // Use direct fetch to start the exam
+        const response = await fetch(`/api/v1/exams/${examId}/start`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to start exam ${examId}`);
+        }
+        
+        const attempt = await response.json();
         console.log('Exam attempt in store:', attempt);
         
         // Set timeRemaining based on current exam duration if it exists
@@ -111,8 +145,11 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
         // Also fetch flagged questions if any exist
         let flaggedQuestions = new Set<number>();
         try {
-          const flagged = await examService.getFlaggedQuestions(attempt.id);
-          flaggedQuestions = new Set(flagged.map(f => f.questionId));
+          const flaggedResponse = await fetch(`/api/v1/exams/attempts/${attempt.id}/flags`);
+          if (flaggedResponse.ok) {
+            const flagged = await flaggedResponse.json();
+            flaggedQuestions = new Set(flagged.map((f: FlaggedQuestion) => f.questionId));
+          }
         } catch (err) {
           // Ignore errors fetching flagged questions
           console.warn('Could not fetch flagged questions', err);
@@ -199,7 +236,17 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
       set({ flaggedQuestions: newFlagged });
       
       // Then persist to server
-      await examService.flagQuestion(currentAttempt.id, questionId);
+      const response = await fetch(`/api/v1/exams/attempts/${currentAttempt.id}/flag/${questionId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to flag question');
+      }
+      
       set({ isLoading: false });
     } catch (error) {
       logger.error('Failed to flag question', {
@@ -236,7 +283,14 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
       set({ flaggedQuestions: newFlagged });
       
       // Then persist to server
-      await examService.unflagQuestion(currentAttempt.id, questionId);
+      const response = await fetch(`/api/v1/exams/attempts/${currentAttempt.id}/flag/${questionId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to unflag question');
+      }
+      
       set({ isLoading: false });
     } catch (error) {
       logger.error('Failed to unflag question', {
@@ -289,7 +343,19 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
         answersCount: answersArray.length
       });
       
-      const result = await examService.submitExam(currentAttempt.id, answersArray);
+      const response = await fetch(`/api/v1/exams/attempts/${currentAttempt.id}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ answers: answersArray })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit exam');
+      }
+      
+      const result = await response.json();
       
       set({ 
         examResult: result,

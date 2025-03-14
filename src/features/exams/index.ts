@@ -1,35 +1,44 @@
-// Re-export model types
-export * from './types/StandardTypes';
+/**
+ * Exams Feature Module
+ * 
+ * This module provides components, hooks, and utilities for working with exams.
+ * It serves as the main entry point for the entire exams feature.
+ */
 
-// Re-export API hooks
-export * from './api/hooks/useExamApi';
+// Export all types
+export * from './types';
 
-// Re-export core API services
-export * from './api/core/examService';
+// Export API hooks and services
+export * from './api';
 
-// Re-export adapters
-export * from './api/adapter';
+// Export components
+export { default as ExamContainer } from './components/ExamContainer';
+export { default as ExamProgress } from './components/ExamProgress';
+export { default as ExamResults } from './components/ExamResults';
+export { default as ExamSummary } from './components/ExamSummary';
+export { default as ExamTimer } from './components/ExamTimer';
+export { QuestionDisplay } from './components/QuestionDisplay';
+export { default as QuestionNavigation } from './components/QuestionNavigation';
+export { default as NetworkStatusIndicator } from './components/NetworkStatusIndicator';
 
-// Re-export stores
-export * from './store/mcqExamStore';
+// Export layout components
+export * from './components/layout';
 
-// Re-export UI components
-export * from './ui/ExamContainer';
-export * from './ui/ExamPaperCard';
-export * from './ui/mcq/McqExamLayout';
-export * from './ui/mcq/McqQuestionCard';
-export * from './ui/mcq/McqQuestionNavigation';
-export * from './ui/quiz/ExamTimer';
-export * from './ui/results/ExamResults';
-export * from './ui/review/ExamReview';
+// Export sidebar components
+export * from './components/sidebar';
 
-// Re-export admin components
+// Export admin components
 export * from './components/admin';
 
-// Re-export utils
-export * from './utils/formatTime';
-export * from './utils/paperTypeUtils';
-export * from './utils/jsonExamProcessor';
+// Export hooks
+export * from './hooks';
 
-// Re-export navigation
-export * from './navigation';
+// Export stores
+export { useMcqExamStore } from './store/mcqExamStore';
+export { useExamStore } from './store/examStore';
+export { examStoreAdapter } from './store/examStoreAdapter';
+
+// Export utilities
+export * from './utils/formatTime';
+export * from './utils/jsonExamProcessor';
+export * from './utils/paperTypeUtils';

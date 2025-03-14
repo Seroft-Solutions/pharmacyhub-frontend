@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Search, 
@@ -33,87 +33,25 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 
-import { examService } from '../../api/core/examService';
-import { Exam } from '../../model/mcqTypes';
+import { examApiHooks } from '../../api/hooks';
+import { Exam } from '../../types';
 import { useAuth } from '@/shared/auth';
 
 export const McqExamList: React.FC = () => {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   
-  const [exams, setExams] = useState<Exam[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Debug log for authentication state
-  useEffect(() => {
-    console.log('Auth state:', { isAuthenticated, authLoading, user });
-    
-    // Debug tokens in localStorage
-    const authToken = localStorage.getItem('auth_token');
-    const accessToken = localStorage.getItem('access_token');
-    const tokenExpiry = localStorage.getItem('token_expiry');
-    
-    console.log('Tokens:', { 
-      authToken: authToken ? `${authToken.substring(0, 10)}...` : null,
-      accessToken: accessToken ? `${accessToken.substring(0, 10)}...` : null,
-      tokenExpiry
-    });
-  }, [isAuthenticated, authLoading, user]);
-
-  // Fetch exams effect with retry mechanism
-  useEffect(() => {
-    const fetchExams = async () => {
-      if (authLoading) {
-        console.log('Auth is still loading, waiting...');
-        return;
-      }
-      
-      try {
-        console.log('Attempting to fetch exams...');
-        setLoading(true);
-        setError(null);
-        setDebugInfo(null);
-        setSuccessMessage(null);
-        
-        const publishedExams = await examService.getPublishedExams();
-        console.log('Exams fetched successfully:', publishedExams.length);
-        setExams(publishedExams);
-        setLoading(false);
-        
-        // Show success message on retry success
-        if (retryCount > 0) {
-          setSuccessMessage('Exam data has been refreshed successfully');
-          // Clear success message after 3 seconds
-          setTimeout(() => setSuccessMessage(null), 3000);
-        }
-      } catch (err) {
-        console.error('Failed to load exams:', err);
-        
-        const errorMsg = err instanceof Error ? err.message : 'Failed to load exams. Please try again later.';
-        console.log('Setting error message:', errorMsg);
-        setError(errorMsg);
-        
-        // Store debug info
-        setDebugInfo({
-          error: err,
-          apiUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
-          endpoint: '/v1/exams/published',
-          auth: isAuthenticated,
-          timestamp: new Date().toISOString()
-        });
-        
-        setLoading(false);
-      }
-    };
-
-    fetchExams();
-  }, [isAuthenticated, authLoading, retryCount]);
+  // Use the TanStack Query hooks for data fetching
+  const {
+    data: exams = [],
+    isLoading,
+    error,
+    refetch
+  } = examApiHooks.usePublishedExams();
 
   const handleStartExam = (examId: number) => {
     router.push(`/exam/${examId}`);
@@ -121,11 +59,14 @@ export const McqExamList: React.FC = () => {
   
   const handleRetry = () => {
     console.log('Retrying exam fetch...');
-    setRetryCount(prev => prev + 1);
+    refetch();
+    // Show success message on retry
+    setSuccessMessage('Refreshing exam data...');
+    // Clear success message after 3 seconds
+    setTimeout(() => setSuccessMessage(null), 3000);
   };
   
   const handleLogin = () => {
-    console.log('Redirecting to login page...');
     // Save the current URL to redirect back after login
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('redirectAfterLogin', '/exam');
@@ -147,7 +88,7 @@ export const McqExamList: React.FC = () => {
     return matchesSearch && matchesDifficulty;
   });
 
-  if (authLoading || loading) {
+  if (authLoading || isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
@@ -160,18 +101,19 @@ export const McqExamList: React.FC = () => {
   }
 
   if (error) {
-    const isCorsError = error.toString().includes('CORS');
-    const isAuthError = error.toString().includes('403') || 
-                        error.toString().includes('401') || 
-                        error.toString().includes('Forbidden') || 
-                        error.toString().includes('Unauthorized');
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    const isCorsError = errorMessage.includes('CORS');
+    const isAuthError = errorMessage.includes('403') || 
+                        errorMessage.includes('401') || 
+                        errorMessage.includes('Forbidden') || 
+                        errorMessage.includes('Unauthorized');
     
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="bg-red-50 text-red-600 p-6 rounded-lg max-w-lg text-center shadow-md">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Error</h2>
-          <p className="mb-4">{error.toString()}</p>
+          <p className="mb-4">{errorMessage}</p>
           <div className="space-y-2">
             <Button className="w-full" onClick={handleRetry}>
               <RefreshCcw className="mr-2 h-4 w-4" />
@@ -191,15 +133,6 @@ export const McqExamList: React.FC = () => {
                 )}
               </ul>
             </details>
-            
-            {debugInfo && (
-              <details className="mt-4 text-left">
-                <summary className="cursor-pointer text-sm">Debug Information</summary>
-                <pre className="text-xs mt-2 p-2 bg-gray-100 rounded overflow-auto">
-                  {JSON.stringify(debugInfo, null, 2)}
-                </pre>
-              </details>
-            )}
           </div>
         </div>
       </div>
@@ -382,3 +315,5 @@ export const McqExamList: React.FC = () => {
     </div>
   );
 };
+
+export default McqExamList;

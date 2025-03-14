@@ -46,6 +46,12 @@ export {
   createExtendedApiService
 } from './services/createService';
 
+// Export hook factories
+export {
+  createApiHooks,
+  createResourceQueryKeys
+} from './factories/createApiHooks';
+
 // Export types
 export {
   apiQueryKeys,

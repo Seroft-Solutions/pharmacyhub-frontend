@@ -1,11 +1,8 @@
 import { useCallback } from 'react';
-import { 
-  useRegisterMutation,
-  usePasswordResetRequestMutation,
-  usePasswordResetCompleteMutation
-} from '../api/hooks/mutations';
+import { apiClient } from '@/features/tanstack-query-api';
+import { AUTH_ENDPOINTS } from '../api/constants';
 import type { RegistrationData } from '../types';
-import type { RegisterRequest } from '../api/services/authService';
+import type { RegisterRequest } from '../api/types';
 import { useAuthContext } from '../core/AuthContext';
 
 /**
@@ -13,18 +10,13 @@ import { useAuthContext } from '../core/AuthContext';
  */
 export const useAuth = () => {
   const authContext = useAuthContext();
-  const registerMutation = useRegisterMutation();
-  const resetRequestMutation = usePasswordResetRequestMutation();
-  const resetCompleteMutation = usePasswordResetCompleteMutation();
 
   const register = useCallback(async (data: any) => {
     try {
-      // If data is already in the correct format, use it directly
-      if (data.emailAddress) {
-        await registerMutation.mutateAsync(data);
-      } else {
-        // Convert from old format to new format if needed
-        const registerRequest: RegisterRequest = {
+      // Convert from old format to new format if needed
+      const registerRequest: RegisterRequest = data.emailAddress 
+        ? data // If data is already in the correct format, use it directly
+        : {
           emailAddress: data.email,
           password: data.password,
           firstName: data.firstName || '',
@@ -33,25 +25,29 @@ export const useAuth = () => {
           userType: data.userType,
           openToConnect: false
         };
-        await registerMutation.mutateAsync(registerRequest);
-      }
+      
+      // Use apiClient directly instead of mutation hooks
+      const response = await apiClient.post(AUTH_ENDPOINTS.register, registerRequest);
+      return response.data;
     } catch (error) {
       throw error;
     }
-  }, [registerMutation]);
+  }, []);
 
   const requestPasswordReset = useCallback(async (email: string) => {
     try {
-      const response = await resetRequestMutation.mutateAsync({ email });
-      return response;
+      // Use apiClient directly instead of mutation hooks
+      const response = await apiClient.post(AUTH_ENDPOINTS.requestPasswordReset, { email });
+      return response.data;
     } catch (error) {
       throw error;
     }
-  }, [resetRequestMutation]);
+  }, []);
 
   const resetPassword = useCallback(async (token: string, newPassword: string) => {
     try {
-      await resetCompleteMutation.mutateAsync({ 
+      // Use apiClient directly instead of mutation hooks
+      await apiClient.post(AUTH_ENDPOINTS.resetPassword, { 
         token, 
         newPassword,
         confirmPassword: newPassword 
@@ -59,25 +55,23 @@ export const useAuth = () => {
     } catch (error) {
       throw error;
     }
-  }, [resetCompleteMutation]);
+  }, []);
 
   return {
     // Context state and methods
     ...authContext,
 
-    // Additional mutation actions
+    // Additional actions
     register,
     requestPasswordReset,
     resetPassword,
 
-    // Additional loading states
-    isRegistering: registerMutation.isPending,
-    isRequestingReset: resetRequestMutation.isPending,
-    isResettingPassword: resetCompleteMutation.isPending,
-
-    // Additional error states
-    registerError: registerMutation.error,
-    resetRequestError: resetRequestMutation.error,
-    resetPasswordError: resetCompleteMutation.error
+    // Loading/error states are managed in the component using the hook
+    isRegistering: false,
+    isRequestingReset: false,
+    isResettingPassword: false,
+    registerError: null,
+    resetRequestError: null,
+    resetPasswordError: null
   };
 };

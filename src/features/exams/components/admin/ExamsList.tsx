@@ -1,11 +1,11 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { PermissionGuard, AllPermissionsGuard, AnyPermissionGuard } from '@/features/rbac/ui';
+import { PermissionGuard } from '@/features/rbac/ui';
 import { ExamPermission } from '@/features/exams/constants/permissions';
 import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { 
   ArchiveIcon, 
   BookOpenIcon, 
@@ -15,11 +15,9 @@ import {
   EditIcon,
   FileTextIcon, 
   GraduationCapIcon, 
-  ListTodoIcon,
-  InfoIcon
+  ListTodoIcon
 } from 'lucide-react';
-import { PaperType, Exam } from '../../types/StandardTypes';
-import { examServiceAdapter } from '../../api/adapter';
+import { PaperType, Exam } from '../../types';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -41,42 +39,26 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+// Import the hooks from the API module
+import { examApiHooks } from '../../api/hooks';
 
-/**
- * Component to display a list of exams organized by paper type
- */
 /**
  * Component to display a list of exams organized by paper type
  * Requires 'exams:view' permission
  */
 const ExamsList: React.FC = () => {
   const router = useRouter();
-  const [allExams, setAllExams] = useState<Exam[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsPerPage] = useState(10);
 
-  useEffect(() => {
-    // Fetch exams when component mounts
-    const fetchExams = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const fetchedExams = await examServiceAdapter.getPublishedExams();
-        setAllExams(fetchedExams);
-      } catch (err) {
-        console.error('Error fetching exams:', err);
-        setError('Failed to load exams');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchExams();
-  }, []);
+  // Use the TanStack Query hooks for data fetching
+  const { 
+    data: allExams = [], 
+    isLoading, 
+    error 
+  } = examApiHooks.useList();
 
   // Reset to first page when tab or search changes
   useEffect(() => {
@@ -121,7 +103,7 @@ const ExamsList: React.FC = () => {
   };
 
   // Permission checks
-  const { hasPermission, canManageExams } = useExamPermissions();
+  const { hasPermission } = useExamPermissions();
 
   // Handle exam view/edit
   const handleEditExam = (examId: number) => {
@@ -454,7 +436,7 @@ const ExamsList: React.FC = () => {
     );
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="animate-pulse flex flex-col space-y-4">
@@ -472,7 +454,7 @@ const ExamsList: React.FC = () => {
   if (error) {
     return (
       <div className="text-center text-red-500 p-4 border border-red-200 rounded-md">
-        <p>{error}</p>
+        <p>{error instanceof Error ? error.message : 'Failed to load exams'}</p>
         <Button onClick={() => window.location.reload()} className="mt-4">
           Retry
         </Button>
@@ -498,11 +480,12 @@ const ExamsList: React.FC = () => {
     <PermissionGuard 
       permission={ExamPermission.VIEW_EXAMS}
       fallback={
-        <Alert variant="destructive" className="mb-4">
-          <AlertCircleIcon className="h-4 w-4"/>
-          <AlertTitle>Access Denied</AlertTitle>
-          <AlertDescription>You don't have permission to view exams</AlertDescription>
-        </Alert>
+        <Card className="p-4">
+          <div className="flex items-center space-x-2 text-red-600">
+            <CircleIcon className="h-4 w-4" />
+            <span className="font-medium">You don't have permission to view exams</span>
+          </div>
+        </Card>
       }
     >
     <div className="space-y-6">
@@ -577,7 +560,6 @@ const ExamsList: React.FC = () => {
         </TabsContent>
       </Tabs>
     </div>
-  );
     </PermissionGuard>
   );
 };

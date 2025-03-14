@@ -7,10 +7,11 @@ import { Permission, Role } from "@/types/auth";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { queryClient } from '@/features/tanstack-query-api';
-import { useUserProfile } from "../api/hooks/queries";
-import authKeys from "../api/queryKeys";
+import { useUserProfile, authApiHooks } from "../api/hooks";
+// Use the query keys from the new API hooks
+const authKeys = authApiHooks.queryKeys;
 import { useAuth as useBaseAuth } from './useAuth';
-import { tokenManager } from '../core';
+import { tokenManager } from '../core/tokenManager';
 
 /**
  * Main hook for auth state and operations with query integration

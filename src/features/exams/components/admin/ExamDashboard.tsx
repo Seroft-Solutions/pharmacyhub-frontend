@@ -25,7 +25,7 @@ import {
   useExams, 
   useExamStats, 
   useAllPapers
-} from '@/features/exams/api/UseExamApi';
+} from '@/features/exams/api/hooks';
 
 // Import components
 import ExamsList from './ExamsList';

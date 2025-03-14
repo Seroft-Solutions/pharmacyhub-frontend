@@ -1,6 +1,10 @@
 import { apiClient } from '@/features/tanstack-query-api';
-import { EXAM_ENDPOINTS } from '../constants';
-import { Exam } from '../../types/StandardTypes';
+import { Exam } from '../../model/standardTypes';
+
+// Define the API endpoints
+export const jsonExamUploadEndpoints = {
+  uploadJson: '/api/v1/exams/upload-json',
+};
 
 // Define the request interfaces
 export interface JsonExamUploadRequest {
@@ -15,9 +19,6 @@ export interface JsonExamUploadRequest {
 
 /**
  * Service for uploading JSON data to create exams
- * 
- * Note: This service is maintained for backward compatibility.
- * New components should use the examHooks.useCreate mutation.
  */
 export const jsonExamUploadService = {
   /**
@@ -28,14 +29,14 @@ export const jsonExamUploadService = {
    */
   async uploadJsonExam(data: JsonExamUploadRequest): Promise<Exam> {
     try {
-      const endpoint = EXAM_ENDPOINTS.uploadJson || '/api/v1/exams/upload-json';
-      const response = await apiClient.post<Exam>(endpoint, data);
-      
-      if (response.error) {
-        throw response.error;
+      const response = await apiClient.post<{ data: Exam, status: number }>(
+        jsonExamUploadEndpoints.uploadJson, 
+        data
+      );
+      if (response?.data?.data) {
+        return response.data.data;
       }
-      
-      return response.data as Exam;
+      throw new Error('Invalid response format');
     } catch (error) {
       console.error('Error uploading JSON exam:', error);
       throw error;

@@ -3,9 +3,6 @@
  * 
  * This module provides factory functions for creating type-safe API services
  * that integrate with the API client and TanStack Query.
- * 
- * NOTE: For new features, consider using the createApiHooks factory instead,
- * which provides better integration with React components.
  */
 import { apiClient } from '../core/apiClient';
 import type { RequestOptions, ApiResponse } from '../core/apiClient';

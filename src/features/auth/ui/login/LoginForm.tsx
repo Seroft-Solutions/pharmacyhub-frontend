@@ -1,58 +1,32 @@
 "use client";
 
-import {useState} from 'react';
-import {useRouter} from 'next/navigation';
 import Link from 'next/link';
-import {useAuth} from '@/shared/auth';
+import { useLoginForm } from '@/features/auth/hooks/useLoginForm';
 
 // Import shadcn UI components
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
-import {Label} from '@/components/ui/label';
-import {Separator} from '@/components/ui/separator';
-import {Checkbox} from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Import icons
-import {AlertCircle, Loader2, LockKeyhole, LogIn, Mail} from 'lucide-react';
+import { AlertCircle, Loader2, LockKeyhole, LogIn, Mail } from 'lucide-react';
 
 export const LoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const router = useRouter();
-  const {login} = useAuth();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      await login(email, password);
-      router.push('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid email or password');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSocialLogin = (provider: 'google' | 'facebook') => {
-    // For social login, we'll redirect to Keycloak's login page with the selected provider
-    const KEYCLOAK_BASE_URL = process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL || 'http://localhost:8080';
-    const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'pharmacyhub';
-    const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'pharmacyhub-client';
-
-    // Direct backend callback URL
-    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
-    const identityProvider = provider === 'google' ? 'google' : 'facebook';
-
-    window.location.href = `${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid&kc_idp_hint=${identityProvider}`;
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    rememberMe,
+    setRememberMe,
+    error,
+    isLoading,
+    handleSubmit,
+    handleSocialLogin
+  } = useLoginForm();
 
   return (
     <Card className="border-none shadow-2xl backdrop-blur-sm bg-white/90">

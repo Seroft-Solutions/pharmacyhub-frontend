@@ -10,15 +10,14 @@
 export * from './core/AuthContext';
 export * from './core/tokenManager';
 
-// Export API services
-export * from './api/services/authService';
+// Export API from new location
+export * from './api';
 
 // Export types
 export * from './types';
 
-// Export constants 
-// Note: RBAC permissions moved to @/features/rbac
-export { AUTH_ENDPOINTS as apiRoutes } from './api/apiConfig';
+// Export constants - reexporting AUTH_ENDPOINTS for backward compatibility
+export { AUTH_ENDPOINTS as apiRoutes } from './api/constants';
 
 // Export utility functions
 export * from './utils';

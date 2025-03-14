@@ -3,10 +3,11 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { logger } from '@/shared/lib/logger';
 
-import { authService } from '../Api/Services/authService';
 import { tokenManager } from './tokenManager';
-import { UserProfile } from '../Models';
+import { UserProfile } from '../api/types';
 import { DEV_CONFIG } from '../constants/config';
+import { apiClient } from '@/features/tanstack-query-api';
+import { AUTH_ENDPOINTS } from '../api/constants';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -101,10 +102,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return null;
         }
 
-        const response = await authService.getCurrentUser();
-        if (response.error) {
-          throw response.error;
-        }
+        // Use apiClient directly instead of React Query hooks
+        const response = await apiClient.get(AUTH_ENDPOINTS.profile);
         
         if (!response.data) {
           throw new Error('No profile data returned');
@@ -214,21 +213,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
 
     try {
-      const response = await authService.login({ 
+      // Use apiClient directly instead of React Query hooks
+      const response = await apiClient.post(AUTH_ENDPOINTS.login, { 
         emailAddress: username,
         password 
       });
       
-      if (response.error) {
-        throw response.error;
-      }
+      const data = response.data;
       
-      if (!response.data || !response.data.tokens || !response.data.user) {
+      if (!data || !data.tokens || !data.user) {
         throw new Error('Invalid login response');
       }
       
       // Store tokens
-      const { tokens, user: userData } = response.data;
+      const { tokens, user: userData } = data;
       
       // Store tokens in tokenManager and localStorage
       tokenManager.setToken(tokens.accessToken);
@@ -270,7 +268,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     
     try {
-      await authService.logout();
+      // Use apiClient directly instead of React Query hooks
+      await apiClient.post(AUTH_ENDPOINTS.logout);
     } catch (err) {
       logger.error('Logout error', { error: err });
     } finally {

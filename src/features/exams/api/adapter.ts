@@ -5,7 +5,7 @@
  * to ensure all API calls follow the project standard.
  */
 import { apiClient } from '@/features/tanstack-query-api/core/apiClient';
-import { examEndpoints } from './core/examService';
+import { EXAM_ENDPOINTS as examEndpoints } from './constants';
 import { 
   Exam, 
   Question, 

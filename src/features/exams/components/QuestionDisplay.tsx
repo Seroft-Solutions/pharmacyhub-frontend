@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Question, UserAnswer } from '../../model/mcqTypes';
+import { Question, UserAnswer } from '../types';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -102,7 +102,7 @@ export function QuestionDisplay({
                 htmlFor={`option-${question.id}-${index}`} 
                 className="flex-grow cursor-pointer"
               >
-                {option}
+                {option.text}
               </Label>
               {selectedOption === index.toString() && (
                 <CheckCircleIcon className="h-5 w-5 text-primary flex-shrink-0" />
