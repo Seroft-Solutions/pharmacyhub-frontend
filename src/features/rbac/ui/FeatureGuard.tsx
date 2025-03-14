@@ -1,130 +1,147 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/features/auth';
-import { featureFlagService } from '../services/featureFlagService';
-import { getFeature, getFeaturePermissions } from '../registry';
-import { rbacService } from '../api/services/rbacService';
-import { useAccess } from '../hooks/useAccess';
+import { useRouter } from 'next/navigation';
+import { useFeatureAccess } from '../hooks/useFeatureAccess';
 
 interface FeatureGuardProps {
-  featureId: string;
+  featureCode: string | string[];
   children: React.ReactNode;
+  operation?: string;
   fallback?: React.ReactNode;
-  permissionsRequired?: string[];
-  rolesRequired?: string[];
   requireAll?: boolean;
-  verifyOnBackend?: boolean;
-  flagId?: string;
+  redirectTo?: string;
+  showLoading?: boolean;
 }
 
 /**
  * Guard component to restrict access to specific features
- * Features can be restricted based on permissions, roles, or feature flags
+ * Use this component to wrap UI elements that should only be visible
+ * to users with access to specific features
  */
-export function FeatureGuard({ 
-  featureId, 
-  children, 
+export function FeatureGuard({
+  featureCode,
+  children,
+  operation,
   fallback = null,
-  permissionsRequired = [],
-  rolesRequired = [],
   requireAll = true,
-  verifyOnBackend = false,
-  flagId
+  redirectTo,
+  showLoading = false,
 }: FeatureGuardProps) {
-  const [hasAccess, setHasAccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const { hasAccess: checkClientAccess } = useAccess();
-  const { user } = useAuth();
-  
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const router = useRouter();
+  const {
+    hasFeature,
+    hasOperation,
+    hasAllFeatures,
+    hasAnyFeature,
+    isLoading,
+  } = useFeatureAccess();
+
   useEffect(() => {
-    const checkFeatureAccess = async () => {
-      // First check if the feature exists
-      const feature = getFeature(featureId);
-      if (!feature) {
-        console.warn(`Feature ${featureId} is not registered`);
-        setHasAccess(false);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Check if the feature is enabled at all
-      let featureEnabled = featureFlagService.isEnabled(featureId, flagId);
-      if (!featureEnabled) {
-        setHasAccess(false);
-        setIsLoading(false);
-        return;
-      }
-      
-      // If no additional access checks are required, grant access
-      if (permissionsRequired.length === 0 && rolesRequired.length === 0) {
-        setHasAccess(true);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Handle server-side verification if needed
-      if (verifyOnBackend) {
-        try {
-          const result = await rbacService.checkAccess(
-            rolesRequired, 
-            permissionsRequired, 
-            requireAll
-          );
-          setHasAccess(result.data || false);
-        } catch (error) {
-          console.error('Failed to check feature access', error);
-          setHasAccess(false);
-        } finally {
-          setIsLoading(false);
+    const checkFeatureAccess = () => {
+      // Handle array of feature codes
+      const featureCodes = Array.isArray(featureCode) ? featureCode : [featureCode];
+
+      let accessResult = false;
+
+      if (operation) {
+        // Operation-level check (only supports single feature)
+        if (Array.isArray(featureCode)) {
+          console.warn('Operation check only supports a single feature code, using the first one');
+          accessResult = hasOperation(featureCodes[0], operation);
+        } else {
+          accessResult = hasOperation(featureCode, operation);
         }
-        return;
+      } else {
+        // Feature-level check
+        accessResult = requireAll
+          ? hasAllFeatures(featureCodes)
+          : hasAnyFeature(featureCodes);
       }
-      
-      // Client-side access check for permissions and roles
-      const accessGranted = checkClientAccess(
-        rolesRequired, 
-        permissionsRequired, 
-        { requireAll }
-      );
-      
-      setHasAccess(accessGranted);
-      setIsLoading(false);
+
+      setHasAccess(accessResult);
+
+      // Redirect if access is denied and redirectTo is provided
+      if (!accessResult && redirectTo) {
+        router.push(redirectTo);
+      }
     };
-    
-    checkFeatureAccess();
-  }, [featureId, flagId, permissionsRequired, rolesRequired, requireAll, verifyOnBackend, checkClientAccess, user]);
-  
-  if (isLoading) return null;
-  
+
+    // Only check access after features have loaded
+    if (!isLoading) {
+      checkFeatureAccess();
+    }
+  }, [
+    featureCode,
+    operation,
+    requireAll,
+    hasFeature,
+    hasOperation,
+    hasAllFeatures,
+    hasAnyFeature,
+    redirectTo,
+    router,
+    isLoading,
+  ]);
+
+  // Show loading indicator if features are still loading or access check is in progress
+  if (isLoading || hasAccess === null) {
+    return showLoading ? (
+      <div className="flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    ) : null;
+  }
+
+  // Show children if user has access, otherwise show fallback
   return hasAccess ? <>{children}</> : <>{fallback}</>;
 }
 
 /**
- * Specialized guard for feature flags
+ * Feature access guard for operation-specific controls
+ * Use this to show UI elements only if a user can perform a specific operation
  */
-export function FeatureFlagGuard({ 
-  featureId, 
-  flagId, 
-  children, 
-  fallback = null 
-}: { 
-  featureId: string;
-  flagId: string;
+export function OperationGuard({
+  featureCode,
+  operation,
+  children,
+  fallback = null,
+}: {
+  featureCode: string;
+  operation: string;
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }) {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    // Check if the specific feature flag is enabled
-    const flagEnabled = featureFlagService.isEnabled(featureId, flagId);
-    setIsEnabled(flagEnabled);
-    setIsLoading(false);
-  }, [featureId, flagId]);
-  
-  if (isLoading) return null;
-  
-  return isEnabled ? <>{children}</> : <>{fallback}</>;
+  return (
+    <FeatureGuard 
+      featureCode={featureCode} 
+      operation={operation} 
+      fallback={fallback}
+    >
+      {children}
+    </FeatureGuard>
+  );
+}
+
+/**
+ * Admin only guard
+ * Use this to show UI elements only for admin users
+ */
+export function AdminOnly({
+  children,
+  fallback = null,
+}: {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}) {
+  return (
+    <FeatureGuard
+      featureCode={['admin', 'user_management']}
+      requireAll={false}
+      fallback={fallback}
+    >
+      {children}
+    </FeatureGuard>
+  );
 }
