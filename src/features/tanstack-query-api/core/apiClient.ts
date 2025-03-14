@@ -228,7 +228,11 @@ export class ApiClient {
   private getToken(): string | null {
     if (typeof window === 'undefined') return null;
     
-    const token = localStorage.getItem(this.accessTokenKey);
+    // Try different token storage keys for compatibility
+    const token = localStorage.getItem(this.accessTokenKey) ||
+                 localStorage.getItem('auth_token') ||
+                 localStorage.getItem('access_token');
+                 
     if (!token) return null;
     
     return token.startsWith('Bearer ') ? token : `Bearer ${token}`;
