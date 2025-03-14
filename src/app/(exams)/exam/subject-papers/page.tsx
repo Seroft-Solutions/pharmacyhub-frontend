@@ -5,7 +5,7 @@ import { BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { QueryProvider } from "@/features/tanstack-query-api/components/QueryProvider";
 import { ExamPaperCard } from "@/features/exams/ui/ExamPaperCard";
-import { ExamPaperMetadata } from "@/features/exams/model/standardTypes";
+import { ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function SubjectPapersPage() {

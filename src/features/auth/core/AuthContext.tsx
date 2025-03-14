@@ -52,6 +52,37 @@ const checkInitialAuthState = (): boolean => {
   return !!token;
 };
 
+// Extracts user roles from JWT token
+const extractRolesFromToken = (token: string): string[] => {
+  try {
+    // Extract the payload part of the JWT
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    const payload = JSON.parse(jsonPayload);
+    
+    // Extract roles from token payload
+    if (payload.roles && Array.isArray(payload.roles)) {
+      return payload.roles;
+    }
+    
+    // Or try to get from authorities if roles doesn't exist
+    if (payload.authorities && Array.isArray(payload.authorities)) {
+      return payload.authorities
+        .filter(auth => auth.startsWith('ROLE_'))
+        .map(role => role.replace('ROLE_', ''));
+    }
+    
+    return [];
+  } catch (error) {
+    logger.error('Failed to extract roles from token', { error });
+    return [];
+  }
+};
+
 // Create a mock user for development mode
 const createMockUser = (): UserProfile => {
   return {
@@ -102,8 +133,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return null;
         }
 
+        // Get current token
+        const token = tokenManager.getToken();
+        
+        // Extract roles from token
+        const rolesFromToken = token ? extractRolesFromToken(token) : [];
+        
         // Use apiClient directly instead of React Query hooks
         const response = await apiClient.get(AUTH_ENDPOINTS.profile);
+        
+        // Handle 403 errors by clearing auth state
+        if (response.status === 403) {
+          logger.warn('Profile access forbidden, clearing auth state');
+          tokenManager.removeToken();
+          tokenManager.removeRefreshToken();
+          setIsAuthenticated(false);
+          return null;
+        }
         
         if (!response.data) {
           throw new Error('No profile data returned');
@@ -116,9 +162,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email: response.data.email,
           firstName: response.data.firstName,
           lastName: response.data.lastName,
-          roles: response.data.roles || [],
-          permissions: [],
-          userType: null
+          roles: response.data.roles || rolesFromToken,
+          permissions: response.data.permissions || [],
+          userType: response.data.userType || null
         };
         
         setUser(profile);
@@ -134,6 +180,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
              err.message.includes('Unauthorized') || 
              err.message.includes('Forbidden'))) {
           setIsAuthenticated(false);
+          // Clear tokens on auth errors
+          tokenManager.removeToken();
+          tokenManager.removeRefreshToken();
         }
         return null;
       } finally {
@@ -233,6 +282,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       tokenManager.setRefreshToken(tokens.refreshToken);
       tokenManager.setTokenExpiry(Date.now() + (tokens.expiresIn * 1000));
       
+      // Get roles from token if not in user data
+      const rolesFromToken = extractRolesFromToken(tokens.accessToken);
+      
       // Create user profile
       const userProfile: UserProfile = {
         id: userData.id,
@@ -240,9 +292,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         email: userData.email,
         firstName: userData.firstName,
         lastName: userData.lastName,
-        roles: userData.roles || [],
-        permissions: [],
-        userType: null
+        roles: userData.roles || rolesFromToken,
+        permissions: userData.permissions || [],
+        userType: userData.userType || null
       };
       
       setUser(userProfile);

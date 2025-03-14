@@ -22,7 +22,7 @@ import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 
 // Import API hooks for data fetching
 import { 
-  useExams, 
+  examApiHooks, 
   useExamStats, 
   useAllPapers
 } from '@/features/exams/api/hooks';
@@ -50,7 +50,7 @@ const ExamDashboard: React.FC = () => {
   } = useExamPermissions();
 
   // Use TanStack Query API hooks for data fetching
-  const examsQuery = useExams();
+  const examsQuery = examApiHooks.useList();
   const statsQuery = useExamStats();
   const papersQuery = useAllPapers();
 

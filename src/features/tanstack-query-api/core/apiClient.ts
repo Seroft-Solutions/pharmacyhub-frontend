@@ -233,9 +233,12 @@ export class ApiClient {
                  localStorage.getItem('auth_token') ||
                  localStorage.getItem('access_token');
                  
-    if (!token) return null;
+    if (!token) {
+      console.warn('[API] Authentication required but token not available');
+      return null;
+    }
     
-    return token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    return token;
   }
 
   /**
@@ -370,9 +373,12 @@ export class ApiClient {
       const token = this.getToken();
       if (!token) {
         console.warn('Authentication required but token not available. Proceeding with unauthenticated request.');
-        return headers;
+      } else {
+        // Set the Authorization header with Bearer prefix if not already present
+        const authValue = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        headers.set('Authorization', authValue);
+        console.log('[API] Added Authorization header:', authValue.substring(0, 15) + '...');
       }
-      headers.set('Authorization', token);
     }
 
     return headers;
@@ -525,5 +531,17 @@ export const apiClient = createApiClient({
     }
   }
 });
+
+// Initialize token from localStorage on load
+if (typeof window !== 'undefined') {
+  // This ensures the token is properly set in the apiClient
+  const token = localStorage.getItem('accessToken') || 
+                localStorage.getItem('auth_token') || 
+                localStorage.getItem('access_token');
+                
+  if (token) {
+    console.log('[API] Token found in localStorage, initializing apiClient with token');
+  }
+}
 
 export default apiClient;

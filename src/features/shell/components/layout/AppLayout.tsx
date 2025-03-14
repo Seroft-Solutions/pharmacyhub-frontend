@@ -11,7 +11,7 @@ import { AppTopbar } from "../topbar/AppTopbar";
 import { ContentArea } from "./ContentArea";
 import { AppSidebar } from "../sidebar/AppSidebar";
 import { NavigationProvider, DEFAULT_FEATURES } from "../../navigation";
-import { RoleProvider, useRole } from "../sidebar/useRole";
+import { RoleProvider } from "../../Hooks/useRole";
 import { FeatureNavigation } from "../../types";
 
 interface AppLayoutProps {

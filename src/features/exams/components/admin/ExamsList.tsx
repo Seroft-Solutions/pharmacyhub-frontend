@@ -15,7 +15,8 @@ import {
   EditIcon,
   FileTextIcon, 
   GraduationCapIcon, 
-  ListTodoIcon
+  ListTodoIcon,
+  RefreshCcw
 } from 'lucide-react';
 import { PaperType, Exam } from '../../types';
 import { Badge } from '@/components/ui/badge';
@@ -57,7 +58,8 @@ const ExamsList: React.FC = () => {
   const { 
     data: allExams = [], 
     isLoading, 
-    error 
+    error,
+    refetch
   } = examApiHooks.useList();
 
   // Reset to first page when tab or search changes
@@ -120,6 +122,11 @@ const ExamsList: React.FC = () => {
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+
+  // Handle retry
+  const handleRetry = () => {
+    refetch();
   };
 
   // Get status badge
@@ -454,10 +461,19 @@ const ExamsList: React.FC = () => {
   if (error) {
     return (
       <div className="text-center text-red-500 p-4 border border-red-200 rounded-md">
-        <p>{error instanceof Error ? error.message : 'Failed to load exams'}</p>
-        <Button onClick={() => window.location.reload()} className="mt-4">
-          Retry
-        </Button>
+        <p className="mb-4">{error instanceof Error ? error.message : 'Failed to load exams'}</p>
+        <div className="flex justify-center space-x-4">
+          <Button onClick={handleRetry} className="flex items-center gap-2">
+            <RefreshCcw className="h-4 w-4" />
+            Retry
+          </Button>
+          <Button variant="outline" onClick={() => localStorage.removeItem('access_token')} className="flex items-center gap-2">
+            Clear Token
+          </Button>
+        </div>
+        <p className="mt-4 text-xs text-gray-500">
+          Error details: 403 Forbidden. Make sure your backend is running and accessible.
+        </p>
       </div>
     );
   }

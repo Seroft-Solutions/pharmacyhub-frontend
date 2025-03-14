@@ -31,7 +31,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth/hooks";
 import { RoleSwitcher } from './RoleSwitcher';
-import { useRole } from './useRole';
+import { useRole } from '../../Hooks/useRole';
 import { useNavigation } from '../../navigation';
 
 interface AppSidebarProps {
@@ -56,8 +56,9 @@ export function AppSidebar({
   const router = useRouter();
   const { features } = useNavigation();
   const { hasRole } = useAuth();
-  const isAdmin = hasRole('ADMIN');
-  const { role, setRole } = useRole();
+  // Check for both ADMIN and SUPER_ADMIN roles
+  const isAdmin = hasRole('ADMIN') || hasRole('SUPER_ADMIN');
+  const { role, setRole, isAdmin: roleIsAdmin, isSuperAdmin } = useRole();
 
   // State for expandable menu sections
   const [expandedItems, setExpandedItems] = React.useState<Record<string, boolean>>({
@@ -391,7 +392,7 @@ export function AppSidebar({
 
       <SidebarContent className="py-2 px-2">
         {/* Show different navigation based on selected role */}
-        {role === 'admin' ? (
+        {roleIsAdmin || isSuperAdmin ? (
           // Admin Navigation
           renderAdminMenu()
         ) : (

@@ -26,6 +26,9 @@ export const tokenManager = {
     // Store in legacy locations for compatibility
     localStorage.setItem('auth_token', token);
     localStorage.setItem('access_token', token);
+    
+    // Log token setting for debugging
+    console.log('[Auth] Token set successfully');
   },
   
   /**
@@ -35,11 +38,18 @@ export const tokenManager = {
     if (typeof window === 'undefined') return null;
     
     // Try all possible storage locations
-    return (
-      localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) ||
-      localStorage.getItem('auth_token') ||
-      localStorage.getItem('access_token')
-    );
+    const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) ||
+                 localStorage.getItem('auth_token') ||
+                 localStorage.getItem('access_token');
+                 
+    if (!token) {
+      console.warn('[Auth] No token found in storage');
+      return null;
+    }
+    
+    // Debug token retrieval
+    console.log('[Auth] Token retrieved successfully');
+    return token;
   },
   
   /**
@@ -52,6 +62,8 @@ export const tokenManager = {
     localStorage.removeItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('access_token');
+    
+    console.log('[Auth] Token removed from storage');
   },
   
   /**
@@ -120,6 +132,7 @@ export const tokenManager = {
     // Check expiry
     const expiry = tokenManager.getTokenExpiry();
     if (expiry && Date.now() >= expiry) {
+      console.log('[Auth] Token expired');
       return false;
     }
     
@@ -133,7 +146,65 @@ export const tokenManager = {
     const token = tokenManager.getToken();
     if (!token) return null;
     
-    return `Bearer ${token}`;
+    return token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+  },
+
+  /**
+   * Initialize tokens from a response (like after login)
+   */
+  initializeFromLoginResponse: (response: any): void => {
+    if (!response || !response.data) return;
+
+    // Extract tokens from response
+    const { tokens } = response.data;
+    
+    if (tokens?.accessToken) {
+      tokenManager.setToken(tokens.accessToken);
+      
+      // Set expiry if provided
+      if (tokens.expiresIn) {
+        const expiry = Date.now() + (tokens.expiresIn * 1000);
+        tokenManager.setTokenExpiry(expiry);
+      }
+      
+      // Set refresh token if provided
+      if (tokens.refreshToken) {
+        tokenManager.setRefreshToken(tokens.refreshToken);
+      }
+    }
+  },
+  
+  /**
+   * Debug token information in console
+   */
+  debugTokenInfo: (): void => {
+    if (typeof window === 'undefined') return;
+    
+    const token = tokenManager.getToken();
+    if (!token) {
+      console.log('[Auth Debug] No token found');
+      return;
+    }
+    
+    try {
+      // Extract the payload part of the JWT
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      const payload = JSON.parse(jsonPayload);
+      
+      console.log('[Auth Debug] Token payload:', {
+        roles: payload.roles,
+        permissions: payload.permissions,
+        exp: new Date(payload.exp * 1000).toLocaleString(),
+        sub: payload.sub
+      });
+    } catch (err) {
+      console.error('[Auth Debug] Error decoding token:', err);
+    }
   }
 };
 

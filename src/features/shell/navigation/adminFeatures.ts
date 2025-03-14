@@ -20,7 +20,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
     id: "admin-dashboard",
     name: "Admin Dashboard",
     rootPath: "/admin",
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     order: 0,
     items: [
       {
@@ -28,7 +28,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
         label: "Dashboard",
         href: "/admin",
         icon: LayoutDashboard,
-        roles: ["ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
         order: 0
       }
     ]
@@ -37,7 +37,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
     id: "admin-exams",
     name: "Exam Management",
     rootPath: "/admin/exams",
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     order: 10,
     items: [
       {
@@ -45,7 +45,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
         label: "Exam Management",
         href: "/admin/exams",
         icon: FileText,
-        roles: ["ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
         order: 0
       }
     ]
@@ -54,7 +54,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
     id: "admin-users",
     name: "User Management",
     rootPath: "/admin/users",
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     order: 20,
     items: [
       {
@@ -62,7 +62,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
         label: "User Management",
         href: "/admin/users",
         icon: Users,
-        roles: ["ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
         permissions: ["manage_users"],
         order: 0
       }
@@ -72,7 +72,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
     id: "admin-inventory",
     name: "Inventory",
     rootPath: "/admin/inventory",
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     order: 30,
     items: [
       {
@@ -80,7 +80,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
         label: "Inventory",
         href: "/admin/inventory",
         icon: Package,
-        roles: ["ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
         order: 0,
         subItems: [
           {
@@ -88,14 +88,14 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
             label: "Products",
             href: "/admin/inventory/products",
             icon: ShoppingCart,
-            roles: ["ADMIN"]
+            roles: ["ADMIN", "SUPER_ADMIN"]
           },
           {
             id: "admin-stock",
             label: "Stock Management",
             href: "/admin/inventory/stock",
             icon: Package,
-            roles: ["ADMIN"]
+            roles: ["ADMIN", "SUPER_ADMIN"]
           }
         ]
       }
@@ -105,7 +105,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
     id: "admin-reports",
     name: "Reports",
     rootPath: "/admin/reports",
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     order: 40,
     items: [
       {
@@ -113,7 +113,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
         label: "Reports",
         href: "/admin/reports",
         icon: BarChart,
-        roles: ["ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
         order: 0,
         subItems: [
           {
@@ -121,14 +121,14 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
             label: "Sales Reports",
             href: "/admin/reports/sales",
             icon: DollarSign,
-            roles: ["ADMIN"]
+            roles: ["ADMIN", "SUPER_ADMIN"]
           },
           {
             id: "admin-user-activity",
             label: "User Activity",
             href: "/admin/reports/activity",
             icon: Users,
-            roles: ["ADMIN"]
+            roles: ["ADMIN", "SUPER_ADMIN"]
           }
         ]
       }
@@ -138,7 +138,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
     id: "admin-settings",
     name: "Admin Settings",
     rootPath: "/admin/settings",
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     order: 50,
     items: [
       {
@@ -146,7 +146,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
         label: "Settings",
         href: "/admin/settings",
         icon: Settings,
-        roles: ["ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
         order: 0
       }
     ]
@@ -155,7 +155,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
     id: "admin-notifications",
     name: "Notifications",
     rootPath: "/admin/notifications",
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     order: 60,
     items: [
       {
@@ -163,7 +163,7 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
         label: "Notifications",
         href: "/admin/notifications",
         icon: Bell,
-        roles: ["ADMIN"],
+        roles: ["ADMIN", "SUPER_ADMIN"],
         order: 0
       }
     ]
@@ -177,7 +177,7 @@ export const ADMIN_NAVIGATION: FeatureNavigation = {
   id: "admin",
   name: "Administration",
   rootPath: "/admin",
-  roles: ["ADMIN"],
+  roles: ["ADMIN", "SUPER_ADMIN"],
   order: 0,
   items: ADMIN_FEATURES.flatMap(feature => feature.items)
 };

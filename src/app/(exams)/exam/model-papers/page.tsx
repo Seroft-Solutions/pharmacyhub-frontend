@@ -3,10 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Medal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useModelPapers } from "@/features/exams/api/UseExamApi";
+import { useModelPapers } from "@/features/exams/api";
 import { QueryProvider } from "@/features/tanstack-query-api/components/QueryProvider";
 import { ExamPaperCard } from "@/features/exams/ui/ExamPaperCard";
-import { Exam, ExamPaperMetadata } from "@/features/exams/model/standardTypes";
+import { Exam, ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function ModelPapersPage() {

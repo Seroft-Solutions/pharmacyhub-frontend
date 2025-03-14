@@ -2,15 +2,19 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { ROUTES } from '@/features/auth/config/auth';
 import { useAuth } from '@/features/auth/hooks';
+
+// Define ROUTES directly to avoid the undefined issue
+const ROUTES = {
+  DASHBOARD: '/dashboard'
+};
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoadingUser } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -21,7 +25,7 @@ export default function AuthLayout({
   }, [user, router]);
 
   // Show loading state while checking auth
-  if (isLoadingUser) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
