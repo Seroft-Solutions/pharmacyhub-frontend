@@ -15,10 +15,14 @@ import {
   UsersIcon 
 } from 'lucide-react';
 
-// Import permission guards and hooks
-import { PermissionGuard, AnyPermissionGuard, AllPermissionsGuard } from '@/features/rbac/ui';
-import { ExamPermission } from '@/features/exams/constants/permissions';
-import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
+// Import new feature-based guards
+import { 
+  ExamGuard, 
+  ExamOperationGuard, 
+  ViewExamsGuard, 
+  ManageExamsGuard 
+} from '@/features/exams/ui/guards/ExamGuard';
+import { ExamOperation, useExamFeatureAccess } from '@/features/exams/hooks/useExamFeatureAccess';
 
 // Import API hooks for data fetching
 import { 
@@ -34,20 +38,24 @@ import JsonExamUploader from './JsonExamUploader';
 /**
  * ExamDashboard Component
  * 
- * This component demonstrates best practices for permission checks and API calls
- * including:
- * - Using PermissionGuard components for UI access control
- * - Using useExamPermissions hook for permission checks
+ * This component demonstrates best practices for feature-based access control:
+ * - Using ExamGuard components for UI access control
+ * - Using useExamFeatureAccess hook for operation-level checks
  * - Using TanStack Query API hooks for data fetching
  */
 const ExamDashboard: React.FC = () => {
-  // Use the custom hook for exam-specific permissions
+  // Use the feature access hook for exam-specific permissions
   const { 
     canViewExams, 
     canManageExams, 
-    canAccessAnalytics, 
-    hasPermission 
-  } = useExamPermissions();
+    canViewAnalytics, 
+    canCreateExams,
+    canEditExams,
+    canDeleteExams,
+    canPublishExams,
+    canUnpublishExams,
+    checkExamOperation
+  } = useExamFeatureAccess();
 
   // Use TanStack Query API hooks for data fetching
   const examsQuery = examApiHooks.useList();
@@ -61,9 +69,8 @@ const ExamDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Main content is wrapped in a PermissionGuard to check basic access */}
-      <PermissionGuard 
-        permission={ExamPermission.VIEW_EXAMS}
+      {/* Main content is wrapped in ExamGuard to check feature access */}
+      <ExamGuard
         fallback={
           <Alert variant="destructive">
             <InfoIcon className="h-4 w-4" />
@@ -101,7 +108,7 @@ const ExamDashboard: React.FC = () => {
           </Card>
 
           {/* Analytics Card - Only visible to users with analytics permission */}
-          <PermissionGuard permission={ExamPermission.VIEW_ANALYTICS}>
+          <ExamOperationGuard operation={ExamOperation.VIEW_ANALYTICS}>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">Average Score</CardTitle>
@@ -113,16 +120,10 @@ const ExamDashboard: React.FC = () => {
                 </p>
               </CardContent>
             </Card>
-          </PermissionGuard>
+          </ExamOperationGuard>
 
-          {/* Example using AnyPermissionGuard with multiple permissions */}
-          <AnyPermissionGuard 
-            permissions={[
-              ExamPermission.CREATE_EXAM, 
-              ExamPermission.EDIT_EXAM, 
-              ExamPermission.DELETE_EXAM
-            ]}
-          >
+          {/* Management Card - Example using feature operation checks */}
+          {canManageExams && (
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">Management</CardTitle>
@@ -131,18 +132,18 @@ const ExamDashboard: React.FC = () => {
                 <div className="text-2xl font-bold">Admin</div>
                 <p className="text-xs text-muted-foreground">
                   <Badge variant="outline" className="mr-1">
-                    {hasPermission(ExamPermission.CREATE_EXAM) ? 'Create' : ''}
+                    {canCreateExams ? 'Create' : ''}
                   </Badge>
                   <Badge variant="outline" className="mr-1">
-                    {hasPermission(ExamPermission.EDIT_EXAM) ? 'Edit' : ''}
+                    {canEditExams ? 'Edit' : ''}
                   </Badge>
                   <Badge variant="outline">
-                    {hasPermission(ExamPermission.DELETE_EXAM) ? 'Delete' : ''}
+                    {canDeleteExams ? 'Delete' : ''}
                   </Badge>
                 </p>
               </CardContent>
             </Card>
-          </AnyPermissionGuard>
+          )}
         </div>
 
         {/* Tabs for different sections of exam management */}
@@ -154,33 +155,28 @@ const ExamDashboard: React.FC = () => {
             </TabsTrigger>
             
             {/* Only show upload tab for users with create permission */}
-            <PermissionGuard permission={ExamPermission.CREATE_EXAM}>
+            {canCreateExams && (
               <TabsTrigger value="upload" className="flex items-center gap-2">
                 <PlusCircleIcon className="h-4 w-4" />
                 <span>Upload</span>
               </TabsTrigger>
-            </PermissionGuard>
+            )}
             
             {/* Only show analytics tab for users with analytics permission */}
-            <PermissionGuard permission={ExamPermission.VIEW_ANALYTICS}>
+            {canViewAnalytics && (
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3Icon className="h-4 w-4" />
                 <span>Analytics</span>
               </TabsTrigger>
-            </PermissionGuard>
+            )}
             
-            {/* Example with AllPermissionsGuard requiring multiple permissions */}
-            <AllPermissionsGuard 
-              permissions={[
-                ExamPermission.PUBLISH_EXAM, 
-                ExamPermission.UNPUBLISH_EXAM
-              ]}
-            >
+            {/* Only show settings tab for users with publish permissions */}
+            {canPublishExams && canUnpublishExams && (
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <SettingsIcon className="h-4 w-4" />
                 <span>Settings</span>
               </TabsTrigger>
-            </AllPermissionsGuard>
+            )}
           </TabsList>
           
           <TabsContent value="exams" className="space-y-4">
@@ -188,13 +184,13 @@ const ExamDashboard: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="upload" className="space-y-4">
-            <PermissionGuard permission={ExamPermission.CREATE_EXAM}>
+            <ExamOperationGuard operation={ExamOperation.CREATE}>
               <JsonExamUploader />
-            </PermissionGuard>
+            </ExamOperationGuard>
           </TabsContent>
           
           <TabsContent value="analytics" className="space-y-4">
-            <PermissionGuard permission={ExamPermission.VIEW_ANALYTICS}>
+            <ExamOperationGuard operation={ExamOperation.VIEW_ANALYTICS}>
               <Card>
                 <CardHeader>
                   <CardTitle>Exam Analytics</CardTitle>
@@ -203,16 +199,12 @@ const ExamDashboard: React.FC = () => {
                   <p>Analytics dashboard would be implemented here</p>
                 </CardContent>
               </Card>
-            </PermissionGuard>
+            </ExamOperationGuard>
           </TabsContent>
           
           <TabsContent value="settings" className="space-y-4">
-            <AllPermissionsGuard 
-              permissions={[
-                ExamPermission.PUBLISH_EXAM, 
-                ExamPermission.UNPUBLISH_EXAM
-              ]}
-            >
+            {/* Example using multiple operation checks */}
+            {canPublishExams && canUnpublishExams && (
               <Card>
                 <CardHeader>
                   <CardTitle>Exam Settings</CardTitle>
@@ -221,10 +213,10 @@ const ExamDashboard: React.FC = () => {
                   <p>Settings dashboard would be implemented here</p>
                 </CardContent>
               </Card>
-            </AllPermissionsGuard>
+            )}
           </TabsContent>
         </Tabs>
-      </PermissionGuard>
+      </ExamGuard>
     </div>
   );
 };

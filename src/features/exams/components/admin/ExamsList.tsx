@@ -1,9 +1,6 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { PermissionGuard } from '@/features/rbac/ui';
-import { ExamPermission } from '@/features/exams/constants/permissions';
-import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { 
@@ -40,12 +37,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-// Import the hooks from the API module
+
+// Import the new feature-based access controls
+import { ExamGuard, ExamOperationGuard } from '../../ui/guards/ExamGuard';
+import { ExamOperation, useExamFeatureAccess } from '../../hooks/useExamFeatureAccess';
 import { examApiHooks } from '../../api/hooks';
 
 /**
  * Component to display a list of exams organized by paper type
- * Requires 'exams:view' permission
+ * Requires exams feature access with VIEW operation
  */
 const ExamsList: React.FC = () => {
   const router = useRouter();
@@ -61,6 +61,9 @@ const ExamsList: React.FC = () => {
     error,
     refetch
   } = examApiHooks.useList();
+
+  // Use the new feature-based access hook
+  const { canEditExams } = useExamFeatureAccess();
 
   // Reset to first page when tab or search changes
   useEffect(() => {
@@ -104,12 +107,9 @@ const ExamsList: React.FC = () => {
     return Math.ceil(getFilteredExams().length / itemsPerPage);
   };
 
-  // Permission checks
-  const { hasPermission } = useExamPermissions();
-
   // Handle exam view/edit
   const handleEditExam = (examId: number) => {
-    if (hasPermission(ExamPermission.EDIT_EXAM)) {
+    if (canEditExams) {
       router.push(`/admin/exams/${examId}/questions`);
     }
   };
@@ -337,7 +337,7 @@ const ExamsList: React.FC = () => {
                     <TableCell>{exam.duration} min</TableCell>
                     <TableCell>{getStatusBadge(exam.status)}</TableCell>
                     <TableCell className="text-right">
-                      <PermissionGuard permission={ExamPermission.EDIT_EXAM}>
+                      <ExamOperationGuard operation={ExamOperation.EDIT}>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -356,7 +356,7 @@ const ExamsList: React.FC = () => {
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                      </PermissionGuard>
+                      </ExamOperationGuard>
                     </TableCell>
                   </TableRow>
                 );
@@ -493,8 +493,8 @@ const ExamsList: React.FC = () => {
   const currentExams = getCurrentPageItems();
 
   return (
-    <PermissionGuard 
-      permission={ExamPermission.VIEW_EXAMS}
+    <ExamOperationGuard 
+      operation={ExamOperation.VIEW}
       fallback={
         <Card className="p-4">
           <div className="flex items-center space-x-2 text-red-600">
@@ -576,7 +576,7 @@ const ExamsList: React.FC = () => {
         </TabsContent>
       </Tabs>
     </div>
-    </PermissionGuard>
+    </ExamOperationGuard>
   );
 };
 
