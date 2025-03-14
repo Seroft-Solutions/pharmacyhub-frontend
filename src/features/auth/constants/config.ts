@@ -9,7 +9,7 @@ import { AUTH_ROUTES } from './routes';
 // Development mode configuration
 export const DEV_CONFIG = {
   // Set to true to bypass authentication in development mode
-  bypassAuth: true
+  bypassAuth: false
 };
 
 // Authentication configuration

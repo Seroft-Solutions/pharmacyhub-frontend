@@ -225,6 +225,7 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
           </div>
         </CardContent>
       </Card>
+    </AnyPermissionGuard>
     );
   }
 
@@ -273,6 +274,18 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   const totalPages = getTotalPages();
 
   return (
+    <AnyPermissionGuard
+      permissions={[ExamPermission.EDIT_EXAM, ExamPermission.MANAGE_QUESTIONS]}
+      fallback={
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>
+            You need permission to edit exams or manage questions to access this page.
+          </AlertDescription>
+        </Alert>
+      }
+    >
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={handleBack}>
