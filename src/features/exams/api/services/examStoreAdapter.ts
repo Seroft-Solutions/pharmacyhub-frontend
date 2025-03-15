@@ -35,6 +35,16 @@ export const examStoreAdapter = {
     return response.data || [];
   },
   
+  updateQuestion: async (examId: number, questionId: number, question: Partial<Question>): Promise<Question | null> => {
+    const response = await examApiService.updateQuestion(examId, questionId, question);
+    return response.data || null;
+  },
+  
+  deleteQuestion: async (examId: number, questionId: number): Promise<boolean> => {
+    const response = await examApiService.deleteQuestion(examId, questionId);
+    return !response.error;
+  },
+  
   // Attempts
   startExam: async (examId: number): Promise<ExamAttempt | null> => {
     const response = await examApiService.startExam(examId);

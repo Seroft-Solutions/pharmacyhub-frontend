@@ -1,9 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { PermissionGuard, AnyPermissionGuard } from '@/features/core/rbac/components';
-import { ExamPermission } from '@/features/exams/constants/permissions';
-import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
+import { useExamFeatureAccess, ExamOperation } from '../../hooks/useExamFeatureAccess';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -36,7 +34,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Exam, Question } from '../../types/StandardTypes';
-import { examServiceAdapter } from '../../api/adapter';
+import { examStoreAdapter } from '../../api/services/examStoreAdapter';
 import { McqEditor } from './McqEditor';
 import {
   Pagination,
@@ -59,7 +57,7 @@ interface ExamQuestionsProps {
  */
 export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   const router = useRouter();
-  const { hasPermission } = useExamPermissions();
+  const { canManageQuestions } = useExamFeatureAccess();
   const [exam, setExam] = useState<Exam | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,42 +82,13 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
         // Log process to debug
         console.log(`Fetching exam with ID ${examId}...`);
         
-        // Use mock data in development mode for easier testing
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Using mock exam data in development mode');
-          // Simulate some loading time
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Create mock exam data
-          const mockExam: Exam = {
-            id: examId,
-            title: 'Mock Exam for Development',
-            description: 'This is a mock exam for development purposes',
-            status: 'PUBLISHED',
-            duration: 60,
-            totalMarks: 100,
-            passingMarks: 60,
-            questions: Array.from({ length: 15 }, (_, i) => ({
-              id: i + 1,
-              questionNumber: i + 1,
-              text: `Sample question ${i + 1}`,
-              correctAnswer: 'A',
-              explanation: `Explanation for question ${i + 1}`,
-              options: [
-                { id: i * 4 + 1, label: 'A', text: `Option A for question ${i + 1}`, isCorrect: true },
-                { id: i * 4 + 2, label: 'B', text: `Option B for question ${i + 1}`, isCorrect: false },
-                { id: i * 4 + 3, label: 'C', text: `Option C for question ${i + 1}`, isCorrect: false },
-                { id: i * 4 + 4, label: 'D', text: `Option D for question ${i + 1}`, isCorrect: false },
-              ]
-            }))
-          };
-          
-          setExam(mockExam);
-          setLoading(false);
-          return;
+        // Always use the actual API call to get real data
+        const examData = await examStoreAdapter.getExamById(examId);
+        
+        if (!examData) {
+          throw new Error('No exam data returned from API');
         }
         
-        const examData = await examServiceAdapter.getExamById(examId);
         console.log('Exam data fetched successfully:', examData);
         setExam(examData);
       } catch (err) {
@@ -171,7 +140,7 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   // Handle question edit button click
   const handleEditQuestion = (question: Question) => {
     // Check if the user has permission to manage questions
-    if (!hasPermission(ExamPermission.MANAGE_QUESTIONS)) {
+    if (!canManageQuestions) {
       setError('You do not have permission to edit questions');
       return;
     }
@@ -182,7 +151,7 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   // Handle question delete button click
   const handleDeleteQuestion = (question: Question) => {
     // Check if the user has permission to manage questions
-    if (!hasPermission(ExamPermission.MANAGE_QUESTIONS)) {
+    if (!canManageQuestions) {
       setError('You do not have permission to delete questions');
       return;
     }
@@ -205,7 +174,7 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
       setError(null);
       
       // Call the API to delete the question
-      await examServiceAdapter.deleteQuestion(examId, questionToDelete.id);
+      await examStoreAdapter.deleteQuestion(examId, questionToDelete.id);
       
       // Update the questions in the local state
       const updatedQuestions = exam.questions?.filter(q => q.id !== questionToDelete.id) || [];
@@ -259,7 +228,7 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   // Handle question save
   const handleSaveQuestion = async (editedQuestion: Question) => {
     // Check if the user has permission to manage questions
-    if (!hasPermission(ExamPermission.MANAGE_QUESTIONS)) {
+    if (!canManageQuestions) {
       setError('You do not have permission to edit questions');
       throw new Error('Permission denied');
     }
@@ -267,7 +236,7 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
       if (!exam) return;
       
       // Call the API to update the question
-      await examServiceAdapter.updateQuestion(examId, editedQuestion.id, editedQuestion);
+      await examStoreAdapter.updateQuestion(examId, editedQuestion.id, editedQuestion);
       
       // Update the question in the local state
       const updatedQuestions = exam.questions?.map(q => 
@@ -322,18 +291,6 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
 
   if (loading) {
     return (
-    <AnyPermissionGuard
-      permissions={[ExamPermission.EDIT_EXAM, ExamPermission.MANAGE_QUESTIONS]}
-      fallback={
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Access Denied</AlertTitle>
-          <AlertDescription>
-            You need permission to edit exams or manage questions to access this page.
-          </AlertDescription>
-        </Alert>
-      }
-    >
       <Card>
         <CardContent className="p-8">
           <div className="flex justify-center">
@@ -349,7 +306,6 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
           </div>
         </CardContent>
       </Card>
-    </AnyPermissionGuard>
     );
   }
 
@@ -398,18 +354,6 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   const totalPages = getTotalPages();
 
   return (
-    <AnyPermissionGuard
-      permissions={[ExamPermission.EDIT_EXAM, ExamPermission.MANAGE_QUESTIONS]}
-      fallback={
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Access Denied</AlertTitle>
-          <AlertDescription>
-            You need permission to edit exams or manage questions to access this page.
-          </AlertDescription>
-        </Alert>
-      }
-    >
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={handleBack}>
@@ -493,7 +437,7 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <PermissionGuard permission={ExamPermission.MANAGE_QUESTIONS}>
+                            {canManageQuestions && (
                               <div className="flex space-x-1">
                                 <Button
                                   variant="ghost"
@@ -516,7 +460,7 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
                                   <span className="sr-only">Delete</span>
                                 </Button>
                               </div>
-                            </PermissionGuard>
+                            )}
                           </TableCell>
                         </TableRow>
                       );
@@ -634,6 +578,5 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-    </AnyPermissionGuard>
   );
 };

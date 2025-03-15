@@ -51,6 +51,7 @@ export const EXAM_ENDPOINTS = {
   publishExam: `${BASE_URL}/:id/publish`,
   archiveExam: `${BASE_URL}/:id/archive`,
   updateQuestion: `${BASE_URL}/:examId/questions/:questionId`,
+  deleteQuestion: `${BASE_URL}/:examId/questions/:questionId`,
   uploadJson: `${BASE_URL}/upload-json`,
 };
 

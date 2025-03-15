@@ -49,6 +49,7 @@ export const examApiService = createExtendedApiService<Exam, {
   // Question operations
   getExamQuestions: (examId: number) => Promise<ApiResponse<Question[]>>;
   updateQuestion: (examId: number, questionId: number, question: Partial<Question>) => Promise<ApiResponse<Question>>;
+  deleteQuestion: (examId: number, questionId: number) => Promise<ApiResponse<void>>;
   
   // Attempt operations
   getUserExamAttempts: () => Promise<ApiResponse<ExamAttempt[]>>;
@@ -145,6 +146,14 @@ export const examApiService = createExtendedApiService<Exam, {
           .replace(':examId', examId.toString())
           .replace(':questionId', questionId.toString()),
         question
+      );
+    },
+    
+    deleteQuestion: async (examId, questionId) => {
+      return await apiClient.delete<void>(
+        EXAM_ENDPOINTS.deleteQuestion
+          .replace(':examId', examId.toString())
+          .replace(':questionId', questionId.toString())
       );
     },
     
