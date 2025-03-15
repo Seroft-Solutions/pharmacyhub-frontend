@@ -2,64 +2,68 @@
  * Feature Access Service
  * Provides API methods for feature-based access control
  */
-import { createExtendedApiService } from '@/features/tanstack-query-api';
-import { apiClient } from '@/features/tanstack-query-api';
+import { createExtendedApiService, ApiResponse } from '@/features/tanstack-query-api';
 import type { FeatureAccessDTO } from '../../types/feature-access';
 
 /**
- * Feature access endpoints
+ * Feature access endpoints as constants
  */
 export const FEATURE_ACCESS_ENDPOINTS = {
-  checkFeature: (featureCode: string) => `/api/feature-access/check/${featureCode}`,
-  checkOperation: (featureCode: string, operation: string) => 
+  CHECK_FEATURE: (featureCode: string) => `/api/feature-access/check/${featureCode}`,
+  CHECK_OPERATION: (featureCode: string, operation: string) => 
     `/api/feature-access/check/${featureCode}/${operation}`,
-  userFeatures: '/api/feature-access/user-features'
+  USER_FEATURES: '/api/feature-access/user-features'
 };
 
 /**
  * Service for feature access API operations
+ * Uses TanStack Query API pattern for consistent data fetching
  */
 export const featureAccessService = createExtendedApiService<FeatureAccessDTO, {
-  checkFeatureAccess: (featureCode: string) => Promise<FeatureAccessDTO>;
-  checkOperationAccess: (featureCode: string, operation: string) => Promise<boolean>;
-  getUserFeatures: () => Promise<FeatureAccessDTO[]>;
+  /**
+   * Check if the current user has access to a feature
+   * 
+   * @param featureCode Code of the feature to check
+   * @returns Feature access details including allowed operations
+   */
+  checkFeatureAccess: (featureCode: string) => Promise<ApiResponse<FeatureAccessDTO>>;
+  
+  /**
+   * Check if the current user can perform a specific operation on a feature
+   * 
+   * @param featureCode Code of the feature to check
+   * @param operation Operation to check
+   * @returns Boolean indicating if access is allowed
+   */
+  checkOperationAccess: (featureCode: string, operation: string) => Promise<ApiResponse<boolean>>;
+  
+  /**
+   * Get all features the current user has access to
+   * 
+   * @returns List of all features with access details
+   */
+  getUserFeatures: () => Promise<ApiResponse<FeatureAccessDTO[]>>;
 }>(
-  '/api/feature-access', // Adding the baseEndpoint parameter that was missing
+  '/api/feature-access',
   {
-    /**
-     * Check if the current user has access to a feature
-     * 
-     * @param featureCode Code of the feature to check
-     * @returns Feature access details including allowed operations
-     */
     checkFeatureAccess: async (featureCode: string) => {
-      return await apiClient.get<FeatureAccessDTO>(
-        FEATURE_ACCESS_ENDPOINTS.checkFeature(featureCode)
-      );
+      const endpoint = FEATURE_ACCESS_ENDPOINTS.CHECK_FEATURE(featureCode);
+      return await apiClient.get<FeatureAccessDTO>(endpoint);
     },
     
-    /**
-     * Check if the current user can perform a specific operation on a feature
-     * 
-     * @param featureCode Code of the feature to check
-     * @param operation Operation to check
-     * @returns Boolean indicating if access is allowed
-     */
     checkOperationAccess: async (featureCode: string, operation: string) => {
-      return await apiClient.get<boolean>(
-        FEATURE_ACCESS_ENDPOINTS.checkOperation(featureCode, operation)
-      );
+      const endpoint = FEATURE_ACCESS_ENDPOINTS.CHECK_OPERATION(featureCode, operation);
+      return await apiClient.get<boolean>(endpoint);
     },
     
-    /**
-     * Get all features the current user has access to
-     * 
-     * @returns List of all features with access details
-     */
     getUserFeatures: async () => {
-      return await apiClient.get<FeatureAccessDTO[]>(
-        FEATURE_ACCESS_ENDPOINTS.userFeatures
-      );
+      return await apiClient.get<FeatureAccessDTO[]>(FEATURE_ACCESS_ENDPOINTS.USER_FEATURES);
     }
   }
 );
+
+// Import apiClient from tanstack-query-api
+import { apiClient } from '@/features/tanstack-query-api';
+
+// Add hooks for feature access
+export * from '../hooks/useFeatureAccessQueries';

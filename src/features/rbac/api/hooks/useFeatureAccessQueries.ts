@@ -1,89 +1,72 @@
-'use client';
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { featureAccessService } from '../services/featureAccessService';
+/**
+ * Feature Access Query Hooks
+ * 
+ * React query hooks for the feature access API
+ */
+import { useApiQuery, queryKeys } from '@/features/tanstack-query-api';
+import { FEATURE_ACCESS_ENDPOINTS } from '../services/featureAccessService';
 import type { FeatureAccessDTO } from '../../types/feature-access';
 
+// Create query keys for feature access
+export const featureAccessQueryKeys = {
+  all: () => ['featureAccess'] as const,
+  userFeatures: () => [...featureAccessQueryKeys.all(), 'userFeatures'] as const,
+  feature: (featureCode: string) => [...featureAccessQueryKeys.all(), 'feature', featureCode] as const,
+  operation: (featureCode: string, operation: string) => 
+    [...featureAccessQueryKeys.all(), 'operation', featureCode, operation] as const,
+};
+
 /**
- * React Query hooks for feature access
+ * Hooks for feature access queries
  */
 export const useFeatureAccessQueries = () => {
-  const queryClient = useQueryClient();
-  
   /**
-   * Get all features the current user has access to
+   * Hook to get all features the current user has access to
    */
-  const useUserFeatures = () => {
-    return useQuery({
-      queryKey: ['userFeatures'],
-      queryFn: async () => {
-        try {
-          const response = await featureAccessService.getUserFeatures();
-          
-          // Ensure we always return an array
-          if (!response || !response.data) {
-            return [];
-          }
-          
-          // Handle both array and object responses
-          if (Array.isArray(response.data)) {
-            return response.data;
-          } 
-          
-          // If it's an object with data property that's an array
-          if (response.data.data && Array.isArray(response.data.data)) {
-            return response.data.data;
-          }
-          
-          // Last resort - empty array
-          return [];
-        } catch (error) {
-          console.error('Error fetching user features:', error);
-          return [];
-        }
-      },
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-    });
-  };
-  
-  /**
-   * Check if the current user has access to a specific feature
-   */
-  const useFeatureAccess = (featureCode: string) => {
-    return useQuery({
-      queryKey: ['featureAccess', featureCode],
-      queryFn: () => featureAccessService.checkFeatureAccess(featureCode),
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-    });
-  };
-  
-  /**
-   * Check if the current user can perform a specific operation on a feature
-   */
-  const useOperationAccess = (featureCode: string, operation: string) => {
-    return useQuery({
-      queryKey: ['operationAccess', featureCode, operation],
-      queryFn: () => featureAccessService.checkOperationAccess(featureCode, operation),
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes,
-    });
+  const useUserFeatures = (options = {}) => {
+    return useApiQuery<FeatureAccessDTO[]>(
+      featureAccessQueryKeys.userFeatures(),
+      FEATURE_ACCESS_ENDPOINTS.USER_FEATURES,
+      {
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        ...options
+      }
+    );
   };
 
   /**
-   * Invalidate all feature access queries to refresh the data
+   * Hook to check if the current user has access to a specific feature
    */
-  const invalidateFeatureAccess = () => {
-    return queryClient.invalidateQueries({
-      queryKey: ['userFeatures'],
-    });
+  const useFeatureAccess = (featureCode: string, options = {}) => {
+    return useApiQuery<FeatureAccessDTO>(
+      featureAccessQueryKeys.feature(featureCode),
+      FEATURE_ACCESS_ENDPOINTS.CHECK_FEATURE(featureCode),
+      {
+        enabled: !!featureCode,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        ...options
+      }
+    );
   };
-  
+
+  /**
+   * Hook to check if the current user can perform a specific operation on a feature
+   */
+  const useOperationAccess = (featureCode: string, operation: string, options = {}) => {
+    return useApiQuery<boolean>(
+      featureAccessQueryKeys.operation(featureCode, operation),
+      FEATURE_ACCESS_ENDPOINTS.CHECK_OPERATION(featureCode, operation),
+      {
+        enabled: !!featureCode && !!operation,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        ...options
+      }
+    );
+  };
+
   return {
     useUserFeatures,
     useFeatureAccess,
-    useOperationAccess,
-    invalidateFeatureAccess,
+    useOperationAccess
   };
 };

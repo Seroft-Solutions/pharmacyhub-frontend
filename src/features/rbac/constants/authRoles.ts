@@ -3,7 +3,7 @@
  * 
  * Defines which roles have access to the auth feature.
  */
-import { Role } from '@/features/rbac/constants/roles';
+import { Role } from './roles';
 
 /**
  * Roles that have access to the auth feature by default

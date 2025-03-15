@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminGuard } from "@/features/rbac/ui";
+import { AdminGuard } from "@/features/rbac/components";
 import { FeatureGuard } from "@/features/rbac";
 import { useAuth } from "@/features/auth/hooks";
 

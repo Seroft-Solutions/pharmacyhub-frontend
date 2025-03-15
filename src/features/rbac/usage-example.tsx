@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FeatureGuard, OperationGuard, AdminOnly } from './ui/FeatureGuard';
+import { FeatureGuard, OperationGuard, AdminOnly } from './components/FeatureGuard';
 import { useFeatureAccess } from './hooks/useFeatureAccess';
 
 /**

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { PermissionGuard, AnyPermissionGuard } from '@/features/rbac/ui';
+import { PermissionGuard, AnyPermissionGuard } from '@/features/rbac/components';
 import { ExamPermission } from '@/features/exams/constants/permissions';
 import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
 import { useRouter } from 'next/navigation';

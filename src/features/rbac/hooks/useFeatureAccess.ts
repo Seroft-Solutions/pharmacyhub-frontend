@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useFeatureAccessQueries } from '../api/hooks/useFeatureAccessQueries';
 import { useQueryClient } from '@tanstack/react-query';
+import { useFeatureAccessQueries } from '../api/hooks/useFeatureAccessQueries';
+import { featureAccessService } from '../api/services/featureAccessService';
 import type { FeatureAccessDTO, FeatureAccessMap } from '../types/feature-access';
 
 /**
@@ -114,6 +115,3 @@ export function useFeatureAccess() {
     hasAnyFeature,
   };
 }
-
-// Fix to import the featureAccessService
-import { featureAccessService } from '../api/services/featureAccessService';

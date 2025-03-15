@@ -16,12 +16,16 @@
 // Export registry and constants
 export * from './registry';
 export * from './constants/roles';
+export * from './constants/authPermissions';
+export * from './constants/authRoles';
 
 // Export contexts
 export { FeatureProvider, useFeatures } from './contexts/FeatureContext';
 
 // Export hooks
-export { useAccess } from './hooks';
+export { useAccess } from './hooks/useAccess';
+export { useFeatureAccess } from './hooks/useFeatureAccess';
+export { usePermissions } from './hooks/usePermissions';
 
 // Export UI components
 export {
@@ -48,13 +52,17 @@ export {
   
   // Feature control
   FeatureGuard
-} from './ui';
+} from './components';
 
 // Export API
 export {
-  // Service
+  // Services
   rbacService,
   featureFlagService,
+  featureAccessService,
+  
+  // Feature access hooks
+  useFeatureAccessQueries,
   
   // Query hooks
   useAccessProfile,
@@ -67,18 +75,7 @@ export {
 } from './api';
 
 // Export types
-export type {
-  AccessProfile,
-  AccessCheckResult,
-  PermissionCheckResponse,
-  AccessCheckOptions,
-  RoleCheckOptions,
-  PermissionGuardProps,
-  RoleGuardProps,
-  AccessGuardProps,
-  FeatureGuardProps,
-  Feature
-} from './types';
+export * from './types';
 
 /**
  * Initialize the RBAC feature
@@ -95,4 +92,3 @@ export function initializeRbac() {
     featureFlagService.initialize();
   });
 }
-

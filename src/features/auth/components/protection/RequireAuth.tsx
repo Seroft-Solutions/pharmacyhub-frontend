@@ -4,11 +4,12 @@
  * This component protects routes by checking if a user is authenticated
  * and redirecting to the login page if not.
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks';
 import { useAccess } from '@/features/rbac/hooks';
 
+// Define the component props
 interface RequireAuthProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
@@ -45,7 +46,8 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
     return isAuthenticated && hasAccess(requiredRoles, requiredPermissions, { requireAll });
   }, [isAuthenticated, hasAccess, requiredRoles, requiredPermissions, requireAll]);
 
-  React.useEffect(() => {
+  // Handle authentication check and redirection
+  useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated) {
         // Save the current URL to redirect back after login
