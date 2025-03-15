@@ -8,7 +8,7 @@
  * New implementations should use the standard hooks from the api/hooks directory.
  */
 
-import { useExamDetail as useExam } from './hooks/useExamApiHooks';
+import { useExamDetail as useExam, useExamStats } from './hooks/useExamApiHooks';
 import { 
   useExamQuestions,
   useStartExamMutation,
@@ -18,9 +18,10 @@ import {
   useSubmitExamMutation
 } from './hooks';
 
-// Export everything needed by useExamSession
+// Export everything needed by useExamSession and other components
 export {
   useExam,
+  useExamStats,
   useExamQuestions,
   useStartExamMutation,
   useAnswerQuestionMutation,

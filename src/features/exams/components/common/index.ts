@@ -7,3 +7,4 @@ export * from './ExamsTable';
 export * from './ExamsTabs';
 export * from './ExamStatusBadge';
 export * from './LoadingState';
+export * from './ExamPaperCard';

@@ -21,7 +21,7 @@ import {
   ExamPaperMetadata, 
   ExamPaperProgress, 
   ExamPaperCardProps 
-} from '../model/standardTypes';
+} from '../../types/StandardTypes';
 
 export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({ 
   paper, 
