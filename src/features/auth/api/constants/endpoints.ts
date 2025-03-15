@@ -1,39 +1,57 @@
 /**
  * Authentication API Endpoints
  * 
- * This module defines all API endpoints for authentication-related operations.
- * Using constants prevents typos and makes endpoint changes easier to manage.
+ * This module defines all API endpoints for authentication-related operations
+ * using constants to prevent typos and make endpoint changes easier to manage.
  */
 
-// Updated to match the backend URL structure
-const BASE_AUTH_URL = '/api/auth';
-const BASE_USERS_URL = '/api/users';
+// Base URLs for API endpoints
+export const API_BASE_URLS = {
+  AUTH: '/api/auth',
+  USERS: '/api/users'
+};
 
+/**
+ * Authentication API Endpoints
+ */
 export const AUTH_ENDPOINTS = {
   // Auth operations
-  login: `${BASE_AUTH_URL}/login`,
-  register: `${BASE_AUTH_URL}/signup`,  // Changed to match backend endpoint
-  logout: `${BASE_AUTH_URL}/logout`,
-  refreshToken: `${BASE_AUTH_URL}/token/refresh`,
-  verifyEmail: `${BASE_AUTH_URL}/verify`,  // Changed to match backend endpoint
-  verifyEmailStatus: `${BASE_AUTH_URL}/verify-email/status`,
-  requestPasswordReset: `${BASE_AUTH_URL}/password/reset-request`,
-  resetPassword: `${BASE_AUTH_URL}/password/reset`,
-  validateResetToken: `${BASE_AUTH_URL}/password/validate-token`,
+  LOGIN: `${API_BASE_URLS.AUTH}/login`,
+  REGISTER: `${API_BASE_URLS.AUTH}/signup`,
+  LOGOUT: `${API_BASE_URLS.AUTH}/logout`,
+  REFRESH_TOKEN: `${API_BASE_URLS.AUTH}/token/refresh`,
+  VERIFY_EMAIL: `${API_BASE_URLS.AUTH}/verify`,
+  VERIFY_EMAIL_STATUS: `${API_BASE_URLS.AUTH}/verify-email/status`,
+  REQUEST_PASSWORD_RESET: `${API_BASE_URLS.AUTH}/password/reset-request`,
+  RESET_PASSWORD: `${API_BASE_URLS.AUTH}/password/reset`,
+  VALIDATE_RESET_TOKEN: `${API_BASE_URLS.AUTH}/password/validate-token`,
   
   // Current user operations
-  profile: `${BASE_USERS_URL}/me`,
-  updateProfile: `${BASE_USERS_URL}/me`,
-  updatePreferences: `${BASE_USERS_URL}/me/preferences`,
-  changePassword: `${BASE_USERS_URL}/me/password`,
+  PROFILE: `${API_BASE_URLS.USERS}/me`,
+  UPDATE_PROFILE: `${API_BASE_URLS.USERS}/me`,
+  UPDATE_PREFERENCES: `${API_BASE_URLS.USERS}/me/preferences`,
+  CHANGE_PASSWORD: `${API_BASE_URLS.USERS}/me/password`,
   
   // User CRUD operations
-  list: `${BASE_USERS_URL}`,
-  create: `${BASE_USERS_URL}`,
-  detail: (id: number | string) => `${BASE_USERS_URL}/${id}`,
-  update: (id: number | string) => `${BASE_USERS_URL}/${id}`,
-  patch: (id: number | string) => `${BASE_USERS_URL}/${id}`,
-  delete: (id: number | string) => `${BASE_USERS_URL}/${id}`,
+  USERS_LIST: `${API_BASE_URLS.USERS}`,
+  USER_CREATE: `${API_BASE_URLS.USERS}`,
+  USER_DETAIL: `${API_BASE_URLS.USERS}/:id`,
+  USER_UPDATE: `${API_BASE_URLS.USERS}/:id`,
+  USER_PATCH: `${API_BASE_URLS.USERS}/:id`,
+  USER_DELETE: `${API_BASE_URLS.USERS}/:id`,
+};
+
+/**
+ * Map for standard CRUD operations
+ * Used with createApiHooks factory
+ */
+export const USER_ENDPOINTS_MAP = {
+  list: AUTH_ENDPOINTS.USERS_LIST,
+  detail: AUTH_ENDPOINTS.USER_DETAIL,
+  create: AUTH_ENDPOINTS.USER_CREATE,
+  update: AUTH_ENDPOINTS.USER_UPDATE,
+  patch: AUTH_ENDPOINTS.USER_PATCH,
+  delete: AUTH_ENDPOINTS.USER_DELETE
 };
 
 export default AUTH_ENDPOINTS;

@@ -1,11 +1,46 @@
 /**
  * Auth API Types
  * 
- * This module defines all types used in authentication-related API operations.
+ * This module defines all types used in the auth API.
  */
 
 /**
- * Basic user type definition
+ * User profile information
+ */
+export interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
+  permissions: string[];
+  userType: string | null;
+}
+
+/**
+ * User preferences
+ */
+export interface UserPreferences {
+  id: string;
+  userId: string;
+  theme: string;
+  language: string;
+  notifications: boolean;
+  [key: string]: any;
+}
+
+/**
+ * Authentication tokens
+ */
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+/**
+ * User object returned by API
  */
 export interface User {
   id: string;
@@ -13,99 +48,51 @@ export interface User {
   firstName: string;
   lastName: string;
   roles: string[];
-  permissions?: string[];
+  permissions: string[];
+  userType: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 /**
- * Extended user profile type
+ * Authentication response
  */
-export interface UserProfile extends User {
-  contactNumber?: string;
-  profilePhoto?: string;
-  userType?: string;
-  preferences?: UserPreferences;
+export interface AuthResponse {
+  tokens: AuthTokens;
+  user: UserProfile;
 }
 
 /**
- * User preferences type
- */
-export interface UserPreferences {
-  theme?: 'light' | 'dark' | 'system';
-  language?: string;
-  notifications?: {
-    email?: boolean;
-    push?: boolean;
-    sms?: boolean;
-  };
-  accessibility?: {
-    highContrast?: boolean;
-    largeText?: boolean;
-  };
-}
-
-/**
- * User update payload
- */
-export interface UserUpdatePayload {
-  firstName?: string;
-  lastName?: string;
-  contactNumber?: string;
-  profilePhoto?: string;
-  preferences?: Partial<UserPreferences>;
-}
-
-/**
- * Login request interface
+ * Login request payload
  */
 export interface LoginRequest {
   emailAddress: string;
   password: string;
-  rememberMe?: boolean;
 }
 
 /**
- * Registration request interface
+ * Registration request payload
  */
 export interface RegisterRequest {
-  firstName: string;
-  lastName: string;
   emailAddress: string;
   password: string;
+  firstName: string;
+  lastName: string;
   contactNumber?: string;
   userType?: string;
   openToConnect?: boolean;
 }
 
 /**
- * Auth token response
- */
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  tokenType: string;
-}
-
-/**
- * Authentication response
- */
-export interface AuthResponse {
-  user: User;
-  tokens: AuthTokens;
-}
-
-/**
- * Password reset request
+ * Password reset request payload
  */
 export interface PasswordResetRequest {
   email: string;
 }
 
 /**
- * Password reset completion
+ * Password reset completion payload
  */
 export interface PasswordResetCompletion {
   token: string;
@@ -114,9 +101,22 @@ export interface PasswordResetCompletion {
 }
 
 /**
- * Password change request
+ * Password change payload
  */
 export interface PasswordChangeRequest {
-  oldPassword: string;
+  currentPassword: string;
   newPassword: string;
+  confirmPassword: string;
+}
+
+/**
+ * User update payload
+ */
+export interface UserUpdatePayload {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  contactNumber?: string;
+  roles?: string[];
+  userType?: string;
 }

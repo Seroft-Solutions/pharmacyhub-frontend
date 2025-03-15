@@ -27,12 +27,13 @@ export type Permission =
 
 export interface UserProfile {
   id: string | number;
+  username?: string;
   email: string;
-  name?: string;
   firstName?: string;
   lastName?: string;
   roles?: Role[];
   permissions?: Permission[];
+  userType?: string;
   avatar?: string;
   verified?: boolean;
   createdAt?: string;
@@ -41,19 +42,57 @@ export interface UserProfile {
 }
 
 export interface LoginRequest {
-  email: string;
+  emailAddress: string;
   password: string;
 }
 
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken?: string;
-  user: UserProfile;
-  expiresIn?: number;
+export interface RegisterRequest {
+  emailAddress: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  contactNumber?: string;
+  userType?: string;
+  openToConnect?: boolean;
 }
 
-export interface RefreshTokenRequest {
-  refreshToken: string;
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken?: string;
+  expiresIn: number;
+  tokenType?: string;
+}
+
+export interface AuthResponse {
+  tokens: AuthTokens;
+  user: UserProfile;
+}
+
+export interface RegistrationData {
+  email?: string;
+  emailAddress?: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  userType?: string;
+  acceptTerms?: boolean;
+}
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordResetCompletion {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface PasswordChangeRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 export interface TokenPayload {
@@ -65,38 +104,25 @@ export interface TokenPayload {
   iat: number;
 }
 
-export interface RegistrationData {
+export interface User {
+  id: string | number;
   email: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-  name?: string;
-  phoneNumber?: string;
-  acceptTerms: boolean;
+  firstName: string;
+  lastName: string;
+  roles: Role[];
+  permissions: Permission[];
+  userType?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface ForgotPasswordRequest {
-  email: string;
-}
-
-export interface ResetPasswordRequest {
-  token: string;
-  newPassword: string;
-}
-
-export interface VerifyEmailRequest {
-  token: string;
-}
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-}
-
-export interface UpdateProfileRequest {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phoneNumber?: string;
-  avatar?: string;
+export interface UserPreferences {
+  id: string | number;
+  userId: string | number;
+  theme?: string;
+  language?: string;
+  notifications?: boolean;
+  dashboard?: Record<string, any>;
+  [key: string]: any;
 }

@@ -1,10 +1,8 @@
 /**
- * Auth API Hooks
+ * Auth API Service
  * 
- * This module provides React hooks for interacting with authentication-related APIs.
- * It leverages the createApiHooks factory for consistent patterns.
- * 
- * IMPORTANT: These hooks must only be used within React functional components.
+ * This service provides hooks for authentication-related API operations
+ * using the tanstack-query-api framework.
  */
 import { useQueryClient } from '@tanstack/react-query';
 import { 
@@ -12,69 +10,26 @@ import {
   useApiQuery, 
   useApiMutation 
 } from '@/features/tanstack-query-api';
-import { AUTH_ENDPOINTS } from '../constants';
+
+import { AUTH_ENDPOINTS, USER_ENDPOINTS_MAP } from '../constants';
+import { tokenManager } from '../../core/tokenManager';
+
 import type { 
-  User, 
   UserProfile,
   UserPreferences,
   LoginRequest, 
   RegisterRequest,
   AuthResponse,
-  AuthTokens,
   PasswordResetRequest,
   PasswordResetCompletion,
   PasswordChangeRequest
-} from '../types';
+} from '../../types';
 
-// Token storage helpers (safe to use outside components)
-export const tokenStorage = {
-  storeTokens: (tokens: AuthTokens): void => {
-    if (typeof window === 'undefined') return;
-    
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    
-    // Store token expiry
-    const expiryTime = Date.now() + (tokens.expiresIn * 1000);
-    localStorage.setItem('tokenExpiry', expiryTime.toString());
-  },
-
-  clearTokens: (): void => {
-    if (typeof window === 'undefined') return;
-    
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('tokenExpiry');
-  },
-
-  isAuthenticated: (): boolean => {
-    if (typeof window === 'undefined') return false;
-    
-    const token = localStorage.getItem('accessToken');
-    if (!token) return false;
-    
-    // Check token expiration
-    const expiryStr = localStorage.getItem('tokenExpiry');
-    if (expiryStr) {
-      const expiry = parseInt(expiryStr, 10);
-      if (Date.now() >= expiry) {
-        // Token has expired
-        return false;
-      }
-    }
-    
-    return true;
-  },
-
-  getToken: (): string | null => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('accessToken');
-  }
-};
-
-// Create standard CRUD hooks for users
-export const userApiHooks = createApiHooks<User>(
-  AUTH_ENDPOINTS,
+/**
+ * Create standard CRUD hooks for user management
+ */
+export const userApiHooks = createApiHooks<UserProfile>(
+  USER_ENDPOINTS_MAP,
   {
     resourceName: 'users',
     requiresAuth: true,
@@ -84,17 +39,19 @@ export const userApiHooks = createApiHooks<User>(
 
 /**
  * Hook for user login
+ * Handles authentication and token storage
  */
 export const useLogin = () => {
   const queryClient = useQueryClient();
   
   return useApiMutation<AuthResponse, LoginRequest>(
-    AUTH_ENDPOINTS.login,
+    AUTH_ENDPOINTS.LOGIN,
     {
       requiresAuth: false,
       onSuccess: (data) => {
         if (data?.tokens) {
-          tokenStorage.storeTokens(data.tokens);
+          // Store tokens using tokenManager
+          tokenManager.initializeFromAuthResponse(data);
           
           // Pre-populate the user profile in the cache
           if (data.user) {
@@ -111,17 +68,19 @@ export const useLogin = () => {
 
 /**
  * Hook for user registration
+ * Handles account creation and automatic login
  */
 export const useRegister = () => {
   const queryClient = useQueryClient();
   
   return useApiMutation<AuthResponse, RegisterRequest>(
-    AUTH_ENDPOINTS.register,
+    AUTH_ENDPOINTS.REGISTER,
     {
       requiresAuth: false,
       onSuccess: (data) => {
         if (data?.tokens) {
-          tokenStorage.storeTokens(data.tokens);
+          // Store tokens using tokenManager
+          tokenManager.initializeFromAuthResponse(data);
           
           // Pre-populate the user profile in the cache
           if (data.user) {
@@ -138,26 +97,22 @@ export const useRegister = () => {
 
 /**
  * Hook for user logout
+ * Clears authentication state and redirects
  */
 export const useLogout = () => {
   const queryClient = useQueryClient();
   
   return useApiMutation<void, void>(
-    AUTH_ENDPOINTS.logout,
+    AUTH_ENDPOINTS.LOGOUT,
     {
-      onSuccess: () => {
-        // Clear tokens
-        tokenStorage.clearTokens();
+      onSettled: () => {
+        // Always clear auth state, even on error
+        tokenManager.clearAll();
         
         // Clear user-related cache
         queryClient.removeQueries({
           queryKey: userApiHooks.queryKeys.all()
         });
-        
-        // Redirect to login
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
       }
     }
   );
@@ -167,13 +122,13 @@ export const useLogout = () => {
  * Hook for refreshing auth token
  */
 export const useRefreshToken = () => {
-  return useApiMutation<AuthTokens, { refreshToken: string }>(
-    AUTH_ENDPOINTS.refreshToken,
+  return useApiMutation<AuthResponse, { refreshToken: string }>(
+    AUTH_ENDPOINTS.REFRESH_TOKEN,
     {
       requiresAuth: false,
       onSuccess: (data) => {
-        if (data) {
-          tokenStorage.storeTokens(data);
+        if (data?.tokens) {
+          tokenManager.initializeFromAuthResponse(data);
         }
       }
     }
@@ -183,16 +138,17 @@ export const useRefreshToken = () => {
 /**
  * Hook for getting the current user profile
  */
-export const useUserProfile = () => {
-  const isAuthenticated = tokenStorage.isAuthenticated();
+export const useUserProfile = (options = {}) => {
+  const isAuthenticated = tokenManager.hasToken();
   
   return useApiQuery<UserProfile>(
     userApiHooks.queryKeys.detail('me'),
-    AUTH_ENDPOINTS.profile,
+    AUTH_ENDPOINTS.PROFILE,
     {
       enabled: isAuthenticated,
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: isAuthenticated ? 3 : 0,
+      ...options
     }
   );
 };
@@ -204,7 +160,7 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   
   return useApiMutation<UserProfile, Partial<UserProfile>>(
-    AUTH_ENDPOINTS.updateProfile,
+    AUTH_ENDPOINTS.UPDATE_PROFILE,
     {
       method: 'PATCH',
       onSuccess: (data) => {
@@ -223,7 +179,7 @@ export const useUpdateProfile = () => {
  */
 export const useRequestPasswordReset = () => {
   return useApiMutation<void, PasswordResetRequest>(
-    AUTH_ENDPOINTS.requestPasswordReset,
+    AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET,
     {
       requiresAuth: false
     }
@@ -236,7 +192,7 @@ export const useRequestPasswordReset = () => {
 export const useValidateResetToken = (token: string) => {
   return useApiQuery<{ valid: boolean }>(
     [...userApiHooks.queryKeys.all(), 'resetToken', token],
-    `${AUTH_ENDPOINTS.validateResetToken}/${token}`,
+    `${AUTH_ENDPOINTS.VALIDATE_RESET_TOKEN}/${token}`,
     {
       requiresAuth: false,
       enabled: !!token,
@@ -251,7 +207,7 @@ export const useValidateResetToken = (token: string) => {
  */
 export const useCompletePasswordReset = () => {
   return useApiMutation<void, PasswordResetCompletion>(
-    AUTH_ENDPOINTS.resetPassword,
+    AUTH_ENDPOINTS.RESET_PASSWORD,
     {
       requiresAuth: false
     }
@@ -263,7 +219,7 @@ export const useCompletePasswordReset = () => {
  */
 export const useChangePassword = () => {
   return useApiMutation<void, PasswordChangeRequest>(
-    AUTH_ENDPOINTS.changePassword,
+    AUTH_ENDPOINTS.CHANGE_PASSWORD,
     {
       method: 'POST'
     }
@@ -277,7 +233,7 @@ export const useUpdatePreferences = () => {
   const queryClient = useQueryClient();
   
   return useApiMutation<UserPreferences, Partial<UserPreferences>>(
-    AUTH_ENDPOINTS.updatePreferences,
+    AUTH_ENDPOINTS.UPDATE_PREFERENCES,
     {
       method: 'PATCH',
       onSuccess: () => {
@@ -296,7 +252,7 @@ export const useUpdatePreferences = () => {
 export const useEmailVerificationStatus = (email: string) => {
   return useApiQuery<{ verified: boolean }>(
     [...userApiHooks.queryKeys.all(), 'verification', email],
-    `${AUTH_ENDPOINTS.verifyEmailStatus}/${encodeURIComponent(email)}`,
+    `${AUTH_ENDPOINTS.VERIFY_EMAIL_STATUS}/${encodeURIComponent(email)}`,
     {
       requiresAuth: false,
       enabled: !!email,
@@ -312,16 +268,21 @@ export const useEmailVerificationStatus = (email: string) => {
  */
 export const useVerifyEmail = () => {
   return useApiMutation<void, { token: string }>(
-    AUTH_ENDPOINTS.verifyEmail,
+    AUTH_ENDPOINTS.VERIFY_EMAIL,
     {
       requiresAuth: false
     }
   );
 };
 
-// Expose all hooks as a single object
-export const authApiHooks = {
+/**
+ * Export all hooks as a unified service
+ */
+export const authService = {
+  // User CRUD hooks
   ...userApiHooks,
+  
+  // Authentication hooks
   useLogin,
   useRegister,
   useLogout,
@@ -336,6 +297,8 @@ export const authApiHooks = {
   useEmailVerificationStatus,
   useVerifyEmail,
   
-  // Expose token storage helpers
-  tokenStorage
+  // Query keys for custom queries
+  queryKeys: userApiHooks.queryKeys
 };
+
+export default authService;

@@ -2,12 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { logger } from '@/shared/lib/logger';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { tokenManager } from './tokenManager';
-import { UserProfile } from '../api/types';
+import { UserProfile } from '../types';
 import { DEV_CONFIG } from '../constants/config';
-import { apiClient } from '@/features/tanstack-query-api';
-import { AUTH_ENDPOINTS } from '../api/constants';
+import { authService } from '../api/services/authService';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -18,8 +18,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUserProfile: () => Promise<UserProfile | null>;
   
-  // Legacy RBAC methods for backward compatibility
-  // These methods will use the new RBAC feature internally
+  // RBAC methods for backward compatibility
   hasRole: (role: string) => boolean;
   hasPermission: (permission: string) => boolean;
   hasAccess: (roles: string[], permissions: string[]) => boolean;
@@ -31,6 +30,20 @@ interface AuthProviderProps {
   children: React.ReactNode;
 }
 
+// Create a mock user for development mode
+const createMockUser = (): UserProfile => {
+  return {
+    id: 'dev-user-id',
+    username: 'developer',
+    email: 'dev@example.com',
+    firstName: 'Dev',
+    lastName: 'User',
+    roles: ['ADMIN', 'USER'],
+    permissions: ['view_dashboard', 'manage_users', 'manage_exams', 'exams:view', 'exams:edit', 'exams:manage-questions'],
+    userType: 'ADMIN'
+  };
+};
+
 // Check browser storage for existing auth state
 const checkInitialAuthState = (): boolean => {
   // In development mode, bypass auth if configured
@@ -38,66 +51,12 @@ const checkInitialAuthState = (): boolean => {
     return true;
   }
   
-  if (typeof window === 'undefined') return false;
-  
-  const token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
-  if (!token) return false;
-  
-  // Check if token is expired (if expiry is stored)
-  const expiry = localStorage.getItem('token_expiry');
-  if (expiry && Date.now() > parseInt(expiry)) {
-    return false;
-  }
-  
-  return !!token;
-};
-
-// Extracts user roles from JWT token
-const extractRolesFromToken = (token: string): string[] => {
-  try {
-    // Extract the payload part of the JWT
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    const payload = JSON.parse(jsonPayload);
-    
-    // Extract roles from token payload
-    if (payload.roles && Array.isArray(payload.roles)) {
-      return payload.roles;
-    }
-    
-    // Or try to get from authorities if roles doesn't exist
-    if (payload.authorities && Array.isArray(payload.authorities)) {
-      return payload.authorities
-        .filter(auth => auth.startsWith('ROLE_'))
-        .map(role => role.replace('ROLE_', ''));
-    }
-    
-    return [];
-  } catch (error) {
-    logger.error('Failed to extract roles from token', { error });
-    return [];
-  }
-};
-
-// Create a mock user for development mode
-const createMockUser = (): UserProfile => {
-return {
-id: 'dev-user-id',
-username: 'developer',
-email: 'dev@example.com',
-firstName: 'Dev',
-lastName: 'User',
-roles: ['ADMIN', 'USER'],
-permissions: ['view_dashboard', 'manage_users', 'manage_exams', 'exams:view', 'exams:edit', 'exams:manage-questions'],
-userType: 'ADMIN'
-};
+  return tokenManager.hasToken();
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const queryClient = useQueryClient();
+  
   // Use mock user in development if auth bypass is enabled
   const initialUser = (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) 
     ? createMockUser() 
@@ -109,6 +68,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(checkInitialAuthState());
   const profileRequestRef = useRef<Promise<UserProfile | null> | null>(null);
 
+  // Get login and logout mutations from authService
+  const { mutateAsync: loginMutation } = authService.useLogin();
+  const { mutateAsync: logoutMutation } = authService.useLogout();
+  
   // Implement a memoized fetchProfile function that uses a ref to store the promise
   // This ensures multiple concurrent calls get the same promise
   const fetchProfile = useCallback(async (): Promise<UserProfile | null> => {
@@ -133,46 +96,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return null;
         }
 
-        // Get current token
-        const token = tokenManager.getToken();
-        
-        // Extract roles from token
-        const rolesFromToken = token ? extractRolesFromToken(token) : [];
-        
-        // Use apiClient directly instead of React Query hooks
-        const response = await apiClient.get(AUTH_ENDPOINTS.profile);
-        
-        // Handle 403 errors by clearing auth state
-        if (response.status === 403) {
-          logger.warn('Profile access forbidden, clearing auth state');
-          tokenManager.removeToken();
-          tokenManager.removeRefreshToken();
-          setIsAuthenticated(false);
-          return null;
+        const { data, error } = await authService.useUserProfile({
+          enabled: true,
+          staleTime: 0 // Always fetch fresh data
+        }).refetch();
+
+        if (error) {
+          throw error;
         }
         
-        if (!response.data) {
+        if (!data) {
           throw new Error('No profile data returned');
         }
         
-        // Convert to UserProfile format
-        const profile: UserProfile = {
-          id: response.data.id,
-          username: response.data.email,
-          email: response.data.email,
-          firstName: response.data.firstName,
-          lastName: response.data.lastName,
-          roles: response.data.roles || rolesFromToken,
-          permissions: response.data.permissions || [],
-          userType: response.data.userType || null
-        };
-        
-        setUser(profile);
+        setUser(data);
         setIsAuthenticated(true);
-        return profile;
+        return data;
       } catch (err) {
         logger.error('Error fetching user profile', { error: err });
         setError(err instanceof Error ? err : new Error('Failed to fetch user profile'));
+        
         // Only set isAuthenticated to false if it's an auth error (401, 403)
         if (err instanceof Error && 
             (err.message.includes('401') || 
@@ -181,8 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
              err.message.includes('Forbidden'))) {
           setIsAuthenticated(false);
           // Clear tokens on auth errors
-          tokenManager.removeToken();
-          tokenManager.removeRefreshToken();
+          tokenManager.clearAll();
         }
         return null;
       } finally {
@@ -208,15 +150,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       try {
         if (tokenManager.hasToken()) {
-          try {
-            await fetchProfile();
-          } catch (profileErr) {
-            // If profile fetch fails, just set authenticated to false
-            logger.warn('Failed to fetch profile on init, clearing auth state', { error: profileErr });
-            setIsAuthenticated(false);
-            tokenManager.removeToken();
-            tokenManager.removeRefreshToken();
-          }
+          await fetchProfile();
         } else {
           setIsAuthenticated(false);
         }
@@ -262,40 +196,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
 
     try {
-      // Use apiClient directly instead of React Query hooks
-      const response = await apiClient.post(AUTH_ENDPOINTS.login, { 
+      // Use the login mutation from authService
+      const response = await loginMutation({ 
         emailAddress: username,
         password 
       });
       
-      const data = response.data;
-      
-      if (!data || !data.tokens || !data.user) {
+      if (!response || !response.tokens || !response.user) {
         throw new Error('Invalid login response');
       }
-      
-      // Store tokens
-      const { tokens, user: userData } = data;
-      
-      // Store tokens in tokenManager and localStorage
-      tokenManager.setToken(tokens.accessToken);
-      tokenManager.setRefreshToken(tokens.refreshToken);
-      tokenManager.setTokenExpiry(Date.now() + (tokens.expiresIn * 1000));
-      
-      // Get roles from token if not in user data
-      const rolesFromToken = extractRolesFromToken(tokens.accessToken);
-      
-      // Create user profile
-      const userProfile: UserProfile = {
-        id: userData.id,
-        username: userData.email,
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        roles: userData.roles || rolesFromToken,
-        permissions: userData.permissions || [],
-        userType: userData.userType || null
-      };
+
+      // User data is already in the response
+      const userProfile = response.user;
       
       setUser(userProfile);
       setIsAuthenticated(true);
@@ -320,16 +232,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     
     try {
-      // Use apiClient directly instead of React Query hooks
-      await apiClient.post(AUTH_ENDPOINTS.logout);
+      // Use the logout mutation from authService
+      await logoutMutation();
     } catch (err) {
       logger.error('Logout error', { error: err });
     } finally {
+      // Always reset state regardless of API success
       setUser(null);
       setIsAuthenticated(false);
-      // Clear tokens
-      tokenManager.removeToken();
-      tokenManager.removeRefreshToken();
+      
+      // Clear all auth data from storage
+      tokenManager.clearAll();
+      
+      // Clear user data from query cache
+      queryClient.removeQueries({ 
+        queryKey: authService.queryKeys.all()
+      });
     }
   };
 

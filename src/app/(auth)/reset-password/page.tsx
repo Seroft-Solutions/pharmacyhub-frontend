@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { AuthLoading } from '@/features/auth/ui/feedback';
+import { AuthLoading } from '../../../features/auth/components/feedback';
 import { validatePassword, calculatePasswordStrength } from '@/utils/password';
 import { ROUTES } from '@/features/auth/config/auth';
 import { authService } from '@/features/auth/api/services/authService';

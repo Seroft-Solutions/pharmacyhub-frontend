@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { RegisterForm } from '@/features/auth/ui/register/RegisterForm';
-import { AuthLayout } from '@/features/auth/ui/layout/AuthLayout';
+import { RegisterForm } from '@/features/auth/components/register/RegisterForm';
+import { AuthLayout } from '@/features/auth/components/layout/AuthLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 

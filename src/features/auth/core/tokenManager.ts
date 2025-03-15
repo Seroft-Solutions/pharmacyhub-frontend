@@ -1,13 +1,24 @@
 /**
- * Token management utilities for handling
- * authentication tokens securely.
+ * Token Management Module
+ * 
+ * Provides utilities for handling authentication tokens securely.
+ * Manages token storage, retrieval, and validation.
  */
+import { logger } from '@/shared/lib/logger';
 
 // Define storage keys for tokens
 export const TOKEN_CONFIG = {
+  // Primary storage keys
   ACCESS_TOKEN_KEY: 'accessToken',
   REFRESH_TOKEN_KEY: 'refreshToken',
   TOKEN_EXPIRY_KEY: 'tokenExpiry',
+  
+  // Legacy keys for backward compatibility
+  LEGACY: {
+    ACCESS_TOKEN: ['auth_token', 'access_token'],
+    REFRESH_TOKEN: ['refresh_token'],
+    TOKEN_EXPIRY: ['token_expiry']
+  }
 };
 
 /**
@@ -20,15 +31,19 @@ export const tokenManager = {
   setToken: (token: string): void => {
     if (typeof window === 'undefined') return;
     
-    // Store in standard location
-    localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, token);
-    
-    // Store in legacy locations for compatibility
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('access_token', token);
-    
-    // Log token setting for debugging
-    console.log('[Auth] Token set successfully');
+    try {
+      // Store in primary location
+      localStorage.setItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY, token);
+      
+      // Store in legacy locations for compatibility
+      TOKEN_CONFIG.LEGACY.ACCESS_TOKEN.forEach(key => {
+        localStorage.setItem(key, token);
+      });
+      
+      logger.debug('[Auth] Token set successfully');
+    } catch (error) {
+      logger.error('[Auth] Error setting token', error);
+    }
   },
   
   /**
@@ -37,33 +52,44 @@ export const tokenManager = {
   getToken: (): string | null => {
     if (typeof window === 'undefined') return null;
     
-    // Try all possible storage locations
-    const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY) ||
-                 localStorage.getItem('auth_token') ||
-                 localStorage.getItem('access_token');
-                 
-    if (!token) {
-      console.warn('[Auth] No token found in storage');
+    try {
+      // Try primary storage location first
+      const token = localStorage.getItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
+      if (token) return token;
+      
+      // Fall back to legacy locations
+      for (const key of TOKEN_CONFIG.LEGACY.ACCESS_TOKEN) {
+        const legacyToken = localStorage.getItem(key);
+        if (legacyToken) return legacyToken;
+      }
+      
+      logger.debug('[Auth] No token found in storage');
+      return null;
+    } catch (error) {
+      logger.error('[Auth] Error retrieving token', error);
       return null;
     }
-    
-    // Debug token retrieval
-    console.log('[Auth] Token retrieved successfully');
-    return token;
   },
   
   /**
-   * Remove the access token
+   * Remove the access token from all storage locations
    */
   removeToken: (): void => {
     if (typeof window === 'undefined') return;
     
-    // Remove from all possible storage locations
-    localStorage.removeItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('access_token');
-    
-    console.log('[Auth] Token removed from storage');
+    try {
+      // Remove from primary location
+      localStorage.removeItem(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
+      
+      // Remove from legacy locations
+      TOKEN_CONFIG.LEGACY.ACCESS_TOKEN.forEach(key => {
+        localStorage.removeItem(key);
+      });
+      
+      logger.debug('[Auth] Token removed from storage');
+    } catch (error) {
+      logger.error('[Auth] Error removing token', error);
+    }
   },
   
   /**
@@ -72,8 +98,17 @@ export const tokenManager = {
   setRefreshToken: (token: string): void => {
     if (typeof window === 'undefined') return;
     
-    localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, token);
-    localStorage.setItem('refresh_token', token); // Legacy
+    try {
+      // Store in primary location
+      localStorage.setItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY, token);
+      
+      // Store in legacy locations
+      TOKEN_CONFIG.LEGACY.REFRESH_TOKEN.forEach(key => {
+        localStorage.setItem(key, token);
+      });
+    } catch (error) {
+      logger.error('[Auth] Error setting refresh token', error);
+    }
   },
   
   /**
@@ -82,20 +117,41 @@ export const tokenManager = {
   getRefreshToken: (): string | null => {
     if (typeof window === 'undefined') return null;
     
-    return (
-      localStorage.getItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY) ||
-      localStorage.getItem('refresh_token')
-    );
+    try {
+      // Try primary storage location first
+      const token = localStorage.getItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY);
+      if (token) return token;
+      
+      // Fall back to legacy locations
+      for (const key of TOKEN_CONFIG.LEGACY.REFRESH_TOKEN) {
+        const legacyToken = localStorage.getItem(key);
+        if (legacyToken) return legacyToken;
+      }
+      
+      return null;
+    } catch (error) {
+      logger.error('[Auth] Error retrieving refresh token', error);
+      return null;
+    }
   },
   
   /**
-   * Remove the refresh token
+   * Remove the refresh token from all storage locations
    */
   removeRefreshToken: (): void => {
     if (typeof window === 'undefined') return;
     
-    localStorage.removeItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY);
-    localStorage.removeItem('refresh_token');
+    try {
+      // Remove from primary location
+      localStorage.removeItem(TOKEN_CONFIG.REFRESH_TOKEN_KEY);
+      
+      // Remove from legacy locations
+      TOKEN_CONFIG.LEGACY.REFRESH_TOKEN.forEach(key => {
+        localStorage.removeItem(key);
+      });
+    } catch (error) {
+      logger.error('[Auth] Error removing refresh token', error);
+    }
   },
   
   /**
@@ -104,8 +160,17 @@ export const tokenManager = {
   setTokenExpiry: (expiryTime: number): void => {
     if (typeof window === 'undefined') return;
     
-    localStorage.setItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY, expiryTime.toString());
-    localStorage.setItem('token_expiry', expiryTime.toString()); // Legacy
+    try {
+      // Store in primary location
+      localStorage.setItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY, expiryTime.toString());
+      
+      // Store in legacy locations
+      TOKEN_CONFIG.LEGACY.TOKEN_EXPIRY.forEach(key => {
+        localStorage.setItem(key, expiryTime.toString());
+      });
+    } catch (error) {
+      logger.error('[Auth] Error setting token expiry', error);
+    }
   },
   
   /**
@@ -114,12 +179,22 @@ export const tokenManager = {
   getTokenExpiry: (): number | null => {
     if (typeof window === 'undefined') return null;
     
-    const expiry = (
-      localStorage.getItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY) ||
-      localStorage.getItem('token_expiry')
-    );
-    
-    return expiry ? parseInt(expiry, 10) : null;
+    try {
+      // Try primary storage location first
+      const expiry = localStorage.getItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY);
+      if (expiry) return parseInt(expiry, 10);
+      
+      // Fall back to legacy locations
+      for (const key of TOKEN_CONFIG.LEGACY.TOKEN_EXPIRY) {
+        const legacyExpiry = localStorage.getItem(key);
+        if (legacyExpiry) return parseInt(legacyExpiry, 10);
+      }
+      
+      return null;
+    } catch (error) {
+      logger.error('[Auth] Error retrieving token expiry', error);
+      return null;
+    }
   },
   
   /**
@@ -132,7 +207,7 @@ export const tokenManager = {
     // Check expiry
     const expiry = tokenManager.getTokenExpiry();
     if (expiry && Date.now() >= expiry) {
-      console.log('[Auth] Token expired');
+      logger.debug('[Auth] Token expired');
       return false;
     }
     
@@ -150,15 +225,14 @@ export const tokenManager = {
   },
 
   /**
-   * Initialize tokens from a response (like after login)
+   * Initialize tokens from a login response
    */
-  initializeFromLoginResponse: (response: any): void => {
-    if (!response || !response.data) return;
+  initializeFromAuthResponse: (response: any): void => {
+    if (!response || !response.tokens) return;
 
-    // Extract tokens from response
-    const { tokens } = response.data;
+    const { tokens } = response;
     
-    if (tokens?.accessToken) {
+    if (tokens.accessToken) {
       tokenManager.setToken(tokens.accessToken);
       
       // Set expiry if provided
@@ -175,17 +249,36 @@ export const tokenManager = {
   },
   
   /**
-   * Debug token information in console
+   * Clear all auth-related data from storage
    */
-  debugTokenInfo: (): void => {
+  clearAll: (): void => {
     if (typeof window === 'undefined') return;
     
-    const token = tokenManager.getToken();
-    if (!token) {
-      console.log('[Auth Debug] No token found');
-      return;
+    try {
+      // Clear tokens
+      tokenManager.removeToken();
+      tokenManager.removeRefreshToken();
+      
+      // Clear expiry
+      localStorage.removeItem(TOKEN_CONFIG.TOKEN_EXPIRY_KEY);
+      TOKEN_CONFIG.LEGACY.TOKEN_EXPIRY.forEach(key => {
+        localStorage.removeItem(key);
+      });
+      
+      // Clear any other auth-related data
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('user_profile');
+      
+      logger.debug('[Auth] All auth data cleared from storage');
+    } catch (error) {
+      logger.error('[Auth] Error clearing auth data', error);
     }
-    
+  },
+  
+  /**
+   * Extract user roles from JWT token
+   */
+  extractRolesFromToken: (token: string): string[] => {
     try {
       // Extract the payload part of the JWT
       const base64Url = token.split('.')[1];
@@ -196,14 +289,22 @@ export const tokenManager = {
 
       const payload = JSON.parse(jsonPayload);
       
-      console.log('[Auth Debug] Token payload:', {
-        roles: payload.roles,
-        permissions: payload.permissions,
-        exp: new Date(payload.exp * 1000).toLocaleString(),
-        sub: payload.sub
-      });
-    } catch (err) {
-      console.error('[Auth Debug] Error decoding token:', err);
+      // Extract roles from token payload
+      if (payload.roles && Array.isArray(payload.roles)) {
+        return payload.roles;
+      }
+      
+      // Or try to get from authorities if roles doesn't exist
+      if (payload.authorities && Array.isArray(payload.authorities)) {
+        return payload.authorities
+          .filter((auth: string) => auth.startsWith('ROLE_'))
+          .map((role: string) => role.replace('ROLE_', ''));
+      }
+      
+      return [];
+    } catch (error) {
+      logger.error('[Auth] Failed to extract roles from token', error);
+      return [];
     }
   }
 };

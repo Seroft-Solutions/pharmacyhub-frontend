@@ -9,15 +9,15 @@ export {
   PermissionCheck as AuthPermissionCheck,
   TokenRefresh,
   ProfileLoading
-} from '@/features/auth/ui/feedback';
+} from '../../features/auth/components/feedback';
 
 export {
   AuthLayout
-} from '@/features/auth/ui/layout';
+} from '../../features/auth/components/layout';
 
 export {
   LoginForm
-} from '@/features/auth/ui/login';
+} from '../../features/auth/components/login';
 
 export {
   ForgotPasswordForm,
@@ -31,4 +31,4 @@ export {
 export {
   AuthGuard,
   RequireAuth
-} from '@/features/auth/ui/protection';
+} from '../../features/auth/components/protection';

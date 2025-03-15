@@ -1,7 +1,7 @@
 "use client";
 
-import { ForgotPasswordForm } from '@/features/auth/ui/passwordRecovery/ForgotPasswordForm';
-import { AuthLayout } from '@/features/auth/ui/layout/AuthLayout';
+import { ForgotPasswordForm } from '@/features/auth/components/passwordRecovery/ForgotPasswordForm';
+import { AuthLayout } from '@/features/auth/components/layout/AuthLayout';
 
 export default function ForgotPasswordPage() {
   return (

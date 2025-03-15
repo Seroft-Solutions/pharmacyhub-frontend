@@ -1,42 +1,11 @@
 /**
- * Auth API Feature
+ * Auth API
  * 
- * This module exports all auth-related API components, hooks, and types.
+ * This module exports all API-related functionality for the auth feature.
  */
 
-// Export API endpoints
-export { AUTH_ENDPOINTS } from './constants';
+// Export constants
+export * from './constants';
 
-// Export API hooks
-export {
-  authApiHooks,
-  useLogin,
-  useRegister,
-  useLogout,
-  useRefreshToken,
-  useUserProfile,
-  useUpdateProfile,
-  useRequestPasswordReset,
-  useValidateResetToken,
-  useCompletePasswordReset,
-  useChangePassword,
-  useUpdatePreferences,
-  useEmailVerificationStatus,
-  useVerifyEmail,
-  userApiHooks
-} from './hooks';
-
-// Export types
-export type {
-  User,
-  UserProfile,
-  UserPreferences,
-  UserUpdatePayload,
-  LoginRequest,
-  RegisterRequest,
-  AuthTokens,
-  AuthResponse,
-  PasswordResetRequest,
-  PasswordResetCompletion,
-  PasswordChangeRequest
-} from './types';
+// Export services
+export * from './services/authService';

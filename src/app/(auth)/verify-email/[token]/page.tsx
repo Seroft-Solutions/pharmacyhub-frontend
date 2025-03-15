@@ -1,7 +1,7 @@
 "use client";
 
-import { EmailVerificationView } from '@/features/auth/ui';
-import { AuthLayout } from '@/features/auth/ui/layout/AuthLayout';
+import { EmailVerificationView } from '@/features/auth/components';
+import { AuthLayout } from '@/features/auth/components/layout/AuthLayout';
 
 interface VerifyEmailPageProps {
   params: {
