@@ -71,40 +71,50 @@ const ExamsList: React.FC = () => {
   }, [activeTab, searchTerm]);
 
   // Filter exams by paper type and search term
-  const getFilteredExams = () => {
-    let filtered = allExams;
-    
-    // Filter by paper type
-    if (activeTab !== 'all') {
-      filtered = filtered.filter(exam => {
-        if (!exam.tags) return false;
-        return exam.tags.includes(activeTab);
-      });
-    }
-    
-    // Filter by search term
-    if (searchTerm) {
-      const lowerSearchTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter(exam => 
-        exam.title.toLowerCase().includes(lowerSearchTerm) || 
-        exam.description?.toLowerCase().includes(lowerSearchTerm) ||
-        exam.tags?.some(tag => tag.toLowerCase().includes(lowerSearchTerm))
-      );
-    }
-    
-    return filtered;
-  };
+const getFilteredExams = () => {
+  // Ensure allExams is always an array
+  let filtered = Array.isArray(allExams) ? allExams : [];
+  
+  // Filter by paper type
+  if (activeTab !== 'all') {
+    filtered = filtered.filter(exam => {
+      if (!exam?.tags) return false;
+      return exam.tags.includes(activeTab);
+    });
+  }
+  
+  // Filter by search term
+  if (searchTerm) {
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    filtered = filtered.filter(exam => 
+      exam?.title?.toLowerCase().includes(lowerSearchTerm) || 
+      exam?.description?.toLowerCase().includes(lowerSearchTerm) ||
+      exam?.tags?.some(tag => tag?.toLowerCase().includes(lowerSearchTerm))
+    );
+  }
+  
+  // Final safety check to ensure we always return an array
+  return Array.isArray(filtered) ? filtered : [];
+};
 
   // Get current page items
-  const getCurrentPageItems = () => {
-    const filtered = getFilteredExams();
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filtered.slice(startIndex, startIndex + itemsPerPage);
-  };
+const getCurrentPageItems = () => {
+  const filtered = getFilteredExams();
+  
+  // Safety check to ensure filtered is an array
+  if (!Array.isArray(filtered)) {
+    return [];
+  }
+  
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  return filtered.slice(startIndex, startIndex + itemsPerPage);
+};
 
   // Calculate total pages
   const getTotalPages = () => {
-    return Math.ceil(getFilteredExams().length / itemsPerPage);
+    const filtered = getFilteredExams();
+    // Safety check to ensure we have a valid array length
+    return Math.ceil((Array.isArray(filtered) ? filtered.length : 0) / itemsPerPage);
   };
 
   // Handle exam view/edit
@@ -130,7 +140,12 @@ const ExamsList: React.FC = () => {
   };
 
   // Get status badge
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status?: string) => {
+    // Default to unknown if status is undefined or null
+    if (!status) {
+      return <Badge variant="outline" className="flex items-center gap-1"><CircleIcon className="h-3 w-3"/> Unknown</Badge>;
+    }
+    
     switch (status) {
       case 'PUBLISHED':
         return <Badge variant="success" className="flex items-center gap-1"><CheckCircleIcon
@@ -147,10 +162,13 @@ const ExamsList: React.FC = () => {
 
   // Count exams by type
   const countExamsByType = (type: string) => {
+    // Ensure allExams is an array
+    if (!Array.isArray(allExams)) return 0;
+    
     if (type === 'all') return allExams.length;
     
     return allExams.filter(exam => 
-      exam.tags?.includes(type)
+      exam?.tags?.includes(type)
     ).length;
   };
 
@@ -163,12 +181,12 @@ const ExamsList: React.FC = () => {
 
   // Extract metadata from tags
   const extractMetadata = (exam: Exam) => {
-    if (!exam.tags) return {};
+    if (!exam?.tags) return {};
     
     const metadata: Record<string, string> = {};
     
     exam.tags.forEach(tag => {
-      if (tag.includes(':')) {
+      if (tag?.includes(':')) {
         const [key, value] = tag.split(':');
         metadata[key] = value;
       }
@@ -178,7 +196,11 @@ const ExamsList: React.FC = () => {
   };
 
   // Get paper type icon
-  const getPaperTypeIcon = (paperType: string) => {
+  const getPaperTypeIcon = (paperType?: string) => {
+    if (!paperType) {
+      return <FileTextIcon className="h-4 w-4" />;
+    }
+    
     switch (paperType) {
       case PaperType.PRACTICE:
         return <ListTodoIcon className="h-4 w-4" />;
@@ -313,8 +335,8 @@ const ExamsList: React.FC = () => {
             <TableBody>
               {exams.map(exam => {
                 // Get paper type
-                const paperType = exam.tags?.find(tag =>
-                  ['MODEL', 'PAST', 'SUBJECT', 'PRACTICE'].includes(tag.toUpperCase())
+                const paperType = exam?.tags?.find(tag =>
+                  tag && ['MODEL', 'PAST', 'SUBJECT', 'PRACTICE'].includes(tag.toUpperCase())
                 ) || PaperType.PRACTICE;
                 
                 // Get paper type icon
