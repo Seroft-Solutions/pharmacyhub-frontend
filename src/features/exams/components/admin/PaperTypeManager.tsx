@@ -6,12 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpenIcon, CalendarIcon, GraduationCapIcon, ListTodoIcon } from 'lucide-react';
 import { PaperType } from '../../types/StandardTypes';
 import { getPaperTypeDescription } from '../../utils/paperTypeUtils';
-import JsonExamUploader from './JsonExamUploader';
+import { JsonExamUploader } from './JsonExamUploader';
 
 /**
  * Component for managing different paper types
  */
-const PaperTypeManager: React.FC = () => {
+export const PaperTypeManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>(PaperType.PRACTICE);
 
   return (
@@ -63,5 +63,3 @@ const PaperTypeManager: React.FC = () => {
     </Card>
   );
 };
-
-export default PaperTypeManager;

@@ -7,8 +7,8 @@ import { QueryProvider } from '@/features/core/tanstack-query-api/components/Que
 import { Container } from '@/components/layout/container';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
-import { ExamResults } from '@/features/exams/ui/results/ExamResults';
-import { ExamReview } from '@/features/exams/ui/review/ExamReview';
+import { ExamResults } from '@/features/exams/components/results/ExamResults';
+import { ExamReview } from '@/features/exams/components/review/ExamReview';
 import { Card } from '@/components/ui/card';
 import { getStaticExamResult } from '@/features/exams/mock/staticResults';
 

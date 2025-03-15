@@ -1,5 +1,5 @@
 import React from 'react';
-import { ReviewMode } from '@/features/exams/ui/review/ReviewMode';
+import { ReviewMode } from '@/features/exams/components/review/ReviewMode';
 import { examService } from '@/features/exams/api/core/examService';
 import { useExamStore } from '@/features/exams/store/examStore';
 import { Metadata } from 'next';

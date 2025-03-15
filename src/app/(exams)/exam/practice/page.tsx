@@ -25,7 +25,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { ExamPaperMetadata } from '@/features/exams/model/standardTypes';
-import { ExamPaperCard } from '@/features/exams/ui/ExamPaperCard';
+import { ExamPaperCard } from '@/features/exams/components/ExamPaperCard';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';

@@ -25,7 +25,7 @@ interface McqEditorProps {
   onSave: (question: Question) => Promise<void>;
 }
 
-const McqEditor: React.FC<McqEditorProps> = ({ 
+export const McqEditor: React.FC<McqEditorProps> = ({ 
   question, 
   isOpen, 
   onClose, 
@@ -280,5 +280,3 @@ const McqEditor: React.FC<McqEditorProps> = ({
     </Dialog>
   );
 };
-
-export default McqEditor;

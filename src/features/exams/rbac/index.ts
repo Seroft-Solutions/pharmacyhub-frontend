@@ -14,7 +14,7 @@ export {
   TakeExamsGuard, 
   ManageExamsGuard, 
   ExamAdminGuard 
-} from '../ui/guards/ExamGuard';
+} from '@/features/exams/components/guards/ExamGuard';
 
 // Export the permission to operation mapping utilities
 export {

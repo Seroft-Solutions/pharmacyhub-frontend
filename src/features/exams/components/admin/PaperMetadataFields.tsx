@@ -18,7 +18,7 @@ interface PaperMetadataFieldsProps {
 /**
  * Component for rendering dynamic metadata fields based on paper type
  */
-const PaperMetadataFields: React.FC<PaperMetadataFieldsProps> = ({
+export const PaperMetadataFields: React.FC<PaperMetadataFieldsProps> = ({
   paperType,
   metadata,
   onChange,
@@ -266,5 +266,3 @@ const PaperMetadataFields: React.FC<PaperMetadataFieldsProps> = ({
     </div>
   );
 };
-
-export default PaperMetadataFields;

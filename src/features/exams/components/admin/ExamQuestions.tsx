@@ -37,7 +37,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Exam, Question } from '../../types/StandardTypes';
 import { examServiceAdapter } from '../../api/adapter';
-import McqEditor from './McqEditor';
+import { McqEditor } from './McqEditor';
 import {
   Pagination,
   PaginationContent,
@@ -57,7 +57,7 @@ interface ExamQuestionsProps {
  * Component for managing exam questions
  * Requires both exams:edit and exams:manage-questions permissions
  */
-const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
+export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   const router = useRouter();
   const { hasPermission } = useExamPermissions();
   const [exam, setExam] = useState<Exam | null>(null);
@@ -637,5 +637,3 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
     </AnyPermissionGuard>
   );
 };
-
-export default ExamQuestions;

@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { JsonExamUploader, PaperTypeManager, ExamsList } from '@/features/exams/components/admin';
-import { BookOpenIcon, ListIcon, UploadIcon, SettingsIcon } from 'lucide-react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import React, {useEffect, useState} from 'react';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
+import { JsonExamUploader, PaperTypeManager } from '@/features/exams/components/admin';
+import { ExamsList } from '@/features/exams/components/admin/ExamsList';
+import {BookOpenIcon, ListIcon, SettingsIcon, UploadIcon} from 'lucide-react';
+import {useRouter, useSearchParams} from 'next/navigation';
 
 /**
  * Admin page for comprehensive exam management
@@ -37,19 +38,19 @@ export default function ManageExamsPage() {
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="mb-6">
             <TabsTrigger value="papers" className="flex items-center gap-2">
-              <ListIcon className="h-4 w-4" />
+              <ListIcon className="h-4 w-4"/>
               Available Papers
             </TabsTrigger>
             <TabsTrigger value="upload" className="flex items-center gap-2">
-              <UploadIcon className="h-4 w-4" />
+              <UploadIcon className="h-4 w-4"/>
               Upload New Exam
             </TabsTrigger>
             <TabsTrigger value="paperTypes" className="flex items-center gap-2">
-              <BookOpenIcon className="h-4 w-4" />
+              <BookOpenIcon className="h-4 w-4"/>
               Paper Types
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
-              <SettingsIcon className="h-4 w-4" />
+              <SettingsIcon className="h-4 w-4"/>
               Settings
             </TabsTrigger>
           </TabsList>
@@ -60,7 +61,7 @@ export default function ManageExamsPage() {
                 <CardTitle>Available Exams</CardTitle>
               </CardHeader>
               <CardContent>
-                <ExamsList />
+                <ExamsList/>
               </CardContent>
             </Card>
           </TabsContent>
@@ -76,14 +77,14 @@ export default function ManageExamsPage() {
                   appropriate for each paper type.
                 </p>
                 <div className="mt-4">
-                  <JsonExamUploader />
+                  <JsonExamUploader/>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="paperTypes">
-            <PaperTypeManager />
+            <PaperTypeManager/>
           </TabsContent>
 
           <TabsContent value="settings">

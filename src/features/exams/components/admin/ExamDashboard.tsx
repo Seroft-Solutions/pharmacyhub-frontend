@@ -21,7 +21,7 @@ import {
   ExamOperationGuard, 
   ViewExamsGuard, 
   ManageExamsGuard 
-} from '@/features/exams/ui/guards/ExamGuard';
+} from '@/features/exams/components/guards/ExamGuard';
 import { ExamOperation, useExamFeatureAccess } from '@/features/exams/hooks/useExamFeatureAccess';
 
 // Import API hooks for data fetching
@@ -32,8 +32,8 @@ import {
 } from '@/features/exams/api/hooks';
 
 // Import components
-import ExamsList from './ExamsList';
-import JsonExamUploader from './JsonExamUploader';
+import { ExamsList } from './ExamsList';
+import { JsonExamUploader } from './JsonExamUploader';
 
 /**
  * ExamDashboard Component
@@ -43,7 +43,7 @@ import JsonExamUploader from './JsonExamUploader';
  * - Using useExamFeatureAccess hook for operation-level checks
  * - Using TanStack Query API hooks for data fetching
  */
-const ExamDashboard: React.FC = () => {
+export const ExamDashboard: React.FC = () => {
   // Use the feature access hook for exam-specific permissions
   const { 
     canViewExams, 
@@ -220,5 +220,3 @@ const ExamDashboard: React.FC = () => {
     </div>
   );
 };
-
-export default ExamDashboard;

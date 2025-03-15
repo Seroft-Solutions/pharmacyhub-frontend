@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import PaperMetadataFields from './PaperMetadataFields';
+import { PaperMetadataFields } from './PaperMetadataFields';
 import { getRequiredFields, metadataToTags } from '../../utils/paperTypeUtils';
 
 // Import the new centralized RBAC components
@@ -25,7 +25,7 @@ interface JsonExamUploaderProps {
  * Component for uploading JSON files and creating exams
  * Requires CREATE operation permission on exams feature
  */
-const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = PaperType.PRACTICE }) => {
+export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = PaperType.PRACTICE }) => {
   // Get the JSON upload mutation
   const uploadMutation = useJsonExamUploadMutation();
   
@@ -491,5 +491,3 @@ function readFileAsText(file: File): Promise<string> {
     reader.readAsText(file);
   });
 }
-
-export default JsonExamUploader;

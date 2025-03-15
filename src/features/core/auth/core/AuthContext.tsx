@@ -139,16 +139,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         setError(err instanceof Error ? err : new Error('Failed to fetch user profile'));
         
-        // Only set isAuthenticated to false if it's an auth error (401, 403)
-        if (err instanceof Error && 
-            (err.message.includes('401') || 
-             err.message.includes('403') || 
-             err.message.includes('Unauthorized') || 
-             err.message.includes('Forbidden'))) {
-          setIsAuthenticated(false);
-          // Clear tokens on auth errors
-          tokenManager.clearAll();
-        }
+        // Set isAuthenticated to false for all profile fetch errors
+        // This prevents the app from being in an inconsistent state where
+        // isAuthenticated=true but user=null
+        logger.debug('[Auth] Clearing auth state due to profile fetch error');
+        setIsAuthenticated(false);
+        tokenManager.clearAll();
+        
         return null;
       } finally {
         // Clear the request ref when done
@@ -173,7 +170,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       try {
         if (tokenManager.hasToken()) {
-          await fetchProfile();
+          const userProfile = await fetchProfile();
+          // Only set authenticated if we successfully got a user profile
+          if (!userProfile) {
+            logger.debug('[Auth] No user profile returned, clearing authentication state');
+            setIsAuthenticated(false);
+            setUser(null);
+            tokenManager.clearAll();
+          }
         } else {
           setIsAuthenticated(false);
         }
@@ -181,6 +185,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logger.error('Authentication initialization error', { error: err });
         setError(err instanceof Error ? err : new Error('Authentication failed'));
         setIsAuthenticated(false);
+        setUser(null);
+        tokenManager.clearAll();
       } finally {
         setIsLoading(false);
       }

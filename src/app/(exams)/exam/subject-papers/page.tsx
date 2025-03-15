@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { QueryProvider } from "@/features/core/tanstack-query-api/components/QueryProvider";
-import { ExamPaperCard } from "@/features/exams/ui/ExamPaperCard";
+import { ExamPaperCard } from "@/features/exams/components/ExamPaperCard";
 import { ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
 import { Spinner } from "@/components/ui/spinner";
 
