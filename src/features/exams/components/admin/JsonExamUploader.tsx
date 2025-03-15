@@ -1,13 +1,10 @@
 "use client"
 
 import React, {useCallback, useEffect, useState} from 'react';
-import { PermissionGuard, AnyPermissionGuard } from '@/features/rbac/ui';
-import { ExamPermission } from '@/features/exams/constants/permissions';
-import { useExamPermissions } from '@/features/exams/hooks/useExamPermissions';
-import {AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon} from 'lucide-react';
-import {processJsonExam} from '../../utils/jsonExamProcessor';
+import { AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon } from 'lucide-react';
+import { processJsonExam } from '../../utils/jsonExamProcessor';
 import { useJsonExamUploadMutation } from '@/features/exams/api/hooks';
-import {Difficulty, PaperType, Question} from '../../types/StandardTypes';
+import { Difficulty, PaperType, Question } from '../../types/StandardTypes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -17,13 +14,16 @@ import { Button } from '@/components/ui/button';
 import PaperMetadataFields from './PaperMetadataFields';
 import { getRequiredFields, metadataToTags } from '../../utils/paperTypeUtils';
 
+// Import the new centralized RBAC components
+import { ExamOperationGuard, ExamOperation, useExamFeatureAccess } from '@/features/exams/rbac';
+
 interface JsonExamUploaderProps {
   defaultPaperType?: string;
 }
 
 /**
  * Component for uploading JSON files and creating exams
- * Requires exams:create permission
+ * Requires CREATE operation permission on exams feature
  */
 const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = PaperType.PRACTICE }) => {
   // Get the JSON upload mutation
@@ -49,6 +49,9 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
+
+  // Use the new feature access hook
+  const { canCreateExams } = useExamFeatureAccess();
 
   // Update paperType when defaultPaperType changes
   useEffect(() => {
@@ -151,18 +154,16 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
     }
   }, []);
 
-  // Get permissions
-  const { hasPermission } = useExamPermissions();
-
   /**
    * Handle form submission
    */
   const handleSubmit = async (event: React.FormEvent) => {
     // Check permission before submission
-    if (!hasPermission(ExamPermission.CREATE_EXAM)) {
+    if (!canCreateExams) {
       setError('You do not have permission to create exams');
       return;
     }
+    
     event.preventDefault();
 
     // Validate the form
@@ -232,8 +233,8 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
   };
 
   return (
-    <PermissionGuard 
-      permission={ExamPermission.CREATE_EXAM}
+    <ExamOperationGuard 
+      operation={ExamOperation.CREATE}
       fallback={
         <Alert variant="destructive" className="mb-4">
           <AlertCircleIcon className="h-4 w-4"/>
@@ -457,7 +458,7 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
         </form>
       </CardContent>
     </Card>
-    </PermissionGuard>
+    </ExamOperationGuard>
   );
 };
 

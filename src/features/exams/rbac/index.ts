@@ -16,6 +16,13 @@ export {
   ExamAdminGuard 
 } from '../ui/guards/ExamGuard';
 
+// Export the permission to operation mapping utilities
+export {
+  permissionToOperation,
+  permissionToOperationMap,
+  stringToOperationMap
+} from './operations-mapping';
+
 /**
  * Exam Feature Access Control Quick Guide
  * 
@@ -57,5 +64,17 @@ export {
  *    <ManageExamsGuard>
  *      <AdminPanel />
  *    </ManageExamsGuard>
+ *    ```
+ * 
+ * 5. For migrating from old permission-based system:
+ *    ```
+ *    import { permissionToOperation } from '@/features/exams/rbac';
+ *    
+ *    // Convert old permission string to new operation
+ *    const operation = permissionToOperation('view_exams');
+ *    
+ *    <ExamOperationGuard operation={operation}>
+ *      <YourComponent />
+ *    </ExamOperationGuard>
  *    ```
  */

@@ -4,7 +4,11 @@ import React, { useMemo, useState } from 'react';
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePermissions } from "@/features/rbac/hooks";
+
+// Import from the new centralized RBAC system
+import { useFeatureAccess } from "@/features/rbac/hooks";
+import { useExamFeatureAccess, permissionToOperation } from "@/features/exams/rbac";
+
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -92,29 +96,50 @@ function ExamSidebarItem({
 
 /**
  * ExamSidebarMenu component for rendering the exam sidebar menu items
+ * Updated to use the centralized RBAC system
  */
 export function ExamSidebarMenu({ items }: ExamSidebarMenuProps) {
-  const { hasAccess } = usePermissions();
+  // Use centralized feature-based RBAC
+  const { hasRole, hasAnyRole } = useFeatureAccess();
+  const { checkExamOperation } = useExamFeatureAccess();
 
-  // Filter items based on permissions and roles
+  // Filter items based on roles and mapped permissions
   const filteredItems = useMemo(() => {
-    return items.filter(item => 
-      hasAccess({
-        permissions: item.permissions,
-        roles: item.roles,
-        requireAll: false
-      })
-    ).map(item => ({
+    return items.filter(item => {
+      // Check roles
+      const hasRequiredRoles = item.roles 
+        ? hasAnyRole(item.roles)
+        : true;
+        
+      // Check permissions by mapping to operations
+      const hasRequiredPermissions = item.permissions
+        ? item.permissions.every(permission => {
+            // Convert old permission string to operation
+            const operation = permissionToOperation(permission);
+            return operation ? checkExamOperation(operation) : true;
+          })
+        : true;
+        
+      return hasRequiredRoles && hasRequiredPermissions;
+    }).map(item => ({
       ...item,
-      subItems: item.subItems?.filter(subItem => 
-        hasAccess({
-          permissions: subItem.permissions,
-          roles: subItem.roles, 
-          requireAll: false
-        })
-      )
+      subItems: item.subItems?.filter(subItem => {
+        // Similar check for sub-items
+        const hasRequiredRoles = subItem.roles 
+          ? hasAnyRole(subItem.roles)
+          : true;
+          
+        const hasRequiredPermissions = subItem.permissions
+          ? subItem.permissions.every(permission => {
+              const operation = permissionToOperation(permission);
+              return operation ? checkExamOperation(operation) : true;
+            })
+          : true;
+          
+        return hasRequiredRoles && hasRequiredPermissions;
+      })
     }));
-  }, [items, hasAccess]);
+  }, [items, hasAnyRole, checkExamOperation]);
 
   return (
     <SidebarMenu>
