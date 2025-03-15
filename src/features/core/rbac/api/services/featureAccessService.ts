@@ -2,7 +2,7 @@
  * Feature Access Service
  * Provides API methods for feature-based access control
  */
-import { createExtendedApiService, ApiResponse } from '@/features/tanstack-query-api';
+import { createExtendedApiService, ApiResponse } from '@/features/core/tanstack-query-api';
 import type { FeatureAccessDTO } from '../../types/feature-access';
 
 /**
@@ -63,7 +63,7 @@ export const featureAccessService = createExtendedApiService<FeatureAccessDTO, {
 );
 
 // Import apiClient from tanstack-query-api
-import { apiClient } from '@/features/tanstack-query-api';
+import { apiClient } from '@/features/core/tanstack-query-api';
 
 // Add hooks for feature access
 export * from '../hooks/useFeatureAccessQueries';

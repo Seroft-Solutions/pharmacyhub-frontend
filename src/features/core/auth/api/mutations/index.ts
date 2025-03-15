@@ -3,7 +3,7 @@
  */
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../services/authService';
-import { queryClient } from '@/features/tanstack-query-api/core/queryClient';
+import { queryClient } from '@/features/core/tanstack-query-api/core/queryClient';
 
 /**
  * Hook for handling login requests

@@ -1,4 +1,4 @@
-import { useApiMutation, useApiQuery } from '@/features/tanstack-query-api';
+import { useApiMutation, useApiQuery } from '@/features/core/tanstack-query-api';
 import { FeatureDTO } from '../../types';
 import { useQueryClient } from '@tanstack/react-query';
 

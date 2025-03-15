@@ -2,7 +2,7 @@
  * RBAC Query Keys
  * TanStack Query key factory for RBAC-related queries
  */
-import { createQueryKeys } from '@/features/tanstack-query-api';
+import { createQueryKeys } from '@/features/core/tanstack-query-api';
 
 /**
  * Query keys for RBAC-related queries

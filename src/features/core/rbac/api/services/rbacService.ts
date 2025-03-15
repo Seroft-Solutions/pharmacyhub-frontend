@@ -2,8 +2,8 @@
  * RBAC Service
  * Provides API methods for role and permission-based access control
  */
-import { createExtendedApiService } from '@/features/tanstack-query-api';
-import type { ApiResponse } from '@/features/tanstack-query-api';
+import { createExtendedApiService } from '@/features/core/tanstack-query-api';
+import type { ApiResponse } from '@/features/core/tanstack-query-api';
 import type { PermissionCheckResponse, AccessProfile } from '../../types';
 
 /**
@@ -73,4 +73,4 @@ export const rbacService = createExtendedApiService<AccessProfile, {
 });
 
 // Fix to import the apiClient
-import { apiClient } from '@/features/tanstack-query-api';
+import { apiClient } from '@/features/core/tanstack-query-api';

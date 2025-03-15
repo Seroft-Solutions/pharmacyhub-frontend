@@ -6,7 +6,7 @@
 import { Permission, Role } from "@/types/auth";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import { queryClient } from '@/features/tanstack-query-api';
+import { queryClient } from '@/features/core/tanstack-query-api';
 import { useUserProfile, authApiHooks } from "../api/hooks";
 // Use the query keys from the new API hooks
 const authKeys = authApiHooks.queryKeys;

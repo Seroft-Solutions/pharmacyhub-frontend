@@ -5,10 +5,26 @@
  * using constants to prevent typos and make endpoint changes easier to manage.
  */
 
+// Helper function to determine API paths based on environment variables
+const getApiBasePath = (defaultPath: string): string => {
+  // If a custom base path is defined in env variables, use it
+  const customBasePath = process.env.NEXT_PUBLIC_API_PATH_PREFIX || '/api';
+  
+  // If the custom path already ends with a slash or is empty, don't add another one
+  const prefix = customBasePath.endsWith('/') || customBasePath === '' 
+    ? customBasePath.slice(0, -1)
+    : customBasePath;
+    
+  // Remove leading slash from defaultPath if prefix is not empty
+  const cleanPath = defaultPath.startsWith('/') ? defaultPath.slice(1) : defaultPath;
+  
+  return `${prefix}/${cleanPath}`;
+};
+
 // Base URLs for API endpoints
 export const API_BASE_URLS = {
-  AUTH: '/api/auth',
-  USERS: '/api/users'
+  AUTH: getApiBasePath('auth'),
+  USERS: getApiBasePath('users')
 };
 
 /**

@@ -15,6 +15,7 @@
 
 // Export components
 export { default as QueryProvider } from './components/QueryProvider';
+export { default as ApiDebugger } from './components/ApiDebugger';
 
 // Export core functionality
 export { 
@@ -52,11 +53,25 @@ export {
   createResourceQueryKeys
 } from './factories/createApiHooks';
 
-// Export types
+// Export types and utilities
 export {
   apiQueryKeys,
   buildQueryString
 } from './utils/types';
+
+export {
+  logApiRequest,
+  logApiResponse,
+  logApiError,
+  formatEndpoint
+} from './utils/debug';
+
+export {
+  normalizeApiResponse,
+  unwrapAuthResponse,
+  extractPaginatedContent,
+  extractUserProfile
+} from './utils/transforms';
 
 // Export all types
 export type {

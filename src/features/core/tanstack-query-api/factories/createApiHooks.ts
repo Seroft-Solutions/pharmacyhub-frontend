@@ -11,7 +11,7 @@ import {
   UseApiQueryOptions,
   UseApiMutationOptions,
   ApiResponse
-} from '@/features/tanstack-query-api';
+} from '@/features/core/tanstack-query-api';
 import { useQueryClient } from '@tanstack/react-query';
 import type { QueryKey } from '@tanstack/react-query';
 

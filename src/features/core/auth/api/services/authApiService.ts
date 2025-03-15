@@ -8,7 +8,7 @@ import {
   createExtendedApiService, 
   apiClient, 
   ApiResponse 
-} from '@/features/tanstack-query-api';
+} from '@/features/core/tanstack-query-api';
 import { AUTH_ENDPOINTS } from '../constants';
 import type {
   User,
@@ -222,7 +222,9 @@ export const authApiService = createExtendedApiService<User, {
     
     // Profile operations
     getUserProfile: async () => {
-      return await apiClient.get<UserProfile>(AUTH_ENDPOINTS.profile);
+      // Ensure we're using the correct endpoint
+      console.debug('[Auth] Getting user profile with endpoint:', AUTH_ENDPOINTS.PROFILE);
+      return await apiClient.get<UserProfile>(AUTH_ENDPOINTS.PROFILE);
     },
     
     updateUserProfile: async (data) => {

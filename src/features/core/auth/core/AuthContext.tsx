@@ -3,11 +3,13 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { logger } from '@/shared/lib/logger';
 import { useQueryClient } from '@tanstack/react-query';
+import { unwrapAuthResponse, extractUserProfile } from '@/features/core/tanstack-query-api';
 
 import { tokenManager } from './tokenManager';
 import { UserProfile } from '../types';
 import { DEV_CONFIG } from '../constants/config';
 import { authService } from '../api/services/authService';
+import { authApiService } from '../api/services/authApiService';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -96,24 +98,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return null;
         }
 
-        const { data, error } = await authService.useUserProfile({
-          enabled: true,
-          staleTime: 0 // Always fetch fresh data
-        }).refetch();
+        // Use the direct API service instead of hooks
+        const response = await authApiService.getUserProfile();
+        const responseData = response.data;
 
-        if (error) {
-          throw error;
+        logger.debug('[Auth] User profile fetch response', { 
+          hasData: !!responseData,
+          responseType: typeof responseData,
+          hasWrappedData: responseData && 'data' in responseData,
+          hasWrappedUser: responseData && responseData.data && 'user' in responseData.data
+        });
+        
+        // Extract user profile from response using our utility
+        const userData = extractUserProfile<UserProfile>(responseData);
+        
+        if (!userData) {
+          logger.error('[Auth] Failed to extract user profile from response', { responseData });
+          throw new Error('Failed to extract user profile from response');
         }
         
-        if (!data) {
-          throw new Error('No profile data returned');
-        }
+        logger.debug('[Auth] Setting user profile', { 
+          user: { 
+            id: userData.id,
+            email: userData.email,
+            roles: userData.roles
+          }
+        });
         
-        setUser(data);
+        setUser(userData);
         setIsAuthenticated(true);
-        return data;
+        return userData;
       } catch (err) {
-        logger.error('Error fetching user profile', { error: err });
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        logger.error('[Auth] Error fetching user profile', { 
+          error: err,
+          message: errorMessage,
+          tokenExists: tokenManager.hasToken(),
+          tokenExpiry: tokenManager.getTokenExpiry()
+        });
+        
         setError(err instanceof Error ? err : new Error('Failed to fetch user profile'));
         
         // Only set isAuthenticated to false if it's an auth error (401, 403)
@@ -196,18 +219,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
 
     try {
+      // Log login attempt for debugging
+      logger.debug('[Auth] Login attempt', { emailAddress: username, apiEndpoint: authService.queryKeys.all()[0] });
+
       // Use the login mutation from authService
       const response = await loginMutation({ 
         emailAddress: username,
         password 
       });
       
-      if (!response || !response.tokens || !response.user) {
-        throw new Error('Invalid login response');
+      // Log successful response
+      logger.debug('[Auth] Login response received', { 
+        hasData: !!response?.data,
+        hasTokens: !!response?.data?.tokens,
+        hasUser: !!response?.data?.user,
+        success: response?.success,
+        status: response?.status
+      });
+      
+      // Unwrap the API response to handle different formats
+      const unwrappedResponse = unwrapAuthResponse(response);
+      
+      // Validate the unwrapped response
+      if (!unwrappedResponse || !unwrappedResponse.tokens || !unwrappedResponse.user) {
+        logger.error('[Auth] Invalid login response structure after unwrapping', { 
+          originalResponse: response,
+          unwrappedResponse
+        });
+        throw new Error('Invalid login response: Missing tokens or user data in response');
       }
 
-      // User data is already in the response
-      const userProfile = response.user;
+      // User data is now in the unwrapped response
+      const userProfile = unwrappedResponse.user;
       
       setUser(userProfile);
       setIsAuthenticated(true);

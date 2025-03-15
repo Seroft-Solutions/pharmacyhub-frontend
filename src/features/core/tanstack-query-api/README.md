@@ -28,7 +28,7 @@ Wrap your application with the `QueryProvider` component:
 
 ```tsx
 // In your app layout or root component:
-import { QueryProvider } from '@/features/tanstack-query-api';
+import { QueryProvider } from '@/features/core/tanstack-query-api';
 
 function App() {
   return (
@@ -44,7 +44,7 @@ function App() {
 Use the `useApiQuery` hook to fetch data:
 
 ```tsx
-import { useApiQuery, apiQueryKeys } from '@/features/tanstack-query-api';
+import { useApiQuery, apiQueryKeys } from '@/features/core/tanstack-query-api';
 
 function UserProfile({ userId }) {
   const { data, isLoading, error } = useApiQuery(
@@ -69,7 +69,7 @@ function UserProfile({ userId }) {
 Use the mutation hooks for creating, updating, or deleting data:
 
 ```tsx
-import { useApiMutation } from '@/features/tanstack-query-api';
+import { useApiMutation } from '@/features/core/tanstack-query-api';
 
 function CreateUserForm() {
   const { mutate, isLoading } = useApiMutation(
@@ -99,7 +99,7 @@ function CreateUserForm() {
 For paginated data:
 
 ```tsx
-import { useApiPaginatedQuery, apiQueryKeys } from '@/features/tanstack-query-api';
+import { useApiPaginatedQuery, apiQueryKeys } from '@/features/core/tanstack-query-api';
 
 function UserList() {
   const [page, setPage] = useState(0);
@@ -118,7 +118,7 @@ function UserList() {
 Create reusable services for your entities:
 
 ```tsx
-import { createApiService } from '@/features/tanstack-query-api';
+import { createApiService } from '@/features/core/tanstack-query-api';
 
 // Define your entity type
 interface User {
@@ -138,7 +138,7 @@ const user = await userService.getById('123');
 For custom methods, use the extended service factory:
 
 ```tsx
-import { createExtendedApiService, apiClient } from '@/features/tanstack-query-api';
+import { createExtendedApiService, apiClient } from '@/features/core/tanstack-query-api';
 
 const authService = createExtendedApiService<User, {
   login: (credentials: LoginCredentials) => Promise<ApiResponse<AuthResponse>>;

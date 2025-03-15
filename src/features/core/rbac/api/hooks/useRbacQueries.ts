@@ -6,7 +6,7 @@ import {
   useApiQuery, 
   useApiMutation, 
   UseApiQueryOptions 
-} from '@/features/tanstack-query-api';
+} from '@/features/core/tanstack-query-api';
 import { rbacService } from '../services/rbacService';
 import { rbacQueryKeys } from '../queryKeys';
 import type { AccessProfile, PermissionCheckResponse } from '../../types';

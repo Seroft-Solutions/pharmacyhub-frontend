@@ -47,9 +47,10 @@ export function useFeatureAccess() {
     
     // If not in cache, we can't determine access synchronously
     // Return false and trigger a query
-    queryClient.fetchQuery(['featureAccess', featureCode], () => 
-      featureAccessService.checkFeatureAccess(featureCode)
-    );
+    queryClient.fetchQuery({ 
+      queryKey: ['featureAccess', featureCode],
+      queryFn: () => featureAccessService.checkFeatureAccess(featureCode)
+    });
     
     return false;
   }, [featureMap, queryClient]);
@@ -77,9 +78,10 @@ export function useFeatureAccess() {
     
     // If not in cache, we can't determine access synchronously
     // Return false and trigger a query
-    queryClient.fetchQuery(['operationAccess', featureCode, operation], () => 
-      featureAccessService.checkOperationAccess(featureCode, operation)
-    );
+    queryClient.fetchQuery({
+      queryKey: ['operationAccess', featureCode, operation],
+      queryFn: () => featureAccessService.checkOperationAccess(featureCode, operation)
+    });
     
     return false;
   }, [featureMap, queryClient]);

@@ -7,13 +7,14 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { tokenManager } from '@/features/core/auth/core/tokenManager';
 import { logger } from '@/shared/lib/logger';
+import { logApiRequest, logApiResponse, logApiError } from '../utils/debug';
 
 // Debug flag
 const DEBUG = process.env.NODE_ENV === 'development';
 
 // Create a reusable axios instance with custom configuration
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || '',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080',
   timeout: 30000, // 30 seconds
   headers: {
     'Content-Type': 'application/json',
@@ -37,12 +38,11 @@ export const replaceUrlParams = (url: string, params: Record<string, any>): stri
 // Request interceptor for handling auth tokens
 apiClient.interceptors.request.use(
   (config: AxiosRequestConfig) => {
-    if (DEBUG) {
-      logger.debug(`API Request: ${config.method?.toUpperCase()} ${config.url}`, {
-        headers: config.headers,
-        data: config.data
-      });
-    }
+    // Add timestamp for request timing
+    config.__requestTime = Date.now();
+    
+    // Log request for debugging
+    logApiRequest(config);
     
     // Add auth token if available
     const token = tokenManager.getToken();
@@ -66,20 +66,27 @@ apiClient.interceptors.request.use(
 // Response interceptor for handling common response cases
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    if (DEBUG) {
-      logger.debug(`API Response: ${response.status} ${response.config.url}`, {
-        headers: response.headers,
-        data: response.data
-      });
-    }
+    // Log response for debugging
+    logApiResponse(response);
     
     // Handle special response cases if needed
     return response;
   },
   async (error: AxiosError) => {
-    if (DEBUG) {
-      logger.error('API Response Error:', error.response);
+    // Add better logging for specific endpoint errors
+    if (error.config?.url?.includes('/users/me') || error.config?.url?.includes('/me')) {
+      logger.error('Profile request error:', { 
+        url: error.config?.url,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.config?.headers,
+        message: error.message
+      });
     }
+    
+    // Log error for debugging
+    logApiError(error);
     
     // Handle token refresh and retry original request
     if (error.response?.status === 401 && !error.config?.url?.includes('/auth/token/refresh')) {

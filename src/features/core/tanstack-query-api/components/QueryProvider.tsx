@@ -29,7 +29,7 @@ interface QueryProviderProps {
  * @example
  * ```tsx
  * // In your app layout or root component:
- * import { QueryProvider } from '@/features/tanstack-query-api';
+ * import { QueryProvider } from '@/features/core/tanstack-query-api';
  * 
  * function App() {
  *   return (

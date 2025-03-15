@@ -5,6 +5,7 @@
  * Manages token storage, retrieval, and validation.
  */
 import { logger } from '@/shared/lib/logger';
+import { unwrapAuthResponse } from '@/features/core/tanstack-query-api';
 
 // Define storage keys for tokens
 export const TOKEN_CONFIG = {
@@ -228,21 +229,33 @@ export const tokenManager = {
    * Initialize tokens from a login response
    */
   initializeFromAuthResponse: (response: any): void => {
-    if (!response || !response.tokens) return;
+    // Unwrap the response to handle different formats
+    const unwrappedResponse = unwrapAuthResponse(response);
+    
+    if (!unwrappedResponse || !unwrappedResponse.tokens) {
+      logger.error('[Auth] Invalid auth response format', { 
+        original: response,
+        unwrapped: unwrappedResponse 
+      });
+      return;
+    }
 
-    const { tokens } = response;
+    const { tokens } = unwrappedResponse;
     
     if (tokens.accessToken) {
+      logger.debug('[Auth] Setting access token');
       tokenManager.setToken(tokens.accessToken);
       
       // Set expiry if provided
       if (tokens.expiresIn) {
         const expiry = Date.now() + (tokens.expiresIn * 1000);
+        logger.debug(`[Auth] Setting token expiry: ${new Date(expiry).toISOString()}`);
         tokenManager.setTokenExpiry(expiry);
       }
       
       // Set refresh token if provided
       if (tokens.refreshToken) {
+        logger.debug('[Auth] Setting refresh token');
         tokenManager.setRefreshToken(tokens.refreshToken);
       }
     }

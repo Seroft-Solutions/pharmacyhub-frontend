@@ -8,8 +8,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { 
   createApiHooks, 
   useApiQuery, 
-  useApiMutation 
-} from '@/features/tanstack-query-api';
+  useApiMutation,
+  unwrapAuthResponse,
+  extractUserProfile
+} from '@/features/core/tanstack-query-api';
 
 import { AUTH_ENDPOINTS, USER_ENDPOINTS_MAP } from '../constants';
 import { tokenManager } from '../../core/tokenManager';
@@ -48,19 +50,42 @@ export const useLogin = () => {
     AUTH_ENDPOINTS.LOGIN,
     {
       requiresAuth: false,
-      onSuccess: (data) => {
-        if (data?.tokens) {
+      // Log the request payload for debugging
+      onMutate: (variables) => {
+        console.debug('[Auth] Login mutation variables:', { 
+          ...variables,
+          password: '[REDACTED]', // Don't log actual password
+          endpoint: AUTH_ENDPOINTS.LOGIN
+        });
+        return variables;
+      },
+      onSuccess: (response) => {
+        console.debug('[Auth] Login success:', { 
+          hasData: !!response?.data,
+          hasTokens: !!response?.data?.tokens,
+          hasUser: !!response?.data?.user,
+          success: response?.success,
+          status: response?.status
+        });
+        
+        // Unwrap the response to standardize format
+        const unwrappedResponse = unwrapAuthResponse(response);
+        
+        if (unwrappedResponse?.tokens) {
           // Store tokens using tokenManager
-          tokenManager.initializeFromAuthResponse(data);
+          tokenManager.initializeFromAuthResponse(unwrappedResponse);
           
           // Pre-populate the user profile in the cache
-          if (data.user) {
+          if (unwrappedResponse.user) {
             queryClient.setQueryData(
               userApiHooks.queryKeys.detail('me'),
-              data.user
+              unwrappedResponse.user
             );
           }
         }
+      },
+      onError: (error) => {
+        console.error('[Auth] Login error:', error);
       }
     }
   );
@@ -148,6 +173,15 @@ export const useUserProfile = (options = {}) => {
       enabled: isAuthenticated,
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: isAuthenticated ? 3 : 0,
+      // Handle wrapped response format using our utility
+      select: (response) => {
+        console.debug('[Auth] Processing user profile response', {
+          hasData: !!response?.data,
+          responseType: typeof response,
+        });
+        
+        return extractUserProfile<UserProfile>(response);
+      },
       ...options
     }
   );

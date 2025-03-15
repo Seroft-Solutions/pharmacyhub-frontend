@@ -3,7 +3,7 @@
  * 
  * React query hooks for the feature access API
  */
-import { useApiQuery, queryKeys } from '@/features/tanstack-query-api';
+import { useApiQuery, queryKeys } from '@/features/core/tanstack-query-api';
 import { FEATURE_ACCESS_ENDPOINTS } from '../services/featureAccessService';
 import type { FeatureAccessDTO } from '../../types/feature-access';
 
