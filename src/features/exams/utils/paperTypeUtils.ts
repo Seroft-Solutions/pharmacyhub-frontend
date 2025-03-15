@@ -108,17 +108,33 @@ export function metadataToTags(metadata: Record<string, any>, paperType: string)
     case PaperType.SUBJECT:
       if (metadata.subject) tags.push(`subject:${metadata.subject}`);
       if (metadata.topic) tags.push(`topic:${metadata.topic}`);
+      if (metadata.subtopic) tags.push(`subtopic:${metadata.subtopic}`);
+      if (metadata.courseCode) tags.push(`courseCode:${metadata.courseCode}`);
+      if (metadata.curriculum) tags.push(`curriculum:${metadata.curriculum}`);
+      if (metadata.academicLevel) tags.push(`academicLevel:${metadata.academicLevel}`);
       break;
     case PaperType.PAST:
       if (metadata.year) tags.push(`year:${metadata.year}`);
       if (metadata.institution) tags.push(`institution:${metadata.institution}`);
+      if (metadata.examBody) tags.push(`examBody:${metadata.examBody}`);
+      if (metadata.paperNumber) tags.push(`paperNumber:${metadata.paperNumber}`);
+      if (metadata.season) tags.push(`season:${metadata.season}`);
+      if (metadata.countryOrRegion) tags.push(`countryOrRegion:${metadata.countryOrRegion}`);
+      if (metadata.month) tags.push(`month:${metadata.month}`);
       break;
     case PaperType.MODEL:
       if (metadata.creator) tags.push(`creator:${metadata.creator}`);
+      if (metadata.targetAudience) tags.push(`targetAudience:${metadata.targetAudience}`);
+      if (metadata.version) tags.push(`version:${metadata.version}`);
+      if (metadata.seriesName) tags.push(`seriesName:${metadata.seriesName}`);
+      if (metadata.recommendedPreparation) tags.push(`recommendedPreparation:${metadata.recommendedPreparation}`);
       break;
     case PaperType.PRACTICE:
       if (metadata.focusArea) tags.push(`focusArea:${metadata.focusArea}`);
       if (metadata.skillLevel) tags.push(`skillLevel:${metadata.skillLevel}`);
+      if (metadata.learningObjectives) tags.push(`learningObjectives:${metadata.learningObjectives}`);
+      if (metadata.prerequisites) tags.push(`prerequisites:${metadata.prerequisites}`);
+      if (metadata.estimatedCompletionTime) tags.push(`estimatedCompletionTime:${metadata.estimatedCompletionTime}`);
       break;
   }
   
@@ -134,7 +150,10 @@ export function tagsToMetadata(tags: string[], paperType: string): Record<string
   // Extract values from tags
   tags.forEach(tag => {
     if (tag.includes(':')) {
-      const [key, value] = tag.split(':');
+      // Split only on the first colon, as some values might contain colons
+      const colonIndex = tag.indexOf(':');
+      const key = tag.substring(0, colonIndex);
+      const value = tag.substring(colonIndex + 1);
       metadata[key] = value;
     }
   });

@@ -10,6 +10,8 @@ export interface JsonExamUploadRequest {
   passingMarks?: number;
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   tags?: string[];
+  paperType?: string;
+  metadata?: Record<string, any>;
   jsonContent: string;
 }
 

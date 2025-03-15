@@ -177,25 +177,43 @@ const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaperType = 
       setError(null);
       setSuccess(null);
 
-      // Prepare metadata
+      // Add paperType-specific default values to metadata
       const fullMetadata = {
         ...metadata,
         difficulty
       };
+      
+      // Ensure required fields have values
+      if (paperType === PaperType.PRACTICE && !fullMetadata.skillLevel) {
+        fullMetadata.skillLevel = 'Intermediate';
+      } else if (paperType === PaperType.PAST && !fullMetadata.year) {
+        const currentYear = new Date().getFullYear();
+        fullMetadata.year = (currentYear - 1).toString();
+      } else if (paperType === PaperType.SUBJECT && !fullMetadata.academicLevel) {
+        fullMetadata.academicLevel = 'Undergraduate';
+      }
 
       // Create tags based on paperType and metadata
       const tags = metadataToTags(fullMetadata, paperType);
 
-      // Upload the exam using the mutation
-      await uploadMutation.mutateAsync({
+      // Prepare request payload
+      const payload = {
         title,
         description,
         duration,
         passingMarks: Math.ceil(questions.length * 0.6), // Default 60% passing mark
         status: 'DRAFT',
         tags,
+        paperType, // Add paper type explicitly
+        metadata: fullMetadata, // Add full metadata
         jsonContent,
-      });
+      };
+      
+      // Log the payload for debugging
+      console.log('Uploading exam with payload:', payload);
+      
+      // Upload the exam using the mutation
+      await uploadMutation.mutateAsync(payload);
 
       setSuccess(`Exam "${title}" successfully created!`);
 
