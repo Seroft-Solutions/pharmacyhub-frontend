@@ -5,7 +5,7 @@ import { FileText, Medal, BookOpen, Clock } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { useExamStats } from "@/features/exams/api/UseExamApi";
-import { QueryProvider } from "@/features/tanstack-query-api/components/QueryProvider";
+import { QueryProvider } from "@/features/core/tanstack-query-api/components/QueryProvider";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function ExamDashboardPage() {

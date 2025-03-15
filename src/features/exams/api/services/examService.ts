@@ -7,7 +7,7 @@
 import { 
   createExtendedApiService, 
   ApiResponse 
-} from '@/features/tanstack-query-api';
+} from '@/features/core/tanstack-query-api';
 import { EXAM_ENDPOINTS } from '../constants';
 import {
   Exam,
@@ -210,6 +210,6 @@ export const examService = createExtendedApiService<Exam, {
 });
 
 // Import required dependencies
-import { apiClient } from '@/features/tanstack-query-api';
+import { apiClient } from '@/features/core/tanstack-query-api';
 
 export default examService;

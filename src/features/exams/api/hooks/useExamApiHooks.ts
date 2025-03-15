@@ -4,7 +4,7 @@
  * This module provides React hooks for interacting with exam-related APIs.
  * It leverages the createApiHooks factory from tanstack-query-api.
  */
-import { createApiHooks } from '@/features/tanstack-query-api/factories/createApiHooks';
+import { createApiHooks } from '@/features/core/tanstack-query-api/factories/createApiHooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { EXAM_ENDPOINTS } from '../constants';
 import type {

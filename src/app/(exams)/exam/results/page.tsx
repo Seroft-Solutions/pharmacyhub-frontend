@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   useUserExamAttempts 
 } from '@/features/exams/api/hooks/useExamApi';
-import { QueryProvider } from '@/features/tanstack-query-api/components/QueryProvider';
+import { QueryProvider } from '@/features/core/tanstack-query-api/components/QueryProvider';
 import { Container } from '@/components/layout/container';
 import { Spinner } from '@/components/ui/spinner';
 import {
