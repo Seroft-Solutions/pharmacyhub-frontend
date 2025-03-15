@@ -12,14 +12,14 @@ export * from './types';
 export * from './api';
 
 // Export components
-export { default as ExamContainer } from './components/ExamContainer';
-export { default as ExamProgress } from './components/ExamProgress';
-export { default as ExamResults } from './components/ExamResults';
-export { default as ExamSummary } from './components/ExamSummary';
-export { default as ExamTimer } from './components/ExamTimer';
-export { QuestionDisplay } from './components/QuestionDisplay';
-export { default as QuestionNavigation } from './components/QuestionNavigation';
-export { default as NetworkStatusIndicator } from './components/NetworkStatusIndicator';
+export { default as ExamContainer } from './components/student/ExamContainer';
+export { default as ExamProgress } from './components/student/ExamProgress';
+export { default as ExamResults } from './components/results/ExamResults';
+export { default as ExamSummary } from './components/student/ExamSummary';
+export { default as ExamTimer } from './components/common/ExamTimer';
+export { QuestionDisplay } from './components/student/QuestionDisplay';
+export { default as QuestionNavigation } from './components/student/QuestionNavigation';
+export { default as NetworkStatusIndicator } from './components/common/NetworkStatusIndicator';
 
 // Export layout components
 export * from './components/layout';

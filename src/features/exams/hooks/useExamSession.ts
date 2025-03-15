@@ -72,6 +72,14 @@ export const useExamSession = (examId: number) => {
   );
   
   const {
+    mutate: unflagQuestionMutation,
+    isPending: isUnflagging
+  } = useUnflagQuestionMutation(
+    attemptId || 0,
+    currentQuestion?.id || 0
+  );
+  
+  const {
     mutate: submitExamMutation,
     isPending: isSubmitting,
     error: submitError
@@ -195,13 +203,12 @@ export const useExamSession = (examId: number) => {
       return newFlagged;
     });
     
-    // Flagged or unflag based on current state
+    // Flag or unflag based on current state
     const isFlagged = flaggedQuestions.has(questionId);
     
     if (isFlagged) {
       // Call unflag API
-      const unflagMutation = useUnflagQuestionMutation(attemptId, questionId);
-      unflagMutation.mutate(undefined, {
+      unflagQuestionMutation(undefined, {
         onError: (error) => {
           toast.error(`Failed to unflag question: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
@@ -320,6 +327,7 @@ export const useExamSession = (examId: number) => {
     isSubmitting,
     isSaving,
     isFlagging,
+    isUnflagging,
     startError,
     submitError,
     

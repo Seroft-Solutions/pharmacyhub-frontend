@@ -3,15 +3,15 @@
  * Provides queries for fetching exam data
  */
 import { useQuery } from '@tanstack/react-query';
-import { examService } from '../api/core/examService';
-import { examQueryKeys } from '../api/core/queryKeys';
+import { examService } from '../api/services';
+import { examQueryKeys } from '../api/hooks/useExamApiHooks';
 
 /**
  * Hook for fetching all published exams
  */
 export const usePublishedExams = () => {
   return useQuery({
-    queryKey: examQueryKeys.lists.published(),
+    queryKey: examQueryKeys.published(),
     queryFn: () => examService.getPublishedExams()
   });
 };
@@ -32,7 +32,7 @@ export const useExam = (examId: number) => {
  */
 export const useExamsByStatus = (status: string) => {
   return useQuery({
-    queryKey: examQueryKeys.lists.byStatus(status),
+    queryKey: examQueryKeys.byStatus(status),
     queryFn: () => examService.getExamsByStatus(status),
     enabled: !!status
   });
@@ -43,8 +43,8 @@ export const useExamsByStatus = (status: string) => {
  */
 export const useUserExamAttempts = (userId: string) => {
   return useQuery({
-    queryKey: examQueryKeys.lists.userAttempts(userId),
-    queryFn: () => examService.getUserAttempts(userId),
+    queryKey: [...examQueryKeys.all(), 'userAttempts', userId],
+    queryFn: () => examService.getUserExamAttempts(),
     enabled: !!userId
   });
 };
@@ -54,8 +54,8 @@ export const useUserExamAttempts = (userId: string) => {
  */
 export const useExamAttempt = (attemptId: number) => {
   return useQuery({
-    queryKey: examQueryKeys.attempt(attemptId),
-    queryFn: () => examService.getAttempt(attemptId),
+    queryKey: [...examQueryKeys.all(), 'attempt', attemptId],
+    queryFn: () => examService.getExamAttempt(attemptId),
     enabled: !!attemptId
   });
 };

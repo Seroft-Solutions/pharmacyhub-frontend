@@ -21,8 +21,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ExamResult, QuestionResult } from '../model/standardTypes';
-import { formatTime } from '../utils/formatTime';
+import { ExamResult, QuestionResult } from '../../model/standardTypes';
+import { formatTime } from '../../utils/formatTime';
 
 interface ExamResultsProps {
   result: ExamResult;
