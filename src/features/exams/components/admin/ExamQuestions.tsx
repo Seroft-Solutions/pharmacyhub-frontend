@@ -89,8 +89,13 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
           throw new Error('No exam data returned from API');
         }
         
-        console.log('Exam data fetched successfully:', examData);
-        setExam(examData);
+        console.log('Raw exam data from API:', examData);
+        
+        // Transform the API response to match expected frontend structure
+        const transformedExam = transformExamData(examData);
+        
+        console.log('Transformed exam data:', transformedExam);
+        setExam(transformedExam);
       } catch (err) {
         console.error('Error fetching exam:', err);
         setError(`Failed to load exam: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -101,6 +106,80 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
 
     fetchExam();
   }, [examId]);
+  
+  // Transform exam data from API format to frontend format
+  const transformExamData = (examData: any): Exam => {
+    // Create a deep copy of the exam data
+    // Check if the data is nested in a 'data' property
+    const dataToTransform = examData.data ? examData.data : examData;
+    
+    console.log('Data to transform:', dataToTransform);
+    
+    const transformedExam = { ...dataToTransform };
+    
+    // Handle array of questions directly (for getExamQuestions API)
+    if (Array.isArray(dataToTransform)) {
+      console.log('Handling array of questions directly');
+      return {
+        id: examId,
+        title: 'Exam Questions',
+        description: '',
+        status: 'PUBLISHED',
+        duration: 0,
+        totalMarks: 0,
+        passingMarks: 0,
+        questions: dataToTransform.map(transformQuestion)
+      } as Exam;
+    }
+    
+    // Check if questions array exists
+    if (dataToTransform.questions && Array.isArray(dataToTransform.questions)) {
+      console.log(`Found ${dataToTransform.questions.length} questions in exam data`);
+      transformedExam.questions = dataToTransform.questions.map(transformQuestion);
+    } else if (dataToTransform.q && Array.isArray(dataToTransform.q)) {
+      // Some APIs might use 'q' as shorthand for questions
+      console.log(`Found ${dataToTransform.q.length} questions under 'q' property`);
+      transformedExam.questions = dataToTransform.q.map(transformQuestion);
+    } else {
+      // Ensure questions property exists even if empty
+      console.log('No questions found in exam data, using empty array');
+      transformedExam.questions = [];
+    }
+    
+    return transformedExam as Exam;
+  };
+  
+  // Helper function to transform a single question
+  const transformQuestion = (question: any): Question => {
+    console.log('Transforming question:', question);
+    
+    const transformedQuestion: Question = {
+      id: question.id,
+      questionNumber: question.questionNumber || 0,
+      // Map questionText to text or use existing text property
+      text: question.questionText || question.text || '',
+      // Default empty array if options don't exist
+      options: [],
+      // Map other properties
+      correctAnswer: question.correctAnswer || '',
+      explanation: question.explanation || '',
+      marks: question.marks || question.points || 0
+    };
+    
+    // Transform options if they exist
+    if (question.options && Array.isArray(question.options)) {
+      transformedQuestion.options = question.options.map((option: any) => ({
+        id: option.id,
+        // Map optionKey to label or use existing label property
+        label: option.optionKey || option.label || '',
+        // Map optionText to text or use existing text property
+        text: option.optionText || option.text || '',
+        isCorrect: option.isCorrect || false
+      }));
+    }
+    
+    return transformedQuestion;
+  };
 
   // Get current questions (with filtering and pagination)
   const getCurrentQuestions = () => {
@@ -186,7 +265,7 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
       };
       
       // Update local state
-      setExam(updatedExam);
+      setExam(transformExamData(updatedExam));
       setSuccess(`Question #${questionToDelete.questionNumber} deleted successfully`);
       
       // Close the dialog
@@ -249,8 +328,8 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
         questions: updatedQuestions
       };
       
-      // Update local state
-      setExam(updatedExam);
+      // Update local state with transformed data
+      setExam(transformExamData(updatedExam));
       setSuccess(`Question #${editedQuestion.questionNumber} updated successfully`);
       
       // Clear success message after a few seconds
@@ -377,6 +456,20 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
               <AlertTitle>Success</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
+          )}
+          
+          {/* Debug info in development mode */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-4 p-3 border border-yellow-300 bg-yellow-50 rounded-md">
+              <details>
+                <summary className="font-medium cursor-pointer">API Debug Info</summary>
+                <div className="mt-2 text-xs overflow-auto max-h-40 p-2 bg-slate-100 rounded">
+                  <p>Exam ID: {examId}</p>
+                  <p>Questions Count: {exam.questions?.length || 0}</p>
+                  <pre>{JSON.stringify({exam}, null, 2)}</pre>
+                </div>
+              </details>
+            </div>
           )}
           
           {(!exam.questions || exam.questions.length === 0) ? (

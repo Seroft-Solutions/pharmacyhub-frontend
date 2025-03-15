@@ -26,6 +26,8 @@ export const examStoreAdapter = {
   
   getExamById: async (examId: number): Promise<Exam | null> => {
     const response = await examApiService.getExamById(examId);
+    console.log('Raw API response from getExamById:', response);
+    // Handle both data structure formats
     return response.data || null;
   },
   
