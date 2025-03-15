@@ -5,7 +5,7 @@
  * with proper interceptors for authentication, error handling, etc.
  */
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { tokenManager } from '@/features/auth/core/tokenManager';
+import { tokenManager } from '@/features/core/auth/core/tokenManager';
 import { logger } from '@/shared/lib/logger';
 
 // Debug flag

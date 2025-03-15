@@ -12,7 +12,7 @@ import {
   SidebarMenuSubButton
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { usePermissions } from "@/features/rbac/hooks";
+import { usePermissions } from "@/features/core/rbac/hooks";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { useNavigation } from '../../navigation';

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   usePasswordResetCompleteMutation as useResetPassword 
-} from '@/features/auth/api/mutations';
+} from '@/features/core/auth/api/mutations';
 import { ResetStatus } from '../../model/types';
 import { calculatePasswordStrength, validatePasswordReset } from '../../lib/validation';
 

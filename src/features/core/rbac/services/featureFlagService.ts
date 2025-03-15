@@ -4,7 +4,7 @@
  * Service for managing feature flags at runtime.
  * Handles loading, saving, and checking feature flag states.
  */
-import { getAllFeatures, getFeatureFlags } from '@/features/rbac/registry/featureRegistry';
+import { getAllFeatures, getFeatureFlags } from '@/features/core/rbac/registry/featureRegistry';
 
 // Type for feature flag state
 type FeatureFlagMap = Record<string, boolean>;

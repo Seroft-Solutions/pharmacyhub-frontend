@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, createContext, useContext } from 'react';
-import { useAuth } from '@/features/auth/hooks';
+import { useAuth } from '@/features/core/auth/hooks';
 
 type Role = 'user' | 'admin' | 'super_admin';
 

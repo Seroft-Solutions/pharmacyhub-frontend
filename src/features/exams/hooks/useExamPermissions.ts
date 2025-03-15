@@ -4,7 +4,7 @@
  * This is a wrapper around the RBAC usePermissions hook that makes it easier
  * to check exam-specific permissions.
  */
-import { usePermissions } from '@/features/rbac/hooks';
+import { usePermissions } from '@/features/core/rbac/hooks';
 import { ExamPermission } from '../constants/permissions';
 
 export function useExamPermissions() {

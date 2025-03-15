@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePasswordResetRequestMutation as useRequestPasswordReset } from '@/features/auth/api/mutations';
+import { usePasswordResetRequestMutation as useRequestPasswordReset } from '@/features/core/auth/api/mutations';
 import { ResetStep } from '../../model/types';
 
 // Import shadcn UI components

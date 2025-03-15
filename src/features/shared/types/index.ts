@@ -3,7 +3,7 @@
  */
 
 import { LucideIcon } from 'lucide-react';
-import { Permission, Role } from '@/features/auth/types';
+import { Permission, Role } from '@/features/core/auth/types';
 
 /**
  * MenuItem interface for navigation components

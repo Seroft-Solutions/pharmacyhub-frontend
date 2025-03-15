@@ -1,7 +1,7 @@
 "use client";
 
-import { usePermissions, useAccess } from "@/features/rbac/hooks";
-import { useSession } from "@/features/auth/hooks";
+import { usePermissions, useAccess } from "@/features/core/rbac/hooks";
+import { useSession } from "@/features/core/auth/hooks";
 import { Button } from "@/components/ui/button";
 
 function DashboardMetrics() {

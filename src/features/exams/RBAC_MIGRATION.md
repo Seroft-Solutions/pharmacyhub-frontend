@@ -154,4 +154,4 @@ if (hasOperation('feature', 'operation')) {
 
 ## Need Help?
 
-If you encounter any issues during migration, please refer to the [RBAC Feature Documentation](../rbac/README.md) or contact the development team.
+If you encounter any issues during migration, please refer to the [RBAC Feature Documentation](../core/rbac/README.md) or contact the development team.

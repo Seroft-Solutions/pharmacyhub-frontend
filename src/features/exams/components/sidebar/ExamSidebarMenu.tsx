@@ -6,7 +6,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Import from the new centralized RBAC system
-import { useFeatureAccess } from "@/features/rbac/hooks";
+import { useFeatureAccess } from "@/features/core/rbac/hooks";
 import { useExamFeatureAccess, permissionToOperation } from "@/features/exams/rbac";
 
 import {

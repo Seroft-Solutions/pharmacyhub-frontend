@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/features/auth/hooks";
+import { useAuth } from "@/features/core/auth/hooks";
 import { RoleSwitcher } from './RoleSwitcher';
 import { useRole } from '../../Hooks/useRole';
 import { useNavigation } from '../../navigation';

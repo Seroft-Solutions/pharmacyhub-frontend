@@ -7,7 +7,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks';
-import { useAccess } from '@/features/rbac/hooks';
+import { useAccess } from '@/features/core/rbac/hooks';
 
 // Define the component props
 interface RequireAuthProps {

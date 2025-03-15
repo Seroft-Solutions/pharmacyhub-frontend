@@ -1,3 +1,3 @@
-import { AuthLoading } from '../../features/auth/components/feedback';
+import { AuthLoading } from '@/features/core/auth/components/feedback';
 
 export { AuthLoading };

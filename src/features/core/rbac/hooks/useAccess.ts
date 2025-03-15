@@ -3,7 +3,7 @@
  * Provides client-side RBAC functions
  */
 import { useCallback } from 'react';
-import { useAuth } from '@/features/auth';
+import { useAuth } from '../../auth';
 import { rbacService } from '../api';
 import type { AccessCheckOptions, RoleCheckOptions } from '../types';
 

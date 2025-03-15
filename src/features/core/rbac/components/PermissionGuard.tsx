@@ -4,7 +4,7 @@
  * Permission-based access control components
  */
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/features/auth';
+import { useAuth } from '../../auth';
 import { Permission, Role } from '../constants/permissions';
 
 // Component that renders children only if user has the required permission

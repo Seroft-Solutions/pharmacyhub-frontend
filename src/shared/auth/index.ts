@@ -4,7 +4,7 @@
  */
 
 // Re-export everything from the auth feature
-export * from '@/features/auth';
+export * from '../../features/core/auth';
 
 // Re-export rbac components
 export {
@@ -16,4 +16,4 @@ export {
   AdminGuard,
   ManagerGuard,
   ResourceGuard
-} from '@/features/rbac';
+} from '../../features/core/rbac';

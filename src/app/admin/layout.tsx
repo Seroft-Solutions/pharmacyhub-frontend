@@ -3,7 +3,7 @@
 import { AppLayout } from "@/features/shell";
 import { RoleProvider } from "@/features/shell/Hooks/useRole";
 import { ADMIN_FEATURES } from "@/features/shell/navigation/adminFeatures";
-import { AuthProvider } from "@/features/auth";
+import { AuthProvider } from "../../features/core/auth";
 
 /**
  * This layout component wraps all admin routes.

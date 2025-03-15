@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useLoginForm } from '@/features/auth/hooks/useLoginForm';
+import { useLoginForm } from '@/features/core/auth/hooks/useLoginForm';
 
 // Import shadcn UI components
 import { Button } from '@/components/ui/button';

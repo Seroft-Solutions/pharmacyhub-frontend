@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/features/auth/hooks';
+import { useAuth } from '@/features/core/auth/hooks';
 
 export default function Unauthorized() {
   const { user, logout } = useAuth();

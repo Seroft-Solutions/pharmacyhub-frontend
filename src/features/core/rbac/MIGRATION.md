@@ -263,4 +263,4 @@ The old RBAC components in the auth feature are now marked as deprecated and wil
 
 ## Need Help?
 
-If you encounter any issues during migration, please refer to the [RBAC feature documentation](./README.md) or contact the development team.
+If you encounter any issues during migration, please refer to the [RBAC feature documentation](README.md) or contact the development team.

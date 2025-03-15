@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { useSession } from "@/features/auth/hooks";
+import { useSession } from "@/features/core/auth/hooks";
 import { useIsMobile } from "@/features/ui/hooks";
 import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
-import { DEV_CONFIG } from "@/features/auth/constants/config";
+import { DEV_CONFIG } from "@/features/core/auth/constants/config";
 
 import { AppTopbar } from "../topbar/AppTopbar";
 import { ContentArea } from "./ContentArea";

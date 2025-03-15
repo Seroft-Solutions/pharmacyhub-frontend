@@ -1,7 +1,7 @@
 /**
  * Custom hook for checking user permissions
  */
-import { useAuth } from '@/features/auth/hooks';
+import { useAuth } from '@/features/core/auth/hooks';
 import { useEffect, useState } from 'react';
 
 type Permission = string;

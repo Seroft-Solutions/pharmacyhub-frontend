@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/features/auth';
+import { useAuth } from '../../auth';
 import { rbacService } from '../api/services/rbacService';
 import { useAccess } from '../hooks/useAccess';
 

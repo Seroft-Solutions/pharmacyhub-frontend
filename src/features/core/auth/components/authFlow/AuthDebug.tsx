@@ -1,7 +1,7 @@
 'use client';
 
 import { FC } from 'react';
-import { useAuth } from '@/features/auth/hooks';
+import { useAuth } from '@/features/core/auth/hooks';
 
 interface AuthDebugProps {
   showRoles?: boolean;

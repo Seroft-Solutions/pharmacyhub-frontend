@@ -14,7 +14,7 @@
  *    - hasPermission(ExamPermission.X) → checkExamOperation(ExamOperation.X)
  */
 
-import { usePermissions } from '@/features/rbac/hooks';
+import { usePermissions } from '@/features/core/rbac/hooks';
 import { ExamPermission } from '../../constants/deprecated/permissions';
 import { useExamFeatureAccess } from '../../rbac';
 

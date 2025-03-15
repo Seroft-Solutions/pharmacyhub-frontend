@@ -1,7 +1,7 @@
 "use client";
 
-import { ResetPasswordForm } from '@/features/auth/components/passwordRecovery/ResetPasswordForm';
-import { AuthLayout } from '@/features/auth/components/layout/AuthLayout';
+import { ResetPasswordForm } from '@/features/core/auth/components/passwordRecovery/ResetPasswordForm';
+import { AuthLayout } from '@/features/core/auth/components/layout/AuthLayout';
 
 interface ResetPasswordPageProps {
   params: {

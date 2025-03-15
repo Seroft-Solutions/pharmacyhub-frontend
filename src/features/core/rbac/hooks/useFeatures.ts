@@ -1,10 +1,10 @@
 'use client';
 
-import { useAuth } from '@/features/auth/hooks';
+import { useAuth } from '@/features/core/auth/hooks';
 import { useCallback, useMemo } from 'react';
 import { useFeatureApi } from '../api/hooks/useFeatureApi';
 import { FeatureAccessMap } from '../types';
-import { DEV_CONFIG } from '@/features/auth/constants/config';
+import { DEV_CONFIG } from '@/features/core/auth/constants/config';
 
 /**
  * Hook for feature-based access control
