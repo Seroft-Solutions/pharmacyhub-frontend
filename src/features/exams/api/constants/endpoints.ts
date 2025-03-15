@@ -1,5 +1,5 @@
 /**
- * Exam API Endpoints
+ * Exam API Endpoints Constants
  * 
  * This module defines all API endpoints for exam-related operations.
  * Using constants prevents typos and makes endpoint changes easier to manage.
@@ -7,10 +7,13 @@
 
 const BASE_URL = '/api/v1/exams';
 
+/**
+ * Exam API Endpoints
+ */
 export const EXAM_ENDPOINTS = {
-  // Exam CRUD operations
-  list: BASE_URL,
-  create: BASE_URL,
+  // Standard CRUD endpoints
+  list: `${BASE_URL}`,
+  create: `${BASE_URL}`,
   detail: `${BASE_URL}/:id`,
   update: `${BASE_URL}/:id`,
   patch: `${BASE_URL}/:id`,
@@ -49,6 +52,30 @@ export const EXAM_ENDPOINTS = {
   archiveExam: `${BASE_URL}/:id/archive`,
   updateQuestion: `${BASE_URL}/:examId/questions/:questionId`,
   uploadJson: `${BASE_URL}/upload-json`,
+};
+
+// Paper-specific endpoints
+export const PAPER_ENDPOINTS = {
+  ...EXAM_ENDPOINTS,
+  list: EXAM_ENDPOINTS.papers,
+  detail: EXAM_ENDPOINTS.paperDetail,
+  model: EXAM_ENDPOINTS.modelPapers,
+  past: EXAM_ENDPOINTS.pastPapers,
+  subject: EXAM_ENDPOINTS.subjectPapers,
+  practice: EXAM_ENDPOINTS.practicePapers,
+};
+
+// Attempt-specific endpoints
+export const ATTEMPT_ENDPOINTS = {
+  list: EXAM_ENDPOINTS.userAttempts,
+  detail: EXAM_ENDPOINTS.attemptDetail,
+  result: EXAM_ENDPOINTS.attemptResult,
+  flags: EXAM_ENDPOINTS.flaggedQuestions,
+  byExam: EXAM_ENDPOINTS.attemptsByExam,
+  submit: EXAM_ENDPOINTS.submitExam,
+  answer: EXAM_ENDPOINTS.answerQuestion,
+  flag: EXAM_ENDPOINTS.flagQuestion,
+  unflag: EXAM_ENDPOINTS.unflagQuestion,
 };
 
 export default EXAM_ENDPOINTS;

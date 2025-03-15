@@ -30,10 +30,10 @@ export const AUTH_ENDPOINTS = {
   // User CRUD operations
   list: `${BASE_USERS_URL}`,
   create: `${BASE_USERS_URL}`,
-  detail: `${BASE_USERS_URL}/:id`,
-  update: `${BASE_USERS_URL}/:id`,
-  patch: `${BASE_USERS_URL}/:id`,
-  delete: `${BASE_USERS_URL}/:id`,
+  detail: (id: number | string) => `${BASE_USERS_URL}/${id}`,
+  update: (id: number | string) => `${BASE_USERS_URL}/${id}`,
+  patch: (id: number | string) => `${BASE_USERS_URL}/${id}`,
+  delete: (id: number | string) => `${BASE_USERS_URL}/${id}`,
 };
 
 export default AUTH_ENDPOINTS;

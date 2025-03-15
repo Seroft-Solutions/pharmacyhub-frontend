@@ -19,11 +19,22 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   ArrowLeft, 
   Edit, 
+  Trash2, 
   AlertCircle, 
   CheckCircle, 
   FileText,
   Search
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Exam, Question } from '../../types/StandardTypes';
 import { examServiceAdapter } from '../../api/adapter';
 import McqEditor from './McqEditor';
@@ -55,6 +66,8 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   const [success, setSuccess] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,7 +80,47 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
       try {
         setLoading(true);
         setError(null);
+        
+        // Log process to debug
+        console.log(`Fetching exam with ID ${examId}...`);
+        
+        // Use mock data in development mode for easier testing
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Using mock exam data in development mode');
+          // Simulate some loading time
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Create mock exam data
+          const mockExam: Exam = {
+            id: examId,
+            title: 'Mock Exam for Development',
+            description: 'This is a mock exam for development purposes',
+            status: 'PUBLISHED',
+            duration: 60,
+            totalMarks: 100,
+            passingMarks: 60,
+            questions: Array.from({ length: 15 }, (_, i) => ({
+              id: i + 1,
+              questionNumber: i + 1,
+              text: `Sample question ${i + 1}`,
+              correctAnswer: 'A',
+              explanation: `Explanation for question ${i + 1}`,
+              options: [
+                { id: i * 4 + 1, label: 'A', text: `Option A for question ${i + 1}`, isCorrect: true },
+                { id: i * 4 + 2, label: 'B', text: `Option B for question ${i + 1}`, isCorrect: false },
+                { id: i * 4 + 3, label: 'C', text: `Option C for question ${i + 1}`, isCorrect: false },
+                { id: i * 4 + 4, label: 'D', text: `Option D for question ${i + 1}`, isCorrect: false },
+              ]
+            }))
+          };
+          
+          setExam(mockExam);
+          setLoading(false);
+          return;
+        }
+        
         const examData = await examServiceAdapter.getExamById(examId);
+        console.log('Exam data fetched successfully:', examData);
         setExam(examData);
       } catch (err) {
         console.error('Error fetching exam:', err);
@@ -126,10 +179,81 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
     setIsEditorOpen(true);
   };
 
+  // Handle question delete button click
+  const handleDeleteQuestion = (question: Question) => {
+    // Check if the user has permission to manage questions
+    if (!hasPermission(ExamPermission.MANAGE_QUESTIONS)) {
+      setError('You do not have permission to delete questions');
+      return;
+    }
+    setQuestionToDelete(question);
+    setIsDeleteDialogOpen(true);
+  };
+
   // Handle editor close
   const handleEditorClose = () => {
     setIsEditorOpen(false);
     setEditingQuestion(null);
+  };
+  
+  // Handle delete confirmation
+  const handleConfirmDelete = async () => {
+    if (!questionToDelete || !exam) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Call the API to delete the question
+      await examServiceAdapter.deleteQuestion(examId, questionToDelete.id);
+      
+      // Update the questions in the local state
+      const updatedQuestions = exam.questions?.filter(q => q.id !== questionToDelete.id) || [];
+      
+      // Create updated exam object
+      const updatedExam = {
+        ...exam,
+        questions: updatedQuestions
+      };
+      
+      // Update local state
+      setExam(updatedExam);
+      setSuccess(`Question #${questionToDelete.questionNumber} deleted successfully`);
+      
+      // Close the dialog
+      setIsDeleteDialogOpen(false);
+      setQuestionToDelete(null);
+      
+      // Reset to first page if current page is now empty
+      const filteredQuestions = searchTerm 
+        ? updatedQuestions.filter(q => 
+            q.text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            q.options?.some(o => o.text?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (q.explanation && q.explanation.toLowerCase().includes(searchTerm.toLowerCase()))
+          )
+        : updatedQuestions;
+      
+      const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
+      if (currentPage > totalPages && totalPages > 0) {
+        setCurrentPage(totalPages);
+      }
+      
+      // Clear success message after a few seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
+    } catch (err) {
+      console.error('Error deleting question:', err);
+      setError(`Failed to delete question: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Handle delete cancel
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false);
+    setQuestionToDelete(null);
   };
 
   // Handle question save
@@ -370,16 +494,28 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
                           </TableCell>
                           <TableCell className="text-right">
                             <PermissionGuard permission={ExamPermission.MANAGE_QUESTIONS}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditQuestion(question)}
-                                className="h-8 w-8 p-0"
-                                title="Edit question"
-                              >
-                                <Edit className="h-4 w-4"/>
-                                <span className="sr-only">Edit</span>
-                              </Button>
+                              <div className="flex space-x-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEditQuestion(question)}
+                                  className="h-8 w-8 p-0"
+                                  title="Edit question"
+                                >
+                                  <Edit className="h-4 w-4"/>
+                                  <span className="sr-only">Edit</span>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteQuestion(question)}
+                                  className="h-8 w-8 p-0 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                                  title="Delete question"
+                                >
+                                  <Trash2 className="h-4 w-4"/>
+                                  <span className="sr-only">Delete</span>
+                                </Button>
+                              </div>
                             </PermissionGuard>
                           </TableCell>
                         </TableRow>
@@ -475,6 +611,28 @@ const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
         onClose={handleEditorClose}
         onSave={handleSaveQuestion}
       />
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete question #{questionToDelete?.questionNumber}. 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDelete}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
     </AnyPermissionGuard>
   );

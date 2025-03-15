@@ -85,16 +85,16 @@ const extractRolesFromToken = (token: string): string[] => {
 
 // Create a mock user for development mode
 const createMockUser = (): UserProfile => {
-  return {
-    id: 'dev-user-id',
-    username: 'developer',
-    email: 'dev@example.com',
-    firstName: 'Dev',
-    lastName: 'User',
-    roles: ['ADMIN', 'USER'],
-    permissions: ['view_dashboard', 'manage_users', 'manage_exams'],
-    userType: 'ADMIN'
-  };
+return {
+id: 'dev-user-id',
+username: 'developer',
+email: 'dev@example.com',
+firstName: 'Dev',
+lastName: 'User',
+roles: ['ADMIN', 'USER'],
+permissions: ['view_dashboard', 'manage_users', 'manage_exams', 'exams:view', 'exams:edit', 'exams:manage-questions'],
+userType: 'ADMIN'
+};
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
