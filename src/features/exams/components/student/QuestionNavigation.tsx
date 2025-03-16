@@ -1,6 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeftIcon, ChevronRightIcon, CheckIcon, LifeBuoyIcon, FlagIcon } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  CheckIcon, 
+  LifeBuoyIcon, 
+  FlagIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+  ListIcon,
+  CheckCircleIcon
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QuestionNavigationProps {
@@ -20,8 +32,7 @@ export function QuestionNavigation({
   onNavigate,
   onFinishExam
 }: QuestionNavigationProps) {
-  const questionsPerRow = 5;
-  const rows = Math.ceil(totalQuestions / questionsPerRow);
+  const [activeTab, setActiveTab] = useState<string>('compact');
   
   // Get question number at specific index
   const getQuestionNumber = (index: number) => index + 1;
@@ -41,18 +52,18 @@ export function QuestionNavigation({
   };
   
   // Get status classes
-  const getStatusClasses = (status: string) => {
+  const getStatusClasses = (status: string, isCompact = false) => {
     switch (status) {
       case 'current':
-        return 'bg-primary text-white ring-2 ring-primary ring-offset-2';
+        return 'bg-blue-600 text-white border border-blue-700';
       case 'answered':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-white text-gray-800 border border-gray-300';
       case 'flagged':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return 'bg-white text-gray-800 border border-gray-300';
       case 'answered-flagged':
-        return 'bg-gradient-to-br from-green-100 to-yellow-100 text-green-900 border-green-300';
+        return 'bg-white text-gray-800 border border-gray-300';
       default:
-        return 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+        return 'bg-white text-gray-800 border border-gray-300';
     }
   };
   
@@ -69,9 +80,114 @@ export function QuestionNavigation({
         return null;
     }
   };
+
+  // Calculate pagination values
+  const currentPage = Math.floor(currentIndex / 10) + 1;
+  const totalPages = Math.ceil(totalQuestions / 10);
+  const pageStartIdx = (currentPage - 1) * 10;
+  const pageEndIdx = Math.min(pageStartIdx + 9, totalQuestions - 1);
+
+  // Navigate to page with specific index
+  const goToPage = (page: number) => {
+    const newIndex = (page - 1) * 10;
+    onNavigate(Math.min(newIndex, totalQuestions - 1));
+  };
+
+  // Quick navigation - go to first question
+  const goToFirst = () => onNavigate(0);
   
-  // Generate grid of question buttons
-  const renderQuestionGrid = () => {
+  // Quick navigation - go to last question
+  const goToLast = () => onNavigate(totalQuestions - 1);
+
+  // Generate compact grid view
+  const renderCompactGrid = () => {
+    // Show the vicinity of the current question + some pagination
+    const window = 7; // Questions to show around current
+    let startIdx = Math.max(0, currentIndex - Math.floor(window/2));
+    let endIdx = Math.min(startIdx + window - 1, totalQuestions - 1);
+    
+    // Adjust if we're near the end
+    if (endIdx - startIdx < window - 1) {
+      startIdx = Math.max(0, endIdx - (window - 1));
+    }
+    
+    const buttons = [];
+    
+    // First page button if not at start
+    if (startIdx > 0) {
+      buttons.push(
+        <Button
+          key="first"
+          variant="outline"
+          size="sm"
+          onClick={goToFirst}
+          className="w-8 h-8 p-0 text-sm rounded-md border border-gray-300"
+        >
+          1
+        </Button>
+      );
+      
+      if (startIdx > 1) {
+        buttons.push(
+          <span key="ellipsis-start" className="text-xs mx-1 self-center">...</span>
+        );
+      }
+    }
+    
+    // The vicinity buttons
+    for (let i = startIdx; i <= endIdx; i++) {
+      const status = getQuestionStatus(i);
+      const statusClasses = getStatusClasses(status, true);
+      
+      buttons.push(
+        <Button
+          key={i}
+          variant="outline"
+          size="sm"
+          onClick={() => onNavigate(i)}
+          className={cn(
+            "w-8 h-8 p-0 flex items-center justify-center text-sm rounded-md",
+            statusClasses
+          )}
+        >
+          {getQuestionNumber(i)}
+        </Button>
+      );
+    }
+    
+    // Last page button if not at end
+    if (endIdx < totalQuestions - 1) {
+      if (endIdx < totalQuestions - 2) {
+        buttons.push(
+          <span key="ellipsis-end" className="text-xs mx-1">...</span>
+        );
+      }
+      
+      buttons.push(
+        <Button
+          key="last"
+          variant="outline"
+          size="sm"
+          onClick={goToLast}
+          className="w-8 h-8 p-0 text-sm rounded-md border border-gray-300"
+        >
+          {totalQuestions}
+        </Button>
+      );
+    }
+    
+    return (
+      <div className="flex flex-wrap gap-2 justify-center">
+        {buttons}
+      </div>
+    );
+  };
+  
+  // Generate 10x10 grid for all questions
+  const renderFullGrid = () => {
+    // Use a fixed number of columns for better layout
+    const questionsPerRow = 10;
+    const rows = Math.ceil(totalQuestions / questionsPerRow);
     const grid = [];
     
     for (let row = 0; row < rows; row++) {
@@ -79,7 +195,11 @@ export function QuestionNavigation({
       
       for (let col = 0; col < questionsPerRow; col++) {
         const index = row * questionsPerRow + col;
-        if (index >= totalQuestions) break;
+        if (index >= totalQuestions) {
+          // Add empty placeholder to maintain grid structure
+          rowItems.push(<div key={`empty-${index}`} className="w-6 h-6"></div>);
+          continue;
+        }
         
         const status = getQuestionStatus(index);
         const statusClasses = getStatusClasses(status);
@@ -92,7 +212,7 @@ export function QuestionNavigation({
             size="sm"
             onClick={() => onNavigate(index)}
             className={cn(
-              "w-10 h-10 p-0 flex items-center justify-center relative font-medium",
+              "w-6 h-6 p-0 flex items-center justify-center relative text-xs border",
               statusClasses
             )}
             aria-label={`Go to question ${getQuestionNumber(index)}`}
@@ -108,27 +228,45 @@ export function QuestionNavigation({
       }
       
       grid.push(
-        <div key={row} className="flex gap-2 justify-center">
+        <div key={row} className="flex gap-1 w-full justify-start">
           {rowItems}
         </div>
       );
     }
     
-    return <div className="grid gap-2">{grid}</div>;
+    return (
+      <ScrollArea className="h-[210px] rounded-md border p-2">
+      <div className="grid grid-cols-1 gap-1 w-full">{grid}</div>
+      </ScrollArea>
+    );
+  };
+
+  // Render pagination stats  
+  const renderPaginationStats = () => {
+    return (
+      <div className="text-sm text-center text-gray-600 mb-2">
+        <span className="text-gray-600">{getQuestionNumber(currentIndex)} of {totalQuestions} questions</span>
+        {answeredQuestions.size > 0 && (
+          <span className="ml-2 text-green-600">
+            ({answeredQuestions.size} answered)
+          </span>
+        )}
+      </div>
+    );
   };
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between gap-2 mb-4">
+    <div className="space-y-3">
+      <div className="flex justify-between gap-2">
         <Button
           variant="outline"
           size="sm"
           onClick={() => onNavigate(Math.max(0, currentIndex - 1))}
           disabled={currentIndex === 0}
-          className="px-2.5"
+          className="px-2"
         >
           <ChevronLeftIcon className="h-4 w-4 mr-1" />
-          Previous
+          Prev
         </Button>
         
         <Button
@@ -136,19 +274,38 @@ export function QuestionNavigation({
           size="sm"
           onClick={() => onNavigate(Math.min(totalQuestions - 1, currentIndex + 1))}
           disabled={currentIndex === totalQuestions - 1}
-          className="px-2.5"
+          className="px-2"
         >
           Next
           <ChevronRightIcon className="h-4 w-4 ml-1" />
         </Button>
       </div>
+
+      {renderPaginationStats()}
       
-      {renderQuestionGrid()}
+      <div className="flex w-full rounded-md overflow-hidden border border-gray-200 mb-1">
+        <button
+          onClick={() => setActiveTab('compact')}
+          className={`flex-1 py-2 text-sm font-medium ${activeTab === 'compact' ? 'bg-gray-100' : 'bg-white'}`}
+        >
+          Compact
+        </button>
+        <button
+          onClick={() => setActiveTab('all')}
+          className={`flex-1 py-2 text-sm font-medium ${activeTab === 'all' ? 'bg-gray-100' : 'bg-white'}`}
+        >
+          All Questions
+        </button>
+      </div>
       
-      <div className="pt-4 border-t mt-6">
+      <div className="mt-2">
+        {activeTab === 'compact' ? renderCompactGrid() : renderFullGrid()}
+      </div>
+      
+      <div className="border-t border-gray-200 pt-2 mt-2">
         <Button 
           onClick={onFinishExam}
-          className="w-full"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
           variant="default"
         >
           <LifeBuoyIcon className="h-4 w-4 mr-2" />
@@ -156,22 +313,27 @@ export function QuestionNavigation({
         </Button>
       </div>
       
-      <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className="flex items-center">
-          <div className="w-3 h-3 rounded-full bg-green-100 border border-green-300 mr-1.5"></div>
-          <span>Answered</span>
+      <div className="mt-2">
+        <div className="flex justify-between mb-1">
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
+            <span className="text-xs">Answered</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 rounded-full bg-amber-500 mr-1"></div>
+            <span className="text-xs">Flagged</span>
+          </div>
         </div>
-        <div className="flex items-center">
-          <div className="w-3 h-3 rounded-full bg-yellow-100 border border-yellow-300 mr-1.5"></div>
-          <span>Flagged</span>
-        </div>
-        <div className="flex items-center">
-          <div className="w-3 h-3 rounded-full bg-gray-100 border border-gray-300 mr-1.5"></div>
-          <span>Unanswered</span>
-        </div>
-        <div className="flex items-center">
-          <div className="w-3 h-3 rounded-full bg-primary mr-1.5"></div>
-          <span>Current</span>
+        
+        <div className="flex justify-between">
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 rounded-full bg-gray-300 mr-1"></div>
+            <span className="text-xs">Unanswered</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 rounded-full bg-blue-600 mr-1"></div>
+            <span className="text-xs">Current</span>
+          </div>
         </div>
       </div>
     </div>
