@@ -24,7 +24,7 @@ export const EXAM_ENDPOINTS = {
   byStatus: `${BASE_URL}/status/:status`,
   
   // Read endpoints - details
-  questions: `${BASE_URL}/:id/questions`,
+  questions: `${BASE_URL}/:examId/questions`,
   
   // Read endpoints - user attempts
   userAttempts: `${BASE_URL}/attempts/user`,
@@ -77,6 +77,7 @@ export const ATTEMPT_ENDPOINTS = {
   answer: EXAM_ENDPOINTS.answerQuestion,
   flag: EXAM_ENDPOINTS.flagQuestion,
   unflag: EXAM_ENDPOINTS.unflagQuestion,
+  start: EXAM_ENDPOINTS.startExam,
 };
 
 export default EXAM_ENDPOINTS;

@@ -1,12 +1,14 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Medal } from "lucide-react";
+import { Medal, FileText, Award } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useModelPapers } from "@/features/exams/api";
 import { QueryProvider } from "@/features/core/tanstack-query-api/components/QueryProvider";
 import { ExamPaperCard } from "@/features/exams/components/ExamPaperCard";
-import { Exam, ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
+import { ExamPaper, ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function ModelPapersPage() {
@@ -27,10 +29,65 @@ function ModelPapersContent() {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex justify-center items-center min-h-[60vh]">
-        <div className="flex flex-col items-center">
-          <Spinner className="h-12 w-12 text-primary" />
-          <p className="mt-4 text-gray-600">Loading model papers...</p>
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-4 border-b border-gray-200">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Model Papers
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Practice with our curated model papers to prepare for your exam
+            </p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <div className="h-8 w-32 bg-slate-200 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="border border-slate-200 rounded-lg h-96 overflow-hidden flex flex-col animate-pulse">
+              <div className="h-3 w-full bg-blue-200"></div>
+              <div className="p-6 pb-3">
+                <div className="h-6 w-24 bg-slate-200 rounded mb-3"></div>
+                <div className="h-7 w-3/4 bg-slate-200 rounded mb-2"></div>
+                <div className="h-4 w-5/6 bg-slate-100 rounded"></div>
+              </div>
+              <div className="p-6 pt-0 flex-grow space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-slate-100 rounded-lg p-4 flex flex-col items-center space-y-2">
+                    <div className="h-5 w-5 bg-slate-200 rounded"></div>
+                    <div className="h-6 w-8 bg-slate-200 rounded"></div>
+                    <div className="h-3 w-16 bg-slate-200 rounded"></div>
+                  </div>
+                  <div className="bg-slate-100 rounded-lg p-4 flex flex-col items-center space-y-2">
+                    <div className="h-5 w-5 bg-slate-200 rounded"></div>
+                    <div className="h-6 w-8 bg-slate-200 rounded"></div>
+                    <div className="h-3 w-16 bg-slate-200 rounded"></div>
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="h-4 w-16 bg-slate-200 rounded"></div>
+                    <div className="h-6 w-20 bg-slate-200 rounded"></div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="h-4 w-24 bg-slate-200 rounded mb-3"></div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[1, 2, 3].map((j) => (
+                        <div key={j} className="h-6 w-16 bg-slate-200 rounded"></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 pt-4 border-t border-slate-200">
+                <div className="flex justify-end">
+                  <div className="h-9 w-28 bg-slate-200 rounded"></div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -38,17 +95,34 @@ function ModelPapersContent() {
 
   if (error) {
     return (
-      <div className="p-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          Model Papers
-        </h1>
-        <Card className="w-full p-6 text-center bg-red-50">
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-4 border-b border-gray-200">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Model Papers
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Practice with our curated model papers to prepare for your exam
+            </p>
+          </div>
+        </div>
+        
+        <Card className="w-full p-6 bg-red-50 border-red-200 shadow-sm">
           <div className="flex flex-col items-center justify-center py-8">
-            <Medal className="h-12 w-12 text-red-400 mb-4" />
-            <h2 className="text-xl font-semibold text-red-700">Error Loading Papers</h2>
-            <p className="text-red-600 mt-2">
+            <div className="bg-red-100 p-4 rounded-full mb-4">
+              <Medal className="h-16 w-16 text-red-400" />
+            </div>
+            <h2 className="text-2xl font-semibold text-red-700">Error Loading Papers</h2>
+            <p className="text-red-600 mt-2 max-w-md text-center">
               {error instanceof Error ? error.message : 'Failed to load model papers'}
             </p>
+            <Button 
+              variant="outline" 
+              className="mt-6 bg-white hover:bg-red-50 text-red-600 border-red-200"
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </Button>
           </div>
         </Card>
       </div>
@@ -61,21 +135,40 @@ function ModelPapersContent() {
     : [];
 
   return (
-    <main className="p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        Model Papers
-      </h1>
+    <main className="p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-4 border-b border-gray-200">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Model Papers
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Practice with our curated model papers to prepare for your exam
+          </p>
+        </div>
+        <div className="flex items-center mt-4 md:mt-0 space-x-2">
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium py-1.5">
+            <Award className="h-4 w-4 mr-1" />
+            Model Papers
+          </Badge>
+          <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 font-medium py-1.5">
+            <FileText className="h-4 w-4 mr-1" />
+            {papers.length} Available
+          </Badge>
+        </div>
+      </div>
 
       {papers.length === 0 ? (
-        <Card className="w-full p-6 text-center">
+        <Card className="w-full p-6 text-center bg-slate-50 border-dashed">
           <div className="flex flex-col items-center justify-center py-12">
-            <Medal className="h-12 w-12 text-gray-400 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700">No Model Papers Available</h2>
-            <p className="text-gray-500 mt-2">Check back later for new model papers.</p>
+            <div className="bg-slate-100 p-4 rounded-full mb-4">
+              <Medal className="h-16 w-16 text-slate-400" />
+            </div>
+            <h2 className="text-2xl font-semibold text-slate-700">No Model Papers Available</h2>
+            <p className="text-slate-500 mt-2 max-w-md">We're working on creating new model papers. Check back later for updates or explore other paper types.</p>
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {papers.map((paper) => (
             <ExamPaperCard
               key={paper.id}
@@ -89,17 +182,17 @@ function ModelPapersContent() {
   );
 }
 
-// Helper function to convert Exam to ExamPaperMetadata format
-function convertExamToMetadata(exam: Exam): ExamPaperMetadata {
+  // Helper function to convert Exam to ExamPaperMetadata format
+function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
   return {
     id: exam.id,
     title: exam.title,
     description: exam.description || '',
-    difficulty: 'medium', // Default or get from tags
+    difficulty: exam.difficulty.toLowerCase(), // Convert from MEDIUM to medium
     topics_covered: exam.tags || [],
-    total_questions: exam.questions?.length || 0,
-    time_limit: exam.duration || 0,
-    is_premium: false, // Default or get from a property
+    total_questions: exam.questionCount,
+    time_limit: exam.durationMinutes,
+    is_premium: exam.premium,
     source: 'model'
   };
 }

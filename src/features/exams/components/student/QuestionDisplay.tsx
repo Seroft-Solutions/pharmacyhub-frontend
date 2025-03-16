@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Question, UserAnswer } from '../types';
+import { Question, UserAnswer } from '../../model/mcqTypes';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -38,6 +38,51 @@ export function QuestionDisplay({
   useEffect(() => {
     setSelectedOption(userAnswer?.toString());
   }, [userAnswer]);
+  
+  // Define a safe handler for when question.options might be undefined
+  const renderOptions = () => {
+    if (!question.options || !Array.isArray(question.options)) {
+      return (
+        <div className="text-red-500 p-4 border border-red-200 rounded-md bg-red-50">
+          No options available for this question
+        </div>
+      );
+    }
+
+    return (
+      <RadioGroup
+        value={selectedOption || ''}
+        onValueChange={(value) => {
+          setSelectedOption(value);
+          handleAnswerSelect(value);
+        }}
+        className="space-y-3 mt-4"
+      >
+        {question.options.map((option, index) => (
+          <div 
+            key={index} 
+            className={cn(
+              "flex items-center space-x-2 border p-4 rounded-md transition-colors",
+              selectedOption === index.toString() 
+                ? "border-primary bg-primary/5" 
+                : "hover:border-gray-300 hover:bg-gray-50"
+            )}
+          >
+            <RadioGroupItem value={index.toString()} id={`option-${question.id}-${index}`} />
+            <Label 
+              htmlFor={`option-${question.id}-${index}`} 
+              className="flex-grow cursor-pointer"
+            >
+              {option.text}
+            </Label>
+            {selectedOption === index.toString() && (
+              <CheckCircleIcon className="h-5 w-5 text-primary flex-shrink-0" />
+            )}
+          </div>
+        ))}
+      </RadioGroup>
+    );
+  };
 
   return (
     <Card className="w-full shadow-md border border-gray-100">
@@ -79,37 +124,7 @@ export function QuestionDisplay({
           </h3>
         </div>
 
-        <RadioGroup
-          value={selectedOption || ''}
-          onValueChange={(value) => {
-            setSelectedOption(value);
-            handleAnswerSelect(value);
-          }}
-          className="space-y-3 mt-4"
-        >
-          {question.options.map((option, index) => (
-            <div 
-              key={index} 
-              className={cn(
-                "flex items-center space-x-2 border p-4 rounded-md transition-colors",
-                selectedOption === index.toString() 
-                  ? "border-primary bg-primary/5" 
-                  : "hover:border-gray-300 hover:bg-gray-50"
-              )}
-            >
-              <RadioGroupItem value={index.toString()} id={`option-${question.id}-${index}`} />
-              <Label 
-                htmlFor={`option-${question.id}-${index}`} 
-                className="flex-grow cursor-pointer"
-              >
-                {option.text}
-              </Label>
-              {selectedOption === index.toString() && (
-                <CheckCircleIcon className="h-5 w-5 text-primary flex-shrink-0" />
-              )}
-            </div>
-          ))}
-        </RadioGroup>
+        {renderOptions()}
       </CardContent>
     </Card>
   );

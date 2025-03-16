@@ -61,17 +61,15 @@ export const usePublishedExams = () => {
  * Hook for fetching exams by status
  */
 export const useExamsByStatus = (status: ExamStatus) => {
-  const endpoint = EXAM_ENDPOINTS.byStatus.replace(
-    ':status',
-    status.toString()
-  );
-
   return examApiHooks.useCustomQuery<Exam[]>(
     'byStatus',
     ['status', status],
     {
       enabled: !!status,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      urlParams: {
+        status: status.toString()
+      }
     }
   );
 };
@@ -80,17 +78,15 @@ export const useExamsByStatus = (status: ExamStatus) => {
  * Hook for fetching exam questions
  */
 export const useExamQuestions = (examId: number) => {
-  const endpoint = EXAM_ENDPOINTS.questions.replace(
-    ':id',
-    examId.toString()
-  );
-
   return examApiHooks.useCustomQuery<Question[]>(
     'questions',
     ['questions', examId],
     {
       enabled: !!examId,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      urlParams: {
+        examId: examId // Will be properly converted to Long format by the hook
+      }
     }
   );
 };

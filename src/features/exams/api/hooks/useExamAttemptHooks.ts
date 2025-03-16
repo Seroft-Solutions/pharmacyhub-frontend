@@ -6,7 +6,7 @@
  */
 import { createApiHooks } from '@/features/core/tanstack-query-api/factories/createApiHooks';
 import { useQueryClient } from '@tanstack/react-query';
-import { ATTEMPT_ENDPOINTS } from '../constants';
+import { ATTEMPT_ENDPOINTS, EXAM_ENDPOINTS } from '../constants';
 import { examQueryKeys } from './useExamApiHooks';
 import type {
   ExamAttempt, 
@@ -49,14 +49,15 @@ export const useUserExamAttempts = () => {
  * Hook for fetching a user's exam attempts for a specific exam
  */
 export const useUserExamAttemptsForExam = (examId: number) => {
-  const endpoint = ATTEMPT_ENDPOINTS.byExam.replace(':id', examId.toString());
-
   return attemptApiHooks.useCustomQuery<ExamAttempt[]>(
     'byExam',
     ['exam', examId],
     {
       enabled: !!examId,
       staleTime: 1 * 60 * 1000, // 1 minute
+      urlParams: {
+        id: examId
+      }
     }
   );
 };
@@ -78,14 +79,15 @@ export const useExamAttempt = (attemptId: number) => {
  * Hook for fetching exam results
  */
 export const useExamResult = (attemptId: number) => {
-  const endpoint = ATTEMPT_ENDPOINTS.result.replace(':id', attemptId.toString());
-
   return attemptApiHooks.useCustomQuery<ExamResult>(
     'result',
     ['result', attemptId],
     {
       enabled: !!attemptId,
       staleTime: 0, // Always get fresh results
+      urlParams: {
+        id: attemptId
+      }
     }
   );
 };
@@ -94,14 +96,15 @@ export const useExamResult = (attemptId: number) => {
  * Hook for fetching flagged questions for an attempt
  */
 export const useFlaggedQuestions = (attemptId: number) => {
-  const endpoint = ATTEMPT_ENDPOINTS.flags.replace(':id', attemptId.toString());
-
   return attemptApiHooks.useCustomQuery<FlaggedQuestion[]>(
     'flags',
     ['flags', attemptId],
     {
       enabled: !!attemptId,
       staleTime: 0, // Always get fresh flags
+      urlParams: {
+        id: attemptId
+      }
     }
   );
 };
@@ -111,7 +114,9 @@ export const useFlaggedQuestions = (attemptId: number) => {
  */
 export const useStartExamMutation = (examId: number) => {
   const queryClient = useQueryClient();
-  const endpoint = ATTEMPT_ENDPOINTS.start.replace(':id', examId.toString());
+  const endpoint = ATTEMPT_ENDPOINTS.start ? 
+    ATTEMPT_ENDPOINTS.start.replace(':id', examId.toString()) : 
+    EXAM_ENDPOINTS.startExam.replace(':id', examId.toString());
 
   return attemptApiHooks.useAction<ExamAttempt, { userId?: string }>(
     endpoint,

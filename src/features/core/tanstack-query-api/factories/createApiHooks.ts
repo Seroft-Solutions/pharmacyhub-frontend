@@ -87,6 +87,15 @@ export function createApiHooks<
   };
   
   /**
+   * Utility function to ensure IDs are properly converted to long integers
+   * This is important because the Java backend expects Long type parameters
+   */
+  const toLongId = (id: number | string): string => {
+    // Parse the ID to an integer and convert back to string to ensure valid long format
+    return String(parseInt(id.toString()));
+  };
+  
+  /**
    * Hook for fetching a single entity by ID
    */
   const useDetail = <TData = TEntity>(
@@ -94,9 +103,10 @@ export function createApiHooks<
     options?: UseApiQueryOptions<TData>
   ) => {
     // Replace :id placeholder in endpoint string if it exists
+    // IMPORTANT: Use toLongId to ensure proper Long format for Java backend
     const endpoint = apiEndpoints.detail.includes(':id')
-      ? apiEndpoints.detail.replace(':id', id.toString())
-      : `${apiEndpoints.detail}/${id}`;
+      ? apiEndpoints.detail.replace(':id', toLongId(id))
+      : `${apiEndpoints.detail}/${toLongId(id)}`;
     
     return useApiQuery<TData>(
       queryKeys.detail(id),
@@ -146,9 +156,10 @@ export function createApiHooks<
     const queryClient = useQueryClient();
     
     // Replace :id placeholder in endpoint string if it exists
+    // IMPORTANT: Use toLongId to ensure proper Long format for Java backend
     const endpoint = apiEndpoints.update.includes(':id')
-      ? apiEndpoints.update.replace(':id', id.toString())
-      : `${apiEndpoints.update}/${id}`;
+      ? apiEndpoints.update.replace(':id', toLongId(id))
+      : `${apiEndpoints.update}/${toLongId(id)}`;
     
     return useApiMutation<TData, TUpdateParams, TError>(
       endpoint,
@@ -181,14 +192,15 @@ export function createApiHooks<
     const queryClient = useQueryClient();
     
     // Replace :id placeholder in endpoint string if it exists
+    // IMPORTANT: Use toLongId to ensure proper Long format for Java backend
     const endpoint = apiEndpoints.patch ? (
       apiEndpoints.patch.includes(':id')
-        ? apiEndpoints.patch.replace(':id', id.toString())
-        : `${apiEndpoints.patch}/${id}`
+        ? apiEndpoints.patch.replace(':id', toLongId(id))
+        : `${apiEndpoints.patch}/${toLongId(id)}`
     ) : (
       apiEndpoints.update.includes(':id')
-        ? apiEndpoints.update.replace(':id', id.toString())
-        : `${apiEndpoints.update}/${id}`
+        ? apiEndpoints.update.replace(':id', toLongId(id))
+        : `${apiEndpoints.update}/${toLongId(id)}`
     );
     
     return useApiMutation<TData, Partial<TUpdateParams>, TError>(
@@ -224,9 +236,10 @@ export function createApiHooks<
     return useApiMutation<TData, string | number, TError>(
       (id) => {
         // Replace :id placeholder in endpoint string if it exists
+        // IMPORTANT: Use toLongId to ensure proper Long format for Java backend
         return apiEndpoints.delete.includes(':id')
-          ? apiEndpoints.delete.replace(':id', id.toString())
-          : `${apiEndpoints.delete}/${id}`;
+          ? apiEndpoints.delete.replace(':id', toLongId(id))
+          : `${apiEndpoints.delete}/${toLongId(id)}`;
       },
       {
         requiresAuth,
@@ -284,7 +297,10 @@ export function createApiHooks<
   const useCustomQuery = <TData = any, TError = Error>(
     endpointKey: string,
     customQueryKey: string | any[],
-    options?: UseApiQueryOptions<TData, TError>
+    options?: UseApiQueryOptions<TData, TError> & {
+      // Optional map of parameters to replace in the URL
+      urlParams?: Record<string, string | number>;
+    }
   ) => {
     // Ensure we have a valid endpoint
     if (!apiEndpoints[endpointKey]) {
@@ -299,13 +315,34 @@ export function createApiHooks<
         ? [...queryKeys.all(), ...customQueryKey]
         : [...queryKeys.all(), 'custom', endpointKey];
     
+    // Extract and remove urlParams from options to process them separately
+    const { urlParams, ...queryOptions } = options || {};
+    
+    // Process the endpoint to replace URL parameters if provided
+    let processedEndpoint = apiEndpoints[endpointKey];
+    
+    // Replace URL parameters with their values
+    if (urlParams) {
+      Object.entries(urlParams).forEach(([key, value]) => {
+        // IMPORTANT: Use toLongId for ID parameters to ensure proper Long format
+        const paramValue = key.toLowerCase().includes('id') 
+          ? toLongId(value)
+          : String(value);
+          
+        processedEndpoint = processedEndpoint.replace(
+          new RegExp(`:${key}`, 'g'),
+          paramValue
+        );
+      });
+    }
+    
     return useApiQuery<TData, TError>(
       queryKey as QueryKey,
-      apiEndpoints[endpointKey],
+      processedEndpoint,
       {
         requiresAuth,
         staleTime: defaultStaleTime,
-        ...options
+        ...queryOptions
       }
     );
   };

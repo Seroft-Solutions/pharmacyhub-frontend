@@ -8,6 +8,7 @@ import { createApiHooks } from '@/features/core/tanstack-query-api/factories/cre
 import { useQueryClient } from '@tanstack/react-query';
 import { PAPER_ENDPOINTS } from '../constants';
 import { examQueryKeys } from './useExamApiHooks';
+import { transformExamsToPapers } from '../../utils/dataTransformers';
 import type { ExamPaper } from '../../types';
 
 /**
@@ -42,6 +43,7 @@ export const useModelPapers = () => {
     'model',
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
+      select: (data) => transformExamsToPapers(data)
     }
   );
 };
@@ -55,6 +57,7 @@ export const usePastPapers = () => {
     'past',
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
+      select: (data) => transformExamsToPapers(data)
     }
   );
 };
@@ -68,6 +71,7 @@ export const useSubjectPapers = () => {
     'subject',
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
+      select: (data) => transformExamsToPapers(data)
     }
   );
 };
@@ -81,6 +85,7 @@ export const usePracticePapers = () => {
     'practice',
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
+      select: (data) => transformExamsToPapers(data)
     }
   );
 };

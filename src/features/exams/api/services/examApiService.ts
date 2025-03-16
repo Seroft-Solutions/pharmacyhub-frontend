@@ -23,6 +23,15 @@ import type {
 } from '../../types';
 
 /**
+ * Utility function to ensure IDs are properly converted to long integers
+ * This is important because the Java backend expects Long type parameters
+ */
+const toLongId = (id: number | string): string => {
+  // Parse the ID to an integer and convert back to string to ensure valid long format
+  return String(parseInt(id.toString()));
+};
+
+/**
  * Extended API service for exams
  * This provides a consistent API interface for exam operations
  */
@@ -83,7 +92,7 @@ export const examApiService = createExtendedApiService<Exam, {
     },
     
     getExamById: async (examId) => {
-      return await apiClient.get<Exam>(EXAM_ENDPOINTS.detail.replace(':id', examId.toString()));
+      return await apiClient.get<Exam>(EXAM_ENDPOINTS.detail.replace(':id', toLongId(examId)));
     },
     
     getExamsByStatus: async (status) => {
@@ -95,19 +104,19 @@ export const examApiService = createExtendedApiService<Exam, {
     },
     
     updateExam: async (examId, exam) => {
-      return await apiClient.put<Exam>(EXAM_ENDPOINTS.update.replace(':id', examId.toString()), exam);
+      return await apiClient.put<Exam>(EXAM_ENDPOINTS.update.replace(':id', toLongId(examId)), exam);
     },
     
     deleteExam: async (examId) => {
-      return await apiClient.delete<void>(EXAM_ENDPOINTS.delete.replace(':id', examId.toString()));
+      return await apiClient.delete<void>(EXAM_ENDPOINTS.delete.replace(':id', toLongId(examId)));
     },
     
     publishExam: async (examId) => {
-      return await apiClient.post<Exam>(EXAM_ENDPOINTS.publishExam.replace(':id', examId.toString()));
+      return await apiClient.post<Exam>(EXAM_ENDPOINTS.publishExam.replace(':id', toLongId(examId)));
     },
     
     archiveExam: async (examId) => {
-      return await apiClient.post<Exam>(EXAM_ENDPOINTS.archiveExam.replace(':id', examId.toString()));
+      return await apiClient.post<Exam>(EXAM_ENDPOINTS.archiveExam.replace(':id', toLongId(examId)));
     },
     
     // Paper operations
@@ -132,19 +141,19 @@ export const examApiService = createExtendedApiService<Exam, {
     },
     
     getPaperById: async (id) => {
-      return await apiClient.get<ExamPaper>(EXAM_ENDPOINTS.paperDetail.replace(':id', id.toString()));
+      return await apiClient.get<ExamPaper>(EXAM_ENDPOINTS.paperDetail.replace(':id', toLongId(id)));
     },
     
     // Question operations
     getExamQuestions: async (examId) => {
-      return await apiClient.get<Question[]>(EXAM_ENDPOINTS.questions.replace(':id', examId.toString()));
+      return await apiClient.get<Question[]>(EXAM_ENDPOINTS.questions.replace(':examId', toLongId(examId)));
     },
     
     updateQuestion: async (examId, questionId, question) => {
       return await apiClient.put<Question>(
         EXAM_ENDPOINTS.updateQuestion
-          .replace(':examId', examId.toString())
-          .replace(':questionId', questionId.toString()),
+          .replace(':examId', toLongId(examId))
+          .replace(':questionId', toLongId(questionId)),
         question
       );
     },
@@ -152,8 +161,8 @@ export const examApiService = createExtendedApiService<Exam, {
     deleteQuestion: async (examId, questionId) => {
       return await apiClient.delete<void>(
         EXAM_ENDPOINTS.deleteQuestion
-          .replace(':examId', examId.toString())
-          .replace(':questionId', questionId.toString())
+          .replace(':examId', toLongId(examId))
+          .replace(':questionId', toLongId(questionId))
       );
     },
     
@@ -163,31 +172,31 @@ export const examApiService = createExtendedApiService<Exam, {
     },
     
     getUserExamAttemptsForExam: async (examId) => {
-      return await apiClient.get<ExamAttempt[]>(EXAM_ENDPOINTS.attemptsByExam.replace(':id', examId.toString()));
+      return await apiClient.get<ExamAttempt[]>(EXAM_ENDPOINTS.attemptsByExam.replace(':id', toLongId(examId)));
     },
     
     getExamAttempt: async (attemptId) => {
-      return await apiClient.get<ExamAttempt>(EXAM_ENDPOINTS.attemptDetail.replace(':id', attemptId.toString()));
+      return await apiClient.get<ExamAttempt>(EXAM_ENDPOINTS.attemptDetail.replace(':id', toLongId(attemptId)));
     },
     
     getExamResult: async (attemptId) => {
-      return await apiClient.get<ExamResult>(EXAM_ENDPOINTS.attemptResult.replace(':id', attemptId.toString()));
+      return await apiClient.get<ExamResult>(EXAM_ENDPOINTS.attemptResult.replace(':id', toLongId(attemptId)));
     },
     
     getFlaggedQuestions: async (attemptId) => {
-      return await apiClient.get<FlaggedQuestion[]>(EXAM_ENDPOINTS.flaggedQuestions.replace(':id', attemptId.toString()));
+      return await apiClient.get<FlaggedQuestion[]>(EXAM_ENDPOINTS.flaggedQuestions.replace(':id', toLongId(attemptId)));
     },
     
     // Exam participation operations
     startExam: async (examId) => {
-      return await apiClient.post<ExamAttempt>(EXAM_ENDPOINTS.startExam.replace(':id', examId.toString()));
+      return await apiClient.post<ExamAttempt>(EXAM_ENDPOINTS.startExam.replace(':id', toLongId(examId)));
     },
     
     answerQuestion: async (attemptId, questionId, selectedOption) => {
       return await apiClient.post<void>(
         EXAM_ENDPOINTS.answerQuestion
-          .replace(':attemptId', attemptId.toString())
-          .replace(':questionId', questionId.toString()),
+          .replace(':attemptId', toLongId(attemptId))
+          .replace(':questionId', toLongId(questionId)),
         { selectedOption }
       );
     },
@@ -195,22 +204,22 @@ export const examApiService = createExtendedApiService<Exam, {
     flagQuestion: async (attemptId, questionId) => {
       return await apiClient.post<void>(
         EXAM_ENDPOINTS.flagQuestion
-          .replace(':attemptId', attemptId.toString())
-          .replace(':questionId', questionId.toString())
+          .replace(':attemptId', toLongId(attemptId))
+          .replace(':questionId', toLongId(questionId))
       );
     },
     
     unflagQuestion: async (attemptId, questionId) => {
       return await apiClient.delete<void>(
         EXAM_ENDPOINTS.unflagQuestion
-          .replace(':attemptId', attemptId.toString())
-          .replace(':questionId', questionId.toString())
+          .replace(':attemptId', toLongId(attemptId))
+          .replace(':questionId', toLongId(questionId))
       );
     },
     
     submitExam: async (attemptId, answers) => {
       return await apiClient.post<ExamResult>(
-        EXAM_ENDPOINTS.submitExam.replace(':id', attemptId.toString()),
+        EXAM_ENDPOINTS.submitExam.replace(':id', toLongId(attemptId)),
         answers ? { answers } : undefined
       );
     },

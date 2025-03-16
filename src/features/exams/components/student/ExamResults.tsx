@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { CheckCircleIcon, XCircleIcon, HomeIcon, Clock3Icon, PieChartIcon, BarChart3Icon, BookOpenIcon } from 'lucide-react';
 import { Question, UserAnswer, ExamResult } from '../../model/mcqTypes';
+import { formatTimeVerbose } from '../../utils/formatTime';
 import { cn } from '@/lib/utils';
 
 interface ExamResultsProps {
@@ -22,17 +23,7 @@ export function ExamResults({
 }: ExamResultsProps) {
   // Format time spent
   const formatTimeSpent = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${remainingSeconds}s`;
-    } else {
-      return `${remainingSeconds}s`;
-    }
+    return formatTimeVerbose(seconds);
   };
   
   // Calculate score percentage

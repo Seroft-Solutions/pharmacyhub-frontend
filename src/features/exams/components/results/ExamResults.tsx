@@ -22,7 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ExamResult, QuestionResult } from '../../model/standardTypes';
-import { formatTime } from '../../utils/formatTime';
+import { formatTimeVerbose } from '../../utils/formatTime';
 
 interface ExamResultsProps {
   result: ExamResult;
@@ -65,22 +65,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
   };
 
   const formatTimeStr = (seconds: number) => {
-    const {hours, minutes, remainingSeconds} = formatTime(seconds);
-    let timeStr = "";
-    
-    if (hours > 0) {
-      timeStr += `${hours} hour${hours > 1 ? 's' : ''} `;
-    }
-    
-    if (minutes > 0) {
-      timeStr += `${minutes} minute${minutes > 1 ? 's' : ''} `;
-    }
-    
-    if (remainingSeconds > 0 || (hours === 0 && minutes === 0)) {
-      timeStr += `${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`;
-    }
-    
-    return timeStr.trim();
+    return formatTimeVerbose(seconds);
   };
 
   return (

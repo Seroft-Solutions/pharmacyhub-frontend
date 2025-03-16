@@ -7,3 +7,4 @@ export * from './guards';
 
 // Direct component exports
 export { ExamPaperCard } from './common/ExamPaperCard';
+export { ExamContainer } from './student/ExamContainer';
