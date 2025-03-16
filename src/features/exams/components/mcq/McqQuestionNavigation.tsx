@@ -34,7 +34,10 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
   const isMinimumMet = answeredCount >= minimumRequired;
   
   // Helper function to get button variant based on question state
-  const getButtonVariant = (index: number, questionId: number) => {
+  const getButtonVariant = (index: number) => {
+    // Actual question ID (not the index)
+    const questionId = index + 1;
+    
     if (index === currentQuestion) {
       return "default"; // Currently selected question
     }
@@ -54,23 +57,30 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
   };
   
   // Helper function to get button color styles based on question state
-  const getButtonStyles = (index: number, questionId: number) => {
-    if (index === currentQuestion) {
-      return ""; // Use default button styles for current question
-    }
+  const getButtonStyles = (index: number) => {
+    // Actual question ID (not the index)
+    const questionId = index + 1;
     
-    // Question has been answered
+    // Calculate base styles
+    let styles = "";
+    
+    // Add answered styles (even for current question)
     if (answers[questionId]) {
-      return "border-green-300 text-green-700 bg-green-50 hover:bg-green-100 hover:text-green-800";
+      styles = "border-green-300 text-green-700 bg-green-50 hover:bg-green-100 hover:text-green-800";
     }
     
-    // Question is flagged but not answered
-    if (flaggedQuestions.has(questionId)) {
-      return "border-yellow-300 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 hover:text-yellow-800";
+    // Add flagged styles (if not answered)
+    if (!answers[questionId] && flaggedQuestions.has(questionId)) {
+      styles = "border-yellow-300 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 hover:text-yellow-800";
     }
     
-    // Default: Not answered, not flagged, not current
-    return "";
+    // Add current question styles (takes precedence)
+    if (index === currentQuestion) {
+      // Keep the answer color indication but use default button styling
+      return "";
+    }
+    
+    return styles;
   };
   
   return (
@@ -123,8 +133,8 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
                 <Button
                   key={index}
                   size="sm"
-                  variant={getButtonVariant(index, questionId)}
-                  className={`h-10 w-10 p-0 relative ${getButtonStyles(index, questionId)}`}
+                  variant={getButtonVariant(index)}
+                  className={`h-10 w-10 p-0 relative ${getButtonStyles(index)}`}
                   onClick={() => onQuestionSelect(index)}
                 >
                   {index + 1}

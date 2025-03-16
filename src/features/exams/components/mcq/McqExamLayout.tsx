@@ -245,6 +245,7 @@ export const McqExamLayout: React.FC<McqExamLayoutProps> = ({ examId }) => {
                             isFlagged={isCurrentQuestionFlagged}
                             onAnswer={handleAnswer}
                             onFlag={handleFlag}
+                            onNext={nextQuestion}
                         />
                     )}
                 </div>

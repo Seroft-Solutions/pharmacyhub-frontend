@@ -39,8 +39,13 @@ export function QuestionNavigation({
   
   // Get question status
   const getQuestionStatus = (index: number) => {
-    const questionId = index + 1; // Assuming question IDs start at 1
-    const isAnswered = Array.from(answeredQuestions).some(id => id === questionId);
+    // The questionId here should match how they're stored in answeredQuestions
+    // This assumes the questionIds are stored as actual question IDs from the server
+    const questionNumber = index + 1; // Used for index + 1 display
+    const questionId = index + 1; // Assuming question IDs also start at 1
+    
+    // Check if the question ID exists in answeredQuestions
+    const isAnswered = answeredQuestions.has(questionId);
     const isFlagged = flaggedQuestions.has(questionId);
     const isCurrent = index === currentIndex;
     
@@ -57,11 +62,11 @@ export function QuestionNavigation({
       case 'current':
         return 'bg-blue-600 text-white border border-blue-700';
       case 'answered':
-        return 'bg-white text-gray-800 border border-gray-300';
+        return 'bg-green-100 text-green-700 border border-green-300';
       case 'flagged':
-        return 'bg-white text-gray-800 border border-gray-300';
+        return 'bg-amber-100 text-amber-700 border border-amber-300';
       case 'answered-flagged':
-        return 'bg-white text-gray-800 border border-gray-300';
+        return 'bg-green-100 text-green-700 border border-green-300';
       default:
         return 'bg-white text-gray-800 border border-gray-300';
     }

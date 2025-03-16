@@ -16,6 +16,7 @@ interface McqQuestionCardProps {
   onFlag: () => void;
   isReview?: boolean;
   correctAnswer?: string;
+  onNext?: () => void;
 }
 
 export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
@@ -51,6 +52,13 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
   const handleOptionChange = (value: string) => {
     setSelectedOption(value);
     onAnswer(value);
+    
+    // Auto-navigate to next question after 1 second delay
+    if (onNext && !isReview) {
+      setTimeout(() => {
+        onNext();
+      }, 1000);
+    }
   };
   
   return (
