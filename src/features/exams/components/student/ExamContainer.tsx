@@ -112,6 +112,35 @@ function ExamContainerInternal({
     };
   }, []);
   
+  // Debug logging
+  useEffect(() => {
+    if (exam && process.env.NODE_ENV === 'development') {
+      console.log('Exam data structure:', {
+        id: exam.id,
+        title: exam.title,
+        description: exam.description,
+        duration: exam.duration,
+        durationMinutes: exam.durationMinutes,
+        totalMarks: exam.totalMarks,
+        passingMarks: exam.passingMarks,
+        hasQuestions: !!exam.questions,
+        questionsLength: exam.questions?.length,
+        questionCount: exam.questionCount,
+        allKeys: Object.keys(exam)
+      });
+      
+      if (questions && questions.length > 0) {
+        console.log('First question structure:', {
+          id: questions[0].id,
+          text: questions[0].text,
+          questionNumber: questions[0].questionNumber,
+          numOptions: questions[0].options?.length,
+          allKeys: Object.keys(questions[0])
+        });
+      }
+    }
+  }, [exam, questions]);
+  
   // Handle exam start with analytics
   const handleStartExam = () => {
     analytics.trackEvent('exam_start', { examId, userId });
@@ -320,11 +349,11 @@ function ExamContainerInternal({
             <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-md">
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Duration</h3>
-                <p className="text-lg">{exam.duration} minutes</p>
+                <p className="text-lg">{exam.duration || exam.durationMinutes || 0} minutes</p>
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Total Questions</h3>
-                <p className="text-lg">{questions.length}</p>
+                <p className="text-lg">{questions.length || exam.questionCount || 0}</p>
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Total Marks</h3>

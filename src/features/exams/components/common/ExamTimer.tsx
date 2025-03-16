@@ -10,11 +10,16 @@ interface ExamTimerProps {
 }
 
 export function ExamTimer({
-  durationInMinutes,
+  durationInMinutes = 60, // Default to 60 minutes if not provided
   onTimeExpired,
   isCompleted = false
 }: ExamTimerProps) {
-  const [secondsRemaining, setSecondsRemaining] = useState(durationInMinutes * 60);
+  // Ensure durationInMinutes is a number and has a valid value
+  const validDuration = typeof durationInMinutes === 'number' && !isNaN(durationInMinutes) && durationInMinutes > 0 
+    ? durationInMinutes 
+    : 60; // Default to 60 minutes if invalid
+    
+  const [secondsRemaining, setSecondsRemaining] = useState(validDuration * 60);
   const [isPaused, setIsPaused] = useState(false);
   
   // Calculate hours, minutes, seconds
@@ -26,7 +31,7 @@ export function ExamTimer({
   const formattedTime = `${hours > 0 ? `${hours}:` : ''}${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   
   // Calculate percentage of time remaining
-  const percentageRemaining = (secondsRemaining / (durationInMinutes * 60)) * 100;
+  const percentageRemaining = (secondsRemaining / (validDuration * 60)) * 100;
   
   // Determine urgency level based on remaining time
   const getUrgencyLevel = () => {
