@@ -16,3 +16,11 @@ export * from './constants';
 
 // Export adapter for backward compatibility
 export * from './adapter';
+
+// Direct exports of frequently used hooks for convenience
+export { 
+  useModelPapers,
+  usePastPapers,
+  useSubjectPapers,
+  usePracticePapers 
+} from './hooks/useExamPaperHooks';

@@ -1,74 +1,127 @@
 /**
  * Exam queries hook
- * Provides queries for fetching exam data
+ * Provides queries for fetching exam data using tanstack-query-api hooks
  */
-import { useQuery } from '@tanstack/react-query';
-import { examService } from '../api/services';
-import { examQueryKeys } from '../api/hooks/useExamApiHooks';
-
-/**
- * Hook for fetching all published exams
- */
-export const usePublishedExams = () => {
-  return useQuery({
-    queryKey: examQueryKeys.published(),
-    queryFn: () => examService.getPublishedExams()
-  });
-};
+import { useMemo } from 'react';
+import { 
+  useExamDetail, 
+  usePublishedExams, 
+  useExamsByStatus,
+  useUserExamAttempts,
+  useExamAttempt
+} from '../api/hooks';
+import type { ExamStatus } from '../types';
 
 /**
  * Hook for fetching a specific exam by ID
  */
 export const useExam = (examId: number) => {
-  return useQuery({
-    queryKey: examQueryKeys.detail(examId),
-    queryFn: () => examService.getExamById(examId),
-    enabled: !!examId
-  });
+  return useExamDetail(examId);
+};
+
+/**
+ * Hook for fetching all published exams
+ */
+export const useAllPublishedExams = () => {
+  const result = usePublishedExams();
+  
+  // Extract data from API response structure
+  const exams = useMemo(() => {
+    if (!result.data) return [];
+    
+    // Handle case where backend returns data in a wrapper
+    if (result.data.data) {
+      return result.data.data;
+    }
+    
+    // Handle case where data is already unwrapped
+    if (Array.isArray(result.data)) {
+      return result.data;
+    }
+    
+    return [];
+  }, [result.data]);
+  
+  return {
+    ...result,
+    exams
+  };
 };
 
 /**
  * Hook for fetching exams by status
  */
-export const useExamsByStatus = (status: string) => {
-  return useQuery({
-    queryKey: examQueryKeys.byStatus(status),
-    queryFn: () => examService.getExamsByStatus(status),
-    enabled: !!status
-  });
+export const useExamsByStatusQuery = (status: ExamStatus) => {
+  const result = useExamsByStatus(status);
+  
+  // Extract data from API response structure
+  const exams = useMemo(() => {
+    if (!result.data) return [];
+    
+    // Handle case where backend returns data in a wrapper
+    if (result.data.data) {
+      return result.data.data;
+    }
+    
+    // Handle case where data is already unwrapped
+    if (Array.isArray(result.data)) {
+      return result.data;
+    }
+    
+    return [];
+  }, [result.data]);
+  
+  return {
+    ...result,
+    exams
+  };
 };
 
 /**
  * Hook for fetching a user's exam attempts
  */
-export const useUserExamAttempts = (userId: string) => {
-  return useQuery({
-    queryKey: [...examQueryKeys.all(), 'userAttempts', userId],
-    queryFn: () => examService.getUserExamAttempts(),
-    enabled: !!userId
-  });
+export const useUserAttempts = () => {
+  const result = useUserExamAttempts();
+  
+  // Extract data from API response structure
+  const attempts = useMemo(() => {
+    if (!result.data) return [];
+    
+    // Handle case where backend returns data in a wrapper
+    if (result.data.data) {
+      return result.data.data;
+    }
+    
+    // Handle case where data is already unwrapped
+    if (Array.isArray(result.data)) {
+      return result.data;
+    }
+    
+    return [];
+  }, [result.data]);
+  
+  return {
+    ...result,
+    attempts
+  };
 };
 
 /**
  * Hook for fetching a specific exam attempt
  */
-export const useExamAttempt = (attemptId: number) => {
-  return useQuery({
-    queryKey: [...examQueryKeys.all(), 'attempt', attemptId],
-    queryFn: () => examService.getExamAttempt(attemptId),
-    enabled: !!attemptId
-  });
+export const useAttempt = (attemptId: number) => {
+  return useExamAttempt(attemptId);
 };
 
 /**
  * Export named hooks
  */
 export const useExamQueries = {
-  usePublishedExams,
   useExam,
-  useExamsByStatus,
-  useUserExamAttempts,
-  useExamAttempt
+  useAllPublishedExams,
+  useExamsByStatus: useExamsByStatusQuery,
+  useUserAttempts,
+  useAttempt
 };
 
 export default useExamQueries;

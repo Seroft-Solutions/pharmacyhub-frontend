@@ -14,14 +14,14 @@ import { useExamStore } from '../store/examStore';
 import { Question, UserAnswer } from '../model/mcqTypes';
 import { toast } from 'sonner';
 import {
-  useExam,
+  useExamDetail as useExam,
   useExamQuestions,
   useStartExamMutation,
   useAnswerQuestionMutation,
   useFlagQuestionMutation,
   useUnflagQuestionMutation,
   useSubmitExamMutation
-} from '../api/UseExamApi';
+} from '../api/hooks';
 
 export const useExamSession = (examId: number) => {
   const queryClient = useQueryClient();

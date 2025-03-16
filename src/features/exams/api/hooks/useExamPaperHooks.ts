@@ -8,8 +8,30 @@ import { createApiHooks } from '@/features/core/tanstack-query-api/factories/cre
 import { useQueryClient } from '@tanstack/react-query';
 import { PAPER_ENDPOINTS } from '../constants';
 import { examQueryKeys } from './useExamApiHooks';
-import { transformExamsToPapers } from '../../utils/dataTransformers';
+// Direct paper type determination instead of using a transformer
 import type { ExamPaper } from '../../types';
+
+/**
+ * Utility function to process response data into paper format with correct paper type
+ */
+function processPaperResponse(exams: any, defaultType: string = 'PRACTICE'): ExamPaper[] {
+  if (!exams) return [];
+  
+  // Handle case where exams are wrapped in an API response
+  const examsArray = exams.data ? exams.data : (Array.isArray(exams) ? exams : []);
+  
+  return examsArray.map((exam: any) => ({
+    id: exam.id,
+    title: exam.title,
+    description: exam.description,
+    duration: exam.duration,
+    totalMarks: exam.totalMarks || exam.totalmarks,
+    passingMarks: exam.passingMarks || exam.passingmarks,
+    status: exam.status,
+    tags: exam.tags || [],
+    paperType: defaultType
+  }));
+}
 
 /**
  * Create standard CRUD hooks for papers
@@ -43,7 +65,7 @@ export const useModelPapers = () => {
     'model',
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      select: (data) => transformExamsToPapers(data)
+      select: (data) => processPaperResponse(data, 'MODEL')
     }
   );
 };
@@ -57,7 +79,7 @@ export const usePastPapers = () => {
     'past',
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      select: (data) => transformExamsToPapers(data)
+      select: (data) => processPaperResponse(data, 'PAST')
     }
   );
 };
@@ -71,7 +93,7 @@ export const useSubjectPapers = () => {
     'subject',
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      select: (data) => transformExamsToPapers(data)
+      select: (data) => processPaperResponse(data, 'SUBJECT')
     }
   );
 };
@@ -85,7 +107,7 @@ export const usePracticePapers = () => {
     'practice',
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      select: (data) => transformExamsToPapers(data)
+      select: (data) => processPaperResponse(data, 'PRACTICE')
     }
   );
 };

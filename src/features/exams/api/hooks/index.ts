@@ -4,7 +4,7 @@
  * This module exports all hooks for interacting with exam-related APIs.
  */
 
-// Export all hooks
+// Export all hooks directly
 export * from './useExamApiHooks';
 export * from './useExamAttemptHooks';
 export * from './useExamPaperHooks';
@@ -12,8 +12,8 @@ export * from './useExamPaperHooks';
 // Import for backward compatibility aliases
 import { examHooks } from './useExamApiHooks';
 import { attemptHooks } from './useExamAttemptHooks';
-import { paperHooks } from './useExamPaperHooks';
 import { 
+  paperHooks,
   usePapersList, 
   useUploadJsonMutation,
   paperApiHooks

@@ -21,25 +21,38 @@ export const examStoreAdapter = {
   // Exams
   getPublishedExams: async (): Promise<Exam[]> => {
     const response = await examApiService.getPublishedExams();
-    return response.data || [];
+    const exams = response.data || [];
+    
+    // Handle both array and wrapped format
+    return Array.isArray(exams) ? exams : (exams.data || []);
   },
   
   getExamById: async (examId: number): Promise<Exam | null> => {
     const response = await examApiService.getExamById(examId);
     console.log('Raw API response from getExamById:', response);
-    // Handle both data structure formats
-    return response.data || null;
+    
+    // If no data, return null
+    if (!response.data) return null;
+    
+    // Handle data wrapper if present
+    return response.data.data || response.data;
   },
   
   // Questions
   getExamQuestions: async (examId: number): Promise<Question[]> => {
     const response = await examApiService.getExamQuestions(examId);
-    return response.data || [];
+    const questions = response.data || [];
+    
+    // Handle both array and wrapped format
+    return Array.isArray(questions) ? questions : (questions.data || []);
   },
   
   updateQuestion: async (examId: number, questionId: number, question: Partial<Question>): Promise<Question | null> => {
     const response = await examApiService.updateQuestion(examId, questionId, question);
-    return response.data || null;
+    if (!response.data) return null;
+    
+    // Handle data wrapper if present
+    return response.data.data || response.data;
   },
   
   deleteQuestion: async (examId: number, questionId: number): Promise<boolean> => {

@@ -188,7 +188,7 @@ function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
     id: exam.id,
     title: exam.title,
     description: exam.description || '',
-    difficulty: exam.difficulty.toLowerCase(), // Convert from MEDIUM to medium
+    difficulty: exam.difficulty ? exam.difficulty.toLowerCase() : 'medium', // Convert from MEDIUM to medium, with safe default
     topics_covered: exam.tags || [],
     total_questions: exam.questionCount,
     time_limit: exam.durationMinutes,
