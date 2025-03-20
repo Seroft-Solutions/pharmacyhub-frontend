@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useExamFeatureAccess, ExamOperation } from '../../hooks/useExamFeatureAccess';
+import { useDeleteQuestionMutation } from '../../api/hooks/useExamApiHooks';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -66,6 +67,12 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  
+  // Use the delete question mutation hook
+  const { mutate: deleteQuestion, isPending: isDeleting } = useDeleteQuestionMutation(
+    examId,
+    questionToDelete?.id || 0
+  );
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -245,57 +252,55 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
   };
   
   // Handle delete confirmation
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (!questionToDelete || !exam) return;
     
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Call the API to delete the question
-      await examStoreAdapter.deleteQuestion(examId, questionToDelete.id);
-      
-      // Update the questions in the local state
-      const updatedQuestions = exam.questions?.filter(q => q.id !== questionToDelete.id) || [];
-      
-      // Create updated exam object
-      const updatedExam = {
-        ...exam,
-        questions: updatedQuestions
-      };
-      
-      // Update local state
-      setExam(transformExamData(updatedExam));
-      setSuccess(`Question #${questionToDelete.questionNumber} deleted successfully`);
-      
-      // Close the dialog
-      setIsDeleteDialogOpen(false);
-      setQuestionToDelete(null);
-      
-      // Reset to first page if current page is now empty
-      const filteredQuestions = searchTerm 
-        ? updatedQuestions.filter(q => 
-            q.text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            q.options?.some(o => o.text?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (q.explanation && q.explanation.toLowerCase().includes(searchTerm.toLowerCase()))
-          )
-        : updatedQuestions;
-      
-      const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
-      if (currentPage > totalPages && totalPages > 0) {
-        setCurrentPage(totalPages);
+    setError(null);
+    
+    // Call the delete question mutation
+    deleteQuestion(undefined, {
+      onSuccess: () => {
+        // Update the questions in the local state (optimistic update)
+        const updatedQuestions = exam.questions?.filter(q => q.id !== questionToDelete.id) || [];
+        
+        // Create updated exam object
+        const updatedExam = {
+          ...exam,
+          questions: updatedQuestions
+        };
+        
+        // Update local state
+        setExam(transformExamData(updatedExam));
+        setSuccess(`Question #${questionToDelete.questionNumber} deleted successfully`);
+        
+        // Close the dialog
+        setIsDeleteDialogOpen(false);
+        setQuestionToDelete(null);
+        
+        // Reset to first page if current page is now empty
+        const filteredQuestions = searchTerm 
+          ? updatedQuestions.filter(q => 
+              q.text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              q.options?.some(o => o.text?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+              (q.explanation && q.explanation.toLowerCase().includes(searchTerm.toLowerCase()))
+            )
+          : updatedQuestions;
+        
+        const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
+        if (currentPage > totalPages && totalPages > 0) {
+          setCurrentPage(totalPages);
+        }
+        
+        // Clear success message after a few seconds
+        setTimeout(() => {
+          setSuccess(null);
+        }, 3000);
+      },
+      onError: (err) => {
+        console.error('Error deleting question:', err);
+        setError(`Failed to delete question: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
-      
-      // Clear success message after a few seconds
-      setTimeout(() => {
-        setSuccess(null);
-      }, 3000);
-    } catch (err) {
-      console.error('Error deleting question:', err);
-      setError(`Failed to delete question: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
   
   // Handle delete cancel
@@ -660,12 +665,18 @@ export const ExamQuestions: React.FC<ExamQuestionsProps> = ({ examId }) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelDelete}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={handleCancelDelete} disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleConfirmDelete}
               className="bg-destructive hover:bg-destructive/90"
+              disabled={isDeleting}
             >
-              Delete
+              {isDeleting ? (
+                <>
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

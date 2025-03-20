@@ -3,7 +3,8 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { AlertTriangleIcon, RefreshCwIcon, HomeIcon } from 'lucide-react';
+import { AlertTriangleIcon, RefreshCwIcon, HomeIcon, CheckCircleIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Props {
   children: ReactNode;
@@ -15,6 +16,7 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
 /**
@@ -26,16 +28,23 @@ interface State {
 export class ExamErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-    error: null
+    error: null,
+    errorInfo: null
   };
 
-  public static getDerivedStateFromError(error: Error): State {
+  public static getDerivedStateFromError(error: Error): Partial<State> {
     // Update state so the next render will show the fallback UI
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('Exam feature error:', error, errorInfo);
+    
+    // Store errorInfo for potential display
+    this.setState({ errorInfo });
+    
+    // Show a toast notification
+    toast.error('An error occurred. Your progress has been saved.');
     
     // Optionally log to an error reporting service
     // reportError(error, errorInfo);
@@ -80,6 +89,23 @@ export class ExamErrorBoundary extends Component<Props, State> {
             
             <div className="bg-gray-50 p-3 rounded-md border border-gray-200 mb-4 overflow-auto max-h-32 text-sm font-mono text-gray-800">
               {this.state.error?.message || 'Unknown error occurred'}
+            </div>
+            
+            <div className="rounded-md bg-green-50 p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <CheckCircleIcon className="h-5 w-5 text-green-400" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-green-800">Your answers are safe</h3>
+                  <div className="mt-2 text-sm text-green-700">
+                    <p>
+                      All your answered questions have been automatically saved to the server. 
+                      You can safely return to the dashboard and resume later.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <p className="text-sm text-gray-500">

@@ -165,6 +165,28 @@ export const useUpdateQuestionMutation = (examId: number, questionId: number) =>
   );
 };
 
+/**
+ * Hook for deleting a question from an exam
+ */
+export const useDeleteQuestionMutation = (examId: number, questionId: number) => {
+  const queryClient = useQueryClient();
+  const endpoint = EXAM_ENDPOINTS.deleteQuestion
+    .replace(':examId', examId.toString())
+    .replace(':questionId', questionId.toString());
+
+  return examApiHooks.useAction<void, void>(
+    endpoint,
+    {
+      method: 'DELETE',
+      onSuccess: () => {
+        // Invalidate relevant queries
+        queryClient.invalidateQueries(examQueryKeys.questions(examId));
+        queryClient.invalidateQueries(examQueryKeys.detail(examId));
+      }
+    }
+  );
+};
+
 // Export standard CRUD hooks with more descriptive names
 export const {
   useList: useExamsList,
@@ -195,6 +217,7 @@ export const examHooks = {
   usePublishExamMutation,
   useArchiveExamMutation,
   useUpdateQuestionMutation,
+  useDeleteQuestionMutation,
 
   // Query keys
   queryKeys: examQueryKeys,

@@ -25,7 +25,12 @@ export function QuestionDisplay({
   onFlagQuestion,
 }: QuestionDisplayProps) {
   const handleAnswerSelect = (optionIndex: string) => {
-    onAnswerSelect(question.id, parseInt(optionIndex));
+    try {
+      onAnswerSelect(question.id, parseInt(optionIndex));
+    } catch (error) {
+      console.error('Error selecting answer option:', error);
+      // You could add a toast notification here if needed
+    }
   };
 
   const handleFlagToggle = () => {

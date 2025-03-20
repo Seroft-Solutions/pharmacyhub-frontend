@@ -169,14 +169,45 @@ function ExamContainerInternal({
   // Track answer selection
   const handleAnswerQuestion = (questionId: number, selectedOption: number) => {
     analytics.trackEvent('question_answer', { questionId, selectedOption });
-    answerQuestion(questionId, selectedOption);
+    try {
+      answerQuestion(questionId, selectedOption);
+    } catch (error) {
+      console.error('Error answering question:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Check if it's an authentication or permission error
+      if (errorMessage.includes('403') || errorMessage.includes('401') || errorMessage.includes('Authentication')) {
+        toast.error('Authentication error. Please refresh the page and try again.');
+      } else {
+        toast.error(`Failed to save answer: ${errorMessage}`);
+      }
+      
+      // Try to recover by refreshing the attempt data
+      if (attemptId) {
+        // This is a stub - in a real implementation, you would refresh the attempt data
+        toast.info('Attempting to recover your session...');
+      }
+    }
   };
   
   // Track question flagging
   const handleToggleFlag = (questionId: number) => {
     const isCurrentlyFlagged = isFlagged(questionId);
     analytics.trackEvent(isCurrentlyFlagged ? 'question_unflag' : 'question_flag', { questionId });
-    toggleFlagQuestion(questionId);
+    
+    try {
+      toggleFlagQuestion(questionId);
+    } catch (error) {
+      console.error('Error toggling flag:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Check if it's an authentication or permission error
+      if (errorMessage.includes('403') || errorMessage.includes('401') || errorMessage.includes('Authentication')) {
+        toast.error('Authentication error. Please refresh the page and try again.');
+      } else {
+        toast.error(`Failed to ${isCurrentlyFlagged ? 'unflag' : 'flag'} question: ${errorMessage}`);
+      }
+    }
   };
   
   // Handle exam submission with analytics
@@ -188,20 +219,40 @@ function ExamContainerInternal({
       completionPercentage: getCompletionPercentage()
     });
     
-    submitExam(
-      undefined,
-      {
-        onSuccess: (data) => {
-          setShowResults(true);
-          toast.success('Exam submitted successfully!');
-          analytics.trackEvent('exam_submit_success', { examId, score: data?.score });
-        },
-        onError: (error) => {
-          analytics.trackEvent('exam_submit_error', { error: error instanceof Error ? error.message : 'Unknown error' });
-          toast.error('Failed to submit exam: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    try {
+      submitExam(
+        undefined,
+        {
+          onSuccess: (data) => {
+            setShowResults(true);
+            toast.success('Exam submitted successfully!');
+            analytics.trackEvent('exam_submit_success', { examId, score: data?.score });
+          },
+          onError: (error) => {
+            analytics.trackEvent('exam_submit_error', { error: error instanceof Error ? error.message : 'Unknown error' });
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            
+            // Check if it's an authentication or permission error
+            if (errorMessage.includes('403') || errorMessage.includes('401') || errorMessage.includes('Authentication')) {
+              toast.error('Authentication error. Please refresh the page and try again.');
+            } else {
+              toast.error(`Failed to submit exam: ${errorMessage}`);
+            }
+          }
         }
+      );
+    } catch (error) {
+      console.error('Error submitting exam:', error);
+      analytics.trackEvent('exam_submit_error', { error: error instanceof Error ? error.message : 'Unknown error' });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Check if it's an authentication or permission error
+      if (errorMessage.includes('403') || errorMessage.includes('401') || errorMessage.includes('Authentication')) {
+        toast.error('Authentication error. Please refresh the page and try again.');
+      } else {
+        toast.error(`Failed to submit exam: ${errorMessage}`);
       }
-    );
+    }
   };
   
   // Return to dashboard

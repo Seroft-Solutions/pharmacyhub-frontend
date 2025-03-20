@@ -139,7 +139,11 @@ export const useAnswerQuestionMutation = (attemptId: number, questionId: number)
     .replace(':attemptId', attemptId.toString())
     .replace(':questionId', questionId.toString());
 
-  return attemptApiHooks.useAction<void, { selectedOption: number }>(
+  return attemptApiHooks.useAction<void, { 
+    questionId: number, 
+    selectedOptionId: string, // Use string type for selectedOptionId
+    timeSpent: number 
+  }>(
     endpoint
   );
 };

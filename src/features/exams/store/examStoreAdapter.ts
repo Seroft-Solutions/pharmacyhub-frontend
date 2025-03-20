@@ -125,17 +125,38 @@ export const examStoreAdapter = {
   /**
    * Answer a question in an attempt
    */
-  async answerQuestion(attemptId: number, questionId: number, selectedOption: number): Promise<void> {
+  async answerQuestion(attemptId: number, questionId: number, selectedOption: number, timeSpent: number = 0): Promise<void> {
     const response = await fetch(`/api/v1/exams/attempts/${attemptId}/answer/${questionId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ selectedOption })
+      body: JSON.stringify({
+        questionId, // Include the questionId in the request body
+        selectedOptionId: selectedOption.toString(), // Backend expects selectedOptionId as a string
+        timeSpent // Include the timeSpent in the request body
+      })
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to answer question ${questionId} for attempt ${attemptId}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Failed to answer question ${questionId} for attempt ${attemptId}: ${JSON.stringify(errorData)}`);
+    }
+  },
+  
+  /**
+   * Delete a question from an exam
+   */
+  async deleteQuestion(examId: number, questionId: number): Promise<void> {
+    const response = await fetch(`/api/v1/exams/${examId}/questions/${questionId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to delete question ${questionId} from exam ${examId}`);
     }
   }
 };

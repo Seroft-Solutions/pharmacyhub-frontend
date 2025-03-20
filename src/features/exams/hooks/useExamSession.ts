@@ -155,6 +155,10 @@ export const useExamSession = (examId: number) => {
       return;
     }
     
+    // Calculate time spent (for now using a default value)
+    // In a future enhancement, we could track time per question
+    const timeSpent = 0;
+    
     // Update local state
     setAnswers(prev => {
       const newAnswers = {
@@ -162,7 +166,7 @@ export const useExamSession = (examId: number) => {
         [questionId]: {
           questionId,
           selectedOption,
-          timeSpent: 0 // We could calculate this in the future
+          timeSpent
         }
       };
       
@@ -172,8 +176,12 @@ export const useExamSession = (examId: number) => {
       return newAnswers;
     });
     
-    // Send to API
-    answerQuestionMutation({ selectedOption }, {
+    // Send to API with all required fields
+    answerQuestionMutation({ 
+      questionId, 
+      selectedOptionId: selectedOption.toString(), // Convert to string as API expects
+      timeSpent 
+    }, {
       onError: (error) => {
         toast.error(`Failed to save answer: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
