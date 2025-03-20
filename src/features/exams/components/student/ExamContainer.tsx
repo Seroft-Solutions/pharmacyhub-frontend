@@ -333,6 +333,18 @@ function ExamContainerInternal({
     Object.values(answers).map(answer => answer.questionId)
   );
   
+  // Debug logging for answers and flagged questions
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Answered questions:', {
+        answersObj: answers,
+        answersArray: Object.values(answers).map(a => a.questionId),
+        answeredQuestionsSet: Array.from(answeredQuestionsSet),
+        flaggedQuestions: Array.from(flaggedQuestions)
+      });
+    }
+  }, [answers, flaggedQuestions, answeredQuestionsSet]);
+  
   // Handle timer expiration
   useEffect(() => {
     if (timeRemaining === 0 && !isCompleted && attemptId) {
@@ -599,6 +611,7 @@ function ExamContainerInternal({
                 flaggedQuestions={flaggedQuestions}
                 onNavigate={handleNavigateToQuestion}
                 onFinishExam={toggleSummary}
+                questions={questions}
               />
             </CardContent>
           </Card>

@@ -160,6 +160,18 @@ export const useExamSession = (examId: number) => {
     // In a future enhancement, we could track time per question
     const timeSpent = 0;
     
+    // Debug logging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Answering question:', {
+        questionId, 
+        selectedOption,
+        type: typeof questionId,
+        questions: questions.map(q => ({ id: q.id, num: q.questionNumber })),
+        // Check if question exists in the array
+        questionInArray: questions.find(q => q.id === questionId) ? 'yes' : 'no'
+      });
+    }
+    
     // Update local state
     setAnswers(prev => {
       const newAnswers = {
@@ -187,7 +199,7 @@ export const useExamSession = (examId: number) => {
         toast.error(`Failed to save answer: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     });
-  }, [answerQuestionMutation, attemptId]);
+  }, [answerQuestionMutation, attemptId, questions]);
   
   const toggleFlagQuestion = useCallback((questionId: number) => {
     if (!attemptId) {

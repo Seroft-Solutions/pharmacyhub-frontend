@@ -24,6 +24,7 @@ interface QuestionNavigationProps {
   flaggedQuestions: Set<number>;
   onNavigate: (index: number) => void;
   onFinishExam: () => void;
+  questions?: any[]; // Add this to receive the questions array
 }
 
 export function QuestionNavigation({
@@ -32,7 +33,8 @@ export function QuestionNavigation({
   answeredQuestions,
   flaggedQuestions,
   onNavigate,
-  onFinishExam
+  onFinishExam,
+  questions = [] // Default to empty array if not provided
 }: QuestionNavigationProps) {
   const [activeTab, setActiveTab] = useState<string>('compact');
   
@@ -41,16 +43,62 @@ export function QuestionNavigation({
   
   // Get question status
   const getQuestionStatus = (index: number) => {
-    // The questionId here should match how they're stored in answeredQuestions
-    // This assumes the questionIds are stored as actual question IDs from the server
-    const questionNumber = index + 1; // Used for index + 1 display
-    const questionId = index + 1; // Assuming question IDs also start at 1
+    // Calculate the question number (1-based index for display)
+    const questionNumber = index + 1;
     
-    // Check if the question ID exists in answeredQuestions
-    const isAnswered = answeredQuestions.has(questionId);
-    const isFlagged = flaggedQuestions.has(questionId);
+    // In development mode, add detailed logging for this specific question
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Checking question status for #${questionNumber} at index ${index}:`, {
+        answeredQuestionsArray: Array.from(answeredQuestions),
+        flaggedQuestionsArray: Array.from(flaggedQuestions),
+        isCurrent: index === currentIndex,
+      });
+    }
+    
+    // Check if this is the current question
     const isCurrent = index === currentIndex;
     
+    // Check if this question is answered - try multiple ways to match
+    // 1. Direct position check (using index+1 as question number)
+    // 2. Direct ID check if IDs are stored directly
+    // This provides flexibility with how questions are stored
+    let isAnswered = false;
+    
+    // Convert answeredQuestions Set to Array for easier searching
+    const answeredArray = Array.from(answeredQuestions);
+    
+    // Loop through all answered questions and check if any match this question
+    for (const answeredId of answeredArray) {
+      // Check if the answeredId directly matches the question number
+      if (answeredId === questionNumber) {
+        isAnswered = true;
+        break;
+      }
+      
+      // Try matching by index in questions array if possible
+      if (questions && questions[index] && questions[index].id === answeredId) {
+        isAnswered = true;
+        break;
+      }
+    }
+    
+    // Same approach for flagged questions
+    let isFlagged = false;
+    const flaggedArray = Array.from(flaggedQuestions);
+    
+    for (const flaggedId of flaggedArray) {
+      if (flaggedId === questionNumber) {
+        isFlagged = true;
+        break;
+      }
+      
+      if (questions && questions[index] && questions[index].id === flaggedId) {
+        isFlagged = true;
+        break;
+      }
+    }
+    
+    // Determine status based on combinations
     if (isCurrent) return 'current';
     if (isAnswered && isFlagged) return 'answered-flagged';
     if (isAnswered) return 'answered';
