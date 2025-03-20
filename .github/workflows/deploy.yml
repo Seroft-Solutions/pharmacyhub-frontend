@@ -70,11 +70,23 @@ jobs:
           node-version: '20.17.0'
           cache: 'npm'
 
+      # Only install dependencies if you have tests that need to run
+      # If you don't have tests, you can comment out these steps
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: |
+          if [ -f "package.json" ] && grep -q "\"test\"" package.json; then
+            npm ci --legacy-peer-deps --prefer-offline --no-audit --progress=false
+          else
+            echo "Skipping dependency installation as no tests are needed"
+          fi
       
       - name: Run tests
-        run: npm test || echo "No tests found, skipping"
+        run: |
+          if [ -f "package.json" ] && grep -q "\"test\"" package.json; then
+            npm test || echo "No tests found, skipping"
+          else
+            echo "Skipping tests as they are not configured"
+          fi
       
       # We'll remove this step as the build will be done in the Dockerfile
       # - name: Build Next.js application
@@ -82,6 +94,11 @@ jobs:
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
       
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -99,8 +116,17 @@ jobs:
           build-args: |
             NODE_ENV=${{ env.DEPLOY_ENV }}
             ENV_FILE=deploy/env/${{ env.ENV_FILE }}
-          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+          # Improved caching strategy
+          cache-from: |
+            type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+            type=registry,ref=${{ env.DOCKER_IMAGE }}:${{ env.DEPLOY_ENV }}
           cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+          # Add platform-specific build to speed up
+          platforms: linux/amd64
+          # Enable build concurrency
+          provenance: false
+          # Add build output to see progress
+          outputs: type=image,name=${{ env.DOCKER_IMAGE }}:${{ env.DEPLOY_ENV }},push-by-digest=false,push=true
       
       - name: Setup SSH key
         run: |
@@ -201,7 +227,7 @@ jobs:
           
           # Set environment variables and run deployment
           echo "Running deployment script..."
-          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "cd /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && export DOCKER_USERNAME='${{ secrets.DOCKER_USERNAME }}' && export DOCKER_PASSWORD='${{ secrets.DOCKER_PASSWORD }}' && export CI=true && ./deploy.sh ${{ env.DEPLOY_ENV }}"
+          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "cd /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && export DOCKER_USERNAME='${{ secrets.DOCKER_USERNAME }}' && export DOCKER_PASSWORD='${{ secrets.DOCKER_PASSWORD }}' && export DOCKER_IMAGE='${{ env.DOCKER_IMAGE }}' && export CI=true && ./deploy.sh ${{ env.DEPLOY_ENV }}"
       
       - name: Verify deployment
         run: |

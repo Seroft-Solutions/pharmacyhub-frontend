@@ -109,6 +109,14 @@ echo "Ensuring Docker networks exist..."
 docker network inspect proxy-network >/dev/null 2>&1 || docker network create proxy-network
 docker network inspect pharmacyhub-${ENV}-network >/dev/null 2>&1 || docker network create --driver bridge pharmacyhub-${ENV}-network
 
+# Pull the image separately to improve performance
+echo "Pulling the ${DOCKER_IMAGE} image..."
+docker pull ${DOCKER_IMAGE}:${ENV} || echo "Warning: Failed to pull image, will use local image or build"
+
+# Clear any dangling images to free up space and improve performance
+echo "Cleaning up dangling images..."
+docker image prune -f >/dev/null 2>&1 || true
+
 # Start services with the correct environment variables
 echo "Starting frontend service..."
 FRONTEND_PORT=$FRONTEND_PORT docker compose -f docker-compose.yml up -d

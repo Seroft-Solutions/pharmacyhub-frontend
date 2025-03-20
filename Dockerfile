@@ -14,7 +14,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies including dev dependencies for build with legacy-peer-deps flag
-RUN npm ci --legacy-peer-deps
+RUN npm ci --legacy-peer-deps --prefer-offline --no-audit --progress=false
 
 # Copy application code
 COPY . .
@@ -53,7 +53,7 @@ COPY --from=builder /app/package.json ./package.json
 
 # Only install production dependencies in the final image with legacy-peer-deps flag
 COPY --from=builder /app/package*.json ./
-RUN npm ci --only=production --legacy-peer-deps && npm cache clean --force
+RUN npm ci --only=production --legacy-peer-deps --prefer-offline --no-audit --progress=false
 
 # Copy environment file and config files
 COPY --from=builder /app/.env ./.env
@@ -62,6 +62,10 @@ COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 # Set proper permissions
 RUN chown -R node:node /app
+
+# Create a simple script to start the application
+RUN echo '#!/bin/sh\necho "Starting Next.js application..."\nexec npm start' > /app/start.sh && \
+    chmod +x /app/start.sh
 
 # Switch to non-root user for security
 USER node
@@ -72,10 +76,6 @@ EXPOSE 3000
 # Add healthcheck using curl
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3000 || exit 1
-
-# Create a simple script to start the application
-RUN echo '#!/bin/sh\necho "Starting Next.js application..."\nexec npm start' > /app/start.sh && \
-    chmod +x /app/start.sh
 
 # Use the script as the entrypoint
 CMD ["/app/start.sh"]

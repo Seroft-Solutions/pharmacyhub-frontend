@@ -4,7 +4,7 @@ services:
   pharmacyhub-frontend-prod:
     image: syedus06/pharmacyhub-frontend:prod
     container_name: pharmacyhub-frontend-prod
-    env_file: ../.env
+    env_file: .env
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
