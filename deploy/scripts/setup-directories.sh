@@ -26,9 +26,9 @@ mkdir -p $FE_LOGS_DIR
 mkdir -p $FE_DATA_DIR
 
 # Set proper permissions
-chown -R ubuntu:ubuntu $FE_DIR
-chown -R ubuntu:ubuntu $FE_LOGS_DIR
-chown -R ubuntu:ubuntu $FE_DATA_DIR
+chown -R root:root $FE_DIR
+chown -R root:root $FE_LOGS_DIR
+chown -R root:root $FE_DATA_DIR
 
 echo "PharmacyHub frontend directory structure setup complete for $ENV environment."
 echo "Created:"

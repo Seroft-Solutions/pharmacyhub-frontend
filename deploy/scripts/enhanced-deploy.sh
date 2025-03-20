@@ -39,9 +39,9 @@ mkdir -p "$FE_DIR/logs"
 mkdir -p "$ENV_DIR/data/frontend"
 
 # Ensure proper permissions
-chown -R ubuntu:ubuntu "$FE_DIR" 2>/dev/null || true
-chown -R ubuntu:ubuntu "$FE_DIR/logs" 2>/dev/null || true
-chown -R ubuntu:ubuntu "$ENV_DIR/data/frontend" 2>/dev/null || true
+chown -R root:root "$FE_DIR" 2>/dev/null || true
+chown -R root:root "$FE_DIR/logs" 2>/dev/null || true
+chown -R root:root "$ENV_DIR/data/frontend" 2>/dev/null || true
 
 # Verify env file exists
 if [ ! -f "$ENV_FILE" ]; then
