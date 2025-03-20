@@ -1,21 +1,17 @@
 version: '3.8'
 
 services:
-  crm-frontend-qa:
-    image: syedus06/crm-frontend:qa
-    container_name: crm-frontend-qa
+  pharmacyhub-frontend-qa:
+    image: syedus06/pharmacyhub-frontend:qa
+    container_name: pharmacyhub-frontend-qa
     env_file: ../.env
     environment:
       - NODE_ENV=qa
       - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
-      - NEXT_PUBLIC_KEYCLOAK_URL=${NEXT_PUBLIC_KEYCLOAK_URL}
-      - NEXT_PUBLIC_CAL_URL=${NEXT_PUBLIC_CAL_URL}
-      - NEXT_PUBLIC_CAL_CLIENT_ID=${NEXT_PUBLIC_CAL_CLIENT_ID}
-      - CAL_CLIENT_SECRET=${CAL_CLIENT_SECRET}
     ports:
       - "${FRONTEND_PORT:-3010}:3000"
     volumes:
-      - ${CRM_BASE:-/home/ubuntu/CRM}/qa/frontend/logs:/app/logs
+      - ${CRM_BASE:-/home/ubuntu/PharmacyHub}/qa/frontend/logs:/app/logs
     networks:
       - qa-network
       - proxy-network
@@ -34,7 +30,7 @@ services:
 
 networks:
   qa-network:
-    name: crm-qa-network
+    name: pharmacyhub-qa-network
     external: true
   proxy-network:
     name: proxy-network

@@ -1,21 +1,17 @@
 version: '3.8'
 
 services:
-  crm-frontend-dev:
-    image: syedus06/crm-frontend:dev
-    container_name: crm-frontend-dev
+  pharmacyhub-frontend-dev:
+    image: syedus06/pharmacyhub-frontend:dev
+    container_name: pharmacyhub-frontend-dev
     env_file: ../.env
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
-      - NEXT_PUBLIC_KEYCLOAK_URL=${NEXT_PUBLIC_KEYCLOAK_URL}
-      - NEXT_PUBLIC_CAL_URL=${NEXT_PUBLIC_CAL_URL}
-      - NEXT_PUBLIC_CAL_CLIENT_ID=${NEXT_PUBLIC_CAL_CLIENT_ID}
-      - CAL_CLIENT_SECRET=${CAL_CLIENT_SECRET}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     volumes:
-      - ${CRM_BASE:-/home/ubuntu/CRM}/dev/frontend/logs:/app/logs
+      - ${CRM_BASE:-/home/ubuntu/PharmacyHub}/dev/frontend/logs:/app/logs
     networks:
       - dev-network
       - proxy-network
@@ -34,7 +30,7 @@ services:
 
 networks:
   dev-network:
-    name: crm-dev-network
+    name: pharmacyhub-dev-network
     external: true
   proxy-network:
     name: proxy-network

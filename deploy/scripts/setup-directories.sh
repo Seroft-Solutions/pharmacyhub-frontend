@@ -12,13 +12,13 @@ fi
 
 # Set environment variables
 ENV="$1"
-CRM_BASE="/home/ubuntu/CRM"
+CRM_BASE="/home/ubuntu/PharmacyHub"
 ENV_DIR="$CRM_BASE/$ENV"
 FE_DIR="$ENV_DIR/frontend"
 FE_LOGS_DIR="$FE_DIR/logs"
 FE_DATA_DIR="$ENV_DIR/data/frontend"
 
-echo "Setting up directory structure for frontend in $ENV environment..."
+echo "Setting up directory structure for PharmacyHub frontend in $ENV environment..."
 
 # Create main frontend directories
 mkdir -p $FE_DIR
@@ -30,7 +30,7 @@ chown -R ubuntu:ubuntu $FE_DIR
 chown -R ubuntu:ubuntu $FE_LOGS_DIR
 chown -R ubuntu:ubuntu $FE_DATA_DIR
 
-echo "Frontend directory structure setup complete for $ENV environment."
+echo "PharmacyHub frontend directory structure setup complete for $ENV environment."
 echo "Created:"
 echo "  - $FE_DIR"
 echo "  - $FE_LOGS_DIR"

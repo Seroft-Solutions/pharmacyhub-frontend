@@ -12,7 +12,7 @@ fi
 
 # Set environment variables
 ENV="$1"
-CRM_BASE="/home/ubuntu/CRM"
+CRM_BASE="/home/ubuntu/PharmacyHub"
 ENV_DIR="$CRM_BASE/$ENV"
 FE_DIR="$ENV_DIR/frontend"
 ENV_FILE="$FE_DIR/.env"
@@ -115,7 +115,7 @@ if [ "$CI" != "true" ]; then
   counter=0
   
   while [ $counter -lt $max_attempts ]; do
-    if docker ps | grep -q "crm-frontend-$ENV"; then
+    if docker ps | grep -q "pharmacyhub-frontend-$ENV"; then
       echo "Frontend container is running!"
       break
     fi
@@ -133,7 +133,7 @@ if [ "$CI" != "true" ]; then
 else
   echo "CI mode: Skipping thorough deployment verification."
   # Basic check even in CI mode
-  if docker ps | grep -q "crm-frontend-$ENV"; then
+  if docker ps | grep -q "pharmacyhub-frontend-$ENV"; then
     echo "Frontend container is running!"
   else
     echo "Warning: Frontend container doesn't appear to be running."
@@ -143,9 +143,9 @@ fi
 
 # Display access URL
 if [ "$ENV" == "dev" ]; then
-  echo "Frontend is now accessible at https://dev.crmcup.com"
+  echo "Frontend is now accessible at https://dev.pharmacyhub.pk"
 elif [ "$ENV" == "qa" ]; then
-  echo "Frontend is now accessible at https://qa.crmcup.com"
+  echo "Frontend is now accessible at https://qa.pharmacyhub.pk"
 elif [ "$ENV" == "prod" ]; then
-  echo "Frontend is now accessible at https://www.crmcup.com"
+  echo "Frontend is now accessible at https://www.pharmacyhub.pk"
 fi
