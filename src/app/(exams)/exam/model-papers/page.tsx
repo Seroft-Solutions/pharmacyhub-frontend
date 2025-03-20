@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Medal, FileText, Award } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,8 @@ import { useModelPapers } from "@/features/exams/api";
 import { QueryProvider } from "@/features/core/tanstack-query-api/components/QueryProvider";
 import { ExamPaperCard } from "@/features/exams/components/ExamPaperCard";
 import { ExamPaper, ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
-import { Spinner } from "@/components/ui/spinner";
+// Spinner import removed as it's not used
+// import { Spinner } from "@/components/ui/spinner";
 
 export default function ModelPapersPage() {
   return (

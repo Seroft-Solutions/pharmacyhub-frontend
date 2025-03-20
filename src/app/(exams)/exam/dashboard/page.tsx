@@ -17,7 +17,7 @@ export default function ExamDashboardPage() {
 }
 
 function DashboardContent() {
-  const { data: examStats, isLoading, error } = useExamStats();
+  const { data: examStats, isLoading } = useExamStats();
 
   // Static categories for now
   const paperCategories = [

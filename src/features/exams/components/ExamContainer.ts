@@ -5,4 +5,4 @@
  * to maintain backward compatibility with existing imports.
  */
 
-export { ExamContainer } from './student/ExamContainer';
+export { default as ExamContainer } from './student/ExamContainer';

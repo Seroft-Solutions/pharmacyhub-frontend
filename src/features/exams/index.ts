@@ -12,7 +12,7 @@ export * from './types';
 export * from './api';
 
 // Export components
-export { default as ExamContainer } from './components/student/ExamContainer';
+export { default as ExamContainer } from './components/ExamContainer';
 export { default as ExamProgress } from './components/student/ExamProgress';
 export { default as ExamResults } from './components/results/ExamResults';
 export { default as ExamSummary } from './components/student/ExamSummary';

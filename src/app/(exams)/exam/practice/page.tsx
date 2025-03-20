@@ -116,7 +116,7 @@ export default function PracticeExamsPage() {
                     <CheckCircle2 className="h-4 w-4" />
                     <span>Focus on mistakes</span>
                   </div>
-                  <p className="text-sm text-purple-700">Review questions you've answered incorrectly</p>
+                  <p className="text-sm text-purple-700">Review questions you&apos;ve answered incorrectly</p>
                 </CardContent>
                 <CardFooter>
                   <Button variant="secondary" className="w-full bg-purple-600 text-white hover:bg-purple-700">
@@ -483,7 +483,7 @@ function CustomExamTab({ onStartPaper }: { onStartPaper: (paper: ExamPaperMetada
                 <div className="space-y-0.5">
                   <Label htmlFor="prev-mistakes">Include previous mistakes</Label>
                   <p className="text-sm text-gray-500">
-                    Include questions you've answered incorrectly before
+                    Include questions you&apos;ve answered incorrectly before
                   </p>
                 </div>
                 <Switch

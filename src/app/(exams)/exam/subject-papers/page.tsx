@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { QueryProvider } from "@/features/core/tanstack-query-api/components/QueryProvider";
