@@ -13,8 +13,8 @@ WORKDIR /app
 # Copy package files for better layer caching
 COPY package*.json ./
 
-# Install dependencies including dev dependencies for build
-RUN npm ci
+# Install dependencies including dev dependencies for build with legacy-peer-deps flag
+RUN npm ci --legacy-peer-deps
 
 # Copy application code
 COPY . .
@@ -51,9 +51,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package.json ./package.json
 
-# Only install production dependencies in the final image
+# Only install production dependencies in the final image with legacy-peer-deps flag
 COPY --from=builder /app/package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --only=production --legacy-peer-deps && npm cache clean --force
 
 # Copy environment file and config files
 COPY --from=builder /app/.env ./.env
