@@ -21,21 +21,27 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ExamResult, QuestionResult } from '../../model/standardTypes';
+import { Question, ExamResult, QuestionResult, UserAnswer } from '../../model/standardTypes';
 import { formatTimeVerbose } from '../../utils/formatTime';
 
 interface ExamResultsProps {
   result: ExamResult;
-  onReview: () => void;
-  onTryAgain: () => void;
-  onBackToDashboard: () => void;
+  questions?: Question[];
+  userAnswers?: Record<number, UserAnswer>;
+  onReview?: () => void;
+  onTryAgain?: () => void;
+  onBackToDashboard?: () => void;
+  onReturnToDashboard?: () => void; // For backward compatibility
 }
 
 export const ExamResults: React.FC<ExamResultsProps> = ({
   result,
+  questions,
+  userAnswers,
   onReview,
   onTryAgain,
-  onBackToDashboard
+  onBackToDashboard,
+  onReturnToDashboard
 }) => {
   const getPassFailMessage = () => {
     if (result.isPassed) {
@@ -180,27 +186,31 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
         <CardFooter className="flex flex-col sm:flex-row justify-between gap-4 bg-gray-50 px-6 py-4">
           <Button 
             variant="outline" 
-            onClick={onBackToDashboard}
+            onClick={onBackToDashboard || onReturnToDashboard}
             className="w-full sm:w-auto"
           >
             Back to Dashboard
           </Button>
           
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Button 
-              variant="outline" 
-              onClick={onTryAgain}
-              className="w-full sm:w-auto"
-            >
-              Try Again
-            </Button>
+            {onTryAgain && (
+              <Button 
+                variant="outline" 
+                onClick={onTryAgain}
+                className="w-full sm:w-auto"
+              >
+                Try Again
+              </Button>
+            )}
             
-            <Button 
-              onClick={onReview}
-              className="w-full sm:w-auto"
-            >
-              Review Answers <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            {onReview && (
+              <Button 
+                onClick={onReview}
+                className="w-full sm:w-auto"
+              >
+                Review Answers <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
           </div>
         </CardFooter>
       </Card>

@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import logger from '@/shared/lib/logger';
 import { 
   CheckCircleIcon, 
   ClipboardListIcon, 
@@ -51,6 +52,8 @@ function ExamContainerInternal({
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  // Track submission state across different callbacks with useRef
+  const isSubmittingRef = useRef(false);
   
   // Setup analytics tracking
   const analytics = useExamAnalytics(examId, userId);
@@ -212,6 +215,15 @@ function ExamContainerInternal({
   
   // Handle exam submission with analytics
   const handleSubmitExam = () => {
+    // Prevent multiple submissions
+    if (isSubmittingRef.current) {
+      logger.info('Submission already in progress, ignoring duplicate request');
+      return;
+    }
+    
+    // Set submitting flag
+    isSubmittingRef.current = true;
+    
     analytics.trackEvent('exam_submit', { 
       answeredCount: getAnsweredQuestionsCount(),
       totalQuestions: questions.length,
@@ -227,8 +239,13 @@ function ExamContainerInternal({
             setShowResults(true);
             toast.success('Exam submitted successfully!');
             analytics.trackEvent('exam_submit_success', { examId, score: data?.score });
+            // Keep isSubmittingRef.current as true since submission was successful
+            // and we don't want to allow further submissions
           },
           onError: (error) => {
+            // Reset submitting flag on error to allow retrying
+            isSubmittingRef.current = false;
+            
             analytics.trackEvent('exam_submit_error', { error: error instanceof Error ? error.message : 'Unknown error' });
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             
@@ -242,6 +259,9 @@ function ExamContainerInternal({
         }
       );
     } catch (error) {
+      // Reset submitting flag on error to allow retrying
+      isSubmittingRef.current = false;
+      
       console.error('Error submitting exam:', error);
       analytics.trackEvent('exam_submit_error', { error: error instanceof Error ? error.message : 'Unknown error' });
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -267,8 +287,37 @@ function ExamContainerInternal({
     }
   };
   
+  // Handle review answers action
+  const handleReviewAnswers = () => {
+    analytics.trackEvent('exam_review_answers');
+    // Reset showResults but keep isCompleted state
+    setShowResults(false);
+    // Show the summary view for review
+    toggleSummary();
+  };
+  
+  // Handle try again action
+  const handleTryAgain = () => {
+    analytics.trackEvent('exam_try_again');
+    // Reset all states for a fresh start
+    setAttemptId(null);
+    setShowResults(false);
+    useExamStore.getState().resetExam();
+    // Start a new attempt immediately
+    handleStartExam();
+  };
+  
   // Handle timer expiration with analytics
   const handleExamTimeExpired = () => {
+    // Prevent duplicate submissions
+    if (isSubmittingRef.current) {
+      logger.info('Submission already in progress, ignoring timer expiration submission');
+      return;
+    }
+    
+    // Set submitting flag
+    isSubmittingRef.current = true;
+    
     analytics.trackEvent('exam_time_expired', {
       answeredCount: getAnsweredQuestionsCount(),
       totalQuestions: questions.length,
@@ -363,7 +412,9 @@ function ExamContainerInternal({
         }}
         questions={questions}
         userAnswers={answers}
-        onReturnToDashboard={handleReturnToDashboard}
+        onReview={handleReviewAnswers}
+        onTryAgain={handleTryAgain}
+        onBackToDashboard={handleReturnToDashboard}
       />
     );
   }
@@ -483,10 +534,10 @@ function ExamContainerInternal({
                 variant="default"
                 size="sm"
                 onClick={handleSubmitExam}
-                disabled={isSubmitting || !isOnline}
+                disabled={isSubmitting || !isOnline || isSubmittingRef.current}
                 className="flex items-center"
               >
-                {isSubmitting ? (
+                {isSubmitting || isSubmittingRef.current ? (
                   <>
                     <Loader2Icon className="h-4 w-4 mr-1.5 animate-spin" />
                     Submitting...
