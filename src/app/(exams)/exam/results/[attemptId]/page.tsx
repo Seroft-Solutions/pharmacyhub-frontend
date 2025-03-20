@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useExamResult } from '@/features/exams/api/hooks/useExamApi';
 import { QueryProvider } from '@/features/core/tanstack-query-api/components/QueryProvider';
 import { Container } from '@/components/layout/container';
 import { Spinner } from '@/components/ui/spinner';
@@ -10,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ExamResults } from '@/features/exams/components/results/ExamResults';
 import { ExamReview } from '@/features/exams/components/review/ExamReview';
 import { Card } from '@/components/ui/card';
-import { getStaticExamResult } from '@/features/exams/mock/staticResults';
+import {useExamResult} from "@/features/exams";
 
 interface ResultsPageProps {
   params: {

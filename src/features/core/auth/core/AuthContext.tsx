@@ -56,7 +56,7 @@ const checkInitialAuthState = (): boolean => {
   return tokenManager.hasToken();
 };
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const queryClient = useQueryClient();
   
   // Use mock user in development if auth bypass is enabled

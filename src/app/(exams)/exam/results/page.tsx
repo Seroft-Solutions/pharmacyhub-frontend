@@ -2,9 +2,6 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  useUserExamAttempts 
-} from '@/features/exams/api/hooks/useExamApi';
 import { QueryProvider } from '@/features/core/tanstack-query-api/components/QueryProvider';
 import { Container } from '@/components/layout/container';
 import { Spinner } from '@/components/ui/spinner';
@@ -44,39 +41,6 @@ export default function ResultsPage() {
     </QueryProvider>
   );
 }
-
-// Mock data for when the API isn't available
-const mockAttempts: ExamAttempt[] = [
-  {
-    id: 123,
-    examId: 456,
-    userId: "user-123",
-    startTime: "2023-05-15T14:30:00Z",
-    endTime: "2023-05-15T15:30:00Z",
-    status: AttemptStatus.COMPLETED
-  },
-  {
-    id: 124,
-    examId: 457,
-    userId: "user-123",
-    startTime: "2023-05-18T10:00:00Z",
-    endTime: "2023-05-18T11:15:00Z",
-    status: AttemptStatus.COMPLETED
-  },
-  {
-    id: 125,
-    examId: 458,
-    userId: "user-123",
-    startTime: "2023-05-20T16:00:00Z", 
-    status: AttemptStatus.IN_PROGRESS
-  }
-];
-
-const examTitles = {
-  456: "Pharmacology Basics 2024",
-  457: "Clinical Pharmacy Practice",
-  458: "Pharmaceutical Calculations"
-};
 
 function ResultsContent() {
   const router = useRouter();

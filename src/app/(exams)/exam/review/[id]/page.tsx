@@ -1,9 +1,9 @@
 import React from 'react';
 import { ReviewMode } from '@/features/exams/components/review/ReviewMode';
-import { examService } from '@/features/exams/api/core/examService';
 import { useExamStore } from '@/features/exams/store/examStore';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { examService } from '@/features/exams';
 
 interface ReviewPageProps {
     params: Promise<{
