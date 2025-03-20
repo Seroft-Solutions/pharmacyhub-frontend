@@ -104,6 +104,11 @@ fi
 echo "Pulling latest images..."
 docker compose -f docker-compose.yml pull
 
+# Ensure required Docker networks exist
+echo "Ensuring Docker networks exist..."
+docker network inspect proxy-network >/dev/null 2>&1 || docker network create proxy-network
+docker network inspect pharmacyhub-${ENV}-network >/dev/null 2>&1 || docker network create --driver bridge pharmacyhub-${ENV}-network
+
 # Start services with the correct environment variables
 echo "Starting frontend service..."
 FRONTEND_PORT=$FRONTEND_PORT docker compose -f docker-compose.yml up -d

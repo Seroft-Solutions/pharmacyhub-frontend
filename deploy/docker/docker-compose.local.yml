@@ -1,15 +1,15 @@
 version: '3.8'
 
 services:
-  crm-frontend-local:
+  pharmacyhub-frontend-local:
     build:
       context: ../..
       dockerfile: Dockerfile
       args:
         NODE_ENV: development
         ENV_FILE: .env
-    image: crm-frontend:local
-    container_name: crm-frontend-local
+    image: pharmacyhub-frontend:local
+    container_name: pharmacyhub-frontend-local
     env_file: ../env/.env.local
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
@@ -17,12 +17,12 @@ services:
       - ../../src:/app/src
       - ../../public:/app/public
     networks:
-      - crm-local-network
+      - pharmacyhub-local-network
     restart: unless-stopped
     environment:
       - NODE_ENV=development
 
 networks:
-  crm-local-network:
-    name: crm-local-network
+  pharmacyhub-local-network:
+    name: pharmacyhub-local-network
     external: true
