@@ -43,19 +43,16 @@ WORKDIR /app
 # Create log directory
 RUN mkdir -p /app/logs
 
-# Install necessary packages for healthcheck
+# Install curl for healthcheck
 RUN apk --no-cache add curl
 
-# Copy necessary files from builder
+# Copy build artifacts from builder stage
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
 
-# Only install production dependencies in the final image with legacy-peer-deps flag
-COPY --from=builder /app/package*.json ./
-RUN npm ci --only=production --legacy-peer-deps --prefer-offline --no-audit --progress=false
-
-# Copy environment file and config files
+# Copy config files
 COPY --from=builder /app/.env ./.env
 COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
@@ -63,19 +60,16 @@ COPY --from=builder /app/tsconfig.json ./tsconfig.json
 # Set proper permissions
 RUN chown -R node:node /app
 
-# Create a simple script to start the application
-RUN echo '#!/bin/sh\necho "Starting Next.js application..."\nexec npm start' > /app/start.sh && \
-    chmod +x /app/start.sh
-
 # Switch to non-root user for security
 USER node
 
 # Expose the application port
 EXPOSE 3000
 
-# Add healthcheck using curl
+# Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3000 || exit 1
 
-# Use the script as the entrypoint
-CMD ["/app/start.sh"]
+# Use Next.js directly instead of npm
+ENTRYPOINT ["node"]
+CMD ["node_modules/.bin/next", "start"]
