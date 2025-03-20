@@ -114,11 +114,11 @@ jobs:
         run: |
           echo "Backing up frontend logs before deployment..."
           ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "
-            if [ -d \"/home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs\" ] && [ \"\$(ls -A /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs)\" ]; then
+            if [ -d \"/opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs\" ] && [ \"\$(ls -A /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs)\" ]; then
               echo 'Found frontend logs, creating backup...'
               TIMESTAMP=\$(date +\"%Y%m%d_%H%M%S\")
-              mkdir -p \"/home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs/backup_\${TIMESTAMP}\"
-              cp -r /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs/*.log /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs/backup_\${TIMESTAMP}/ 2>/dev/null || echo 'No log files found to back up'
+              mkdir -p \"/opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs/backup_\${TIMESTAMP}\"
+              cp -r /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs/*.log /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs/backup_\${TIMESTAMP}/ 2>/dev/null || echo 'No log files found to back up'
               echo 'Frontend logs backed up successfully.'
             else
               echo 'No existing frontend logs found, skipping backup.'
@@ -127,17 +127,17 @@ jobs:
 
       - name: Create deployment directories on VPS
         run: |
-          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "mkdir -p /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}"
-          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "mkdir -p /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend"
-          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "mkdir -p /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs"
-          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "mkdir -p /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/data/frontend"
+          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "mkdir -p /opt/PharmacyHub/${{ env.DEPLOY_ENV }}"
+          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "mkdir -p /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend"
+          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "mkdir -p /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/logs"
+          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "mkdir -p /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/data/frontend"
 
       - name: Stop existing containers
         run: |
           echo "Stopping any existing frontend containers gracefully..."
           ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "
-            if [ -f \"/home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/docker-compose.yml\" ]; then
-              cd /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && 
+            if [ -f \"/opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/docker-compose.yml\" ]; then
+              cd /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && 
               echo 'Stopping containers gracefully with 30s timeout...' && 
               docker compose stop -t 30 || true && 
               echo 'Taking down containers...' && 
@@ -166,7 +166,7 @@ jobs:
           # Create a file with the correct name directly in the target directory
           echo "Creating environment file directly on the server..."
           cat deploy/env/${{ env.ENV_FILE }} > .env.tmp
-          scp -i ~/.ssh/id_rsa -P ${{ env.VPS_PORT }} .env.tmp ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/.env
+          scp -i ~/.ssh/id_rsa -P ${{ env.VPS_PORT }} .env.tmp ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/.env
           
           echo "Copying script files..."
           cp deploy/scripts/*.sh ./deploy_temp/
@@ -177,30 +177,30 @@ jobs:
           
           # Use scp instead of rsync (which may not be available)
           echo "Copying files to remote server..."
-          scp -i ~/.ssh/id_rsa -P ${{ env.VPS_PORT }} -r ./deploy_temp/* ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/
+          scp -i ~/.ssh/id_rsa -P ${{ env.VPS_PORT }} -r ./deploy_temp/* ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/
           
           # Verify the files were copied to the server
           echo "Verifying files on remote server:"
-          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "ls -la /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/"
+          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "ls -la /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend/"
       
       - name: Deploy frontend
         run: |
           # Execute commands one by one to identify any issues
           echo "Renaming docker-compose file..."
-          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "cd /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && mv -v docker-compose.${{ env.DEPLOY_ENV }}.yml docker-compose.yml"
+          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "cd /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && mv -v docker-compose.${{ env.DEPLOY_ENV }}.yml docker-compose.yml"
           
           echo "Making scripts executable..."
-          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "cd /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && chmod +x *.sh"
+          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "cd /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && chmod +x *.sh"
           
           # Set environment variables and run deployment
           echo "Running deployment script..."
-          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "cd /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && export DOCKER_USERNAME='${{ secrets.DOCKER_USERNAME }}' && export DOCKER_PASSWORD='${{ secrets.DOCKER_PASSWORD }}' && export CI=true && ./deploy.sh ${{ env.DEPLOY_ENV }}"
+          ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "cd /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && export DOCKER_USERNAME='${{ secrets.DOCKER_USERNAME }}' && export DOCKER_PASSWORD='${{ secrets.DOCKER_PASSWORD }}' && export CI=true && ./deploy.sh ${{ env.DEPLOY_ENV }}"
       
       - name: Verify deployment
         run: |
           echo "Verifying deployment success..."
           ssh -i ~/.ssh/id_rsa -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "
-            cd /home/ubuntu/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && 
+            cd /opt/PharmacyHub/${{ env.DEPLOY_ENV }}/frontend && 
             echo 'Checking container status...' && 
             if docker ps | grep -q 'pharmacyhub-frontend-${{ env.DEPLOY_ENV }}'; then
               echo 'Frontend container is running successfully' && 

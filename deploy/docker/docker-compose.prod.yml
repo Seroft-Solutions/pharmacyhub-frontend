@@ -11,7 +11,7 @@ services:
     ports:
       - "${FRONTEND_PORT:-3020}:3000"
     volumes:
-      - ${CRM_BASE:-/home/ubuntu/PharmacyHub}/prod/frontend/logs:/app/logs
+      - ${CRM_BASE:-/opt/PharmacyHub}/prod/frontend/logs:/app/logs
     networks:
       - prod-network
       - proxy-network
