@@ -51,6 +51,9 @@ export interface Exam {
   passingMarks: number;
   status: ExamStatus;
   questions?: Question[];
+  premium: boolean;
+  price: number;
+  purchased?: boolean;
 }
 
 // Paper Entities
@@ -63,6 +66,8 @@ export interface ExamPaper {
   durationMinutes: number; // Called duration in some models
   tags: string[]; // Called topics in some models
   premium: boolean; // Called isPremium in some models
+  price: number;
+  purchased?: boolean;
   attemptCount: number;
   successRatePercent: number;
   lastUpdatedDate: string;
@@ -139,6 +144,8 @@ export interface ExamPaperMetadata {
   total_questions: number;
   time_limit: number; // in minutes
   is_premium: boolean;
+  price: number;
+  purchased?: boolean;
   source: string; // 'model', 'past', 'subject', 'practice'
 }
 

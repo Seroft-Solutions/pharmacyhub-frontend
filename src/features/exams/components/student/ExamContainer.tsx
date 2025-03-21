@@ -18,11 +18,15 @@ import {
   Clock8Icon,
   Play as PlayIcon,
   LifeBuoy as LifeBuoyIcon,
-  Map as MapIcon
+  Map as MapIcon,
+  LockIcon,
+  DollarSignIcon
 } from 'lucide-react';
 
 // Import hooks and components
 import { useExamSession } from '../../hooks/useExamSession';
+import { usePremiumExamInfoQuery } from '@/features/payments/api/hooks';
+import { PaymentModal } from '@/features/payments/components/PaymentModal';
 import { useExamStore } from '../../store/examStore';
 import { useExamAnalytics } from '../../hooks/useExamAnalytics';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
@@ -62,6 +66,12 @@ function ExamContainerInternal({
   const [isOnline, setIsOnline] = useState(true);
   // Track submission state across different callbacks with useRef
   const isSubmittingRef = useRef(false);
+  // Premium exam state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentRedirectUrl, setPaymentRedirectUrl] = useState<string | null>(null);
+  
+  // Check premium status
+  const { data: premiumInfo, isLoading: isLoadingPremiumInfo } = usePremiumExamInfoQuery(examId);
   
   // Setup analytics tracking
   const analytics = useExamAnalytics(examId, userId);
@@ -154,6 +164,12 @@ function ExamContainerInternal({
   
   // Handle exam start with analytics
   const handleStartExam = () => {
+    // Check if exam is premium and not purchased
+    if (premiumInfo && premiumInfo.premium && !premiumInfo.purchased) {
+      setShowPaymentModal(true);
+      return;
+    }
+    
     analytics.trackEvent('exam_start', { examId, userId });
     
     startExam(
@@ -164,11 +180,32 @@ function ExamContainerInternal({
           toast.success('Exam started successfully!');
         },
         onError: (error) => {
+          // Check for payment required error
+          if (error instanceof Error && error.message.includes('Payment required')) {
+            analytics.trackEvent('exam_payment_required', { examId });
+            setShowPaymentModal(true);
+            return;
+          }
+          
           analytics.trackEvent('exam_start_error', { error: error instanceof Error ? error.message : 'Unknown error' });
           toast.error('Failed to start exam: ' + (error instanceof Error ? error.message : 'Unknown error'));
         }
       }
     );
+  };
+  
+  // Handle payment success
+  const handlePaymentSuccess = (redirectUrl: string) => {
+    setPaymentRedirectUrl(redirectUrl);
+    setShowPaymentModal(false);
+    
+    // Redirect to payment gateway or update UI based on payment type
+    if (redirectUrl) {
+      window.open(redirectUrl, '_blank');
+    }
+    
+    // Show success message
+    toast.success('Payment initialized. Please complete the payment process.');
   };
   
   // Track question navigation
@@ -458,11 +495,34 @@ function ExamContainerInternal({
       <Card className="w-full shadow-lg border-t-4 border-t-blue-500 rounded-xl overflow-hidden">
         <CardHeader className="pb-3 border-b bg-gradient-to-r from-blue-50 to-white">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-bold text-blue-700">{exam.title}</CardTitle>
+            <CardTitle className="text-2xl font-bold text-blue-700">
+              {exam.title}
+              {premiumInfo?.premium && (
+                <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-amber-300 to-amber-500 text-white">
+                  <DollarSignIcon className="h-3 w-3 mr-1" />
+                  Premium
+                </Badge>
+              )}
+            </CardTitle>
             <NetworkStatusIndicator />
           </div>
         </CardHeader>
         <CardContent className="py-8">
+          {/* Premium exam info */}
+          {premiumInfo?.premium && (
+            <div className="bg-primary/10 p-4 mb-6 border-l-4 border-primary rounded">
+              <div className="flex items-center text-primary">
+                <LockIcon className="h-5 w-5 mr-2" />
+                <span className="font-medium">Premium Exam</span>
+              </div>
+              <p className="mt-1 text-muted-foreground">
+                This is a premium exam priced at <strong>PKR {premiumInfo.price.toFixed(2)}</strong>.
+                {premiumInfo.purchased ? 
+                  ' You already have access to this exam.' : 
+                  ' Payment is required to access this exam.'}
+              </p>
+            </div>
+          )}
           <div className="space-y-8">
             <div className="max-w-3xl">
               <p className="text-gray-600 text-lg">{exam.description}</p>
@@ -542,6 +602,11 @@ function ExamContainerInternal({
                   <Loader2Icon className="h-5 w-5 mr-2 animate-spin" /> 
                   Starting...
                 </span>
+              ) : premiumInfo?.premium && !premiumInfo.purchased ? (
+                <span className="flex items-center justify-center">
+                  <DollarSignIcon className="h-5 w-5 mr-2" />
+                  Purchase Access
+                </span>
               ) : (
                 <span className="flex items-center justify-center">
                   <PlayIcon className="h-5 w-5 mr-2" />
@@ -559,6 +624,15 @@ function ExamContainerInternal({
             )}
           </div>
         </CardContent>
+        
+        {/* Payment Modal */}
+        <PaymentModal
+          examId={examId}
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={handlePaymentSuccess}
+          examTitle={exam.title}
+        />
       </Card>
     );
   }

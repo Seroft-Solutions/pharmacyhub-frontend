@@ -5,3 +5,4 @@ export { JsonExamUploader } from './JsonExamUploader';
 export { McqEditor } from './McqEditor';
 export { PaperMetadataFields } from './PaperMetadataFields';
 export { PaperTypeManager } from './PaperTypeManager';
+export { PaperPriceEditor } from './PaperPriceEditor';

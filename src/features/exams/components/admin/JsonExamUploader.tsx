@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useCallback, useEffect, useState} from 'react';
-import { AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon } from 'lucide-react';
+import { AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon, DollarSignIcon } from 'lucide-react';
 import { processJsonExam } from '../../utils/jsonExamProcessor';
 import { useJsonExamUploadMutation } from '@/features/exams/api/hooks';
 import { Difficulty, PaperType, Question } from '../../types/StandardTypes';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { PaperMetadataFields } from './PaperMetadataFields';
 import { getRequiredFields, metadataToTags } from '../../utils/paperTypeUtils';
 
@@ -39,6 +40,11 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
   const [jsonFile, setJsonFile] = useState<File | null>(null);
   const [jsonContent, setJsonContent] = useState<string>('');
   const [questions, setQuestions] = useState<Question[]>([]);
+  
+  // Premium exam fields
+  const [isPremium, setIsPremium] = useState<boolean>(false);
+  const [price, setPrice] = useState<number>(0); 
+  const [isCustomPrice, setIsCustomPrice] = useState<boolean>(false);
 
   // State for validation
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -104,6 +110,11 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
     
     if (!jsonFile) {
       newErrors.jsonFile = 'JSON file is required';
+    }
+    
+    // Validate premium fields
+    if (isPremium && (!price || price <= 0)) {
+      newErrors.price = 'Valid price is required for premium exams';
     }
     
     // Validate required metadata fields
@@ -207,6 +218,9 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
         paperType, // Add paper type explicitly
         metadata: fullMetadata, // Add full metadata
         jsonContent,
+        isPremium, // Add premium flag
+        price, // Add price
+        isCustomPrice, // Add custom price flag
       };
       
       // Log the payload for debugging
@@ -228,6 +242,9 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
       setJsonContent('');
       setQuestions([]);
       setPreview(false);
+      setIsPremium(false);
+      setPrice(0);
+      setIsCustomPrice(false);
       setErrors({});
 
       // Reset file input
@@ -374,6 +391,64 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
                 </div>
                 <input type="hidden" name="paperType" value={paperType} />
               </div>
+            </div>
+
+            {/* Premium exam settings */}
+            <div className="space-y-6 border p-4 rounded-lg bg-muted/20">
+              <h3 className="font-medium flex items-center gap-2">
+                <DollarSignIcon className="h-4 w-4 text-primary" />
+                Premium Settings
+              </h3>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="isPremium" 
+                    checked={isPremium}
+                    onCheckedChange={(checked) => setIsPremium(checked === true)}
+                    disabled={isSubmitting}
+                  />
+                  <label htmlFor="isPremium" className="text-sm font-medium">
+                    Make this a premium exam
+                  </label>
+                </div>
+              </div>
+              
+              {isPremium && (
+                <div className="space-y-4 pl-6">
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium" htmlFor="price">
+                      Price (PKR) <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      id="price"
+                      type="number"
+                      value={price}
+                      onChange={e => setPrice(parseFloat(e.target.value))}
+                      min={0}
+                      step={0.01}
+                      required={isPremium}
+                      disabled={isSubmitting}
+                      className={errors.price ? 'border-red-500' : ''}
+                    />
+                    {errors.price && <p className="text-xs text-red-500">{errors.price}</p>}
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="isCustomPrice" 
+                      checked={isCustomPrice}
+                      onCheckedChange={(checked) => setIsCustomPrice(checked === true)}
+                      disabled={isSubmitting}
+                    />
+                    <label htmlFor="isCustomPrice" className="text-sm font-medium">
+                      Allow custom pricing for individual papers
+                    </label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    When enabled, individual papers can have their own price different from the exam price.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Paper Type Specific Metadata Fields */}
