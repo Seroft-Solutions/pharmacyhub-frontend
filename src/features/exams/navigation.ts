@@ -39,13 +39,6 @@ export const EXAMS_NAVIGATION: FeatureNavigation = {
           href: "/admin/exams/manage",
           icon: ListIcon,
           roles: ["ADMIN", "INSTRUCTOR"]
-        },
-        {
-          id: "upload-papers",
-          label: "Upload MCQ JSON",
-          href: "/admin/exams/manage?tab=upload",
-          icon: FileUp,
-          roles: ["ADMIN", "INSTRUCTOR"]
         }
       ]
     },
