@@ -12,14 +12,35 @@ We are trying to develop features based on feature based architechure and you ca
     - TanStack Query API: Manages API calls.
 
 
-#### Requirement Summary
--In the Exam Management, we have different types, and by which we upload the papers.
-- Now I want to intrdouce a field call premium in the exam type, and if the exam type is premium, then the user has to pay for it.
-- The user can pay for the exam by using the payement provider like bank, credit card etc
-- When we are uploading a paper, We can setup a paper custom, like for some papers we can charge separately , and for some papers we can charge together. I need such things to be implemented.
-- for example, I want user to pay for the exam type premium, and for the paper custom, I want to charge for the paper custom.
-- We need to implement the frontend and backend as well.
-- For any api call, you have to use the `TanStack Query API` feature.
+### Requirement Summary
+
+1. **Exam Types & Uploads**
+  - The Exam Management module supports multiple exam types (e.g., Past Papers, Model Papers, Subject Papers).
+  - While uploading a paper, admins can choose whether to mark it as **premium** or not.
+
+2. **Premium Exams**
+  - A new **Premium Exam** type is being introduced.
+  - If an exam is marked as premium, users must pay to access it.
+  - The fixed price for all premium papers is **PKR 2000**.
+
+3. **Payment Integration**
+  - Users can pay for premium exams using available payment providers (e.g., bank transfer, credit/debit cards, etc.).
+
+4. **Frontend & Backend Development**
+  - Both frontend and backend support is required for this feature.
+  - Most core functionalities are already implemented.
+
+5. **UI/UX Consistency**
+  - Subject Papers currently contain mock data, but the UI (especially the paper card display) is ideal.
+  - This same UI style should be reused for **Past Papers**, **Model Papers**, and **Subject Papers**.
+
+6. **Paper Navigation Flow**
+  - The **Model Papers** navigation is well-designed.
+  - The same flow should be used for all kind of Papers:  
+    **Exam Instructions → Start Paper → Display MCQs and Components**.
+
+7. **API Integration**
+  - All API calls must utilize the **TanStack Query API** feature.
 
 
 ### Coding instructions

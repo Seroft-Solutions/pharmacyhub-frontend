@@ -8,7 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 import { useInitiateExamPaymentMutation } from '@/features/payments/api/hooks';
 import { PaymentMethod } from '@/features/payments/types';
@@ -34,7 +34,6 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
   const [step, setStep] = useState<'method' | 'processing' | 'complete' | 'error'>('method');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.JAZZCASH);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
   
   // Get initiate payment mutation
   const { 
@@ -162,11 +161,11 @@ export const PaymentFlow: React.FC<PaymentFlowProps> = ({
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Exam Price</span>
-                  <span>PKR {price.toFixed(2)}</span>
+                  <span>PKR 2,000</span>
                 </div>
                 <div className="flex justify-between items-center font-medium text-lg">
                   <span>Total</span>
-                  <span>PKR {price.toFixed(2)}</span>
+                  <span>PKR 2,000</span>
                 </div>
               </div>
               

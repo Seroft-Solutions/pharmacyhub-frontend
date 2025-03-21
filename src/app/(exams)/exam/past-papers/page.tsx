@@ -99,8 +99,9 @@ function convertExamToMetadata(exam: Exam): ExamPaperMetadata {
     topics_covered: exam.tags || [],
     total_questions: exam.questions?.length || 0,
     time_limit: exam.duration || 0,
-    is_premium: exam.premium || true, // Default for past papers as they're typically premium
-    price: exam.price || 599, // Default price for past papers
+    is_premium: exam.premium || false, // Use the actual premium status from backend
+    premium: exam.premium || false,
+    price: exam.premium ? 2000 : 0, // Fixed price of PKR 2,000 for premium papers
     purchased: exam.purchased || false, // Track purchased status
     source: 'past'
   };

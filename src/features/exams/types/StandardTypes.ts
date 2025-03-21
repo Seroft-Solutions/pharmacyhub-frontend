@@ -144,6 +144,7 @@ export interface ExamPaperMetadata {
   total_questions: number;
   time_limit: number; // in minutes
   is_premium: boolean;
+  premium?: boolean;  // Alternate property name sometimes used
   price: number; // Required for premium papers
   purchased?: boolean;
   source: string; // 'model', 'past', 'subject', 'practice'

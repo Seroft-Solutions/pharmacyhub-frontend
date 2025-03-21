@@ -29,7 +29,13 @@ function processPaperResponse(exams: any, defaultType: string = 'PRACTICE'): Exa
     passingMarks: exam.passingMarks || exam.passingmarks,
     status: exam.status,
     tags: exam.tags || [],
-    paperType: defaultType
+    paperType: defaultType,
+    premium: exam.premium || false,
+    price: exam.price || 0,
+    purchased: exam.purchased || false,
+    difficulty: exam.difficulty || 'MEDIUM',
+    questionCount: exam.questionCount || (exam.questions ? exam.questions.length : 0),
+    durationMinutes: exam.durationMinutes || exam.duration || 0
   }));
 }
 

@@ -34,6 +34,12 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
   progress, 
   onStart 
 }) => {
+  // For debugging
+  console.log('Paper in ExamPaperCard:', paper);
+
+  // Check if paper is premium (handle both premium and is_premium properties)
+  const isPremium = paper.premium || paper.is_premium || false;
+
   const difficultyVariants = {
     'easy': 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200',
     'medium': 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200',
@@ -92,7 +98,7 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
   };
 
   const handleStart = () => {
-    if (paper.is_premium && !paper.purchased) {
+    if (isPremium && !paper.purchased) {
       // Let the ExamPurchaseFlow handle premium papers
       return;
     }
@@ -115,10 +121,13 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
               <CardDescription className="mt-2 line-clamp-2">{paper.description}</CardDescription>
             )}
           </div>
-          {paper.is_premium && (
+          {isPremium && (
             <div className="flex flex-col items-center">
-              <Lock className="h-5 w-5 text-amber-500" />
-              <span className="text-xs text-amber-500 font-medium mt-1">Premium</span>
+              <div className="flex items-center gap-1 bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
+                <Lock className="h-4 w-4" />
+                <span className="text-xs font-medium">Premium</span>
+              </div>
+              <span className="text-xs font-bold mt-1.5 text-amber-600">PKR 2,000</span>
             </div>
           )}
         </div>
@@ -177,12 +186,12 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
           <div className="flex items-center space-x-2">
             {renderProgressBadge()}
           </div>
-          {paper.is_premium ? (
+          {isPremium ? (
             <ExamPurchaseFlow 
               exam={{
                 id: paper.id,
                 title: paper.title,
-                price: paper.price || 0,
+                price: 2000, // Fixed price of PKR 2000 for premium exams
                 premium: true,
                 purchased: paper.purchased,
                 // These fields are required by the ExamPurchaseFlow component

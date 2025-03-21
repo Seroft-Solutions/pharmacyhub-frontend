@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -27,6 +28,7 @@ import {
 import { useExamSession } from '../../hooks/useExamSession';
 import { usePremiumExamInfoQuery } from '@/features/payments/api/hooks';
 import { PaymentModal } from '@/features/payments/components/PaymentModal';
+import { PremiumExamGuard } from '../premium/PremiumExamGuard';
 import { useExamStore } from '../../store/examStore';
 import { useExamAnalytics } from '../../hooks/useExamAnalytics';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
@@ -331,6 +333,8 @@ function ExamContainerInternal({
       window.location.href = '/dashboard';
     }
   };
+  
+  // Note: Using Badge component from UI library
   
   // Handle review answers action
   const handleReviewAnswers = () => {
@@ -768,15 +772,21 @@ function ExamContainerInternal({
 }
 
 /**
- * ExamContainer with Error Boundary
+ * ExamContainer with Error Boundary and Premium Guard
  * 
  * Wraps the ExamContainer component with an error boundary to
- * gracefully handle errors during exam taking.
+ * gracefully handle errors during exam taking, and a premium guard
+ * to ensure users have purchased access to premium content.
  */
 export function ExamContainer(props: ExamContainerProps) {
   return (
     <ExamErrorBoundary onExit={props.onExit}>
-      <ExamContainerInternal {...props} />
+      <PremiumExamGuard 
+        examId={props.examId}
+        fallback={null} // We'll handle premium paywall in the component itself
+      >
+        <ExamContainerInternal {...props} />
+      </PremiumExamGuard>
     </ExamErrorBoundary>
   );
 }

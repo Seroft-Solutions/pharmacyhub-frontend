@@ -5,7 +5,7 @@ import { LockIcon, UnlockIcon, DollarSignIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 import { PaymentFlow } from './PaymentFlow';
 import { usePremiumExamInfoQuery, useCheckExamAccessMutation } from '@/features/payments/api/hooks';
@@ -28,7 +28,6 @@ export const PremiumExamGuard: React.FC<PremiumExamGuardProps> = ({
   fallback
 }) => {
   const [showPaymentFlow, setShowPaymentFlow] = useState(false);
-  const { toast } = useToast();
   
   // Get premium exam info
   const { 
@@ -57,13 +56,11 @@ export const PremiumExamGuard: React.FC<PremiumExamGuardProps> = ({
   useEffect(() => {
     if (hasAccess && showPaymentFlow) {
       setShowPaymentFlow(false);
-      toast({
-        title: 'Payment Successful',
-        description: 'You now have access to this exam',
-        variant: 'success'
+      toast.success('Payment Successful', {
+        description: 'You now have access to this exam'
       });
     }
-  }, [hasAccess, showPaymentFlow, toast]);
+  }, [hasAccess, showPaymentFlow]);
   
   // Handle payment complete
   const handlePaymentComplete = () => {
@@ -101,7 +98,7 @@ export const PremiumExamGuard: React.FC<PremiumExamGuardProps> = ({
     return (
       <PaymentFlow 
         examId={examId} 
-        price={premiumInfo?.price || 0}
+        price={2000} // Fixed price of PKR 2000
         onComplete={handlePaymentComplete}
         onCancel={() => setShowPaymentFlow(false)}
       />
@@ -131,7 +128,7 @@ export const PremiumExamGuard: React.FC<PremiumExamGuardProps> = ({
             This premium exam contains high-quality content to help you prepare effectively.
           </p>
           <div className="mt-2 text-2xl font-bold">
-            PKR {premiumInfo?.price?.toFixed(2) || '0.00'}
+            PKR 2,000
           </div>
         </div>
       </CardContent>

@@ -30,6 +30,9 @@ export * from './components/sidebar';
 // Export admin components
 export * from './components/admin';
 
+// Export premium components
+export * from './components/premium';
+
 // Export hooks
 export * from './hooks';
 

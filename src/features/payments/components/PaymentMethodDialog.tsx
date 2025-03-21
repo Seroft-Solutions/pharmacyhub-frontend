@@ -96,7 +96,7 @@ export const PaymentMethodDialog: React.FC<PaymentMethodDialogProps> = ({
           </Button>
           <div className="flex items-center">
             <span className="mr-2 text-lg font-bold">
-              Total: PKR {price.toFixed(2)}
+              Total: PKR 2,000
             </span>
           </div>
         </DialogFooter>

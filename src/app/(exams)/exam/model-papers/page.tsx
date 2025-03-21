@@ -135,6 +135,10 @@ function ModelPapersContent() {
     ? modelPapers.map(exam => convertExamToMetadata(exam))
     : [];
 
+  // Add debugging to check what data we're getting
+  console.log('Original modelPapers data:', modelPapers);
+  console.log('Converted papers data:', papers);
+
   return (
     <main className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-4 border-b border-gray-200">
@@ -194,7 +198,8 @@ function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
     total_questions: exam.questionCount,
     time_limit: exam.durationMinutes,
     is_premium: exam.premium,
-    price: exam.price || 0, // Include price for premium papers
+    premium: exam.premium,
+    price: exam.premium ? 2000 : 0, // Fixed price of PKR 2,000 for premium papers
     purchased: exam.purchased || false, // Include purchased status
     source: 'model'
   };

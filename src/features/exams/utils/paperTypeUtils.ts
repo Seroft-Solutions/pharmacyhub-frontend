@@ -103,6 +103,13 @@ export function metadataToTags(metadata: Record<string, any>, paperType: string)
     tags.push(metadata.difficulty);
   }
   
+  // Add premium tag if the paper is premium
+  if (metadata.premium === true || metadata.isPremium === true) {
+    tags.push('premium:true');
+    // Add fixed price tag of 2000 PKR for premium exams
+    tags.push('price:2000');
+  }
+  
   // Add type-specific tags
   switch (paperType) {
     case PaperType.SUBJECT:
@@ -154,7 +161,19 @@ export function tagsToMetadata(tags: string[], paperType: string): Record<string
       const colonIndex = tag.indexOf(':');
       const key = tag.substring(0, colonIndex);
       const value = tag.substring(colonIndex + 1);
-      metadata[key] = value;
+      
+      // Handle special case for premium tag
+      if (key === 'premium' && value === 'true') {
+        metadata.premium = true;
+      } 
+      // Handle special case for price tag (convert to number)
+      else if (key === 'price') {
+        metadata.price = parseFloat(value);
+      }
+      // Handle all other tags normally
+      else {
+        metadata[key] = value;
+      }
     }
   });
   

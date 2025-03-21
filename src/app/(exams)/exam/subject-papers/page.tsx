@@ -4,8 +4,9 @@ import { Card } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { QueryProvider } from "@/features/core/tanstack-query-api/components/QueryProvider";
+import { useSubjectPapers } from "@/features/exams/api";
 import { ExamPaperCard } from "@/features/exams/components/ExamPaperCard";
-import { ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
+import { ExamPaper, ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function SubjectPapersPage() {
@@ -17,10 +18,7 @@ export default function SubjectPapersPage() {
 }
 
 function SubjectPapersContent() {
-  // Note: Subject papers API not yet implemented
-  // This would use a hook like useSubjectPapers() if available
-  const isLoading = false;
-  const error = null;
+  const { data: subjectPapers, isLoading, error } = useSubjectPapers();
   const router = useRouter();
 
   const handleStartPaper = (paper: ExamPaperMetadata) => {
@@ -57,8 +55,10 @@ function SubjectPapersContent() {
     );
   }
 
-  // Use static data for now until API is implemented
-  const papers = getStaticSubjectPapers();
+  // Convert exams to metadata format for the card component
+  const papers = subjectPapers && subjectPapers.length > 0 
+    ? subjectPapers.map(exam => convertExamToMetadata(exam))
+    : [];
 
   return (
     <main className="p-6">
@@ -89,80 +89,20 @@ function SubjectPapersContent() {
   );
 }
 
-// Static subject papers data until API is implemented
-function getStaticSubjectPapers(): ExamPaperMetadata[] {
-  return [
-    {
-      id: 'sp-001',
-      title: 'Pharmacology',
-      description: 'Key concepts in pharmacology for pharmacists',
-      difficulty: 'medium',
-      topics_covered: ['Pharmacokinetics', 'Pharmacodynamics', 'Drug Interactions'],
-      total_questions: 60,
-      time_limit: 90,
-      is_premium: false,
-      price: 0,
-      source: 'subject'
-    },
-    {
-      id: 'sp-002',
-      title: 'Pharmaceutics',
-      description: 'Essential pharmaceutics topics for pharmacists',
-      difficulty: 'medium',
-      topics_covered: ['Dosage Forms', 'Drug Delivery', 'Formulation'],
-      total_questions: 50,
-      time_limit: 75,
-      is_premium: false,
-      price: 0,
-      source: 'subject'
-    },
-    {
-      id: 'sp-003',
-      title: 'Medicinal Chemistry',
-      description: 'Core medicinal chemistry concepts for pharmacy professionals',
-      difficulty: 'hard',
-      topics_covered: ['Drug Design', 'Structure-Activity Relationships', 'Synthesis'],
-      total_questions: 45,
-      time_limit: 90,
-      is_premium: true,
-      price: 499, // PKR 499
-      source: 'subject'
-    },
-    {
-      id: 'sp-004',
-      title: 'Pharmacy Practice',
-      description: 'Professional pharmacy practice and patient care',
-      difficulty: 'easy',
-      topics_covered: ['Patient Counseling', 'Medication Therapy Management', 'Pharmacy Ethics'],
-      total_questions: 55,
-      time_limit: 60,
-      is_premium: false,
-      price: 0,
-      source: 'subject'
-    },
-    {
-      id: 'sp-005',
-      title: 'Pharmacognosy',
-      description: 'Natural products and their pharmaceutical applications',
-      difficulty: 'medium',
-      topics_covered: ['Medicinal Plants', 'Natural Products', 'Herbal Medicine'],
-      total_questions: 40,
-      time_limit: 60,
-      is_premium: true,
-      price: 599, // PKR 599
-      source: 'subject'
-    },
-    {
-      id: 'sp-006',
-      title: 'Pharmaceutical Analysis',
-      description: 'Analytical methods in pharmaceutical quality control',
-      difficulty: 'hard',
-      topics_covered: ['Spectroscopy', 'Chromatography', 'Quality Control'],
-      total_questions: 35,
-      time_limit: 90,
-      is_premium: true,
-      price: 699, // PKR 699
-      source: 'subject'
-    }
-  ];
+// Helper function to convert Exam to ExamPaperMetadata format
+function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
+  return {
+    id: exam.id,
+    title: exam.title,
+    description: exam.description || '',
+    difficulty: exam.difficulty ? exam.difficulty.toLowerCase() : 'medium', // Convert from MEDIUM to medium, with safe default
+    topics_covered: exam.tags || [],
+    total_questions: exam.questionCount,
+    time_limit: exam.durationMinutes,
+    is_premium: exam.premium,
+    premium: exam.premium,
+    price: exam.premium ? 2000 : 0, // Fixed price of PKR 2,000 for premium papers
+    purchased: exam.purchased || false, // Include purchased status
+    source: 'subject'
+  };
 }

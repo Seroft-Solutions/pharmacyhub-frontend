@@ -43,8 +43,7 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
   
   // Premium exam fields
   const [isPremium, setIsPremium] = useState<boolean>(false);
-  const [price, setPrice] = useState<number>(0); 
-  const [isCustomPrice, setIsCustomPrice] = useState<boolean>(false);
+  const [price, setPrice] = useState<number>(2000); // Default to PKR 2000 for premium exams
 
   // State for validation
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -112,9 +111,9 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
       newErrors.jsonFile = 'JSON file is required';
     }
     
-    // Validate premium fields
-    if (isPremium && (!price || price <= 0)) {
-      newErrors.price = 'Valid price is required for premium exams';
+    // Validate premium fields - price is auto-set to 2000 PKR
+    if (isPremium && price !== 2000) {
+      newErrors.price = 'Price for premium exams must be 2000 PKR';
     }
     
     // Validate required metadata fields
@@ -219,8 +218,7 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
         metadata: fullMetadata, // Add full metadata
         jsonContent,
         isPremium, // Add premium flag
-        price, // Add price
-        isCustomPrice, // Add custom price flag
+        price: isPremium ? 2000 : 0, // Fixed price of 2000 PKR for premium exams
       };
       
       // Log the payload for debugging
@@ -243,8 +241,7 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
       setQuestions([]);
       setPreview(false);
       setIsPremium(false);
-      setPrice(0);
-      setIsCustomPrice(false);
+      setPrice(2000);
       setErrors({});
 
       // Reset file input
@@ -399,12 +396,18 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
                 <DollarSignIcon className="h-4 w-4 text-primary" />
                 Premium Settings
               </h3>
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox 
                     id="isPremium" 
                     checked={isPremium}
-                    onCheckedChange={(checked) => setIsPremium(checked === true)}
+                    onCheckedChange={(checked) => {
+                      setIsPremium(checked === true);
+                      // Automatically set price to 2000 when premium is checked
+                      if (checked === true) {
+                        setPrice(2000);
+                      }
+                    }}
                     disabled={isSubmitting}
                   />
                   <label htmlFor="isPremium" className="text-sm font-medium">
@@ -415,38 +418,17 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
               
               {isPremium && (
                 <div className="space-y-4 pl-6">
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium" htmlFor="price">
-                      Price (PKR) <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      id="price"
-                      type="number"
-                      value={price}
-                      onChange={e => setPrice(parseFloat(e.target.value))}
-                      min={0}
-                      step={0.01}
-                      required={isPremium}
-                      disabled={isSubmitting}
-                      className={errors.price ? 'border-red-500' : ''}
-                    />
-                    {errors.price && <p className="text-xs text-red-500">{errors.price}</p>}
+                  <div className="flex items-center justify-between bg-amber-50 p-3 rounded-md border border-amber-200">
+                    <div className="flex items-center">
+                      <DollarSignIcon className="h-5 w-5 text-amber-500 mr-2" />
+                      <div>
+                        <p className="font-medium">Premium Exam Price</p>
+                        <p className="text-sm text-muted-foreground">Fixed price of PKR 2000 for all premium exams</p>
+                      </div>
+                    </div>
+                    <div className="text-xl font-bold text-amber-600">PKR 2,000</div>
                   </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="isCustomPrice" 
-                      checked={isCustomPrice}
-                      onCheckedChange={(checked) => setIsCustomPrice(checked === true)}
-                      disabled={isSubmitting}
-                    />
-                    <label htmlFor="isCustomPrice" className="text-sm font-medium">
-                      Allow custom pricing for individual papers
-                    </label>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    When enabled, individual papers can have their own price different from the exam price.
-                  </p>
+                  <input type="hidden" name="price" value="2000" />
                 </div>
               )}
             </div>
