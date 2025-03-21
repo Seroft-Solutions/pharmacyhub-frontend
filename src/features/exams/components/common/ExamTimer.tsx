@@ -1,8 +1,8 @@
-"use client"
 import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { TimerIcon, AlertCircleIcon } from 'lucide-react';
+import { TimerIcon, AlertCircleIcon, Clock8Icon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
 
 interface ExamTimerProps {
   durationInMinutes: number;
@@ -63,34 +63,55 @@ export function ExamTimer({
   }, [secondsRemaining, isPaused, isCompleted, onTimeExpired]);
   
   return (
-    <div className={cn(
-      "relative px-3 py-2 rounded-md flex items-center",
-      urgencyLevel === 'normal' ? 'bg-blue-50 text-blue-700' :
-      urgencyLevel === 'warning' ? 'bg-amber-50 text-amber-700' :
-      'bg-red-50 text-red-700'
-    )}>
-      {urgencyLevel === 'critical' && (
-        <div className="absolute inset-0 bg-red-100 animate-pulse rounded-md" style={{ opacity: 0.3 }} />
-      )}
-      
-      <div className="relative flex items-center">
-        {urgencyLevel === 'critical' ? (
-          <AlertCircleIcon className="h-5 w-5 mr-2 text-red-500" />
-        ) : (
-          <TimerIcon className={cn(
-            "h-5 w-5 mr-2",
-            urgencyLevel === 'normal' ? 'text-blue-500' : 'text-amber-500'
-          )} />
-        )}
-        
-        <div>
-          <span className="font-mono text-lg font-semibold">{formattedTime}</span>
-          <span className="ml-2 text-sm font-medium">
+    <div className="shadow-md border border-gray-100 rounded-lg overflow-hidden">
+      <div className={cn(
+        "px-4 py-3 flex items-center justify-between transition-colors",
+        urgencyLevel === 'normal' ? 'bg-blue-50 text-blue-700 border-b border-blue-100' :
+        urgencyLevel === 'warning' ? 'bg-amber-50 text-amber-700 border-b border-amber-100' :
+        'bg-red-50 text-red-700 border-b border-red-100'
+      )}>
+        <div className="flex items-center">
+          {urgencyLevel === 'critical' ? (
+            <AlertCircleIcon className="h-5 w-5 mr-2 text-red-500 animate-pulse" />
+          ) : urgencyLevel === 'warning' ? (
+            <Clock8Icon className="h-5 w-5 mr-2 text-amber-500" />
+          ) : (
+            <TimerIcon className="h-5 w-5 mr-2 text-blue-500" />
+          )}
+          <span className="font-medium">
             {urgencyLevel === 'critical' ? 'Time running out!' :
-             urgencyLevel === 'warning' ? 'Time alert' : 'Remaining'}
+             urgencyLevel === 'warning' ? 'Time alert' : 'Time Remaining'}
           </span>
         </div>
+        <div className="font-mono text-lg font-bold">
+          {formattedTime}
+        </div>
       </div>
+      
+      <div className="p-3 bg-white">
+        <Progress 
+          value={percentageRemaining} 
+          className="h-2"
+          indicatorClassName={cn(
+            urgencyLevel === 'normal' ? 'bg-blue-500' :
+            urgencyLevel === 'warning' ? 'bg-amber-500' :
+            'bg-red-500'
+          )}
+        />
+        <div className="mt-2 text-xs text-gray-500 flex justify-between">
+          <span>{Math.floor(percentageRemaining)}% remaining</span>
+          {urgencyLevel === 'critical' && (
+            <span className="text-red-500 font-medium animate-pulse">Hurry up!</span>
+          )}
+        </div>
+      </div>
+      
+      {/* For extremely low time (< 10%), add a pulsing warning */}
+      {percentageRemaining < 10 && (
+        <div className="text-xs text-white font-medium bg-red-500 py-1 px-2 text-center animate-pulse">
+          Submit your exam soon!
+        </div>
+      )}
     </div>
   );
 }

@@ -124,70 +124,83 @@ export function QuestionDisplay({
     }
 
     return (
-      <RadioGroup
-        value={selectedOption || ''}
-        onValueChange={handleAnswerSelect}
-        className="space-y-3 mt-4"
+    <RadioGroup
+    value={selectedOption || ''}
+    onValueChange={handleAnswerSelect}
+    className="space-y-3 mt-4"
+    >
+    {question.options.map((option, index) => {
+    // Determine styling based on explanation visibility and correctness
+    const isSelected = selectedOption === index.toString();
+    const isCorrect = isOptionCorrect(option, index);
+    
+    let optionClassName = "flex items-center space-x-3 border p-4 rounded-lg transition-all duration-200";
+    
+    // Apply different styling when explanation is shown
+    if (showExplanation && selectedOption) {
+    if (isCorrect) {
+    // Highlight correct option in green only when explanation is shown and user has selected an answer
+    optionClassName = cn(optionClassName, "border-green-500 bg-green-50 shadow-md");
+    } else if (isSelected) {
+    // Only highlight selected incorrect options in red
+    optionClassName = cn(optionClassName, "border-red-500 bg-red-50 shadow-md");
+    }
+    } else if (isSelected) {
+    // Regular selected styling when explanation is hidden
+    optionClassName = cn(optionClassName, "border-blue-500 bg-blue-50/50 shadow-md");
+    } else {
+    // Default unselected styling
+    optionClassName = cn(optionClassName, "hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-sm");
+    }
+    
+    // Label option with A, B, C, D etc
+    const optionLetter = String.fromCharCode(65 + index); // A, B, C, D...
+    
+    return (
+    <div key={index} className={optionClassName}>
+    <div className="flex items-center space-x-3 w-full">
+      <div className={cn(
+      "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm",
+        isSelected ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700"
+      )}>
+        {optionLetter}
+    </div>
+    <div className="flex-grow flex items-center">
+      <RadioGroupItem value={index.toString()} id={`option-${question.id}-${index}`} className="mr-3" />
+    <Label 
+        htmlFor={`option-${question.id}-${index}`} 
+          className="flex-grow cursor-pointer text-base"
       >
-        {question.options.map((option, index) => {
-          // Determine styling based on explanation visibility and correctness
-          const isSelected = selectedOption === index.toString();
-          const isCorrect = isOptionCorrect(option, index);
-          
-          let optionClassName = "flex items-center space-x-2 border p-4 rounded-md transition-colors";
-          
-          // Apply different styling when explanation is shown
-          if (showExplanation && selectedOption) {
-            if (isCorrect) {
-              // Highlight correct option in green only when explanation is shown and user has selected an answer
-              optionClassName = cn(optionClassName, "border-green-500 bg-green-50");
-            } else if (isSelected) {
-              // Only highlight selected incorrect options in red
-              optionClassName = cn(optionClassName, "border-red-500 bg-red-50");
-            }
-          } else if (isSelected) {
-            // Regular selected styling when explanation is hidden
-            optionClassName = cn(optionClassName, "border-primary bg-primary/5");
-          } else {
-            // Default unselected styling
-            optionClassName = cn(optionClassName, "hover:border-gray-300 hover:bg-gray-50");
-          }
-          
-          return (
-            <div key={index} className={optionClassName}>
-              <RadioGroupItem value={index.toString()} id={`option-${question.id}-${index}`} />
-              <Label 
-                htmlFor={`option-${question.id}-${index}`} 
-                className="flex-grow cursor-pointer"
-              >
-                {option.text}
-              </Label>
-              
+          {option.text}
+          </Label>
+          </div>
+            
               {showExplanation && selectedOption ? (
-                isCorrect ? (
-                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0" />
-                ) : isSelected ? (
-                  <XCircleIcon className="h-5 w-5 text-red-500 flex-shrink-0" />
-                ) : null
-              ) : isSelected && (
-                <CheckCircleIcon className="h-5 w-5 text-primary flex-shrink-0" />
-              )}
-            </div>
-          );
-        })}
-      </RadioGroup>
-    );
+                  isCorrect ? (
+                      <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    ) : isSelected ? (
+                      <XCircleIcon className="h-5 w-5 text-red-500 flex-shrink-0" />
+                    ) : null
+                  ) : isSelected && (
+                    <CheckCircleIcon className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </RadioGroup>
+      );
   };
 
   return (
-    <Card className="w-full shadow-md border border-gray-100">
-      <CardHeader className="pb-2 border-b">
+    <Card className="w-full shadow-lg border border-gray-100 rounded-xl overflow-hidden">
+      <CardHeader className="pb-2 border-b bg-gradient-to-r from-blue-50 to-white">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <span className="bg-primary text-white text-sm font-medium rounded-full w-6 h-6 flex items-center justify-center mr-2">
+            <span className="bg-blue-600 text-white text-sm font-medium rounded-full w-8 h-8 flex items-center justify-center mr-3 shadow-sm">
               {question.questionNumber || question.id}
             </span>
-            <CardTitle className="text-lg font-semibold">
+            <CardTitle className="text-lg font-semibold text-blue-700">
               Question
             </CardTitle>
           </div>
@@ -195,7 +208,7 @@ export function QuestionDisplay({
             <Button 
               variant="ghost"
               size="sm"
-              className="flex items-center space-x-1"
+              className="flex items-center space-x-1 rounded-lg"
               onClick={toggleExplanation}
             >
               {showExplanation ? (
@@ -214,12 +227,17 @@ export function QuestionDisplay({
               variant={isFlagged ? "secondary" : "ghost"}
               size="sm" 
               onClick={handleFlagToggle}
-              className={isFlagged ? "bg-yellow-50 text-yellow-600 hover:bg-yellow-100" : "text-gray-500"}
+              className={cn(
+                "rounded-lg",
+                isFlagged 
+                  ? "bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200" 
+                  : "text-gray-500"
+              )}
               aria-label={isFlagged ? "Unflag question" : "Flag question for review"}
             >
               {isFlagged ? (
                 <>
-                  <FlagIcon className="h-4 w-4 mr-1.5 text-yellow-500" />
+                  <FlagIcon className="h-4 w-4 mr-1.5 text-amber-500" />
                   <span>Flagged</span>
                 </>
               ) : (
@@ -242,7 +260,7 @@ export function QuestionDisplay({
         {renderOptions()}
         
         {showExplanation && selectedOption && question.explanation && (
-          <div className="mt-6 p-4 border border-blue-200 rounded-md bg-blue-50">
+          <div className="mt-6 p-4 border border-blue-200 rounded-lg bg-blue-50 shadow-inner">
             <div className="flex items-start">
               <InfoIcon className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
               <div>

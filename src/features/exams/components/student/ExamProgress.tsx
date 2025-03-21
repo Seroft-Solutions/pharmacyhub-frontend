@@ -9,6 +9,7 @@ interface ExamProgressProps {
   answeredQuestions: number;
   flaggedQuestionsCount?: number;
   timePercentage?: number;
+  hideTimer?: boolean;
 }
 
 export function ExamProgress({
@@ -16,7 +17,8 @@ export function ExamProgress({
   totalQuestions,
   answeredQuestions,
   flaggedQuestionsCount = 0,
-  timePercentage = 100
+  timePercentage = 100,
+  hideTimer = false
 }: ExamProgressProps) {
   const progressPercentage = (answeredQuestions / totalQuestions) * 100;
   
@@ -69,7 +71,7 @@ export function ExamProgress({
         />
       </div>
       
-      {timePercentage < 100 && (
+      {!hideTimer && timePercentage < 100 && (
         <div className="space-y-1">
           <div className="flex justify-between text-xs">
             <span>Time Remaining</span>

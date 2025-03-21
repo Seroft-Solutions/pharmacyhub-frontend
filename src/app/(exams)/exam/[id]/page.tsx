@@ -7,8 +7,10 @@ import { QueryProvider } from '@/features/core/tanstack-query-api/components/Que
 import ExamContainer from '@/features/exams/components/ExamContainer';
 import { useExam } from '@/features/exams/api/UseExamApi';
 import { Spinner } from '@/components/ui/spinner';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ExamTimer } from '@/features/exams/components/common/ExamTimer';
+import { QuestionNavigation } from '@/features/exams/components/student/QuestionNavigation';
 
 interface ExamPageProps {
   params: {
@@ -27,6 +29,9 @@ export default function ExamPage({ params }: ExamPageProps) {
 function ExamPageContent({ id }: { id: string }) {
   const router = useRouter();
   const examId = parseInt(id, 10);
+  
+  // Get exam data
+  const { data: exam, isLoading, error } = useExam(examId);
   
   // In a real application, you would get the user ID from authentication context
   const userId = "current-user-id"; // This should come from auth context
@@ -54,11 +59,12 @@ function ExamPageContent({ id }: { id: string }) {
   
   return (
     <Container>
-      <div className="my-8">
+      <div className="w-full max-w-5xl mx-auto">
         <ExamContainer
           examId={examId}
           userId={userId}
           onExit={handleExit}
+          showTimer={true}
         />
       </div>
     </Container>

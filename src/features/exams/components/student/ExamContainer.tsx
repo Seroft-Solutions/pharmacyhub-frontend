@@ -12,7 +12,13 @@ import {
   CheckCircleIcon, 
   ClipboardListIcon, 
   Loader2Icon,
-  AlertTriangleIcon
+  AlertTriangleIcon,
+  ChevronLeft,
+  ChevronRight,
+  Clock8Icon,
+  Play as PlayIcon,
+  LifeBuoy as LifeBuoyIcon,
+  Map as MapIcon
 } from 'lucide-react';
 
 // Import hooks and components
@@ -32,6 +38,7 @@ interface ExamContainerProps {
   examId: number;
   userId: string;
   onExit?: () => void;
+  showTimer?: boolean;
 }
 
 /**
@@ -47,7 +54,8 @@ interface ExamContainerProps {
 function ExamContainerInternal({ 
   examId, 
   userId,
-  onExit 
+  onExit,
+  showTimer = true
 }: ExamContainerProps) {
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [showResults, setShowResults] = useState(false);
@@ -447,45 +455,69 @@ function ExamContainerInternal({
   // Display exam start screen if not started
   if (!attemptId && !isStarting) {
     return (
-      <Card className="w-full shadow-md border border-gray-100">
-        <CardHeader className="pb-3 border-b">
+      <Card className="w-full shadow-lg border-t-4 border-t-blue-500 rounded-xl overflow-hidden">
+        <CardHeader className="pb-3 border-b bg-gradient-to-r from-blue-50 to-white">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-xl font-bold">{exam.title}</CardTitle>
+            <CardTitle className="text-2xl font-bold text-blue-700">{exam.title}</CardTitle>
             <NetworkStatusIndicator />
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <p className="text-gray-600">{exam.description}</p>
+        <CardContent className="py-8">
+          <div className="space-y-8">
+            <div className="max-w-3xl">
+              <p className="text-gray-600 text-lg">{exam.description}</p>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-md">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Duration</h3>
-                <p className="text-lg">{exam.duration || exam.durationMinutes || 0} minutes</p>
+            <div className="grid md:grid-cols-2 gap-6 bg-gradient-to-r from-blue-50 to-white p-6 rounded-xl shadow-sm border border-blue-100">
+              <div className="flex items-center space-x-4">
+                <div className="bg-blue-100 p-3 rounded-full">
+                  <Clock8Icon className="h-8 w-8 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500">Duration</h3>
+                  <p className="text-xl font-medium">{exam.duration || exam.durationMinutes || 0} minutes</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Total Questions</h3>
-                <p className="text-lg">{questions.length || exam.questionCount || 0}</p>
+              
+              <div className="flex items-center space-x-4">
+                <div className="bg-green-100 p-3 rounded-full">
+                  <ClipboardListIcon className="h-8 w-8 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500">Questions</h3>
+                  <p className="text-xl font-medium">{questions.length || exam.questionCount || 0}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Total Marks</h3>
-                <p className="text-lg">{exam.totalMarks}</p>
+              
+              <div className="flex items-center space-x-4">
+                <div className="bg-indigo-100 p-3 rounded-full">
+                  <CheckCircleIcon className="h-8 w-8 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500">Total Marks</h3>
+                  <p className="text-xl font-medium">{exam.totalMarks}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Passing Marks</h3>
-                <p className="text-lg">{exam.passingMarks}</p>
+              
+              <div className="flex items-center space-x-4">
+                <div className="bg-amber-100 p-3 rounded-full">
+                  <AlertTriangleIcon className="h-8 w-8 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500">Passing Marks</h3>
+                  <p className="text-xl font-medium">{exam.passingMarks}</p>
+                </div>
               </div>
             </div>
             
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
-              <h3 className="text-blue-800 font-medium">Instructions:</h3>
-              <ul className="list-disc list-inside text-blue-700 mt-2 space-y-1">
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg shadow-sm">
+              <h3 className="text-blue-800 font-medium text-lg mb-4">Instructions:</h3>
+              <ul className="list-disc list-inside text-blue-700 space-y-2">
                 <li>Read each question carefully before answering.</li>
                 <li>You can flag questions to review later.</li>
                 <li>Once the time is up, the exam will be submitted automatically.</li>
                 <li>You can review all your answers before final submission.</li>
+                <li>You must click the "Start Exam" button to begin.</li>
               </ul>
             </div>
             
@@ -502,10 +534,20 @@ function ExamContainerInternal({
             <Button 
               onClick={handleStartExam} 
               disabled={isStarting || !isOnline}
-              className="w-full"
+              className="w-full bg-blue-600 hover:bg-blue-700 py-6 text-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 rounded-lg"
               size="lg"
             >
-              {isStarting ? 'Starting...' : 'Start Exam'}
+              {isStarting ? (
+                <span className="flex items-center justify-center">
+                  <Loader2Icon className="h-5 w-5 mr-2 animate-spin" /> 
+                  Starting...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center">
+                  <PlayIcon className="h-5 w-5 mr-2" />
+                  Start Exam
+                </span>
+              )}
             </Button>
             
             {startError && (
@@ -523,73 +565,43 @@ function ExamContainerInternal({
   
   // Main exam interface
   return (
-    <div className="space-y-4">
-      <Card className="shadow-md border border-gray-100">
-        <CardHeader className="pb-3 border-b">
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle className="text-xl font-bold">{exam.title}</CardTitle>
-              <p className="text-sm text-gray-500 mt-1">{exam.description}</p>
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {/* Main question area - takes up more space */}
+      <div className="md:col-span-2 lg:col-span-3 space-y-4">
+        <Card className="shadow-md border border-gray-100 overflow-hidden">
+          <CardHeader className="pb-3 border-b bg-gradient-to-r from-blue-50 to-white">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-xl font-bold text-blue-700">{exam.title}</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">{exam.description}</p>
+              </div>
+              {showTimer && (
+                <div className="md:hidden w-24">
+                  <ExamTimer
+                    durationInMinutes={exam.duration || exam.durationMinutes || 60}
+                    onTimeExpired={handleExamTimeExpired}
+                    isCompleted={isCompleted}
+                  />
+                </div>
+              )}
             </div>
-            <div className="flex gap-2 items-center">
-              <NetworkStatusIndicator />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleSummary}
-                className="flex items-center"
-              >
-                <ClipboardListIcon className="h-4 w-4 mr-1.5" />
-                Review Answers
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleSubmitExam}
-                disabled={isSubmitting || !isOnline || isSubmittingRef.current}
-                className="flex items-center"
-              >
-                {isSubmitting || isSubmittingRef.current ? (
-                  <>
-                    <Loader2Icon className="h-4 w-4 mr-1.5 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircleIcon className="h-4 w-4 mr-1.5" />
-                    Submit Exam
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div className="md:col-span-3">
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-1 gap-4 mb-4">
               <ExamProgress 
                 currentQuestion={currentQuestionIndex}
                 totalQuestions={questions.length}
                 answeredQuestions={answeredQuestionsSet.size}
                 flaggedQuestionsCount={flaggedQuestions.size}
-                timePercentage={Math.round((timeRemaining / (exam.duration * 60)) * 100)}
+                hideTimer={true} /* Hide the timer in ExamProgress */
               />
             </div>
-            <div>
-              <ExamTimer 
-                durationInMinutes={exam.duration}
-                onTimeExpired={handleExamTimeExpired}
-                isCompleted={isCompleted}
-              />
-            </div>
-          </div>
-          
-          <Separator className="my-4" />
-        </CardContent>
-      </Card>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-3">
+            
+            <Separator className="my-4" />
+          </CardContent>
+        </Card>
+
+        <div>
           {currentQuestion && (
             <QuestionDisplay
               question={currentQuestion}
@@ -601,25 +613,66 @@ function ExamContainerInternal({
           )}
         </div>
         
-        <div>
-          <Card className="shadow-sm border border-gray-100">
-            <CardContent className="py-4">
-              <QuestionNavigation
-                currentIndex={currentQuestionIndex}
-                totalQuestions={questions.length}
-                answeredQuestions={answeredQuestionsSet}
-                flaggedQuestions={flaggedQuestions}
-                onNavigate={handleNavigateToQuestion}
-                onFinishExam={toggleSummary}
-                questions={questions}
-              />
-            </CardContent>
-          </Card>
+        <div className="flex justify-between gap-2 mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigateToQuestion(Math.max(0, currentQuestionIndex - 1))}
+            disabled={currentQuestionIndex === 0}
+            className="px-4 py-2 rounded-lg"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigateToQuestion(Math.min(questions.length - 1, currentQuestionIndex + 1))}
+            disabled={currentQuestionIndex === questions.length - 1}
+            className="px-4 py-2 rounded-lg"
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
         </div>
       </div>
       
+      {/* Side panel with timer and navigation */}
+      <div className="space-y-4">
+        {showTimer && (
+          <div className="hidden md:block">
+            <ExamTimer
+              durationInMinutes={exam.duration || exam.durationMinutes || 60}
+              onTimeExpired={handleExamTimeExpired}
+              isCompleted={isCompleted}
+            />
+          </div>
+        )}
+        
+        <Card className="shadow-md border border-gray-100 overflow-hidden">
+          <CardHeader className="pb-2 pt-3 border-b bg-gradient-to-r from-blue-50 to-white">
+            <div className="flex items-center gap-1.5">
+              <MapIcon className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-medium text-blue-700">Questions Navigator</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            <QuestionNavigation
+              currentIndex={currentQuestionIndex}
+              totalQuestions={questions.length}
+              answeredQuestions={answeredQuestionsSet}
+              flaggedQuestions={flaggedQuestions}
+              onNavigate={handleNavigateToQuestion}
+              onFinishExam={() => toggleSummary()}
+              questions={questions}
+            />
+          </CardContent>
+        </Card>
+      </div>
+      
       {!isOnline && (
-        <Alert variant="warning" className="bg-amber-50 border-amber-200">
+        <Alert variant="warning" className="bg-amber-50 border-amber-200 md:col-span-3 lg:col-span-4">
           <AlertTriangleIcon className="h-4 w-4" />
           <AlertTitle>You are offline</AlertTitle>
           <AlertDescription>
@@ -629,7 +682,7 @@ function ExamContainerInternal({
       )}
       
       {submitError && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="md:col-span-3 lg:col-span-4">
           <AlertTitle>Submission Failed</AlertTitle>
           <AlertDescription>
             {submitError instanceof Error ? submitError.message : 'Failed to submit exam. Please try again.'}
