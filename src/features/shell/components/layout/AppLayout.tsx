@@ -60,6 +60,17 @@ export function AppLayout({
     );
   }
 
+  // Get saved role from localStorage if available - initial client-side hydration
+  const getInitialRole = () => {
+    if (typeof window !== 'undefined') {
+      const savedRole = localStorage.getItem('userRole');
+      if (savedRole && ['user', 'admin', 'super_admin'].includes(savedRole)) {
+        return savedRole as 'user' | 'admin' | 'super_admin';
+      }
+    }
+    return undefined; // Let the RoleProvider use its default logic
+  };
+
   return (
     <NavigationProvider initialFeatures={features}>
       <RoleProvider>

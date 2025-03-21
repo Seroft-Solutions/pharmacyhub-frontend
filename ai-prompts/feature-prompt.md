@@ -13,12 +13,12 @@ We are trying to develop features based on feature based architechure and you ca
 
 
 #### Requirement Summary
-- We are working on the Exam feature
-- Please explore all the exam feature codebase and understand the flow.
-- We have to complete this flow.
-- You can use the `sequential_thinking` tool to understand the flow.
-- We have to complete the usecases, like question submissions review answers etc.
-- You have to make sure frontend api calls are working fine and apis are available on the pharmacyhub-backend code.
+-In the Exam Management, we have different types, and by which we upload the papers.
+- Now I want to intrdouce a field call premium in the exam type, and if the exam type is premium, then the user has to pay for it.
+- The user can pay for the exam by using the wallet or card etc
+- We can setup a paper custom, like for some papers we can charge separately , and for some papers we can charge together. I need such things to be implemented.
+- for example, I want user to pay for the exam type premium, and for the paper custom, I want to charge for the paper custom.
+- We need to implement the frontend and backend as well.
 - For any api call, you have to use the `TanStack Query API` feature.
 
 

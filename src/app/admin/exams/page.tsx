@@ -3,9 +3,9 @@
 import React, {useEffect, useState} from 'react';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
-import { JsonExamUploader, PaperTypeManager } from '@/features/exams/components/admin';
+import { PaperTypeManager } from '@/features/exams/components/admin';
 import { ExamsList } from '@/features/exams/components/admin/ExamsList';
-import {BookOpenIcon, ListIcon, SettingsIcon, UploadIcon} from 'lucide-react';
+import {BookOpenIcon, ListIcon, SettingsIcon} from 'lucide-react';
 import {useRouter, useSearchParams} from 'next/navigation';
 
 /**
@@ -19,7 +19,7 @@ export default function ManageExamsPage() {
   // Handle direct navigation to specific tabs via URL query params
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['papers', 'upload', 'paperTypes', 'settings'].includes(tabParam)) {
+    if (tabParam && ['papers', 'paperTypes', 'settings'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
@@ -41,10 +41,6 @@ export default function ManageExamsPage() {
               <ListIcon className="h-4 w-4"/>
               Available Papers
             </TabsTrigger>
-            <TabsTrigger value="upload" className="flex items-center gap-2">
-              <UploadIcon className="h-4 w-4"/>
-              Upload New Exam
-            </TabsTrigger>
             <TabsTrigger value="paperTypes" className="flex items-center gap-2">
               <BookOpenIcon className="h-4 w-4"/>
               Paper Types
@@ -62,23 +58,6 @@ export default function ManageExamsPage() {
               </CardHeader>
               <CardContent>
                 <ExamsList/>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="upload">
-            <Card>
-              <CardHeader>
-                <CardTitle>Upload New Exam</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-4 text-muted-foreground">
-                  Upload MCQ questions from JSON files, maintaining consistent structure while capturing metadata
-                  appropriate for each paper type.
-                </p>
-                <div className="mt-4">
-                  <JsonExamUploader/>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>

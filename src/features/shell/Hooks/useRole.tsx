@@ -39,17 +39,17 @@ function getInitialRoleState(roles?: string[]): Role {
     return 'user';
   }
 
-  // Check for JWT roles first
+  // Always check localStorage first to preserve user selection across refreshes
+  const savedRole = getLocalStorageItem('userRole') as Role;
+  if (savedRole && (savedRole === 'user' || savedRole === 'admin' || savedRole === 'super_admin')) {
+    return savedRole;
+  }
+  
+  // If no saved role, check for JWT roles
   if (roles) {
     if (roles.includes('SUPER_ADMIN')) return 'super_admin';
     if (roles.includes('ADMIN')) return 'admin';
     return 'user';
-  }
-  
-  // Otherwise check localStorage
-  const savedRole = getLocalStorageItem('userRole') as Role;
-  if (savedRole && (savedRole === 'user' || savedRole === 'admin' || savedRole === 'super_admin')) {
-    return savedRole;
   }
   
   // Default to user
@@ -58,22 +58,32 @@ function getInitialRoleState(roles?: string[]): Role {
 
 export function RoleProvider({ children }: RoleProviderProps) {
   const { user } = useAuth();
-  const [role, setRoleState] = useState<Role>('user'); // Default to 'user' initially
+  // Initialize with saved role immediately
+  const [role, setRoleState] = useState<Role>(getInitialRoleState(user?.roles));
   const [isClientSide, setIsClientSide] = useState(false);
   
-  // Set isClientSide flag after component mounts
+  // Sync with localStorage on mount to ensure we've got the latest value
   useEffect(() => {
     setIsClientSide(true);
-    // Now that we're client-side, update the role based on user roles or localStorage
-    setRoleState(getInitialRoleState(user?.roles));
+    // Get the role from localStorage if it exists
+    const savedRole = getLocalStorageItem('userRole') as Role;
+    if (savedRole && (savedRole === 'user' || savedRole === 'admin' || savedRole === 'super_admin')) {
+      setRoleState(savedRole);
+    } else {
+      // Otherwise use role from JWT
+      setRoleState(getInitialRoleState(user?.roles));
+    }
   }, []);
-
-  // Initialize or update role when user changes
+  
+  // Track when the user logs in or changes for role updates
+  // This should not override the manually selected role in localStorage
   useEffect(() => {
     if (!isClientSide) return; // Skip during SSR
     
-    if (user?.roles) {
-      // Update role based on JWT token roles
+    // Only set default roles on initial login when there's no saved preference
+    const savedRole = getLocalStorageItem('userRole');
+    if (!savedRole && user?.roles) {
+      // Update role based on JWT token roles only if the user hasn't set a preference
       if (user.roles.includes('SUPER_ADMIN')) {
         setRoleState('super_admin');
         setLocalStorageItem('userRole', 'super_admin');

@@ -358,25 +358,21 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({ defaultPaper
                 </Select>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-sm font-medium" htmlFor="paperType">
+              {/* Paper Type dropdown is now hidden since it's redundant with the tabs */}
+              <div className="space-y-1 relative">
+                <label className="text-sm font-medium">
                   Paper Type <span className="text-red-500">*</span>
                 </label>
-                <Select
-                  value={paperType}
-                  onValueChange={value => setPaperType(value)}
-                  disabled={isSubmitting}
-                >
-                  <SelectTrigger id="paperType">
-                    <SelectValue placeholder="Select paper type"/>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={PaperType.PRACTICE}>Practice</SelectItem>
-                    <SelectItem value={PaperType.MODEL}>Model</SelectItem>
-                    <SelectItem value={PaperType.PAST}>Past</SelectItem>
-                    <SelectItem value={PaperType.SUBJECT}>Subject</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted flex items-center justify-between">
+                  <span className="text-sm">
+                    {paperType === PaperType.PRACTICE && 'Practice'}
+                    {paperType === PaperType.MODEL && 'Model'}
+                    {paperType === PaperType.PAST && 'Past'}
+                    {paperType === PaperType.SUBJECT && 'Subject'}
+                  </span>
+                  <span className="text-xs text-muted-foreground">Selected from tab</span>
+                </div>
+                <input type="hidden" name="paperType" value={paperType} />
               </div>
             </div>
 

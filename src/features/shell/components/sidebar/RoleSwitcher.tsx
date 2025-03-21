@@ -20,6 +20,11 @@ export function RoleSwitcher({
   // Check if the user has SUPER_ADMIN role from JWT
   const hasSuperAdminRole = () => {
     try {
+      // Safe localStorage access - check if we're in the browser
+      if (typeof window === 'undefined') {
+        return false;
+      }
+      
       const authToken = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
       if (authToken) {
         // Get the payload part of the JWT
@@ -36,6 +41,29 @@ export function RoleSwitcher({
 
   const showSuperAdmin = hasSuperAdminRole();
 
+  // Handle role change with enhanced localStorage persistence
+  const handleRoleChange = (newRole: 'user' | 'admin' | 'super_admin') => {
+    // Log the current and new role for debugging
+    console.log(`Role switch: ${role} -> ${newRole}`);
+    
+    // Use multiple storage mechanisms for redundancy
+    if (typeof window !== 'undefined') {
+      // Store in localStorage
+      localStorage.setItem('userRole', newRole);
+      
+      // Also store in sessionStorage for additional redundancy
+      sessionStorage.setItem('userRole', newRole);
+      
+      // Use a cookie as well (7 days expiry)
+      document.cookie = `userRole=${newRole}; path=/; max-age=${60*60*24*7}`;
+      
+      console.log(`Role saved to storage: ${newRole}`);
+    }
+    
+    // Notify parent component
+    onRoleChange(newRole);
+  };
+  
   return (
     <div className="flex items-center justify-between px-3 py-2 border-b">
       <span className="text-xs font-medium text-muted-foreground">View as:</span>
@@ -47,7 +75,7 @@ export function RoleSwitcher({
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"
           )}
-          onClick={() => onRoleChange('user')}
+          onClick={() => handleRoleChange('user')}
         >
           <User className="h-3 w-3" />
           User
@@ -59,7 +87,7 @@ export function RoleSwitcher({
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"
           )}
-          onClick={() => onRoleChange('admin')}
+          onClick={() => handleRoleChange('admin')}
         >
           <ShieldCheck className="h-3 w-3" />
           Admin

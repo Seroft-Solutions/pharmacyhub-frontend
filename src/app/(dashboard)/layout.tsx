@@ -2,7 +2,6 @@
 
 import { AppLayout } from "@/features/shell";
 import { DEFAULT_FEATURES } from "@/features/shell/navigation/features";
-import { RoleProvider } from "@/features/shell/components/sidebar/useRole";
 
 /**
  * This layout component wraps all dashboard routes.
@@ -14,14 +13,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <RoleProvider>
-      <AppLayout 
-        requireAuth={true} 
-        appName="Dashboard" 
-        features={DEFAULT_FEATURES}
-      >
-        {children}
-      </AppLayout>
-    </RoleProvider>
+    <AppLayout 
+      requireAuth={true} 
+      appName="Dashboard" 
+      features={DEFAULT_FEATURES}
+    >
+      {children}
+    </AppLayout>
   );
 }

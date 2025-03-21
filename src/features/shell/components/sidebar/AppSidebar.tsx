@@ -31,7 +31,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/features/core/auth/hooks";
 import { RoleSwitcher } from './RoleSwitcher';
-import { useRole } from '../../Hooks/useRole';
 import { useNavigation } from '../../navigation';
 
 interface AppSidebarProps {
@@ -58,7 +57,51 @@ export function AppSidebar({
   const { hasRole } = useAuth();
   // Check for both ADMIN and SUPER_ADMIN roles
   const isAdmin = hasRole('ADMIN') || hasRole('SUPER_ADMIN');
-  const { role, setRole, isAdmin: roleIsAdmin, isSuperAdmin } = useRole();
+  
+  // We'll directly manage role state in this component for better persistence
+  const [activeRole, setActiveRole] = React.useState<'user' | 'admin' | 'super_admin'>('user');
+  
+  // Read role from storage on mount
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // First check localStorage
+      const storedRole = localStorage.getItem('userRole');
+      console.log('Initial role from localStorage:', storedRole);
+      
+      if (storedRole && ['user', 'admin', 'super_admin'].includes(storedRole)) {
+        setActiveRole(storedRole as 'user' | 'admin' | 'super_admin');
+        return;
+      }
+      
+      // Fallback to sessionStorage
+      const sessionRole = sessionStorage.getItem('userRole');
+      if (sessionRole && ['user', 'admin', 'super_admin'].includes(sessionRole)) {
+        setActiveRole(sessionRole as 'user' | 'admin' | 'super_admin');
+        return;
+      }
+      
+      // Finally try cookie
+      const cookies = document.cookie.split('; ');
+      const roleCookie = cookies.find(row => row.startsWith('userRole='));
+      if (roleCookie) {
+        const cookieValue = roleCookie.split('=')[1];
+        if (['user', 'admin', 'super_admin'].includes(cookieValue)) {
+          setActiveRole(cookieValue as 'user' | 'admin' | 'super_admin');
+          return;
+        }
+      }
+    }
+  }, []);
+  
+  // Calculate admin status based on current active role
+  const roleIsAdmin = activeRole === 'admin' || activeRole === 'super_admin';
+  const isSuperAdmin = activeRole === 'super_admin';
+  
+  // Function to handle role changes and persist them
+  const handleRoleChange = (newRole: 'user' | 'admin' | 'super_admin') => {
+    console.log(`Changing role from ${activeRole} to ${newRole}`);
+    setActiveRole(newRole);
+  };
 
   // State for expandable menu sections
   const [expandedItems, setExpandedItems] = React.useState<Record<string, boolean>>({
@@ -384,20 +427,31 @@ export function AppSidebar({
         {/* Role Switcher - Only shown if user has admin permissions */}
         {isAdmin && (
           <RoleSwitcher
-            role={role}
-            onRoleChange={setRole}
+            role={activeRole}
+            onRoleChange={handleRoleChange}
           />
         )}
       </SidebarHeader>
 
       <SidebarContent className="py-2 px-2">
-        {/* Show different navigation based on selected role */}
+        {/* Show different navigation based on selected role, with debugging */}
+        {activeRole && console.log('Rendering with role:', activeRole, 'roleIsAdmin:', roleIsAdmin)}
+        
         {roleIsAdmin || isSuperAdmin ? (
           // Admin Navigation
-          renderAdminMenu()
+          <>
+            <div className="px-3 py-1 mb-2 text-xs font-semibold text-muted-foreground bg-muted/30 rounded">
+              Admin Mode
+            </div>
+            {renderAdminMenu()}
+          </>
         ) : (
           // User Navigation
           <>
+            <div className="px-3 py-1 mb-2 text-xs font-semibold text-muted-foreground bg-muted/30 rounded">
+              User Mode
+            </div>
+            
             {/* Dashboard */}
             <MenuItem
               id="dashboard"
