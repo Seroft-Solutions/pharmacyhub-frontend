@@ -11,8 +11,18 @@ import {
   PaymentInitResponse, 
   PaymentDTO,
   PaymentMethod,
-  PaymentDetails
+  PaymentDetails,
+  PremiumExamInfoDTO
 } from '../../types';
+
+/**
+ * Utility function to ensure IDs are properly converted to numbers
+ * This is important because the Java backend expects Long type parameters
+ */
+const toLongId = (id: number | string): string => {
+  // Parse the ID to an integer and convert back to string to ensure valid long format
+  return String(parseInt(id.toString()));
+};
 
 /**
  * Hook for initiating exam payment
@@ -30,7 +40,8 @@ export const useInitiateExamPayment = (examId: number): UseMutationResult<
         paymentMethod: method
       };
       
-      const url = PAYMENT_ENDPOINTS.initiateExamPayment.replace(':examId', examId.toString());
+      // Ensure examId is properly formatted and URL is a string
+      const url = String(PAYMENT_ENDPOINTS.initiateExamPayment).replace(':examId', toLongId(examId));
       return { method: 'POST', url, data: request };
     },
     {
@@ -50,7 +61,7 @@ export const useCheckExamAccess = (examId: number): UseQueryResult<{hasAccess: b
   return useApiQuery<{hasAccess: boolean}>(
     ['payment', 'access', examId],
     {
-      url: PAYMENT_ENDPOINTS.checkExamAccess.replace(':examId', examId.toString()),
+      url: String(PAYMENT_ENDPOINTS.checkExamAccess).replace(':examId', toLongId(examId)),
       method: 'GET'
     },
     {
@@ -88,7 +99,7 @@ export const usePaymentDetails = (transactionId: string): UseQueryResult<Payment
   return useApiQuery<PaymentDetails>(
     ['payment', 'details', transactionId],
     {
-      url: PAYMENT_ENDPOINTS.paymentDetails.replace(':transactionId', transactionId),
+      url: String(PAYMENT_ENDPOINTS.paymentDetails).replace(':transactionId', transactionId),
       method: 'GET'
     },
     {
@@ -106,7 +117,7 @@ export const usePremiumExamInfo = (examId: number): UseQueryResult<PremiumExamIn
   return useApiQuery<PremiumExamInfoDTO>(
     ['payment', 'premium-info', examId],
     {
-      url: PAYMENT_ENDPOINTS.getPremiumExamInfo.replace(':examId', examId.toString()),
+      url: String(PAYMENT_ENDPOINTS.getPremiumExamInfo).replace(':examId', toLongId(examId)),
       method: 'GET'
     },
     {

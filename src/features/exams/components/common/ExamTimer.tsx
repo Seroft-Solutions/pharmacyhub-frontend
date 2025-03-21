@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { TimerIcon, AlertCircleIcon, Clock8Icon } from 'lucide-react';
@@ -22,7 +23,7 @@ export function ExamTimer({
     
   const [secondsRemaining, setSecondsRemaining] = useState(validDuration * 60);
   const [isPaused, setIsPaused] = useState(false);
-  
+
   // Calculate hours, minutes, seconds
   const hours = Math.floor(secondsRemaining / 3600);
   const minutes = Math.floor((secondsRemaining % 3600) / 60);

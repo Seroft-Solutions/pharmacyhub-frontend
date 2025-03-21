@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PageHeader } from '@/components/ui/page-header';
-import { DashboardShell } from '@/components/shells/dashboard-shell';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -63,12 +61,6 @@ export default function PaymentPendingPage({ params }: { params: { examId: strin
   };
 
   return (
-    <DashboardShell>
-      <PageHeader
-        heading="Payment Processing"
-        description="We're waiting for your payment to be confirmed"
-      />
-      
       <Card className="max-w-xl mx-auto">
         <CardContent className="pt-6">
           {isLoading ? (
@@ -148,6 +140,5 @@ export default function PaymentPendingPage({ params }: { params: { examId: strin
           </Button>
         </CardFooter>
       </Card>
-    </DashboardShell>
   );
 }
