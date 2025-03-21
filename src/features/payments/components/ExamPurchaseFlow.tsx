@@ -6,8 +6,9 @@ import { PaymentMethodDialog } from './PaymentMethodDialog';
 import { PaymentMethod } from '../types';
 import { ExamPaper } from '@/features/exams/types/StandardTypes';
 import { useInitiateExamPayment } from '../api/hooks/usePaymentApiHooks';
-import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+
 
 interface ExamPurchaseFlowProps {
   exam: ExamPaper;
@@ -17,7 +18,6 @@ interface ExamPurchaseFlowProps {
 export const ExamPurchaseFlow: React.FC<ExamPurchaseFlowProps> = ({ exam, onStart }) => {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const router = useRouter();
-  const { toast } = useToast();
   
   const { mutate: initiatePayment, isLoading } = useInitiateExamPayment(exam.id as number);
   
@@ -32,10 +32,8 @@ export const ExamPurchaseFlow: React.FC<ExamPurchaseFlowProps> = ({ exam, onStar
         router.push(`/payment/process?transactionId=${data.transactionId}&examId=${exam.id}`);
       },
       onError: (error) => {
-        toast({
-          title: 'Payment Initialization Failed',
-          description: error.message || 'Failed to initialize payment. Please try again.',
-          variant: 'destructive',
+        toast.error('Payment Initialization Failed', {
+          description: error.message || 'Failed to initialize payment. Please try again.'
         });
         setPaymentDialogOpen(false);
       }

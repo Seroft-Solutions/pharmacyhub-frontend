@@ -99,7 +99,9 @@ function convertExamToMetadata(exam: Exam): ExamPaperMetadata {
     topics_covered: exam.tags || [],
     total_questions: exam.questions?.length || 0,
     time_limit: exam.duration || 0,
-    is_premium: true, // Default for past papers as they're typically premium
+    is_premium: exam.premium || true, // Default for past papers as they're typically premium
+    price: exam.price || 599, // Default price for past papers
+    purchased: exam.purchased || false, // Track purchased status
     source: 'past'
   };
 }

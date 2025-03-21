@@ -194,6 +194,8 @@ function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
     total_questions: exam.questionCount,
     time_limit: exam.durationMinutes,
     is_premium: exam.premium,
+    price: exam.price || 0, // Include price for premium papers
+    purchased: exam.purchased || false, // Include purchased status
     source: 'model'
   };
 }

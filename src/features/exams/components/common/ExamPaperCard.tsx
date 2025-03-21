@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Clock, 
   FileText, 
@@ -27,6 +27,7 @@ import {
   ExamPaperProgress, 
   ExamPaperCardProps 
 } from '../../types/StandardTypes';
+import { ExamPurchaseFlow } from '@/features/payments/components/ExamPurchaseFlow';
 
 export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({ 
   paper, 
@@ -91,6 +92,10 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
   };
 
   const handleStart = () => {
+    if (paper.is_premium && !paper.purchased) {
+      // Let the ExamPurchaseFlow handle premium papers
+      return;
+    }
     onStart(paper);
   };
 
@@ -172,14 +177,38 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
           <div className="flex items-center space-x-2">
             {renderProgressBadge()}
           </div>
-          <Button 
-            onClick={handleStart} 
-            variant={paper.is_premium ? 'outline' : 'default'}
-            className="gap-1"
-          >
-            {paper.is_premium ? 'Upgrade' : 'Start Paper'}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          {paper.is_premium ? (
+            <ExamPurchaseFlow 
+              exam={{
+                id: paper.id,
+                title: paper.title,
+                price: paper.price || 0,
+                premium: true,
+                purchased: paper.purchased,
+                // These fields are required by the ExamPurchaseFlow component
+                // but not used for the purchase flow itself
+                description: paper.description,
+                difficulty: paper.difficulty,
+                durationMinutes: paper.time_limit,
+                questionCount: paper.total_questions,
+                tags: paper.topics_covered,
+                attemptCount: 0,
+                successRatePercent: 0,
+                lastUpdatedDate: '',
+                type: paper.source.toUpperCase()
+              }} 
+              onStart={() => onStart(paper)}
+            />
+          ) : (
+            <Button 
+              onClick={handleStart} 
+              variant="default"
+              className="gap-1"
+            >
+              Start Paper
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </CardFooter>
     </Card>

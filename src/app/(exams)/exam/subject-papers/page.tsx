@@ -101,6 +101,7 @@ function getStaticSubjectPapers(): ExamPaperMetadata[] {
       total_questions: 60,
       time_limit: 90,
       is_premium: false,
+      price: 0,
       source: 'subject'
     },
     {
@@ -112,6 +113,7 @@ function getStaticSubjectPapers(): ExamPaperMetadata[] {
       total_questions: 50,
       time_limit: 75,
       is_premium: false,
+      price: 0,
       source: 'subject'
     },
     {
@@ -123,6 +125,7 @@ function getStaticSubjectPapers(): ExamPaperMetadata[] {
       total_questions: 45,
       time_limit: 90,
       is_premium: true,
+      price: 499, // PKR 499
       source: 'subject'
     },
     {
@@ -134,6 +137,7 @@ function getStaticSubjectPapers(): ExamPaperMetadata[] {
       total_questions: 55,
       time_limit: 60,
       is_premium: false,
+      price: 0,
       source: 'subject'
     },
     {
@@ -145,6 +149,7 @@ function getStaticSubjectPapers(): ExamPaperMetadata[] {
       total_questions: 40,
       time_limit: 60,
       is_premium: true,
+      price: 599, // PKR 599
       source: 'subject'
     },
     {
@@ -156,6 +161,7 @@ function getStaticSubjectPapers(): ExamPaperMetadata[] {
       total_questions: 35,
       time_limit: 90,
       is_premium: true,
+      price: 699, // PKR 699
       source: 'subject'
     }
   ];
