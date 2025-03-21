@@ -19,9 +19,11 @@ interface ExamPageProps {
 }
 
 export default function ExamPage({ params }: ExamPageProps) {
+  // Unwrap params using React.use() before accessing properties
+  const resolvedParams = React.use(params);
   return (
     <QueryProvider>
-      <ExamPageContent id={params.id} />
+      <ExamPageContent id={resolvedParams.id} />
     </QueryProvider>
   );
 }

@@ -18,9 +18,11 @@ interface ResultsPageProps {
 }
 
 export default function ResultsPage({ params }: ResultsPageProps) {
+  // Unwrap params using React.use() before accessing properties
+  const resolvedParams = React.use(params);
   return (
     <QueryProvider>
-      <ExamResultsContent attemptId={params.attemptId} />
+      <ExamResultsContent attemptId={resolvedParams.attemptId} />
     </QueryProvider>
   );
 }

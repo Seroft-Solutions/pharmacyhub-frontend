@@ -27,6 +27,13 @@ const routeLabels: Record<string, string> = {
   "model-papers": "Model Papers",
   "subject-papers": "Subject Papers",
   practice: "Practice Exams",
+  // Payment routes
+  payments: "Payments",
+  manual: "Manual Payment",
+  pending: "Pending Payments",
+  history: "Payment History",
+  success: "Payment Success",
+  cancel: "Payment Cancelled",
 };
 
 export function Breadcrumbs() {
@@ -40,13 +47,43 @@ export function Breadcrumbs() {
     const items: BreadcrumbItem[] = [];
     let currentPath = "";
 
-    pathParts.forEach((part) => {
+    // Special case handling for parameterized routes
+    const isNumeric = (str: string): boolean => /^\d+$/.test(str);
+    const isManualPaymentRoute = pathname.includes('/payments/manual/');
+    const isPendingPaymentRoute = pathname.includes('/payments/pending');
+
+    pathParts.forEach((part, index) => {
+      // Skip numeric IDs for specific routes but maintain the path
+      const isIdParameter = isNumeric(part) && (
+        // Known routes with ID parameters
+        (pathParts[index - 1] === "manual") || 
+        (pathParts[index - 1] === "exam") ||
+        (pathParts[index - 1] === "paper")
+      );
+      
       currentPath += `/${part}`;
-      items.push({
-        label: routeLabels[part] || part.replace(/-/g, " "),
-        href: currentPath,
-      });
+      
+      // Skip adding breadcrumb item for numeric IDs
+      if (!isIdParameter) {
+        items.push({
+          label: routeLabels[part] || part.replace(/-/g, " "),
+          href: currentPath,
+        });
+      }
     });
+
+    // Special case: add the manual payment breadcrumb if we're on that route but skipped the ID
+    if (isManualPaymentRoute && !items.some(item => item.label === "Manual Payment")) {
+      // Find the payments breadcrumb index
+      const paymentsIndex = items.findIndex(item => item.label === "Payments");
+      if (paymentsIndex !== -1) {
+        // Insert manual payment after payments
+        items.splice(paymentsIndex + 1, 0, {
+          label: "Manual Payment",
+          href: pathname, // Use current path
+        });
+      }
+    }
 
     return items;
   }, [pathname]);

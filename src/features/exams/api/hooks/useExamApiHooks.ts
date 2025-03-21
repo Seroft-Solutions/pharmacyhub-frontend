@@ -18,7 +18,12 @@ import type {
  * Create standard CRUD hooks for exams
  */
 export const examApiHooks = createApiHooks<Exam>(
-  EXAM_ENDPOINTS,
+  {
+    ...EXAM_ENDPOINTS,
+    // Map the endpoints to match what createApiHooks expects
+    list: EXAM_ENDPOINTS.all,
+    detail: EXAM_ENDPOINTS.byId
+  },
   {
     resourceName: 'exams',
     requiresAuth: true,
