@@ -42,12 +42,47 @@ export const apiClient: AxiosInstance = axios.create({
 
 // Replace parameters in URL path
 export const replaceUrlParams = (url: string, params: Record<string, any>): string => {
+  if (!url || typeof url !== 'string') {
+    console.error('Invalid URL provided to replaceUrlParams:', url);
+    return '';
+  }
+  
+  if (!params || typeof params !== 'object') {
+    return url;
+  }
+  
   let processedUrl = url;
   
   // Replace path parameters (e.g., :id, :userId)
   Object.keys(params).forEach(key => {
-    const paramValue = params[key]?.toString() || '';
-    processedUrl = processedUrl.replace(`:${key}`, encodeURIComponent(paramValue));
+    if (!key) return;
+    
+    // For ID parameters, ensure proper format for Java Long ID
+    const isIdParam = key.toLowerCase().includes('id');
+    let paramValue = '';
+    
+    if (params[key] != null) {
+      if (isIdParam) {
+        // For ID params, parse to int and back to string to ensure proper Long format
+        try {
+          paramValue = String(parseInt(params[key].toString()));
+        } catch (e) {
+          console.error(`Error converting ${key} to Long ID format:`, e);
+          paramValue = params[key].toString();
+        }
+      } else {
+        paramValue = params[key].toString();
+      }
+    }
+    
+    try {
+      processedUrl = processedUrl.replace(
+        new RegExp(`:${key}`, 'g'), 
+        encodeURIComponent(paramValue)
+      );
+    } catch (e) {
+      console.error(`Error replacing parameter ${key} in URL:`, e);
+    }
   });
   
   return processedUrl;
@@ -61,6 +96,17 @@ apiClient.interceptors.request.use(
     
     // Log request for debugging
     logApiRequest(config);
+    
+    // Debug URL format for relativeURL issues
+    if (DEBUG && config.url) {
+      logger.debug('API Request URL analysis:', {
+        url: config.url,
+        urlType: typeof config.url,
+        hasColon: config.url.includes(':'),
+        segments: config.url.split('/'),
+        params: config.params
+      });
+    }
     
     // Add auth token if available
     const token = tokenManager.getToken();

@@ -322,17 +322,20 @@ export function createApiHooks<
     let processedEndpoint = apiEndpoints[endpointKey];
     
     // Replace URL parameters with their values
-    if (urlParams) {
+    if (urlParams && processedEndpoint) {
       Object.entries(urlParams).forEach(([key, value]) => {
         // IMPORTANT: Use toLongId for ID parameters to ensure proper Long format
         const paramValue = key.toLowerCase().includes('id') 
           ? toLongId(value)
           : String(value);
-          
-        processedEndpoint = processedEndpoint.replace(
-          new RegExp(`:${key}`, 'g'),
-          paramValue
-        );
+        
+        // Safely check if endpoint is a string before using replace
+        if (typeof processedEndpoint === 'string') {
+          processedEndpoint = processedEndpoint.replace(
+            new RegExp(`:${key}`, 'g'),
+            paramValue
+          );
+        }
       });
     }
     

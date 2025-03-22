@@ -74,17 +74,59 @@ export function useApiQuery<TData, TError = Error, TQueryFnData = TData>(
  * Hook for making POST requests (create operations)
  */
 export function useApiMutation<TData, TVariables = unknown, TError = Error, TContext = unknown>(
-  endpoint: string,
-  options: UseApiMutationOptions<TData, TError, TVariables, TContext> = {}
+  endpoint: string | ((params: TVariables) => string),
+  options: UseApiMutationOptions<TData, TError, TVariables, TContext> & {
+    method?: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  } = {}
 ) {
-  const { requiresAuth = true, ...mutationOptions } = options;
+  const { requiresAuth = true, method = 'POST', ...mutationOptions } = options;
   const queryClient = useQueryClient();
 
   return useMutation<TData, TError, TVariables, TContext>({
     mutationFn: async (variables) => {
-      const response = await apiClient.post<TData>(endpoint, variables, { 
-        requiresAuth 
-      });
+      // Determine the actual endpoint
+      let actualEndpoint: string;
+      
+      if (typeof endpoint === 'function') {
+        try {
+          actualEndpoint = endpoint(variables);
+          console.log('Generated dynamic endpoint:', actualEndpoint, 'from variables:', variables);
+        } catch (err) {
+          console.error('Error generating endpoint:', err);
+          throw new Error(`Failed to generate API endpoint: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        }
+      } else {
+        actualEndpoint = endpoint;
+      }
+      
+      // Ensure we have a valid endpoint
+      if (!actualEndpoint || typeof actualEndpoint !== 'string') {
+        console.error('Invalid endpoint:', actualEndpoint);
+        throw new Error('Invalid API endpoint');
+      }
+      
+      // Check for any remaining URL parameters that weren't replaced
+      if (actualEndpoint.includes(':')) {
+        console.warn('Endpoint still contains unreplaced parameters:', actualEndpoint);
+      }
+      
+      // Make the API request based on the method
+      let response;
+      switch (method) {
+        case 'PUT':
+          response = await apiClient.put<TData>(actualEndpoint, variables, { requiresAuth });
+          break;
+        case 'PATCH':
+          response = await apiClient.patch<TData>(actualEndpoint, variables, { requiresAuth });
+          break;
+        case 'DELETE':
+          response = await apiClient.delete<TData>(actualEndpoint, { requiresAuth });
+          break;
+        case 'POST':
+        default:
+          response = await apiClient.post<TData>(actualEndpoint, variables, { requiresAuth });
+          break;
+      }
       
       if (response.error) {
         throw response.error;

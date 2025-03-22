@@ -90,7 +90,7 @@ export const useExamQuestions = (examId: number) => {
       enabled: !!examId,
       staleTime: 5 * 60 * 1000, // 5 minutes
       urlParams: {
-        examId: examId // Will be properly converted to Long format by the hook
+        examId: examId ? String(parseInt(examId.toString())) : '0' // Ensure proper Long format
       }
     }
   );

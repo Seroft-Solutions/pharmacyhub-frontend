@@ -56,7 +56,7 @@ export const useUserExamAttemptsForExam = (examId: number) => {
       enabled: !!examId,
       staleTime: 1 * 60 * 1000, // 1 minute
       urlParams: {
-        id: examId
+        id: examId ? String(parseInt(examId.toString())) : '0'
       }
     }
   );
@@ -86,7 +86,7 @@ export const useExamResult = (attemptId: number) => {
       enabled: !!attemptId,
       staleTime: 0, // Always get fresh results
       urlParams: {
-        id: attemptId
+        id: attemptId ? String(parseInt(attemptId.toString())) : '0'
       }
     }
   );
@@ -103,7 +103,7 @@ export const useFlaggedQuestions = (attemptId: number) => {
       enabled: !!attemptId,
       staleTime: 0, // Always get fresh flags
       urlParams: {
-        id: attemptId
+        id: attemptId ? String(parseInt(attemptId.toString())) : '0'
       }
     }
   );
@@ -114,9 +114,11 @@ export const useFlaggedQuestions = (attemptId: number) => {
  */
 export const useStartExamMutation = (examId: number) => {
   const queryClient = useQueryClient();
+  // Ensure proper ID conversion for Java
+  const safeExamId = examId ? String(parseInt(examId.toString())) : '0';
   const endpoint = ATTEMPT_ENDPOINTS.start ? 
-    ATTEMPT_ENDPOINTS.start.replace(':id', examId.toString()) : 
-    EXAM_ENDPOINTS.startExam.replace(':id', examId.toString());
+    ATTEMPT_ENDPOINTS.start.replace(':id', safeExamId) : 
+    EXAM_ENDPOINTS.startExam.replace(':id', safeExamId);
 
   return attemptApiHooks.useAction<ExamAttempt, { userId?: string }>(
     endpoint,
@@ -135,9 +137,12 @@ export const useStartExamMutation = (examId: number) => {
  * Hook for answering a question
  */
 export const useAnswerQuestionMutation = (attemptId: number, questionId: number) => {
+  // Ensure proper ID conversion for Java
+  const safeAttemptId = attemptId ? String(parseInt(attemptId.toString())) : '0';
+  const safeQuestionId = questionId ? String(parseInt(questionId.toString())) : '0';
   const endpoint = ATTEMPT_ENDPOINTS.answer
-    .replace(':attemptId', attemptId.toString())
-    .replace(':questionId', questionId.toString());
+    .replace(':attemptId', safeAttemptId)
+    .replace(':questionId', safeQuestionId);
 
   return attemptApiHooks.useAction<void, { 
     questionId: number, 
@@ -153,9 +158,12 @@ export const useAnswerQuestionMutation = (attemptId: number, questionId: number)
  */
 export const useFlagQuestionMutation = (attemptId: number, questionId: number) => {
   const queryClient = useQueryClient();
+  // Ensure proper ID conversion for Java
+  const safeAttemptId = attemptId ? String(parseInt(attemptId.toString())) : '0';
+  const safeQuestionId = questionId ? String(parseInt(questionId.toString())) : '0';
   const endpoint = ATTEMPT_ENDPOINTS.flag
-    .replace(':attemptId', attemptId.toString())
-    .replace(':questionId', questionId.toString());
+    .replace(':attemptId', safeAttemptId)
+    .replace(':questionId', safeQuestionId);
 
   return attemptApiHooks.useAction<void, void>(
     endpoint,
@@ -173,9 +181,12 @@ export const useFlagQuestionMutation = (attemptId: number, questionId: number) =
  */
 export const useUnflagQuestionMutation = (attemptId: number, questionId: number) => {
   const queryClient = useQueryClient();
+  // Ensure proper ID conversion for Java
+  const safeAttemptId = attemptId ? String(parseInt(attemptId.toString())) : '0';
+  const safeQuestionId = questionId ? String(parseInt(questionId.toString())) : '0';
   const endpoint = ATTEMPT_ENDPOINTS.unflag
-    .replace(':attemptId', attemptId.toString())
-    .replace(':questionId', questionId.toString());
+    .replace(':attemptId', safeAttemptId)
+    .replace(':questionId', safeQuestionId);
 
   return attemptApiHooks.useAction<void, void>(
     endpoint,
@@ -194,7 +205,9 @@ export const useUnflagQuestionMutation = (attemptId: number, questionId: number)
  */
 export const useSubmitExamMutation = (attemptId: number) => {
   const queryClient = useQueryClient();
-  const endpoint = ATTEMPT_ENDPOINTS.submit.replace(':id', attemptId.toString());
+  // Ensure proper ID conversion for Java
+  const safeAttemptId = attemptId ? String(parseInt(attemptId.toString())) : '0';
+  const endpoint = ATTEMPT_ENDPOINTS.submit.replace(':id', safeAttemptId);
 
   return attemptApiHooks.useAction<ExamResult, { answers?: UserAnswer[] }>(
     endpoint,

@@ -179,3 +179,66 @@ export function tagsToMetadata(tags: string[], paperType: string): Record<string
   
   return metadata;
 }
+
+/**
+ * Extract metadata from tags
+ * @param tags Array of tags
+ * @param paperType Paper type
+ * @returns Extracted metadata object
+ */
+export const extractMetadataFromTags = (tags: string[], paperType: string): Record<string, any> => {
+  const metadata: Record<string, any> = {};
+  
+  // Extract values from tags (using existing tagsToMetadata logic)
+  tags.forEach(tag => {
+    if (tag.includes(':')) {
+      // Split only on the first colon, as some values might contain colons
+      const colonIndex = tag.indexOf(':');
+      const key = tag.substring(0, colonIndex);
+      const value = tag.substring(colonIndex + 1);
+      
+      // Add to metadata
+      metadata[key] = value;
+      
+      // Handle special case for premium tag
+      if (key === 'premium' && value === 'true') {
+        metadata.premium = true;
+      } 
+      // Handle special case for price tag (convert to number)
+      else if (key === 'price') {
+        metadata.price = parseFloat(value);
+      }
+    }
+  });
+  
+  // Handle paper type specific fields
+  switch (paperType) {
+    case PaperType.SUBJECT:
+      // Default values if not present
+      if (!metadata.academicLevel) {
+        metadata.academicLevel = 'Undergraduate';
+      }
+      break;
+    case PaperType.PAST:
+      // Default values if not present
+      if (!metadata.year) {
+        const currentYear = new Date().getFullYear();
+        metadata.year = (currentYear - 1).toString();
+      }
+      break;
+    case PaperType.MODEL:
+      // Default values if not present
+      if (!metadata.creator) {
+        metadata.creator = 'PharmacyHub';
+      }
+      break;
+    case PaperType.PRACTICE:
+      // Default values if not present
+      if (!metadata.skillLevel) {
+        metadata.skillLevel = 'Intermediate';
+      }
+      break;
+  }
+  
+  return metadata;
+};
