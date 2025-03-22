@@ -101,11 +101,7 @@ export const PaperTypeManager: React.FC<PaperTypeManagerProps> = ({ examId }) =>
 
       <CardContent className="p-6">
         <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 mb-6">
-            <TabsTrigger value={PaperType.PRACTICE} className="flex items-center gap-2">
-              <ListTodoIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Practice</span>
-            </TabsTrigger>
+          <TabsList className="grid grid-cols-3 mb-6">
             <TabsTrigger value={PaperType.MODEL} className="flex items-center gap-2">
               <BookOpenIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Model</span>
@@ -122,7 +118,6 @@ export const PaperTypeManager: React.FC<PaperTypeManagerProps> = ({ examId }) =>
 
           <div className="mb-6">
             <h3 className="text-lg font-medium mb-2">
-              {activeTab === PaperType.PRACTICE && 'Practice Papers'}
               {activeTab === PaperType.MODEL && 'Model Papers'}
               {activeTab === PaperType.PAST && 'Past Papers'}
               {activeTab === PaperType.SUBJECT && 'Subject Papers'}
