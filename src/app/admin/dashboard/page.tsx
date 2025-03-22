@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Activity,
   CreditCard,
@@ -11,12 +14,120 @@ import {
   FileText,
   Package,
   Settings,
+  ClockIcon,
 } from "lucide-react";
+import { useManualRequestsByStatus } from "@/features/payments/manual/api/hooks/useManualPaymentApiHooks";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { forceAdminMode } from "@/features/shell/store/roleStore";
+import { useAuth } from "@/features/core/auth/hooks";
+import { logger } from '@/shared/lib/logger';
+
+// Payment Approvals Card Component
+function PaymentApprovalsCard() {
+  const { data: pendingRequests, isLoading } = useManualRequestsByStatus('PENDING');
+  const router = useRouter();
+  
+  const pendingCount = pendingRequests?.length || 0;
+  
+  return (
+    <Card className={pendingCount > 0 ? 'border-orange-300 shadow-orange-100/50' : ''}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">Payment Approvals</CardTitle>
+        <ClockIcon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center gap-2">
+            <Spinner size="sm" />
+            <span className="text-sm">Loading...</span>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="text-2xl font-bold">{pendingCount}</div>
+              {pendingCount > 0 && (
+                <Badge variant="outline" className="text-orange-500 border-orange-200 bg-orange-50">
+                  Pending
+                </Badge>
+              )}
+            </div>
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-xs text-muted-foreground">
+                {pendingCount === 0 ? 'No pending approvals' : 'Needs your attention'}
+              </p>
+              {pendingCount > 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => router.push('/admin/payments/approvals')}
+                >
+                  Review
+                </Button>
+              )}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const { hasRole, isAuthenticated, isLoading, user } = useAuth();
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Force admin mode when this page is accessed directly
+  useEffect(() => {
+    // Skip during SSR or while authentication is loading
+    if (typeof window === 'undefined' || isLoading) return;
+    
+    setIsInitialized(true);
+    
+    // If user is not authenticated, this will be handled by the AppLayout
+    if (!isAuthenticated) return;
+    
+    logger.debug('[AdminDashboard] User authenticated, checking admin access', {
+      email: user?.email,
+      roles: user?.roles
+    });
+    
+    // Check if user has admin role
+    const hasAdminAccess = hasRole('ADMIN') || hasRole('PER_ADMIN');
+    
+    if (!hasAdminAccess) {
+      // Redirect non-admin users
+      logger.debug('[AdminDashboard] User lacks admin role, redirecting to dashboard');
+      router.push('/dashboard');
+      return;
+    }
+    
+    // Force admin mode
+    logger.debug('[AdminDashboard] Forcing admin mode');
+    const success = forceAdminMode();
+    
+    if (!success) {
+      logger.warn('[AdminDashboard] Failed to force admin mode, user may not have correct admin privileges');
+    }
+    
+    // Log that we successfully accessed the admin dashboard
+    logger.debug('[AdminDashboard] Admin dashboard accessed successfully');
+  }, [isAuthenticated, isLoading, hasRole, router, user]);
+  
+  // If still loading or not initialized, show loading state
+  if (isLoading || !isInitialized) {
+    return <div className="flex items-center justify-center min-h-screen p-4">Loading admin dashboard...</div>;
+  }
+  
+  // Check for admin access
+  const hasAdminAccess = hasRole('ADMIN') || hasRole('PER_ADMIN');
+  
+  // If not admin, don't render admin content
+  if (!hasAdminAccess) {
+    return <div className="flex items-center justify-center min-h-screen p-4">Redirecting to dashboard...</div>;
+  }
   
   return (
     <div className="flex flex-col gap-5 w-full p-4 md:p-6">
@@ -101,6 +212,9 @@ export default function AdminDashboardPage() {
                 </p>
               </CardContent>
             </Card>
+            
+            {/* Payment Approvals Card */}
+            <PaymentApprovalsCard />
           </div>
           
           {/* Admin Quick Links */}
@@ -147,22 +261,22 @@ export default function AdminDashboardPage() {
               </CardContent>
             </Card>
             
-            <Card className="cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => router.push('/admin/inventory')}>
+            <Card className="cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => router.push('/admin/payments/approvals')}>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-primary" />
-                  <CardTitle>Inventory Management</CardTitle>
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <CardTitle>Payment Approvals</CardTitle>
                 </div>
                 <CardDescription>
-                  Manage products and inventory
+                  Manage payment approvals and transactions
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-sm">
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Add/edit products</li>
-                    <li>Track inventory levels</li>
-                    <li>Manage out-of-stock items</li>
+                    <li>Review pending payments</li>
+                    <li>Approve or reject transactions</li>
+                    <li>View payment history</li>
                   </ul>
                 </div>
               </CardContent>

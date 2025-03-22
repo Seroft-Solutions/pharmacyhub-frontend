@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '../core/AuthContext';
 import { DEV_CONFIG } from '../constants/config';
+import { logger } from '@/shared/lib/logger';
 
 interface UseSessionOptions {
   required?: boolean;
@@ -41,6 +42,25 @@ export function useSession(options: UseSessionOptions = {}) {
       }
     }
   }, [isAuthenticated, isLoading, required, redirectTo, onUnauthenticated, router]);
+
+  // Log session details for debugging
+  useEffect(() => {
+    // Skip during server-side rendering
+    if (typeof window === 'undefined') return;
+    
+    // Log session state
+    logger.debug('[useSession] Session state:', {
+      isLoading,
+      isAuthenticated,
+      user: user ? {
+        id: user.id,
+        email: user.email,
+        roles: user.roles,
+        userType: user.userType
+      } : null,
+      pathname: window.location.pathname
+    });
+  }, [user, isLoading, isAuthenticated]);
 
   return {
     user,

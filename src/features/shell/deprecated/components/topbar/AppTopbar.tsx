@@ -1,17 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
+import { useAuth } from "@/features/core/auth/hooks";
+import { Bell, ChevronRight, MessageSquare, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { Bell, MessageSquare, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { 
-  SidebarTrigger, 
-  useSidebar 
-} from "@/components/ui/sidebar";
 import { 
   Breadcrumb, 
   BreadcrumbItem, 
@@ -29,9 +25,11 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 // Import Zustand stores
-import { useNavigationStore } from "../../store/navigationStore";
+import { useNavigationStore } from "../../../store/navigationStore";
 
 // Import components
 import { UserMenu } from "./UserMenu";
@@ -51,7 +49,10 @@ interface AppTopbarProps {
  * AppTopbar - Main application header component
  * 
  * Includes breadcrumbs, search, notifications, messages, and user menu
- * Properly integrates with the SidebarProvider context
+ * 
+ * Completely rebuilt to use Zustand for state management
+ * 
+ * @deprecated This component is deprecated and will be moved to AppTopbar.tsx
  */
 export function AppTopbar({ 
   appName = "Pharmacy Hub",
@@ -60,9 +61,8 @@ export function AppTopbar({
 }: AppTopbarProps) {
   const pathname = usePathname();
   const { features } = useNavigationStore();
-  const { toggleSidebar } = useSidebar();
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
-  
+
   // Generate breadcrumbs based on the current path and navigation items
   useEffect(() => {
     const segments = pathname?.split('/').filter(Boolean) || [];
@@ -110,7 +110,7 @@ export function AppTopbar({
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center border-b bg-background shadow-sm gap-4 px-4 md:px-6">
-      <SidebarTrigger className="text-muted-foreground" onClick={toggleSidebar} />
+      <SidebarTrigger className="text-muted-foreground" />
       
       {/* Breadcrumbs */}
       <Breadcrumb className="hidden md:flex items-center">

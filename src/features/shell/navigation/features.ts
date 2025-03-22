@@ -14,7 +14,7 @@ import {
   LayoutDashboard,
   HelpCircle
 } from "lucide-react";
-import { FeatureNavigation } from "../types/navigationTypes";
+import type { FeatureNavigation } from "../types/navigationTypes";
 
 /**
  * Core features navigation configuration
@@ -40,12 +40,15 @@ export const CORE_FEATURES: FeatureNavigation[] = [
     name: "Help & Support",
     rootPath: "/help",
     order: 90,
+    // Help center should only be available to logged in users
+    permissions: ["view_help_center"],
     items: [
       {
         id: "help-center",
         label: "Help Center",
         href: "/help",
         icon: HelpCircle,
+        permissions: ["view_help_center"],
         order: 0
       }
     ]
@@ -55,12 +58,15 @@ export const CORE_FEATURES: FeatureNavigation[] = [
     name: "Settings",
     rootPath: "/settings",
     order: 100,
+    // Settings should only be available to logged in users
+    permissions: ["view_settings"],
     items: [
       {
         id: "settings",
         label: "Settings",
         href: "/settings",
         icon: Settings,
+        permissions: ["view_settings"],
         order: 0
       }
     ]
@@ -77,77 +83,28 @@ export const EXAMS_FEATURE: FeatureNavigation = {
   order: 10,
   items: [
     {
-      id: "exams",
-      label: "Exams",
-      href: "/exam/dashboard",
-      icon: GraduationCap,
-      order: 0,
-      subItems: [
-        {
-          id: "past-papers",
-          label: "Past Papers",
-          href: "/exam/past-papers",
-          icon: FileText,
-          permissions: ["view_past_papers"]
-        },
-        {
-          id: "model-papers",
-          label: "Model Papers",
-          href: "/exam/model-papers",
-          icon: Medal,
-          permissions: ["view_model_papers"]
-        },
-        {
-          id: "subject-papers",
-          label: "Subject Papers",
-          href: "/exam/subject-papers",
-          icon: BookOpen,
-          permissions: ["view_subject_papers"]
-        },
-        {
-          id: "practice-exams",
-          label: "Practice Exams",
-          href: "/exam/practice",
-          icon: FileQuestion,
-          permissions: ["view_practice_exams"],
-          badge: "New",
-          subItems: [
-            {
-              id: "timed-exams", 
-              label: "Timed Exams",
-              href: "/exam/practice/timed",
-              icon: Clock,
-              permissions: ["view_practice_exams"]
-            },
-            {
-              id: "topic-exams",
-              label: "Topic Based",
-              href: "/exam/practice/topics",
-              icon: BookMarked,
-              permissions: ["view_practice_exams"]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-};
-
-/**
- * Progress tracking feature navigation configuration
- */
-export const PROGRESS_FEATURE: FeatureNavigation = {
-  id: "progress",
-  name: "Progress",
-  rootPath: "/progress",
-  order: 20,
-  items: [
+      id: "past-papers",
+      label: "Past Papers",
+      href: "/exam/past-papers",
+      icon: FileText,
+      permissions: [],
+      order: 10
+    },
     {
-      id: "progress-tracking",
-      label: "Progress Tracking",
-      href: "/progress",
-      icon: FilePieChart,
-      order: 0
+      id: "model-papers",
+      label: "Model Papers",
+      href: "/exam/model-papers",
+      icon: Medal,
+      permissions: [],
+      order: 20
+    },
+    {
+      id: "subject-papers",
+      label: "Subject Papers",
+      href: "/exam/subject-papers",
+      icon: BookOpen,
+      permissions: [],
+      order: 30
     }
   ]
 };
@@ -159,7 +116,8 @@ export const ADMIN_FEATURE: FeatureNavigation = {
   id: "admin",
   name: "Administration",
   rootPath: "/admin",
-  roles: ["ADMIN"],
+  // Restrict to ADMIN role only
+  roles: ["ADMIN", "SUPER_ADMIN"],
   order: 80,
   items: [
     {
@@ -167,7 +125,7 @@ export const ADMIN_FEATURE: FeatureNavigation = {
       label: "Administration",
       href: "/admin",
       icon: Users,
-      roles: ["ADMIN"],
+      roles: ["ADMIN", "SUPER_ADMIN"],
       order: 0,
       subItems: [
         {
@@ -175,6 +133,7 @@ export const ADMIN_FEATURE: FeatureNavigation = {
           label: "User Management",
           href: "/admin/users",
           icon: Users,
+          roles: ["ADMIN", "SUPER_ADMIN"],
           permissions: ["manage_users"]
         },
         {
@@ -182,6 +141,7 @@ export const ADMIN_FEATURE: FeatureNavigation = {
           label: "Exam Management",
           href: "/admin/exams",
           icon: FileText,
+          roles: ["ADMIN", "SUPER_ADMIN"],
           permissions: ["manage_exams"]
         },
         {
@@ -189,6 +149,7 @@ export const ADMIN_FEATURE: FeatureNavigation = {
           label: "Notifications",
           href: "/admin/notifications",
           icon: Bell,
+          roles: ["ADMIN", "SUPER_ADMIN"],
           permissions: ["manage_notifications"]
         }
       ]
@@ -201,9 +162,39 @@ export const ADMIN_FEATURE: FeatureNavigation = {
  */
 export const DEFAULT_FEATURES: FeatureNavigation[] = [
   ...CORE_FEATURES,
-  EXAMS_FEATURE,
-  PROGRESS_FEATURE,
-  ADMIN_FEATURE
+  ADMIN_FEATURE,
+  {
+    id: "exam-preparation",
+    name: "Exam Preparation",
+    rootPath: "/exam",
+    order: 10,
+    items: [
+      {
+        id: "past-papers",
+        label: "Past Papers",
+        href: "/exam/past-papers",
+        icon: FileText,
+        permissions: [],
+        order: 10
+      },
+      {
+        id: "model-papers",
+        label: "Model Papers",
+        href: "/exam/model-papers",
+        icon: Medal,
+        permissions: [],
+        order: 20
+      },
+      {
+        id: "subject-papers",
+        label: "Subject Papers",
+        href: "/exam/subject-papers",
+        icon: BookOpen,
+        permissions: [],
+        order: 30
+      }
+    ]
+  }
 ];
 
 // Export admin features

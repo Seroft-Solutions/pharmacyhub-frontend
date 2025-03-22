@@ -1,225 +1,143 @@
 "use client";
 
 import React from 'react';
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter, usePathname } from 'next/navigation';
+import { LucideIcon, ChevronDown, ChevronRight } from 'lucide-react';
 import {
-  SidebarMenu as UISidebarMenu,
+  SidebarMenu as SMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuBadge,
+  SidebarMenuAction,
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton
-} from "@/components/ui/sidebar";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { usePermissions } from "@/features/core/rbac/hooks";
-import { ChevronDown, ChevronUp } from "lucide-react";
+} from '@/components/ui/sidebar';
+import { useSidebarStore } from '../../store/sidebarStore';
+import { useAuth } from '@/features/core/auth/hooks';
 
-import { useNavigation } from '../../navigation';
-import { NavItem } from '../../types/navigationTypes';
+interface NavMenuItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  isActive?: boolean;
+  permissions?: string[];
+  roles?: string[];
+  subItems?: NavMenuItem[];
+}
 
 interface SidebarMenuProps {
-  items?: NavItem[];
-  featureId?: string;
+  items: NavMenuItem[];
+  title?: string;
+  className?: string;
 }
 
 /**
- * SidebarMenu component for rendering the application sidebar menu items
+ * SidebarMenu - Renders a section of navigation items in the sidebar
  * 
- * This uses the navigation context to get items if no items are provided.
- * If featureId is provided, it will only show items for that feature.
+ * Handles collapsible sections, permissions, and active state
  */
-export function SidebarMenu({ items, featureId }: SidebarMenuProps) {
-  const pathname = usePathname();
+export function SidebarMenu({ items, title, className }: SidebarMenuProps) {
   const router = useRouter();
-  const { hasAccess } = usePermissions();
-  const navigation = useNavigation();
-  const [expandedItems, setExpandedItems] = React.useState<Record<string, boolean>>({});
+  const pathname = usePathname();
+  const { expandedItems, toggleItem } = useSidebarStore();
+  const { hasPermission, hasRole } = useAuth();
   
-  // Get items from navigation context if not provided
-  const menuItems = items || (featureId 
-    ? navigation.getFeatureItems(featureId)
-    : navigation.getAllItems());
-
-  // Initialize expanded state based on current URL
-  React.useEffect(() => {
-    const newExpandedState: Record<string, boolean> = {};
+  // Filter items by permission/role
+  const filteredItems = items.filter(item => {
+    // Check permissions if specified
+    if (item.permissions && item.permissions.length > 0) {
+      const hasPermissions = item.permissions.some(permission => 
+        hasPermission(permission)
+      );
+      if (!hasPermissions) return false;
+    }
     
-    menuItems.forEach(item => {
-      if (item.subItems) {
-        // Always expand exam items and any active navigation
-        const isActive = item.href === pathname || 
-          pathname?.startsWith(`${item.href}/`) ||
-          item.subItems.some(subItem => 
-            subItem.href === pathname || pathname?.startsWith(`${subItem.href}/`)
-          ) ||
-          item.id === "exams";
-          
-        if (isActive) {
-          newExpandedState[item.id] = true;
-        }
-      }
-    });
+    // Check roles if specified
+    if (item.roles && item.roles.length > 0) {
+      const hasRoles = item.roles.some(role => 
+        hasRole(role)
+      );
+      if (!hasRoles) return false;
+    }
     
-    setExpandedItems(prev => ({...prev, ...newExpandedState}));
-  }, [pathname, menuItems]);
-
-  // Filter items based on permissions and roles
-  const filteredItems = React.useMemo(() => {
-    return menuItems.filter(item => 
-      hasAccess({
-        permissions: item.permissions,
-        roles: item.roles,
-        requireAll: false
-      })
-    ).map(item => ({
-      ...item,
-      subItems: item.subItems?.filter(subItem => 
-        hasAccess({
-          permissions: subItem.permissions,
-          roles: subItem.roles, 
-          requireAll: false
-        })
-      )
-    }))
-    // Sort by order if specified
-    .sort((a, b) => (a.order || 0) - (b.order || 0));
-  }, [menuItems, hasAccess]);
-
-  const toggleExpanded = (id: string) => {
-    setExpandedItems(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
-
+    return true;
+  });
+  
+  // No items to display after filtering
+  if (filteredItems.length === 0) {
+    return null;
+  }
+  
   return (
-    <UISidebarMenu>
-      {filteredItems.map((item) => {
-        const isActive = item.href === pathname || pathname?.startsWith(`${item.href}/`);
-        const hasSubItems = item.subItems && item.subItems.length > 0;
-        const Icon = item.icon;
-        const isExpanded = expandedItems[item.id];
-
-        return (
-          <SidebarMenuItem key={item.id} className="relative">
-            {hasSubItems ? (
-              <Collapsible
-                open={isExpanded}
-                onOpenChange={() => toggleExpanded(item.id)}
-                className="w-full"
+    <div className={className}>
+      {title && (
+        <h3 className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase">
+          {title}
+        </h3>
+      )}
+      
+      <SMenu>
+        {filteredItems.map(item => {
+          const isActive = item.isActive || pathname === item.href || pathname?.startsWith(`${item.href}/`);
+          const hasSubItems = item.subItems && item.subItems.length > 0;
+          const isExpanded = hasSubItems && expandedItems[item.id];
+          
+          return (
+            <SidebarMenuItem key={item.id}>
+              <SidebarMenuButton
+                onClick={() => {
+                  if (hasSubItems) {
+                    toggleItem(item.id);
+                  } else {
+                    router.push(item.href);
+                  }
+                }}
+                isActive={isActive}
+                tooltip={item.label}
               >
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton 
-                    isActive={isActive}
-                    className="flex items-center justify-between w-full group transition-all"
-                    tooltip={item.label}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className={`p-1 rounded-md ${isActive ? 'bg-primary/10' : 'bg-transparent group-hover:bg-muted'} transition-all`}>
-                        <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                      </div>
-                      <span className={`${isActive ? 'font-medium' : ''}`}>{item.label}</span>
-                    </div>
+                <item.icon className="mr-2 h-4 w-4" />
+                <span>{item.label}</span>
+                
+                {hasSubItems && (
+                  <SidebarMenuAction className="ml-auto">
                     {isExpanded ? (
-                      <ChevronUp className="ml-auto h-4 w-4 text-muted-foreground" />
+                      <ChevronDown className="h-4 w-4" />
                     ) : (
-                      <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
+                      <ChevronRight className="h-4 w-4" />
                     )}
-                    {item.badge && (
-                      <span className="ml-2 px-1.5 py-0.5 text-xs rounded-md bg-primary/10 text-primary font-medium">
-                        {item.badge}
-                      </span>
-                    )}
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub className="ml-4 mt-1 pl-2 border-l-2 border-sidebar-border">
-                    {item.subItems?.map((subItem) => {
-                      const isSubActive = pathname === subItem.href || pathname?.startsWith(`${subItem.href}/`);
-                      return (
-                        <SidebarMenuSubItem key={subItem.id}>
-                          <SidebarMenuSubButton
-                            onClick={() => router.push(subItem.href)}
-                            isActive={isSubActive}
-                            tooltip={subItem.label}
-                            className="group transition-all"
-                          >
-                            <div className={`p-1 rounded-md ${isSubActive ? 'bg-primary/10' : 'bg-transparent group-hover:bg-muted'} transition-all`}>
-                              <subItem.icon className={`h-3.5 w-3.5 ${isSubActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                            </div>
-                            <span className={`${isSubActive ? 'font-medium' : ''}`}>{subItem.label}</span>
-                          </SidebarMenuSubButton>
-                          {subItem.badge && (
-                            <div className="ml-auto flex h-5 items-center gap-0.5">
-                              <span className="rounded-full bg-primary/10 px-1.5 text-xs font-semibold text-primary">
-                                {subItem.badge}
-                              </span>
-                            </div>
-                          )}
-                          
-                          {/* Handle nested sub-items (third level) */}
-                          {subItem.subItems && subItem.subItems.length > 0 && (
-                            <SidebarMenuSub className="mt-1 ml-2 pl-2 border-l-2 border-sidebar-border/70">
-                              {subItem.subItems.map((nestedItem) => {
-                                const isNestedActive = pathname === nestedItem.href || pathname?.startsWith(`${nestedItem.href}/`);
-                                return (
-                                  <SidebarMenuSubItem key={nestedItem.id}>
-                                    <SidebarMenuSubButton
-                                      onClick={() => router.push(nestedItem.href)}
-                                      isActive={isNestedActive}
-                                      tooltip={nestedItem.label}
-                                      size="sm"
-                                      className="group transition-all"
-                                    >
-                                      <div className={`p-0.5 rounded-md ${isNestedActive ? 'bg-primary/10' : 'bg-transparent group-hover:bg-muted'} transition-all`}>
-                                        <nestedItem.icon className={`h-3 w-3 ${isNestedActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                                      </div>
-                                      <span className={`${isNestedActive ? 'font-medium' : ''}`}>{nestedItem.label}</span>
-                                    </SidebarMenuSubButton>
-                                    {nestedItem.badge && (
-                                      <div className="ml-auto flex h-4 items-center gap-0.5">
-                                        <span className="rounded-full bg-primary/10 px-1 text-xs font-semibold text-primary">
-                                          {nestedItem.badge}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </SidebarMenuSubItem>
-                                );
-                              })}
-                            </SidebarMenuSub>
-                          )}
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </Collapsible>
-            ) : (
-              <>
-                <SidebarMenuButton
-                  onClick={() => router.push(item.href)}
-                  isActive={isActive}
-                  tooltip={item.label}
-                  className="group transition-all"
-                >
-                  <div className={`p-1 rounded-md ${isActive ? 'bg-primary/10' : 'bg-transparent group-hover:bg-muted'} transition-all`}>
-                    <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                  </div>
-                  <span className={`${isActive ? 'font-medium' : ''}`}>{item.label}</span>
-                </SidebarMenuButton>
-                {item.badge && (
-                  <SidebarMenuBadge>
-                    <span className="px-1.5 py-0.5 text-xs rounded-md bg-primary/10 text-primary font-medium">
-                      {item.badge}
-                    </span>
-                  </SidebarMenuBadge>
+                  </SidebarMenuAction>
                 )}
-              </>
-            )}
-          </SidebarMenuItem>
-        );
-      })}
-    </UISidebarMenu>
+              </SidebarMenuButton>
+              
+              {hasSubItems && isExpanded && (
+                <SidebarMenuSub>
+                  {item.subItems!.map(subItem => {
+                    const isSubActive = 
+                      subItem.isActive || 
+                      pathname === subItem.href || 
+                      pathname?.startsWith(`${subItem.href}/`);
+                      
+                    return (
+                      <SidebarMenuSubItem key={subItem.id}>
+                        <SidebarMenuSubButton
+                          onClick={() => router.push(subItem.href)}
+                          isActive={isSubActive}
+                        >
+                          <subItem.icon className="mr-2 h-4 w-4" />
+                          <span>{subItem.label}</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
+                </SidebarMenuSub>
+              )}
+            </SidebarMenuItem>
+          );
+        })}
+      </SMenu>
+    </div>
   );
 }
+
+export default SidebarMenu;

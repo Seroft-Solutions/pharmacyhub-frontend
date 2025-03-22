@@ -32,72 +32,40 @@ import { useIsMobile } from "@/features/ui/hooks";
 // Default exam menu items with icons, permissions, and colors
 const defaultExamMenuItems: ExamMenuItemType[] = [
   {
-    id: "exam-prep",
-    label: "Exams Preparation",
+    id: "exam-dashboard",
+    label: "Dashboard",
     href: "/exam/dashboard",
     icon: GraduationCap,
     type: 'main',
     roles: ['USER', 'STUDENT'],
-    color: "blue",
-    subItems: [
-      {
-        id: "past-papers",
-        label: "Past Papers",
-        href: "/exam/past-papers",
-        icon: FileText,
-        type: 'submenu',
-        permissions: ['view_past_papers'],
-        color: "blue"
-      },
-      {
-        id: "model-papers",
-        label: "Model Papers",
-        href: "/exam/model-papers",
-        icon: Medal,
-        type: 'submenu', 
-        permissions: ['view_model_papers'],
-        color: "amber"
-      },
-      {
-        id: "subject-papers",
-        label: "Subject Papers",
-        href: "/exam/subject-papers",
-        icon: BookOpen,
-        type: 'submenu',
-        permissions: ['view_subject_papers'],
-        color: "green"
-      }
-    ]
+    color: "blue"
   },
   {
-    id: "practice-exams",
-    label: "Practice Exams",
-    href: "/exam/practice",
-    icon: FileQuestion,
+    id: "past-papers",
+    label: "Past Papers",
+    href: "/exam/past-papers",
+    icon: FileText,
     type: 'main',
-    roles: ['USER', 'STUDENT'],
-    color: "purple",
-    badge: "New",
-    subItems: [
-      {
-        id: "timed-exams",
-        label: "Timed Exams",
-        href: "/exam/practice/timed",
-        icon: FileCog,
-        type: 'submenu',
-        permissions: ['view_practice_exams'],
-        color: "purple"
-      },
-      {
-        id: "topic-based",
-        label: "Topic Based",
-        href: "/exam/practice/topics",
-        icon: BookMarked,
-        type: 'submenu',
-        permissions: ['view_practice_exams'],
-        color: "indigo"
-      }
-    ]
+    permissions: ['view_past_papers'],
+    color: "blue"
+  },
+  {
+    id: "model-papers",
+    label: "Model Papers",
+    href: "/exam/model-papers",
+    icon: Medal,
+    type: 'main', 
+    permissions: ['view_model_papers'],
+    color: "amber"
+  },
+  {
+    id: "subject-papers",
+    label: "Subject Papers",
+    href: "/exam/subject-papers",
+    icon: BookOpen,
+    type: 'main',
+    permissions: ['view_subject_papers'],
+    color: "green"
   }
 ];
 

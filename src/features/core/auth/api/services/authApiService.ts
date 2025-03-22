@@ -23,6 +23,7 @@ import type {
   PasswordChangeRequest,
   UserUpdatePayload
 } from '../types';
+import { logger } from '@/shared/lib/logger';
 
 /**
  * Token management utilities
@@ -36,12 +37,7 @@ export const tokenStorage = {
     
     localStorage.setItem('accessToken', tokens.accessToken);
     localStorage.setItem('refreshToken', tokens.refreshToken);
-    
-    // Also store in legacy locations for compatibility
-    localStorage.setItem('auth_token', tokens.accessToken);
-    localStorage.setItem('access_token', tokens.accessToken);
-    localStorage.setItem('refresh_token', tokens.refreshToken);
-    
+
     // Store token expiry
     const expiryTime = Date.now() + (tokens.expiresIn * 1000);
     localStorage.setItem('tokenExpiry', expiryTime.toString());
@@ -58,12 +54,7 @@ export const tokenStorage = {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('tokenExpiry');
-    
-    // Also clear legacy locations
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('token_expiry');
+
   },
 
   /**
@@ -178,11 +169,11 @@ export const authApiService = createExtendedApiService<User, {
   clearAuthData: () => void;
   getAuthHeader: () => string | null;
 }>(
-  AUTH_ENDPOINTS.list,
+  AUTH_ENDPOINTS.USERS_LIST,
   {
     // Authentication operations
     login: async (credentials) => {
-      const response = await apiClient.post<AuthResponse>(AUTH_ENDPOINTS.login, credentials);
+      const response = await apiClient.post<AuthResponse>(AUTH_ENDPOINTS.LOGIN, credentials);
       if (response.data?.tokens) {
         tokenStorage.storeTokens(response.data.tokens);
       }
@@ -190,7 +181,7 @@ export const authApiService = createExtendedApiService<User, {
     },
     
     register: async (userData) => {
-      const response = await apiClient.post<AuthResponse>(AUTH_ENDPOINTS.register, userData);
+      const response = await apiClient.post<AuthResponse>(AUTH_ENDPOINTS.REGISTER, userData);
       if (response.data?.tokens) {
         tokenStorage.storeTokens(response.data.tokens);
       }
@@ -199,7 +190,7 @@ export const authApiService = createExtendedApiService<User, {
     
     logout: async () => {
       try {
-        const response = await apiClient.post<void>(AUTH_ENDPOINTS.logout);
+        const response = await apiClient.post<void>(AUTH_ENDPOINTS.LOGOUT);
         tokenStorage.clearTokens();
         return response;
       } catch (error) {
@@ -211,7 +202,7 @@ export const authApiService = createExtendedApiService<User, {
     
     refreshToken: async (token) => {
       const response = await apiClient.post<AuthTokens>(
-        AUTH_ENDPOINTS.refreshToken, 
+        AUTH_ENDPOINTS.REFRESH_TOKEN, 
         { refreshToken: token }
       );
       if (response.data) {
@@ -223,45 +214,75 @@ export const authApiService = createExtendedApiService<User, {
     // Profile operations
     getUserProfile: async () => {
       // Ensure we're using the correct endpoint
-      console.debug('[Auth] Getting user profile with endpoint:', AUTH_ENDPOINTS.PROFILE);
-      return await apiClient.get<UserProfile>(AUTH_ENDPOINTS.PROFILE);
+      logger.debug('[Auth] Getting user profile with endpoint:', AUTH_ENDPOINTS.PROFILE);
+      
+      // Get the user profile
+      const response = await apiClient.get<UserProfile>(AUTH_ENDPOINTS.PROFILE);
+      
+      // Log the raw response to see what we're getting
+      logger.debug('[Auth] User profile raw response:', {
+        status: response.status,
+        success: response.success,
+        hasData: !!response.data,
+        hasMetadata: !!response.metadata,
+        metadata: response.metadata
+      });
+      
+      // Check if there's a userType in metadata
+      if (response.metadata && response.metadata.userType) {
+        const userType = response.metadata.userType;
+        
+        // If it's an ADMIN user, make sure roles include ADMIN
+        if (userType === 'ADMIN' && response.data) {
+          if (!response.data.roles) {
+            response.data.roles = [];
+          }
+          
+          if (!response.data.roles.includes('ADMIN')) {
+            logger.debug('[Auth] Adding ADMIN role from metadata.userType');
+            response.data.roles.push('ADMIN');
+          }
+        }
+      }
+      
+      return response;
     },
     
     updateUserProfile: async (data) => {
-      return await apiClient.patch<UserProfile>(AUTH_ENDPOINTS.updateProfile, data);
+      return await apiClient.patch<UserProfile>(AUTH_ENDPOINTS.UPDATE_PROFILE, data);
     },
     
     changePassword: async (data) => {
-      return await apiClient.post<void>(AUTH_ENDPOINTS.changePassword, data);
+      return await apiClient.post<void>(AUTH_ENDPOINTS.CHANGE_PASSWORD, data);
     },
     
     updatePreferences: async (data) => {
-      return await apiClient.patch<UserPreferences>(AUTH_ENDPOINTS.updatePreferences, data);
+      return await apiClient.patch<UserPreferences>(AUTH_ENDPOINTS.UPDATE_PREFERENCES, data);
     },
     
     // Password reset
     requestPasswordReset: async (email) => {
-      return await apiClient.post<void>(AUTH_ENDPOINTS.requestPasswordReset, { email });
+      return await apiClient.post<void>(AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET, { email });
     },
     
     validateResetToken: async (token) => {
       return await apiClient.get<{ valid: boolean }>(
-        `${AUTH_ENDPOINTS.validateResetToken}/${token}`
+        `${AUTH_ENDPOINTS.VALIDATE_RESET_TOKEN}/${token}`
       );
     },
     
     resetPassword: async (data) => {
-      return await apiClient.post<void>(AUTH_ENDPOINTS.resetPassword, data);
+      return await apiClient.post<void>(AUTH_ENDPOINTS.RESET_PASSWORD, data);
     },
     
     // Email verification
     verifyEmail: async (token) => {
-      return await apiClient.post<void>(AUTH_ENDPOINTS.verifyEmail, { token });
+      return await apiClient.post<void>(AUTH_ENDPOINTS.VERIFY_EMAIL, { token });
     },
     
     checkEmailVerification: async (email) => {
       return await apiClient.get<{ verified: boolean }>(
-        `${AUTH_ENDPOINTS.verifyEmailStatus}/${encodeURIComponent(email)}`
+        `${AUTH_ENDPOINTS.VERIFY_EMAIL_STATUS}/${encodeURIComponent(email)}`
       );
     },
     

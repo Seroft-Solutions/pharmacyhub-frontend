@@ -15,11 +15,12 @@ const DEBUG = process.env.NODE_ENV === 'development';
 // API Response interface for Spring Boot backend response format
 export interface ApiResponse<T> {
   status: number;
-  message: string;
+  message?: string;
   data: T;
   timestamp?: string;
   success?: boolean;
   error?: string;
+  metadata?: any;
 }
 
 // API Error interface
@@ -86,27 +87,86 @@ apiClient.interceptors.response.use(
     // Log response for debugging
     logApiResponse(response);
     
+    // For /me endpoint, log the complete response
+    if (response.config?.url?.includes('/users/me') || response.config?.url?.includes('/me')) {
+      logger.debug('Me endpoint response:', {
+        url: response.config.url,
+        status: response.status,
+        responseStructure: response.data ? Object.keys(response.data) : null,
+        hasMetadata: response.data?.metadata !== undefined,
+        metadata: response.data?.metadata,
+        data: response.data?.data
+      });
+    }
+    
     // Handle special response cases if needed
     // The backend wraps responses in ApiResponse<T> format
-    // Unwrap the data from the response if it has the ApiResponse structure
-    // but preserve other response metadata
+    // We need to preserve the metadata when unwrapping
     if (response.data && 
         (response.data.hasOwnProperty('status') || response.data.hasOwnProperty('success')) && 
         response.data.hasOwnProperty('data')) {
-      // This appears to be an ApiResponse object, extract the data property
+      
+      // Check if this response has metadata we need to preserve
+      const hasMetadata = response.data.hasOwnProperty('metadata');
+      
+      // Extract metadata if it exists
+      const metadata = hasMetadata ? response.data.metadata : undefined;
+      
+      // For the /me endpoint, we want to modify the response to include roles from metadata
+      if ((response.config?.url?.includes('/users/me') || response.config?.url?.includes('/me')) && 
+          metadata && metadata.userType) {
+        
+        logger.debug('Processing /me endpoint with metadata:', {
+          metadata,
+          userType: metadata.userType,
+          currentData: response.data.data
+        });
+        
+        // Ensure data has a roles array
+        if (!response.data.data.roles) {
+          response.data.data.roles = [];
+        }
+        
+        // Add ADMIN role if userType is ADMIN and it's not already in roles
+        if (metadata.userType === 'ADMIN' && !response.data.data.roles.includes('ADMIN')) {
+          logger.debug('Adding ADMIN role from metadata');
+          response.data.data.roles.push('ADMIN');
+        }
+        
+        // Add userType to the data object
+        response.data.data.userType = metadata.userType;
+      }
+      
+      // Now extract the data while preserving metadata
+      const unwrappedData = response.data.data;
+      
+      // Create a modified data object with metadata attached
+      if (hasMetadata) {
+        // If unwrappedData is an object, attach metadata to it
+        if (unwrappedData && typeof unwrappedData === 'object' && !Array.isArray(unwrappedData)) {
+          response.data = {
+            ...unwrappedData,
+            __metadata: metadata
+          };
+        } else {
+          // For non-objects like arrays or primitives, we can't attach directly
+          // Instead, return a special wrapper object
+          response.data = {
+            data: unwrappedData,
+            __metadata: metadata
+          };
+        }
+      } else {
+        // No metadata, just use the unwrapped data
+        response.data = unwrappedData;
+      }
+      
       if (DEBUG) {
-        logger.debug('Unwrapping ApiResponse object', { 
-          url: response.config.url, 
-          responseStructure: Object.keys(response.data),
-          dataStructure: response.data.data ? Object.keys(response.data.data) : null 
+        logger.debug('Processed response:', {
+          url: response.config.url,
+          finalData: response.data
         });
       }
-      response.data = response.data.data;
-    } else if (DEBUG) {
-      logger.debug('Response not in ApiResponse format, using as-is', { 
-        url: response.config.url, 
-        dataKeys: Object.keys(response.data) 
-      });
     }
     
     return response;

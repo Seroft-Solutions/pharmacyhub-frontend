@@ -7,38 +7,79 @@
 export const extractUserProfile = <T>(response: any): T | null => {
   if (!response) return null;
   
+  let userProfile: T | null = null;
+  
   // Various possible response formats
   
   // Format: { data: { user: {...} } }
   if (response.data && response.data.user) {
-    return response.data.user as T;
+    userProfile = response.data.user as T;
   }
   
   // Format: { user: {...} }
-  if (response.user) {
-    return response.user as T;
+  else if (response.user) {
+    userProfile = response.user as T;
   }
   
   // Format: { data: {...} } where data is the user object
-  if (response.data && typeof response.data === 'object' && !('user' in response.data)) {
-    return response.data as T;
+  else if (response.data && typeof response.data === 'object' && !('user' in response.data)) {
+    userProfile = response.data as T;
   }
   
   // Format: { success: true, data: {...} } where data is the user object
-  if (response.success && response.data && typeof response.data === 'object') {
-    return response.data as T;
+  else if (response.success && response.data && typeof response.data === 'object') {
+    userProfile = response.data as T;
   }
   
   // Direct user object: {...}
-  if (typeof response === 'object' && 
+  else if (typeof response === 'object' && 
       !('data' in response) && 
       !('user' in response) &&
       !('success' in response)) {
-    return response as T;
+    userProfile = response as T;
   }
   
-  console.error('[API] Unknown user profile format', { response });
-  return null;
+  // If we couldn't extract the user profile, log an error and return null
+  if (!userProfile) {
+    console.error('[API] Unknown user profile format', { response });
+    return null;
+  }
+  
+  // Check for roles in metadata
+  if (response.metadata && typeof response.metadata === 'object') {
+    // If metadata has userType field, use it to derive roles
+    if (response.metadata.userType) {
+      const userType = response.metadata.userType;
+      
+      // Cast to the expected type first
+      const profileWithRoles = userProfile as any;
+      
+      // Initialize roles array if it doesn't exist
+      if (!profileWithRoles.roles || !Array.isArray(profileWithRoles.roles)) {
+        profileWithRoles.roles = [];
+      }
+      
+      // If userType is ADMIN, add ADMIN role
+      if (userType === 'ADMIN' && !profileWithRoles.roles.includes('ADMIN')) {
+        console.log(`[API] Adding ADMIN role from metadata.userType: ${userType}`);
+        profileWithRoles.roles.push('ADMIN');
+      }
+      
+      // If userType is SUPER_ADMIN, add SUPER_ADMIN role
+      if (userType === 'SUPER_ADMIN' && !profileWithRoles.roles.includes('SUPER_ADMIN')) {
+        console.log(`[API] Adding SUPER_ADMIN role from metadata.userType: ${userType}`);
+        profileWithRoles.roles.push('SUPER_ADMIN');
+      }
+      
+      // Also store userType directly
+      profileWithRoles.userType = userType;
+      
+      // Convert back to generic type
+      userProfile = profileWithRoles as T;
+    }
+  }
+  
+  return userProfile;
 };
 
 /**
@@ -90,9 +131,17 @@ export const unwrapAuthResponse = (response: any): any => {
 
   // If it's a wrapped response with data.tokens and data.user
   if (response.data?.tokens && response.data?.user) {
+    // Copy metadata if it exists
+    const metadata = response.metadata || {};
+    
     return {
       tokens: response.data.tokens,
-      user: response.data.user
+      user: {
+        ...response.data.user,
+        // Include userType from metadata if available
+        userType: metadata.userType || response.data.user.userType
+      },
+      metadata
     };
   }
   

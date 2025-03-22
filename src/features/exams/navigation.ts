@@ -74,31 +74,6 @@ export const EXAMS_NAVIGATION: FeatureNavigation = {
       order: 30
     },
     {
-      id: "practice-exams",
-      label: "Practice Exams",
-      href: "/exam/practice",
-      icon: FileQuestion,
-      permissions: ["view_practice_exams"],
-      badge: "New",
-      order: 40,
-      subItems: [
-        {
-          id: "timed-exams",
-          label: "Timed Exams",
-          href: "/exam/practice/timed",
-          icon: Clock,
-          permissions: ["view_practice_exams"]
-        },
-        {
-          id: "topic-exams",
-          label: "Topic Based",
-          href: "/exam/practice/topics",
-          icon: BookMarked,
-          permissions: ["view_practice_exams"]
-        }
-      ]
-    },
-    {
       id: "exam-results",
       label: "My Results",
       href: "/exam/results",

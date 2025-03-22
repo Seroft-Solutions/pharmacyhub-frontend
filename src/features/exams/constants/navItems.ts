@@ -46,23 +46,6 @@ export const EXAM_NAV_ITEMS: NavItemType[] = [
         href: "/exam/subject-papers",
         icon: BookOpen,
         permissions: ["view_subject_papers"],
-      },
-      {
-        id: "practice-exams",
-        label: "Practice Exams",
-        href: "/exam/practice",
-        icon: FileQuestion,
-        permissions: ["view_practice_exams"],
-        badge: "New",
-        subItems: [
-          {
-            id: "timed-exams",
-            label: "Timed Exams",
-            href: "/exam/practice/timed",
-            icon: BookMarked,
-            permissions: ["view_practice_exams"],
-          }
-        ]
       }
     ]
   }

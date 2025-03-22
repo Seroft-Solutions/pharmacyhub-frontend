@@ -17,6 +17,9 @@ import { Settings, User, CreditCard, LogOut, HelpCircle, Moon, Sun, UserCog } fr
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 
+/**
+ * @deprecated - This file has been moved to the app UI directory
+ */
 export function UserMenu() {
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -31,8 +34,6 @@ export function UserMenu() {
     }
   };
 
-  const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('SUPER_ADMIN');
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -40,7 +41,7 @@ export function UserMenu() {
           <Avatar className="h-8 w-8">
             <AvatarImage src="/placeholder-avatar.jpg" alt={user?.name || "User"} />
             <AvatarFallback className="bg-primary/90 text-primary-foreground">
-              {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+              {user?.name?.[0] || user?.email?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -99,10 +100,10 @@ export function UserMenu() {
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
           
-          {isAdmin && (
-            <DropdownMenuItem onClick={() => router.push("/admin/dashboard")}>
+          {user?.roles?.includes("ADMIN") && (
+            <DropdownMenuItem onClick={() => router.push("/admin")}>
               <UserCog className="mr-2 h-4 w-4" />
-              <span>Admin Dashboard</span>
+              <span>Admin Panel</span>
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>

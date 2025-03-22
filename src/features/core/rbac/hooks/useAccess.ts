@@ -5,6 +5,7 @@
 import { useCallback } from 'react';
 import { useAuth } from '../../auth';
 import { rbacService } from '../api';
+import { logger } from '@/shared/lib/logger';
 import type { AccessCheckOptions, RoleCheckOptions } from '../types';
 
 /**
@@ -22,7 +23,15 @@ export function useAccess() {
     
     // If client-side check is sufficient, return result immediately
     if (!options?.verifyOnBackend) {
-      return user.permissions.includes(permission);
+      // Check if user has the permission
+      const result = user.permissions.includes(permission);
+      
+      logger.debug(`[useAccess] Permission check: ${permission}`, {
+        result,
+        userPermissions: user.permissions
+      });
+      
+      return result;
     }
     
     // Otherwise, verification will need to be done at the component level
@@ -39,7 +48,24 @@ export function useAccess() {
     
     // If client-side check is sufficient, return result immediately
     if (!options?.verifyOnBackend) {
-      return user.roles.includes(role);
+      // Normalize the user's roles to uppercase
+      const normalizedUserRoles = user.roles.map(r => 
+        typeof r === 'string' ? r.toUpperCase() : r
+      );
+      
+      // Normalize the requested role to uppercase for case-insensitive comparison
+      const normalizedRole = typeof role === 'string' ? role.toUpperCase() : role;
+      
+      // Check if the user has the role
+      const result = normalizedUserRoles.includes(normalizedRole);
+      
+      logger.debug(`[useAccess] Role check: ${role} (normalized: ${normalizedRole})`, {
+        result,
+        userRoles: user.roles,
+        normalizedUserRoles
+      });
+      
+      return result;
     }
     
     // Otherwise, verification will need to be done at the component level
@@ -54,7 +80,25 @@ export function useAccess() {
     if (!user || !user.roles || roles.length === 0) return false;
     
     if (!options?.verifyOnBackend) {
-      return roles.some(role => user.roles.includes(role));
+      // Normalize the user's roles to uppercase
+      const normalizedUserRoles = user.roles.map(r => 
+        typeof r === 'string' ? r.toUpperCase() : r
+      );
+      
+      // Check if the user has any of the specified roles
+      const result = roles.some(role => {
+        // Normalize the requested role for case-insensitive comparison
+        const normalizedRole = typeof role === 'string' ? role.toUpperCase() : role;
+        return normalizedUserRoles.includes(normalizedRole);
+      });
+      
+      logger.debug('[useAccess] hasAnyRole check', {
+        result,
+        requestedRoles: roles,
+        userRoles: user.roles
+      });
+      
+      return result;
     }
     
     return false;
@@ -67,7 +111,25 @@ export function useAccess() {
     if (!user || !user.roles || roles.length === 0) return false;
     
     if (!options?.verifyOnBackend) {
-      return roles.every(role => user.roles.includes(role));
+      // Normalize the user's roles to uppercase
+      const normalizedUserRoles = user.roles.map(r => 
+        typeof r === 'string' ? r.toUpperCase() : r
+      );
+      
+      // Check if the user has all of the specified roles
+      const result = roles.every(role => {
+        // Normalize the requested role for case-insensitive comparison
+        const normalizedRole = typeof role === 'string' ? role.toUpperCase() : role;
+        return normalizedUserRoles.includes(normalizedRole);
+      });
+      
+      logger.debug('[useAccess] hasAllRoles check', {
+        result,
+        requestedRoles: roles,
+        userRoles: user.roles
+      });
+      
+      return result;
     }
     
     return false;
@@ -80,7 +142,15 @@ export function useAccess() {
     if (!user || !user.permissions || permissions.length === 0) return false;
     
     if (!options?.verifyOnBackend) {
-      return permissions.some(permission => user.permissions.includes(permission));
+      const result = permissions.some(permission => user.permissions.includes(permission));
+      
+      logger.debug('[useAccess] hasAnyPermission check', {
+        result,
+        requestedPermissions: permissions,
+        userPermissions: user.permissions
+      });
+      
+      return result;
     }
     
     return false;
@@ -93,7 +163,15 @@ export function useAccess() {
     if (!user || !user.permissions || permissions.length === 0) return false;
     
     if (!options?.verifyOnBackend) {
-      return permissions.every(permission => user.permissions.includes(permission));
+      const result = permissions.every(permission => user.permissions.includes(permission));
+      
+      logger.debug('[useAccess] hasAllPermissions check', {
+        result,
+        requestedPermissions: permissions,
+        userPermissions: user.permissions
+      });
+      
+      return result;
     }
     
     return false;
@@ -101,24 +179,37 @@ export function useAccess() {
   
   /**
    * Check complex access conditions (roles and/or permissions)
+   * This is a newer version with object parameter for better readability
    */
-  const hasAccess = useCallback((
-    roles: string[] = [], 
-    permissions: string[] = [],
-    options?: AccessCheckOptions
-  ) => {
+  const hasAccess = useCallback((options: {
+    permissions?: string[],
+    roles?: string[],
+    requireAll?: boolean,
+    verifyOnBackend?: boolean
+  }) => {
     if (!user) return false;
     
+    const { 
+      permissions = [],
+      roles = [],
+      requireAll = true,
+      verifyOnBackend = false
+    } = options;
+    
     // Early return if no conditions provided
-    if (roles.length === 0 && permissions.length === 0) return false;
+    if (roles.length === 0 && permissions.length === 0) {
+      logger.debug('[useAccess] No access conditions provided, granting access');
+      return true;
+    }
     
     // If backend verification is required, component should handle that case
-    if (options?.verifyOnBackend) return false;
-    
-    const requireAll = options?.requireAll ?? true;
+    if (verifyOnBackend) {
+      logger.debug('[useAccess] Backend verification requested, returning false');
+      return false;
+    }
     
     // Check roles
-    let roleCheck = false;
+    let roleCheck = true; // Default to true if no roles to check
     if (roles.length > 0) {
       roleCheck = requireAll
         ? hasAllRoles(roles)
@@ -126,7 +217,7 @@ export function useAccess() {
     }
     
     // Check permissions
-    let permissionCheck = false;
+    let permissionCheck = true; // Default to true if no permissions to check
     if (permissions.length > 0) {
       permissionCheck = requireAll
         ? hasAllPermissions(permissions)
@@ -134,18 +225,31 @@ export function useAccess() {
     }
     
     // Determine final result based on whether roles, permissions, or both were checked
+    let result: boolean;
+    
     if (roles.length > 0 && permissions.length > 0) {
       // If both are checked, merge results according to requireAll
-      return requireAll
+      result = requireAll
         ? (roleCheck && permissionCheck)
         : (roleCheck || permissionCheck);
     } else if (roles.length > 0) {
       // Only roles were checked
-      return roleCheck;
+      result = roleCheck;
     } else {
       // Only permissions were checked
-      return permissionCheck;
+      result = permissionCheck;
     }
+    
+    logger.debug('[useAccess] Access check result', {
+      result,
+      requestedRoles: roles,
+      requestedPermissions: permissions,
+      requireAll,
+      roleCheckResult: roleCheck,
+      permissionCheckResult: permissionCheck
+    });
+    
+    return result;
   }, [user, hasAllRoles, hasAnyRole, hasAllPermissions, hasAnyPermission]);
   
   /**
@@ -160,7 +264,7 @@ export function useAccess() {
       const response = await rbacService.checkAccess(roles, permissions, requireAll);
       return response.data || false;
     } catch (error) {
-      console.error('Error verifying access:', error);
+      logger.error('Error verifying access:', error);
       return false;
     }
   };
@@ -173,10 +277,16 @@ export function useAccess() {
       const response = await rbacService.checkPermissions(permissions);
       return response.data || {};
     } catch (error) {
-      console.error('Error verifying permissions:', error);
+      logger.error('Error verifying permissions:', error);
       return {};
     }
   };
+  
+  // Convenience property - check if user has admin role
+  const isAdmin = user?.roles?.some(role => {
+    const normalizedRole = typeof role === 'string' ? role.toUpperCase() : role;
+    return normalizedRole === 'ADMIN' || normalizedRole === 'PER_ADMIN';
+  }) || false;
   
   return {
     hasPermission,
@@ -187,6 +297,7 @@ export function useAccess() {
     hasAllPermissions,
     hasAccess,
     verifyAccess,
-    verifyPermissions
+    verifyPermissions,
+    isAdmin
   };
 }

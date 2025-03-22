@@ -1,482 +1,273 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { 
+  FileText, 
+  Medal, 
+  BookOpen, 
+  LayoutDashboard,
+  Pill,
+  ChevronDown,
+  ChevronRight,
+  BarChart4,
+  Users,
+  Settings,
+  CreditCard,
+  BoxIcon,
+  HelpCircle
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarFooter,
-  SidebarRail,
-  useSidebar
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
+  SidebarMenuAction
 } from "@/components/ui/sidebar";
-import {
-  Pill,
-  LayoutDashboard,
-  GraduationCap,
-  FileText,
-  Medal,
-  BookOpen,
-  FileQuestion,
-  ClipboardList,
-  ChevronRight,
-  BarChart,
-  Package,
-  Users,
-  Settings,
-  HelpCircle,
-  FileBarChart
-} from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/features/core/auth/hooks";
-import { RoleSwitcher } from './RoleSwitcher';
-import { useNavigation } from '../../navigation';
+
+// Import navigation data
+import { useNavigationStore } from '../../store/navigationStore';
+import { useSidebarStore } from '../../store/sidebarStore';
+import { useAuth } from '@/features/core/auth/hooks';
+
+// Import admin features
+import { ADMIN_FEATURES } from '../../navigation/adminFeatures';
 
 interface AppSidebarProps {
   className?: string;
-  collapsible?: 'offcanvas' | 'icon' | 'none';
-  variant?: 'sidebar' | 'floating' | 'inset';
-  side?: 'left' | 'right';
+  variant?: "sidebar" | "floating" | "inset";
+  collapsible?: "offcanvas" | "icon" | "none";
 }
 
 /**
- * AppSidebar component - The main application sidebar with role switching support
- * and direct rendering of exam preparation menu items
+ * AppSidebar - New implementation using shadcn/ui sidebar components
+ * 
+ * Properly integrates with the navigation system and authentication
+ * Supports admin and user views
  */
-export function AppSidebar({
-                             className,
-                             collapsible = 'icon',
-                             variant = 'sidebar',
-                             side = 'left',
-                           }: AppSidebarProps) {
-  const { state } = useSidebar();
+export function AppSidebar({ 
+  className,
+  variant = "sidebar",
+  collapsible = "icon"
+}: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { features } = useNavigation();
-  const { hasRole } = useAuth();
-  // Check for both ADMIN and SUPER_ADMIN roles
-  const isAdmin = hasRole('ADMIN') || hasRole('SUPER_ADMIN');
+  const { expandedItems, toggleItem } = useSidebarStore();
+  const { user } = useAuth();
   
-  // We'll directly manage role state in this component for better persistence
-  const [activeRole, setActiveRole] = React.useState<'user' | 'admin' | 'super_admin'>('user');
+  const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('SUPER_ADMIN');
   
-  // Read role from storage on mount
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // First check localStorage
-      const storedRole = localStorage.getItem('userRole');
-      console.log('Initial role from localStorage:', storedRole);
-      
-      if (storedRole && ['user', 'admin', 'super_admin'].includes(storedRole)) {
-        setActiveRole(storedRole as 'user' | 'admin' | 'super_admin');
-        return;
-      }
-      
-      // Fallback to sessionStorage
-      const sessionRole = sessionStorage.getItem('userRole');
-      if (sessionRole && ['user', 'admin', 'super_admin'].includes(sessionRole)) {
-        setActiveRole(sessionRole as 'user' | 'admin' | 'super_admin');
-        return;
-      }
-      
-      // Finally try cookie
-      const cookies = document.cookie.split('; ');
-      const roleCookie = cookies.find(row => row.startsWith('userRole='));
-      if (roleCookie) {
-        const cookieValue = roleCookie.split('=')[1];
-        if (['user', 'admin', 'super_admin'].includes(cookieValue)) {
-          setActiveRole(cookieValue as 'user' | 'admin' | 'super_admin');
-          return;
-        }
-      }
+  // Track the state of the expanded exam section
+  useEffect(() => {
+    // Ensure the exams section is expanded by default
+    if (!expandedItems.exams) {
+      toggleItem('exams');
     }
-  }, []);
+  }, [expandedItems.exams, toggleItem]);
+
+  // Group navigation items
+  const dashboardItems = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      href: isAdmin ? "/admin/dashboard" : "/dashboard",
+      icon: LayoutDashboard,
+      isActive: pathname === "/dashboard" || pathname === "/admin/dashboard"
+    }
+  ];
   
-  // Calculate admin status based on current active role
-  const roleIsAdmin = activeRole === 'admin' || activeRole === 'super_admin';
-  const isSuperAdmin = activeRole === 'super_admin';
+  // Exam items for user navigation
+  const examItems = [
+    {
+      id: "past-papers",
+      label: "Past Papers",
+      href: "/exam/past-papers",
+      icon: FileText,
+      isActive: pathname === "/exam/past-papers" || pathname?.startsWith("/exam/past-papers/")
+    },
+    {
+      id: "model-papers",
+      label: "Model Papers",
+      href: "/exam/model-papers",
+      icon: Medal,
+      isActive: pathname === "/exam/model-papers" || pathname?.startsWith("/exam/model-papers/")
+    },
+    {
+      id: "subject-papers",
+      label: "Subject Papers",
+      href: "/exam/subject-papers",
+      icon: BookOpen,
+      isActive: pathname === "/exam/subject-papers" || pathname?.startsWith("/exam/subject-papers/")
+    }
+  ];
   
-  // Function to handle role changes and persist them
-  const handleRoleChange = (newRole: 'user' | 'admin' | 'super_admin') => {
-    console.log(`Changing role from ${activeRole} to ${newRole}`);
-    setActiveRole(newRole);
-  };
-
-  // State for expandable menu sections
-  const [expandedItems, setExpandedItems] = React.useState<Record<string, boolean>>({
-    examPreparation: true,
-    practiceExams: false,
-    examTools: false,
-    inventory: false,
-    users: false,
-    settings: false
-  });
-
-  const toggleExpanded = (id: string) => {
-    setExpandedItems(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
-
-  // Main menu item
-  const MenuItem = ({
-                      id,
-                      icon: Icon,
-                      label,
-                      href,
-                      isActive,
-                      hasChildren,
-                      badge,
-                      onClick
-                    }: {
-    id: string;
-    icon: React.ElementType;
-    label: string;
-    href?: string;
-    isActive?: boolean;
-    hasChildren?: boolean;
-    badge?: string;
-    onClick?: () => void;
-  }) => (
-    <div
-      className={cn(
-        "flex items-center justify-between py-1.5 px-3 rounded-md cursor-pointer mb-0.5 transition-colors",
-        isActive ? "text-primary font-medium" : "hover:bg-muted"
-      )}
-      onClick={onClick || (href ? () => router.push(href) : undefined)}
-    >
-      <div className="flex items-center gap-2">
-        <Icon className={cn(
-          "h-4 w-4",
-          isActive ? "text-primary" : "text-muted-foreground"
-        )} />
-        <span className="text-sm">{label}</span>
-      </div>
-      <div className="flex items-center">
-        {badge && (
-          <span className="rounded-full px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary mr-1">
-            {badge}
-          </span>
-        )}
-        {hasChildren && (
-          <ChevronRight className={cn(
-            "h-3.5 w-3.5 text-muted-foreground transition-transform",
-            expandedItems[id] ? "rotate-90" : ""
-          )} />
-        )}
-      </div>
-    </div>
-  );
-
-  // Submenu container with vertical line
-  const SubMenuContainer = ({ children }: { children: React.ReactNode }) => (
-    <div className="relative ml-4 pl-3">
-      {/* Vertical line */}
-      <div className="absolute left-0 top-0 bottom-0 w-px bg-border"></div>
-      {children}
-    </div>
-  );
-
-  // Submenu item
-  const SubMenuItem = ({
-                         id,
-                         icon: Icon,
-                         label,
-                         href,
-                         isActive,
-                         badge
-                       }: {
-    id: string;
-    icon: React.ElementType;
-    label: string;
-    href: string;
-    isActive?: boolean;
-    badge?: string;
-  }) => (
-    <div
-      className="py-1.5 pr-3 rounded-md cursor-pointer mb-0.5 transition-colors flex items-center justify-between"
-      onClick={() => router.push(href)}
-    >
-      <div className="flex items-center gap-2">
-        <Icon className={cn(
-          "h-3.5 w-3.5",
-          isActive ? "text-primary" : "text-muted-foreground"
-        )} />
-        <span className={cn(
-          "text-sm",
-          isActive ? "text-primary font-medium" : ""
-        )}>
-          {label}
-        </span>
-      </div>
-      {badge && (
-        <span className="rounded-full px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary">
-          {badge}
-        </span>
-      )}
-    </div>
-  );
-
-  // Function to render exam preparation menu for user role
-  const renderExamPreparationMenu = () => {
-    return (
-      <>
-        {/* Exam Preparation with nested items */}
-        <MenuItem
-          id="examPreparation"
-          icon={GraduationCap}
-          label="Exam Preparation"
-          isActive={pathname.startsWith("/exam")}
-          hasChildren={true}
-          onClick={() => toggleExpanded("examPreparation")}
-        />
-
-        {expandedItems.examPreparation && (
-          <SubMenuContainer>
-            <SubMenuItem
-              id="studyProgress"
-              icon={BarChart}
-              label="Your Progress"
-              href="/exam/dashboard"
-              isActive={pathname === "/exam/dashboard"}
-            />
-
-            <SubMenuItem
-              id="pastPapers"
-              icon={FileText}
-              label="Past Papers"
-              href="/exam/past-papers"
-              isActive={pathname === "/exam/past-papers"}
-            />
-
-            <SubMenuItem
-              id="modelPapers"
-              icon={Medal}
-              label="Model Papers"
-              href="/exam/model-papers"
-              isActive={pathname === "/exam/model-papers"}
-            />
-
-            <SubMenuItem
-              id="subjectPapers"
-              icon={BookOpen}
-              label="Subject Papers"
-              href="/exam/subject-papers"
-              isActive={pathname === "/exam/subject-papers"}
-            />
-
-            <SubMenuItem
-              id="practiceExams"
-              icon={FileQuestion}
-              label="Practice Exams"
-              href="/exam/practice"
-              isActive={pathname.startsWith("/exam/practice")}
-              badge="New"
-            />
-
-            <SubMenuItem
-              id="examTools"
-              icon={ClipboardList}
-              label="Exam Tools"
-              href="/exam/tools"
-              isActive={pathname.startsWith("/exam/tools")}
-            />
-          </SubMenuContainer>
-        )}
-      </>
-    );
-  };
-
-  // Function to render admin menu items
-  const renderAdminMenu = () => {
-    return (
-      <>
-        <MenuItem
-          id="dashboard"
-          icon={LayoutDashboard}
-          label="Dashboard"
-          href="/admin/dashboard"
-          isActive={pathname === "/admin/dashboard"}
-        />
-
-        <MenuItem
-          id="examManagement"
-          icon={FileBarChart}
-          label="Exam Management"
-          href="/admin/exams"
-          isActive={pathname.startsWith("/admin/exams")}
-        />
-
-        <MenuItem
-          id="inventory"
-          icon={Package}
-          label="Inventory"
-          hasChildren={true}
-          isActive={pathname.startsWith("/admin/inventory")}
-          onClick={() => toggleExpanded("inventory")}
-        />
-
-        {expandedItems.inventory && (
-          <SubMenuContainer>
-            <SubMenuItem
-              id="products"
-              icon={Package}
-              label="Products"
-              href="/admin/inventory/products"
-              isActive={pathname === "/admin/inventory/products"}
-            />
-
-            <SubMenuItem
-              id="categories"
-              icon={Package}
-              label="Categories"
-              href="/admin/inventory/categories"
-              isActive={pathname === "/admin/inventory/categories"}
-            />
-          </SubMenuContainer>
-        )}
-
-        <MenuItem
-          id="users"
-          icon={Users}
-          label="User Management"
-          hasChildren={true}
-          isActive={pathname.startsWith("/admin/users")}
-          onClick={() => toggleExpanded("users")}
-        />
-
-        {expandedItems.users && (
-          <SubMenuContainer>
-            <SubMenuItem
-              id="usersList"
-              icon={Users}
-              label="All Users"
-              href="/admin/users/list"
-              isActive={pathname === "/admin/users/list"}
-            />
-
-            <SubMenuItem
-              id="permissions"
-              icon={ShieldCheck}
-              label="Permissions"
-              href="/admin/users/permissions"
-              isActive={pathname === "/admin/users/permissions"}
-            />
-          </SubMenuContainer>
-        )}
-
-        <MenuItem
-          id="settings"
-          icon={Settings}
-          label="Settings"
-          hasChildren={true}
-          isActive={pathname.startsWith("/admin/settings")}
-          onClick={() => toggleExpanded("settings")}
-        />
-
-        {expandedItems.settings && (
-          <SubMenuContainer>
-            <SubMenuItem
-              id="general"
-              icon={Settings}
-              label="General"
-              href="/admin/settings/general"
-              isActive={pathname === "/admin/settings/general"}
-            />
-
-            <SubMenuItem
-              id="appearance"
-              icon={Settings}
-              label="Appearance"
-              href="/admin/settings/appearance"
-              isActive={pathname === "/admin/settings/appearance"}
-            />
-          </SubMenuContainer>
-        )}
-
-        <MenuItem
-          id="help"
-          icon={HelpCircle}
-          label="Help & Support"
-          href="/admin/help"
-          isActive={pathname === "/admin/help"}
-        />
-      </>
-    );
-  };
-
+  // Admin specific items
+  const adminItems = isAdmin ? [
+    {
+      id: "admin-exams",
+      label: "Exam Management",
+      href: "/admin/exams",
+      icon: FileText,
+      isActive: pathname === "/admin/exams" || pathname?.startsWith("/admin/exams/")
+    },
+    {
+      id: "admin-payments",
+      label: "Payment Approvals",
+      href: "/admin/payments/approvals",
+      icon: CreditCard,
+      isActive: pathname === "/admin/payments/approvals" || pathname?.startsWith("/admin/payments/approvals/")
+    }
+  ] : [];
+  
+  // Other menu sections (only for non-admin view)
+  const otherItems = !isAdmin ? [
+    {
+      id: "settings",
+      label: "Settings",
+      href: "/settings",
+      icon: Settings,
+      isActive: pathname === "/settings" || pathname?.startsWith("/settings/")
+    },
+    {
+      id: "help",
+      label: "Help & Support",
+      href: "/help",
+      icon: HelpCircle,
+      isActive: pathname === "/help" || pathname?.startsWith("/help/")
+    }
+  ] : [];
+  
   return (
-    <Sidebar
+    <Sidebar 
       className={cn("border-r", className)}
-      collapsible={collapsible}
       variant={variant}
-      side={side}
+      collapsible={collapsible}
     >
       <SidebarHeader className="flex flex-col">
         <div className="flex items-center p-3 border-b">
-          <Link href="/" className="flex items-center gap-2.5">
+          <Link href="/dashboard" className="flex items-center gap-2.5">
             <div className="bg-primary h-7 w-7 rounded-md flex items-center justify-center text-primary-foreground">
               <Pill className="h-4 w-4" />
             </div>
             <span className="font-semibold text-sm">Pharmacy Hub</span>
           </Link>
         </div>
-
-        {/* Role Switcher - Only shown if user has admin permissions */}
-        {isAdmin && (
-          <RoleSwitcher
-            role={activeRole}
-            onRoleChange={handleRoleChange}
-          />
-        )}
       </SidebarHeader>
-
+      
       <SidebarContent className="py-2 px-2">
-        {/* Show different navigation based on selected role, with debugging */}
-        {activeRole && console.log('Rendering with role:', activeRole, 'roleIsAdmin:', roleIsAdmin)}
+        {/* Dashboard Section */}
+        <SidebarMenu>
+          {dashboardItems.map(item => (
+            <SidebarMenuItem key={item.id}>
+              <SidebarMenuButton
+                onClick={() => router.push(item.href)}
+                isActive={item.isActive}
+                tooltip={item.label}
+              >
+                <item.icon className="mr-2 h-4 w-4" />
+                <span>{item.label}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
         
-        {roleIsAdmin || isSuperAdmin ? (
-          // Admin Navigation
-          <>
-            <div className="px-3 py-1 mb-2 text-xs font-semibold text-muted-foreground bg-muted/30 rounded">
-              Admin Mode
-            </div>
-            {renderAdminMenu()}
-          </>
-        ) : (
-          // User Navigation
-          <>
-            <div className="px-3 py-1 mb-2 text-xs font-semibold text-muted-foreground bg-muted/30 rounded">
-              User Mode
-            </div>
-            
-            {/* Dashboard */}
-            <MenuItem
-              id="dashboard"
-              icon={LayoutDashboard}
-              label="Dashboard"
-              href="/dashboard"
-              isActive={pathname === "/dashboard"}
-            />
-
-            {/* Exam Preparation Menu */}
-            {renderExamPreparationMenu()}
-          </>
+        {/* Exams Section (Collapsible) */}
+        {!isAdmin && (
+          <div className="mt-4">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => toggleItem('exams')}
+                  tooltip="Exam Preparation"
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  <span>Exam Preparation</span>
+                  
+                  <SidebarMenuAction className="ml-auto">
+                    {expandedItems.exams ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </SidebarMenuAction>
+                </SidebarMenuButton>
+                
+                {expandedItems.exams && (
+                  <SidebarMenuSub>
+                    {examItems.map(item => (
+                      <SidebarMenuSubItem key={item.id}>
+                        <SidebarMenuSubButton
+                          onClick={() => router.push(item.href)}
+                          isActive={item.isActive}
+                        >
+                          <item.icon className="mr-2 h-4 w-4" />
+                          <span>{item.label}</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                )}
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </div>
+        )}
+        
+        {/* Admin Items - Only for admin users */}
+        {isAdmin && adminItems.length > 0 && (
+          <div className="mt-4">
+            <SidebarMenu>
+              {adminItems.map(item => (
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton
+                    onClick={() => router.push(item.href)}
+                    isActive={item.isActive}
+                    tooltip={item.label}
+                  >
+                    <item.icon className="mr-2 h-4 w-4" />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </div>
+        )}
+        
+        {/* Other sections - Only for non-admin users */}
+        {!isAdmin && otherItems.length > 0 && (
+          <div className="mt-4">
+            <SidebarMenu>
+              {otherItems.map(item => (
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton
+                    onClick={() => router.push(item.href)}
+                    isActive={item.isActive}
+                    tooltip={item.label}
+                  >
+                    <item.icon className="mr-2 h-4 w-4" />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </div>
         )}
       </SidebarContent>
-
+      
       <SidebarFooter className="p-3 text-xs text-muted-foreground border-t">
         <div className="flex items-center justify-between">
           <span className="text-xs">© {new Date().getFullYear()} Pharmacy Hub</span>
-          <span className="text-xs px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">v1.0.0</span>
         </div>
       </SidebarFooter>
-      <SidebarRail className="bg-muted hover:bg-primary/10 transition-colors duration-300" />
     </Sidebar>
   );
 }
 
-// Add missing import
-import { ShieldCheck } from 'lucide-react';
+export default AppSidebar;

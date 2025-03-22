@@ -1,8 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePermissions, useAccess } from "@/features/core/rbac/hooks";
-import { useSession } from "@/features/core/auth/hooks";
+import { useSession, useAuth } from "@/features/core/auth/hooks";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useRoleStore } from "@/features/shell/store/roleStore";
+import {ExamDashboard} from "@/features/exams";
+import ExamDashboardPage from "@/app/(exams)/exam/dashboard/page";
+import { logger } from "@/shared/lib/logger";
 
 function DashboardMetrics() {
   // Using useAccess for feature-specific checks
@@ -79,23 +85,51 @@ function AdminSection() {
 
 export default function DashboardPage() {
   const { session } = useSession({ required: true });
-  const { isManager } = usePermissions();
+  const { hasRole } = usePermissions();
+  const router = useRouter();
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Check if user has admin role - using the RBAC system directly
+  const isAdmin = hasRole('ADMIN') || hasRole('PER_ADMIN');
+  
+  useEffect(() => {
+    // Let the page load first, then check for admin status
+    setIsInitialized(true);
+  }, []);
+  
+  // Redirect admin users to the admin dashboard
+  useEffect(() => {
+    if (isInitialized && isAdmin) {
+      logger.debug("[Dashboard] User is admin, redirecting to admin dashboard", {
+        userRoles: session?.user?.roles
+      });
+      router.push("/admin/dashboard");
+    }
+  }, [isAdmin, router, isInitialized, session]);
+  
+  // If user is admin, don't render the regular dashboard
+  if (!isInitialized) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  if (isAdmin) {
+    return <div className="flex items-center justify-center min-h-screen">Redirecting to admin dashboard...</div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Welcome, {session?.user?.name}</h1>
+        <h1 className="text-2xl font-bold">Welcome, {session?.user?.name || session?.user?.email}</h1>
         <p className="text-gray-600 mt-1">
-          {isManager ? 'Manager Dashboard' : 'Dashboard'}
+          User Dashboard
         </p>
       </div>
 
       {/* Metrics Section */}
-      <DashboardMetrics />
+      <ExamDashboardPage />
 
       {/* Main Content */}
       <div className="grid md:grid-cols-2 gap-6 mt-6">
-        <InventorySection />
         <AdminSection />
       </div>
     </div>
