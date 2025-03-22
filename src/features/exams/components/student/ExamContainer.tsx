@@ -482,16 +482,7 @@ function ExamContainerInternal({
           </div>
         </CardHeader>
         <CardContent className="py-8">
-          {/* Premium indicator (badge only) */}
-          {premiumInfo?.premium && (
-            <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-amber-300 to-amber-500 text-white">
-              Premium
-            </Badge>
-          )}
           <div className="space-y-8">
-            <div className="max-w-3xl">
-              <p className="text-gray-600 text-lg">{exam.description}</p>
-            </div>
             
             <div className="grid md:grid-cols-2 gap-6 bg-gradient-to-r from-blue-50 to-white p-6 rounded-xl shadow-sm border border-blue-100">
               <div className="flex items-center space-x-4">
