@@ -84,7 +84,17 @@ export function QuestionDisplay({
       console.log('Question correctAnswer:', question.correctAnswer);
       console.log('Correct option index:', correctOptionIndex);
     }
-  }, [question.options, question.correctAnswer, correctOptionIndex, showExplanation]);
+    
+    // Additional development logging to debug render issues
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Question being rendered:', {
+        id: question.id,
+        text: question.text,
+        options: question.options,
+        allKeys: Object.keys(question)
+      });
+    }
+  }, [question.options, question.correctAnswer, correctOptionIndex, showExplanation, question]);
 
   const handleAnswerSelect = (optionIndex: string) => {
     try {

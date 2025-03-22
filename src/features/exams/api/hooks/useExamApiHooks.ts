@@ -7,12 +7,15 @@
 import { createApiHooks } from '@/features/core/tanstack-query-api/factories/createApiHooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { EXAM_ENDPOINTS } from '../constants';
+import { useEffect, useRef } from 'react';
 import type {
   Exam,
   ExamStatus,
   Question,
   ExamStats,
 } from '../../types';
+import { useCheckManualExamAccess } from '@/features/payments/manual/api/hooks/useManualPaymentApiHooks';
+import usePremiumStatus from '@/features/payments/premium/hooks/usePremiumStatus';
 
 /**
  * Create standard CRUD hooks for exams
@@ -80,17 +83,124 @@ export const useExamsByStatus = (status: ExamStatus) => {
 };
 
 /**
- * Hook for fetching exam questions
+ * Utility to add payment headers to requests
+ * This is essential for premium exam access
+ */
+const addPremiumAccessHeaders = (examId: number, hasUniversalAccess: boolean, manualAccess?: boolean) => {
+  // Log headers for debugging
+  console.log('Premium Access Headers:', {
+    'X-Premium-Access': 'true',
+    'X-Universal-Access': hasUniversalAccess ? 'true' : 'false',
+    'X-Payment-Method': manualAccess ? 'MANUAL' : 'ONLINE',
+    'X-Exam-Id': String(examId)
+  });
+  
+  return {
+    headers: {
+      'X-Premium-Access': 'true',
+      'X-Universal-Access': hasUniversalAccess ? 'true' : 'false',
+      'X-Payment-Method': manualAccess ? 'MANUAL' : 'ONLINE',
+      'X-Exam-Id': String(examId)
+    }
+  };
+};
+
+/**
+ * Direct check for premium status from localStorage
+ * This is used to avoid waiting for the hook to load
+ */
+const getPremiumStatusFromStorage = () => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('pharmacyhub_premium_status') === 'true';
+};
+
+/**
+ * Hook for fetching exam questions with premium access support
+ * Implements the "pay once, access all" feature for accessing premium exam questions
  */
 export const useExamQuestions = (examId: number) => {
+  // Keep track of request count to identify retries
+  const requestCountRef = useRef(0);
+  
+  // Check for manual payment access
+  const { data: manualAccessData } = useCheckManualExamAccess(examId);
+  const hasManualAccess = manualAccessData?.hasAccess || false;
+  
+  // Check for global premium status (pay once, access all)
+  const { isPremium, refreshPremiumStatus, isLoading: isPremiumLoading } = usePremiumStatus({
+    forceCheck: true // Force check to ensure we have the latest status
+  });
+  
+  // Also check localStorage directly as a backup
+  const storageAccessRef = useRef(getPremiumStatusFromStorage());
+  
+  // Combine access flags - either manual access for this exam or universal premium access
+  const hasUniversalAccess = isPremium || storageAccessRef.current;
+  
+  // For debugging purposes, log access status
+  useEffect(() => {
+    console.log(`[ExamQuestions] Access status for exam ${examId}:`, {
+      manualAccess: hasManualAccess,
+      universalAccess: hasUniversalAccess,
+      fromHook: isPremium,
+      fromStorage: storageAccessRef.current,
+      loadingPremium: isPremiumLoading
+    });
+    
+    // Check localStorage again
+    storageAccessRef.current = getPremiumStatusFromStorage();
+  }, [examId, hasManualAccess, hasUniversalAccess, isPremium, isPremiumLoading]);
+
+  // Make sure we have the latest premium status before making API calls
+  useEffect(() => {
+    refreshPremiumStatus();
+    requestCountRef.current += 1;
+    console.log(`[ExamQuestions] Refreshing premium status (attempt: ${requestCountRef.current})`);
+  }, [refreshPremiumStatus, examId]);
+
   return examApiHooks.useCustomQuery<Question[]>(
     'questions',
     ['questions', examId],
     {
+      // Force question mapping to use the 'questions' property of the response
+      // This ensures we get the right data structure regardless of backend changes
+      select: (data: any) => {
+        // Handle various possible data structures
+        if (data?.data?.questions && Array.isArray(data.data.questions)) {
+          console.log('Found questions in data.data.questions');
+          return data.data.questions;
+        }
+        if (data?.questions && Array.isArray(data.questions)) {
+          console.log('Found questions in data.questions');
+          return data.questions;
+        }
+        if (data?.data && Array.isArray(data.data)) {
+          console.log('Found questions in data.data');
+          return data.data;
+        }
+        if (Array.isArray(data)) {
+          console.log('Data is already an array');
+          return data;
+        }
+        
+        console.warn('Could not find questions array in response:', data);
+        return [];
+      },
       enabled: !!examId,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 1 * 60 * 1000, // 1 minute (reduced for more frequent checking)
       urlParams: {
         examId: examId ? String(parseInt(examId.toString())) : '0' // Ensure proper Long format
+      },
+      config: addPremiumAccessHeaders(examId, hasUniversalAccess, hasManualAccess),
+      retry: 3, // Allow more retries
+      retryDelay: 1000, // 1 second between retries
+      onError: (error) => {
+        console.error(`[ExamQuestions] Error fetching questions for exam ${examId}:`, error);
+        // If we get a 402 error, try refreshing premium status again
+        if (error?.response?.status === 402) {
+          refreshPremiumStatus();
+          console.log('[ExamQuestions] Payment required error - refreshing premium status');
+        }
       }
     }
   );

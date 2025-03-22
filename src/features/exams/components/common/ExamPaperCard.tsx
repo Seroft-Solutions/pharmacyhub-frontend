@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Clock, 
   FileText, 
   CheckCircle2, 
-  Lock, 
   TrendingUp,
   BookOpen,
   Award,
@@ -27,7 +26,6 @@ import {
   ExamPaperProgress, 
   ExamPaperCardProps 
 } from '../../types/StandardTypes';
-import { ExamPurchaseFlow } from '@/features/payments/components/ExamPurchaseFlow';
 
 export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({ 
   paper, 
@@ -36,9 +34,6 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
 }) => {
   // For debugging
   console.log('Paper in ExamPaperCard:', paper);
-
-  // Check if paper is premium (handle both premium and is_premium properties)
-  const isPremium = paper.premium || paper.is_premium || false;
 
   const difficultyVariants = {
     'easy': 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200',
@@ -97,14 +92,6 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
     return null;
   };
 
-  const handleStart = () => {
-    if (isPremium && !paper.purchased) {
-      // Let the ExamPurchaseFlow handle premium papers
-      return;
-    }
-    onStart(paper);
-  };
-
   return (
     <Card className="hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full overflow-hidden border-t-4" style={{ borderTopColor: paper.source === 'model' ? '#3b82f6' : paper.source === 'past' ? '#8b5cf6' : paper.source === 'subject' ? '#10b981' : '#06b6d4' }}>
       <CardHeader className="pb-3">
@@ -121,15 +108,6 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
               <CardDescription className="mt-2 line-clamp-2">{paper.description}</CardDescription>
             )}
           </div>
-          {isPremium && (
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1 bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
-                <Lock className="h-4 w-4" />
-                <span className="text-xs font-medium">Premium</span>
-              </div>
-              <span className="text-xs font-bold mt-1.5 text-amber-600">PKR 2,000</span>
-            </div>
-          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4 flex-grow">
@@ -186,38 +164,14 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
           <div className="flex items-center space-x-2">
             {renderProgressBadge()}
           </div>
-          {isPremium ? (
-            <ExamPurchaseFlow 
-              exam={{
-                id: paper.id,
-                title: paper.title,
-                price: 2000, // Fixed price of PKR 2000 for premium exams
-                premium: true,
-                purchased: paper.purchased,
-                // These fields are required by the ExamPurchaseFlow component
-                // but not used for the purchase flow itself
-                description: paper.description,
-                difficulty: paper.difficulty,
-                durationMinutes: paper.time_limit,
-                questionCount: paper.total_questions,
-                tags: paper.topics_covered,
-                attemptCount: 0,
-                successRatePercent: 0,
-                lastUpdatedDate: '',
-                type: paper.source.toUpperCase()
-              }} 
-              onStart={() => onStart(paper)}
-            />
-          ) : (
-            <Button 
-              onClick={handleStart} 
-              variant="default"
-              className="gap-1"
-            >
-              Start Paper
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          )}
+          <Button 
+            onClick={() => onStart(paper)} 
+            variant="default"
+            className="gap-1"
+          >
+            Start Paper
+            <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </CardFooter>
     </Card>

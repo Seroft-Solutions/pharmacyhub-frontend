@@ -54,6 +54,7 @@ export interface Exam {
   premium: boolean;
   price: number;
   purchased?: boolean;
+  universalAccess?: boolean;
 }
 
 // Paper Entities
@@ -68,6 +69,7 @@ export interface ExamPaper {
   premium: boolean; // Called isPremium in some models
   price: number;
   purchased?: boolean;
+  universalAccess?: boolean; // Indicates if the user has access to all premium exams
   attemptCount: number;
   successRatePercent: number;
   lastUpdatedDate: string;
@@ -147,6 +149,7 @@ export interface ExamPaperMetadata {
   premium?: boolean;  // Alternate property name sometimes used
   price: number; // Required for premium papers
   purchased?: boolean;
+  universalAccess?: boolean; // Indicates if the user has access to all premium exams
   source: string; // 'model', 'past', 'subject', 'practice'
 }
 

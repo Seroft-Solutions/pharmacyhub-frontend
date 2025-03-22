@@ -14,6 +14,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useExamStore } from '../store/examStore';
 import { Question, UserAnswer } from '../model/mcqTypes';
 import { toast } from 'sonner';
+import { transformQuestionsArray } from '../utils/dataMappers';
 import {
   useExamDetail as useExam,
   useExamQuestions,
@@ -41,10 +42,13 @@ export const useExamSession = (examId: number) => {
   } = useExam(examId);
   
   const {
-    data: questions = [],
+    data: rawQuestions = [],
     isLoading: isQuestionsLoading,
     error: questionsError 
   } = useExamQuestions(examId);
+  
+  // Transform questions data to the expected format
+  const questions = transformQuestionsArray(rawQuestions);
   
   const {
     mutate: startExamMutation,
@@ -334,6 +338,7 @@ export const useExamSession = (examId: number) => {
     // Data
     exam,
     questions,
+    rawQuestions, // Expose the raw data for debugging
     currentQuestionIndex,
     answers,
     flaggedQuestions,

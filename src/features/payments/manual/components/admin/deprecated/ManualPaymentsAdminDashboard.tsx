@@ -8,9 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import { CheckCircleIcon, XCircleIcon, ClockIcon, InfoIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CheckCircleIcon, XCircleIcon, ClockIcon, InfoIcon, ImageIcon, ExternalLinkIcon, SendIcon } from 'lucide-react';
 import { 
   useAllManualRequests, 
   useManualRequestsByStatus,
@@ -18,6 +19,7 @@ import {
   useRejectManualRequest
 } from '../../api/hooks/useManualPaymentApiHooks';
 import { ManualPaymentResponseDTO } from '../../types';
+import Image from 'next/image';
 
 export const ManualPaymentsAdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -26,6 +28,8 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
   const [rejectionDialog, setRejectionDialog] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [detailsDialog, setDetailsDialog] = useState(false);
+  const [screenshotDialog, setScreenshotDialog] = useState(false);
+  const [screenshotUrls, setScreenshotUrls] = useState<Record<number, string>>({});
   
   // Queries
   const { data: allRequests, isLoading: isLoadingAll, refetch: refetchAll } = useAllManualRequests();
@@ -56,13 +60,16 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
           refetchAll();
           refetchPending();
           refetchApproved();
-          toast.success('Payment approved', {
-            description: `Payment for ${selectedRequest.examTitle} has been approved.`
+          toast({
+            title: "Payment approved",
+            description: `Payment for ${selectedRequest.examTitle} has been approved.`,
           });
         },
         onError: (error) => {
-          toast.error('Failed to approve payment', {
-            description: error.message || 'Please try again.'
+          toast({
+            title: "Failed to approve payment",
+            description: error.message || 'Please try again.',
+            variant: "destructive"
           });
         }
       }
@@ -84,17 +91,81 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
           refetchAll();
           refetchPending();
           refetchRejected();
-          toast.success('Payment rejected', {
-            description: `Payment for ${selectedRequest.examTitle} has been rejected.`
+          toast({
+            title: "Payment rejected",
+            description: `Payment for ${selectedRequest.examTitle} has been rejected.`,
           });
         },
         onError: (error) => {
-          toast.error('Failed to reject payment', {
-            description: error.message || 'Please try again.'
+          toast({
+            title: "Failed to reject payment",
+            description: error.message || 'Please try again.',
+            variant: "destructive"
           });
         }
       }
     );
+  };
+  
+    // Process base64 screenshot data
+  useEffect(() => {
+    // Function to convert base64 to data URLs for rendering
+    const processScreenshots = (requests: ManualPaymentResponseDTO[] | undefined) => {
+      if (!requests) return;
+      
+      const newScreenshotUrls: Record<number, string> = {};
+      
+      requests.forEach(request => {
+        if (request.screenshotData && !screenshotUrls[request.id]) {
+          // Create a data URL from the base64 data
+          newScreenshotUrls[request.id] = `data:image/jpeg;base64,${request.screenshotData}`;
+        }
+      });
+      
+      if (Object.keys(newScreenshotUrls).length > 0) {
+        setScreenshotUrls(prev => ({ ...prev, ...newScreenshotUrls }));
+      }
+    };
+    
+    processScreenshots(allRequests);
+    processScreenshots(pendingRequests);
+    processScreenshots(approvedRequests);
+    processScreenshots(rejectedRequests);
+  }, [allRequests, pendingRequests, approvedRequests, rejectedRequests]);
+  
+  // Get screenshot URL (from either attachmentUrl or screenshotData)
+  const getScreenshotUrl = (request: ManualPaymentResponseDTO) => {
+    if (request.attachmentUrl) return request.attachmentUrl;
+    if (screenshotUrls[request.id]) return screenshotUrls[request.id];
+    return null;
+  };
+
+  // Check if a request has a screenshot
+  const hasScreenshot = (request: ManualPaymentResponseDTO) => {
+    return !!(request.attachmentUrl || screenshotUrls[request.id] || request.screenshotData);
+  };
+
+  // Handle WhatsApp contact
+  const contactViaWhatsApp = (request: ManualPaymentResponseDTO) => {
+    if (!request) return;
+    
+    // The WhatsApp number (with country code)
+    const phoneNumber = '923456142607';
+    
+    // Format message with request details
+    const messageText = `*Payment Request Information*%0A%0A` +
+      `🆔 *Request ID*: ${request.id}%0A` +
+      `👤 *User*: ${request.userId}%0A` +
+      `📚 *Exam*: ${request.examTitle}%0A` +
+      `💳 *Transaction ID*: ${request.transactionId}%0A` +
+      `📞 *Sender Number*: ${request.senderNumber}%0A` +
+      `📊 *Status*: ${request.status}%0A` +
+      `⏱️ *Submitted*: ${formatDistanceToNow(parseISO(request.createdAt), { addSuffix: true })}%0A%0A` +
+      `📋 *Notes from User*: ${request.notes || 'None'}%0A%0A` +
+      `${hasScreenshot(request) ? '🖼️ *Screenshot*: Received and available on admin dashboard' : '⚠️ *Screenshot*: Not provided'}`;
+    
+    // Open WhatsApp with the message
+    window.open(`https://wa.me/${phoneNumber}?text=${messageText}`, '_blank');
   };
   
   const renderRequestsTable = (requests: ManualPaymentResponseDTO[] | undefined, isLoading: boolean) => {
@@ -126,6 +197,7 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
                 <th className="px-4 py-3 text-left text-sm font-medium">Transaction ID</th>
                 <th className="px-4 py-3 text-left text-sm font-medium">Date</th>
                 <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Screenshot</th>
                 <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
@@ -142,44 +214,76 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
                   <td className="px-4 py-3 text-sm">
                     {getStatusBadge(request.status)}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    {request.status === 'PENDING' && (
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setRejectionDialog(true);
-                          }}
-                        >
-                          Reject
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setApprovalDialog(true);
-                          }}
-                        >
-                          Approve
-                        </Button>
-                      </div>
+                  <td className="px-4 py-3 text-sm text-center">
+                    {hasScreenshot(request) ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1 h-auto"
+                        onClick={() => {
+                          setSelectedRequest(request);
+                          setScreenshotDialog(true);
+                        }}
+                      >
+                        <ImageIcon className="h-4 w-4 text-blue-500" />
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">No image</span>
                     )}
-                    
-                    {request.status !== 'PENDING' && (
+                  </td>
+                  <td className="px-4 py-3 text-sm text-right">
+                    <div className="flex justify-end gap-2">
+                      {/* WhatsApp contact button */}
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="p-1 h-8 w-8"
+                        onClick={() => contactViaWhatsApp(request)}
+                        title="Contact via WhatsApp"
+                      >
+                        <SendIcon className="h-4 w-4 text-green-600" />
+                      </Button>
+                      
+                      {/* View details button */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="p-1 h-8 w-8"
                         onClick={() => {
                           setSelectedRequest(request);
                           setAdminNotes(request.adminNotes || '');
                           setDetailsDialog(true);
                         }}
+                        title="View details"
                       >
                         <InfoIcon className="h-4 w-4" />
                       </Button>
-                    )}
+                      
+                      {/* Pending-specific actions */}
+                      {request.status === 'PENDING' && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setRejectionDialog(true);
+                            }}
+                          >
+                            Reject
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setApprovalDialog(true);
+                            }}
+                          >
+                            Approve
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -255,7 +359,9 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
                   refetchPending();
                   refetchApproved();
                   refetchRejected();
-                  toast.success('Data refreshed');
+                  toast({
+                    title: "Data refreshed"
+                  });
                 }}
               >
                 Refresh
@@ -306,6 +412,32 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
                   <span className="text-sm text-muted-foreground">Sender Number:</span>
                   <span className="text-sm font-medium">{selectedRequest.senderNumber}</span>
                 </div>
+                
+                {/* Screenshot thumbnail */}
+                {hasScreenshot(selectedRequest) && (
+                  <div className="mt-4">
+                    <span className="text-sm font-medium">Payment Screenshot:</span>
+                    <div className="mt-2 border rounded-lg overflow-hidden cursor-pointer"
+                      onClick={() => {
+                        setApprovalDialog(false);
+                        setScreenshotDialog(true);
+                      }}
+                    >
+                      <div className="aspect-video bg-muted flex items-center justify-center">
+                        <Image 
+                          src={getScreenshotUrl(selectedRequest) || ''} 
+                          alt="Payment Screenshot" 
+                          width={300} 
+                          height={200}
+                          className="object-contain"
+                        />
+                      </div>
+                      <div className="text-xs text-center p-1 bg-muted/50">
+                        Click to view full image
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             
@@ -356,6 +488,32 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
                   <span className="text-sm text-muted-foreground">Sender Number:</span>
                   <span className="text-sm font-medium">{selectedRequest.senderNumber}</span>
                 </div>
+                
+                {/* Screenshot thumbnail */}
+                {hasScreenshot(selectedRequest) && (
+                  <div className="mt-4">
+                    <span className="text-sm font-medium">Payment Screenshot:</span>
+                    <div className="mt-2 border rounded-lg overflow-hidden cursor-pointer"
+                      onClick={() => {
+                        setRejectionDialog(false);
+                        setScreenshotDialog(true);
+                      }}
+                    >
+                      <div className="aspect-video bg-muted flex items-center justify-center">
+                        <Image 
+                          src={getScreenshotUrl(selectedRequest) || ''} 
+                          alt="Payment Screenshot" 
+                          width={300} 
+                          height={200}
+                          className="object-contain"
+                        />
+                      </div>
+                      <div className="text-xs text-center p-1 bg-muted/50">
+                        Click to view full image
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             
@@ -422,6 +580,32 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
                   </div>
                 )}
                 
+                {/* Screenshot thumbnail */}
+                {hasScreenshot(selectedRequest) && (
+                  <div className="mt-4">
+                    <span className="text-sm font-medium">Payment Screenshot:</span>
+                    <div className="mt-2 border rounded-lg overflow-hidden cursor-pointer"
+                      onClick={() => {
+                        setDetailsDialog(false);
+                        setScreenshotDialog(true);
+                      }}
+                    >
+                      <div className="aspect-video bg-muted flex items-center justify-center">
+                        <Image 
+                          src={getScreenshotUrl(selectedRequest) || ''} 
+                          alt="Payment Screenshot" 
+                          width={300} 
+                          height={200}
+                          className="object-contain"
+                        />
+                      </div>
+                      <div className="text-xs text-center p-1 bg-muted/50">
+                        Click to view full image
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 {selectedRequest.notes && (
                   <div className="mt-2">
                     <span className="text-sm font-medium">User Notes:</span>
@@ -435,12 +619,79 @@ export const ManualPaymentsAdminDashboard: React.FC = () => {
                     <p className="text-sm text-muted-foreground mt-1">{selectedRequest.adminNotes}</p>
                   </div>
                 )}
+                
+                {/* WhatsApp contact button */}
+                <div className="mt-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center justify-center gap-2 border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700"
+                    onClick={() => {
+                      contactViaWhatsApp(selectedRequest);
+                      setDetailsDialog(false);
+                    }}
+                  >
+                    <SendIcon className="h-4 w-4" />
+                    Contact User via WhatsApp
+                  </Button>
+                </div>
               </div>
             )}
           </div>
           
           <DialogFooter>
             <Button onClick={() => setDetailsDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Screenshot Dialog */}
+      <Dialog open={screenshotDialog} onOpenChange={setScreenshotDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Payment Screenshot</DialogTitle>
+            {selectedRequest && (
+              <DialogDescription>
+                {selectedRequest.examTitle} - Transaction ID: {selectedRequest.transactionId}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          
+          <div className="flex justify-center p-2">
+            {selectedRequest && getScreenshotUrl(selectedRequest) ? (
+              <div className="relative max-h-[60vh] overflow-hidden rounded-lg border">
+                <Image
+                  src={getScreenshotUrl(selectedRequest) || ''}
+                  alt="Payment Screenshot"
+                  width={800}
+                  height={600}
+                  className="object-contain"
+                />
+                
+                {/* Open in new tab button */}
+                {selectedRequest.attachmentUrl && (
+                  <a 
+                    href={selectedRequest.attachmentUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="absolute top-2 right-2 bg-background/80 text-primary p-1.5 rounded-full"
+                    title="Open in new tab"
+                  >
+                    <ExternalLinkIcon className="h-5 w-5" />
+                  </a>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+                <ImageIcon className="h-10 w-10 mb-2" />
+                <span>No screenshot available</span>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button onClick={() => setScreenshotDialog(false)}>
               Close
             </Button>
           </DialogFooter>

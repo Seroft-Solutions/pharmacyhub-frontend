@@ -9,6 +9,7 @@ import { useExam } from '@/features/exams/api/UseExamApi';
 import { Spinner } from '@/components/ui/spinner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+
 import { ExamTimer } from '@/features/exams/components/common/ExamTimer';
 import { QuestionNavigation } from '@/features/exams/components/student/QuestionNavigation';
 
@@ -68,6 +69,7 @@ function ExamPageContent({ id }: { id: string }) {
           onExit={handleExit}
           showTimer={true}
         />
+        {/* Remove DevTools - not needed */}
       </div>
     </Container>
   );

@@ -27,8 +27,6 @@ import {
 // Import hooks and components
 import { useExamSession } from '../../hooks/useExamSession';
 import { usePremiumExamInfoQuery } from '@/features/payments/api/hooks';
-import { PaymentModal } from '@/features/payments/components/PaymentModal';
-import { PremiumExamGuard } from '../premium/PremiumExamGuard';
 import { useExamStore } from '../../store/examStore';
 import { useExamAnalytics } from '../../hooks/useExamAnalytics';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
@@ -68,9 +66,6 @@ function ExamContainerInternal({
   const [isOnline, setIsOnline] = useState(true);
   // Track submission state across different callbacks with useRef
   const isSubmittingRef = useRef(false);
-  // Premium exam state
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentRedirectUrl, setPaymentRedirectUrl] = useState<string | null>(null);
   
   // Check premium status
   const { data: premiumInfo, isLoading: isLoadingPremiumInfo } = usePremiumExamInfoQuery(examId);
@@ -166,12 +161,7 @@ function ExamContainerInternal({
   
   // Handle exam start with analytics
   const handleStartExam = () => {
-    // Check if exam is premium and not purchased
-    if (premiumInfo && premiumInfo.premium && !premiumInfo.purchased) {
-      setShowPaymentModal(true);
-      return;
-    }
-    
+    // No premium check needed - pay once, access all is implemented
     analytics.trackEvent('exam_start', { examId, userId });
     
     startExam(
@@ -182,13 +172,6 @@ function ExamContainerInternal({
           toast.success('Exam started successfully!');
         },
         onError: (error) => {
-          // Check for payment required error
-          if (error instanceof Error && error.message.includes('Payment required')) {
-            analytics.trackEvent('exam_payment_required', { examId });
-            setShowPaymentModal(true);
-            return;
-          }
-          
           analytics.trackEvent('exam_start_error', { error: error instanceof Error ? error.message : 'Unknown error' });
           toast.error('Failed to start exam: ' + (error instanceof Error ? error.message : 'Unknown error'));
         }
@@ -196,20 +179,7 @@ function ExamContainerInternal({
     );
   };
   
-  // Handle payment success
-  const handlePaymentSuccess = (redirectUrl: string) => {
-    setPaymentRedirectUrl(redirectUrl);
-    setShowPaymentModal(false);
-    
-    // Redirect to payment gateway or update UI based on payment type
-    if (redirectUrl) {
-      window.open(redirectUrl, '_blank');
-    }
-    
-    // Show success message
-    toast.success('Payment initialized. Please complete the payment process.');
-  };
-  
+
   // Track question navigation
   const handleNavigateToQuestion = (index: number) => {
     analytics.trackEvent('question_navigate', { from: currentQuestionIndex, to: index });
@@ -512,20 +482,11 @@ function ExamContainerInternal({
           </div>
         </CardHeader>
         <CardContent className="py-8">
-          {/* Premium exam info */}
+          {/* Premium indicator (badge only) */}
           {premiumInfo?.premium && (
-            <div className="bg-primary/10 p-4 mb-6 border-l-4 border-primary rounded">
-              <div className="flex items-center text-primary">
-                <LockIcon className="h-5 w-5 mr-2" />
-                <span className="font-medium">Premium Exam</span>
-              </div>
-              <p className="mt-1 text-muted-foreground">
-                This is a premium exam priced at <strong>PKR {premiumInfo.price.toFixed(2)}</strong>.
-                {premiumInfo.purchased ? 
-                  ' You already have access to this exam.' : 
-                  ' Payment is required to access this exam.'}
-              </p>
-            </div>
+            <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-amber-300 to-amber-500 text-white">
+              Premium
+            </Badge>
           )}
           <div className="space-y-8">
             <div className="max-w-3xl">
@@ -606,11 +567,6 @@ function ExamContainerInternal({
                   <Loader2Icon className="h-5 w-5 mr-2 animate-spin" /> 
                   Starting...
                 </span>
-              ) : premiumInfo?.premium && !premiumInfo.purchased ? (
-                <span className="flex items-center justify-center">
-                  <DollarSignIcon className="h-5 w-5 mr-2" />
-                  Purchase Access
-                </span>
               ) : (
                 <span className="flex items-center justify-center">
                   <PlayIcon className="h-5 w-5 mr-2" />
@@ -628,15 +584,6 @@ function ExamContainerInternal({
             )}
           </div>
         </CardContent>
-        
-        {/* Payment Modal */}
-        <PaymentModal
-          examId={examId}
-          isOpen={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          onSuccess={handlePaymentSuccess}
-          examTitle={exam.title}
-        />
       </Card>
     );
   }
@@ -772,21 +719,15 @@ function ExamContainerInternal({
 }
 
 /**
- * ExamContainer with Error Boundary and Premium Guard
+ * ExamContainer with Error Boundary
  * 
  * Wraps the ExamContainer component with an error boundary to
- * gracefully handle errors during exam taking, and a premium guard
- * to ensure users have purchased access to premium content.
+ * gracefully handle errors during exam taking.
  */
 export function ExamContainer(props: ExamContainerProps) {
   return (
     <ExamErrorBoundary onExit={props.onExit}>
-      <PremiumExamGuard 
-        examId={props.examId}
-        fallback={null} // We'll handle premium paywall in the component itself
-      >
-        <ExamContainerInternal {...props} />
-      </PremiumExamGuard>
+      <ExamContainerInternal {...props} />
     </ExamErrorBoundary>
   );
 }

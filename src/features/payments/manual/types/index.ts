@@ -17,8 +17,9 @@ export enum ManualPaymentStatus {
 export interface ManualPaymentSubmitRequest {
   examId: number;
   senderNumber: string;
-  transactionId: string;
+  transactionId?: string; // Made optional
   notes?: string;
+  screenshotData: string; // Base64 encoded image data - required
 }
 
 /**
@@ -40,6 +41,7 @@ export interface ManualPaymentResponseDTO {
   transactionId: string;
   notes?: string;
   attachmentUrl?: string;
+  screenshotData?: string;
   status: string;
   createdAt: string;
   processedAt?: string;

@@ -197,10 +197,10 @@ function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
     topics_covered: exam.tags || [],
     total_questions: exam.questionCount,
     time_limit: exam.durationMinutes,
-    is_premium: exam.premium,
-    premium: exam.premium,
-    price: exam.premium ? 2000 : 0, // Fixed price of PKR 2,000 for premium papers
-    purchased: exam.purchased || false, // Include purchased status
+    is_premium: false, // Always set premium flag to false
+    premium: false,    // Always set premium flag to false
+    price: 0,          // Always set price to 0
+    purchased: true,   // Always set purchased to true
     source: 'model'
   };
 }
