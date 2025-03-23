@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Clock, 
   FileText, 
@@ -13,7 +13,8 @@ import {
   Crown,
   Lock,
   Clock3,
-  AlertCircle
+  AlertCircle,
+  X
 } from 'lucide-react';
 import { 
   Card, 
@@ -30,17 +31,24 @@ import {
   ExamPaperProgress, 
   ExamPaperCardProps 
 } from '../../types/StandardTypes';
+import { PromotionalOfferDialog } from '../premium/PromotionalOfferDialog';
+import ManualPaymentForm from '@/features/payments/manual/components/ManualPaymentForm';
 
 export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({ 
   paper, 
   progress, 
   onStart 
 }) => {
+  const [promotionalDialogOpen, setPromotionalDialogOpen] = useState(false);
+  const [paymentFormOpen, setPaymentFormOpen] = useState(false);
   // Check if paper is premium - handle both properties that might indicate premium status
   const isPremium = paper.is_premium || paper.premium;
   
   // Get the payment status
   const paymentStatus = paper.paymentStatus || (isPremium ? 'NOT_PAID' : 'NOT_REQUIRED');
+  
+  // Debug payment status
+  console.log('ExamPaperCard: Paper ID:', paper.id, 'Payment Status:', paper.paymentStatus, 'isPremium:', isPremium);
   
   // Check if user has access to this premium paper
   const hasPremiumAccess = 
@@ -81,7 +89,7 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
       case 'PENDING':
         return (
           <>
-            Payment Pending
+            Waiting for approval
             <Clock3 className="h-4 w-4" />
           </>
         );
@@ -105,19 +113,35 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
 
   // Handle button click based on payment status
   const handleButtonClick = () => {
+    // Debug the button click with payment status
+    console.log('Button clicked. Payment status:', paymentStatus);
+    
     // Only allow starting the paper if it's non-premium or already paid
     if (paymentStatus === 'PAID' || paymentStatus === 'NOT_REQUIRED') {
       onStart(paper);
     } else if (paymentStatus === 'PENDING') {
-      // Maybe redirect to a payment status page
-      console.log('Payment is pending');
-      // For now, just call onStart which should handle the redirect
-      onStart(paper);
+      // For pending payments, either show a message or do nothing
+      console.log('Payment is pending approval');
+      // We could optionally redirect to a payment status page
+      // onStart(paper);
     } else {
-      // For failed payments or not paid, initiate purchase
-      console.log('Initiate purchase');
-      onStart(paper);
+      // For failed payments or not paid, show promotional dialog
+      console.log('Opening promotional dialog');
+      setPromotionalDialogOpen(true);
     }
+  };
+  
+  // Handle proceeding to payment form from promotional dialog
+  const handleProceedToPayment = () => {
+    setPromotionalDialogOpen(false);
+    setPaymentFormOpen(true);
+  };
+  
+  // Handle payment form submission
+  const handlePaymentFormClose = () => {
+    setPaymentFormOpen(false);
+    // We don't need to handle data here as the existing ManualPaymentForm
+    // component already handles the API call and navigation
   };
 
   const difficultyVariants = {
@@ -178,7 +202,8 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
   };
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full overflow-hidden rounded-xl border border-slate-200" >
+    <>
+      <Card className="hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full overflow-hidden rounded-xl border border-slate-200" >
       {/* Colored bar at the top based on paper type */}
       <div className={`w-full h-2 ${paper.source === 'model' ? 'bg-blue-500' : paper.source === 'past' ? 'bg-purple-500' : paper.source === 'subject' ? 'bg-emerald-500' : 'bg-cyan-500'}`}></div>
       
@@ -230,28 +255,13 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
             )}
           </div>
           
-          {/* Title - No description here to avoid duplication */}
+          {/* Title and description */}
           <div className="mb-2">
-            <CardTitle className="text-base line-clamp-1">{paper.title}</CardTitle>
-          </div>
-          
-          {/* Price tag for premium papers */}
-          {isPremium && (paymentStatus === 'NOT_PAID' || paymentStatus === 'FAILED') && paper.price && (
-            <div className="mb-2 overflow-hidden relative rounded-md border border-yellow-200 shadow-sm">
-              <div className="flex items-center justify-between p-1.5 bg-gradient-to-r from-yellow-50 to-amber-50">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xs font-medium text-yellow-700">PKR</span>
-                  <span className="text-base font-bold text-yellow-800">
-                    {paper.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                  </span>
-                </div>
-                <div className="px-1.5 py-0.5 bg-green-100 rounded-sm flex items-center gap-1 border border-green-200">
-                  <CheckCircle2 className="h-2.5 w-2.5 text-green-600" />
-                  <span className="text-xs text-green-800">Buy once, access all</span>
-                </div>
-              </div>
+          <CardTitle className="text-base line-clamp-1 mb-1">{paper.title}</CardTitle>
+            {paper.description && (
+                <CardDescription className="text-xs line-clamp-2 text-slate-500">{paper.description}</CardDescription>
+              )}
             </div>
-          )}
         </div>
       </CardHeader>
       
@@ -314,25 +324,71 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
       {/* Updated Card Footer with cleaner styling */}
       <CardFooter className="p-3 pt-2 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-gray-50">
         <div className="w-full flex justify-between items-center">
-          <div className="flex items-center">
-            {renderProgressBadge()}
-            {/* Show description here instead of in CardTitle section */}
-            {paper.description && !renderProgressBadge() && (
-              <div className="text-xs text-slate-500 line-clamp-1 max-w-[150px]">{paper.description}</div>
-            )}
-          </div>
+        <div className="flex items-center">
+        {renderProgressBadge()}
+        </div>
           <Button 
             onClick={handleButtonClick} 
             variant={!hasPremiumAccess ? "outline" : "default"}
             size="sm"
-            className={`gap-1 font-medium transition-all duration-300 shadow-sm hover:shadow-md ${hasPremiumAccess 
-              ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
-              : getButtonStylesByStatus(paymentStatus)}`}
+            // Disable the button if payment is pending
+            disabled={paymentStatus === 'PENDING'}
+            className={`gap-1 font-medium transition-all duration-300 shadow-sm hover:shadow-md ${
+              // If user has premium access, use the blue gradient
+              hasPremiumAccess 
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
+                // Otherwise, use the style based on payment status
+                : getButtonStylesByStatus(paymentStatus)
+            }`}
           >
-            {getButtonContentByStatus(paymentStatus)}
+            {/* Explicitly check payment status for button text */}
+            {paymentStatus === 'PENDING' ? (
+              <>
+                Waiting for approval
+                <Clock3 className="h-4 w-4" />
+              </>
+            ) : getButtonContentByStatus(paymentStatus)}
           </Button>
         </div>
       </CardFooter>
     </Card>
+      
+      {/* Promotional Dialog */}
+      <PromotionalOfferDialog
+        isOpen={promotionalDialogOpen}
+        onClose={() => setPromotionalDialogOpen(false)}
+        onProceed={handleProceedToPayment}
+        paper={paper}
+      />
+      
+      {/* Manual Payment Form - Using existing component */}
+      {paymentFormOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-auto">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Payment Details</h2>
+              <Button variant="ghost" size="sm" onClick={handlePaymentFormClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <ManualPaymentForm 
+              exam={{
+                ...paper,
+                id: Number(paper.id),
+                // Convert to ExamPaper structure expected by ManualPaymentForm
+                questionCount: paper.total_questions,
+                durationMinutes: paper.time_limit,
+                tags: paper.topics_covered,
+                type: paper.source,
+                attemptCount: 0,
+                successRatePercent: 0,
+                lastUpdatedDate: new Date().toISOString()
+              }} 
+              onSuccess={handlePaymentFormClose}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 };

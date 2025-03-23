@@ -35,7 +35,8 @@ function processPaperResponse(exams: any, defaultType: string = 'PRACTICE'): Exa
     purchased: exam.purchased || false,
     difficulty: exam.difficulty || 'MEDIUM',
     questionCount: exam.questionCount || (exam.questions ? exam.questions.length : 0),
-    durationMinutes: exam.durationMinutes || exam.duration || 0
+    durationMinutes: exam.durationMinutes || exam.duration || 0,
+    paymentStatus: exam.paymentStatus,
   }));
 }
 

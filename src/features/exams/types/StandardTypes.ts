@@ -55,6 +55,7 @@ export interface Exam {
   price: number;
   purchased?: boolean;
   universalAccess?: boolean;
+  paymentStatus?: string;
 }
 
 // Paper Entities
@@ -75,6 +76,8 @@ export interface ExamPaper {
   lastUpdatedDate: string;
   type: keyof typeof PaperType | string;
   examId?: number; // Optional reference to the full exam
+  paymentStatus?: string;
+
 }
 
 // Attempt Entities

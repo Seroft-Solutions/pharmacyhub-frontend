@@ -103,6 +103,7 @@ function convertExamToMetadata(exam: Exam): ExamPaperMetadata {
     premium: exam.premium || false,
     price: exam.premium ? 2000 : 0, // Fixed price of PKR 2,000 for premium papers
     purchased: exam.purchased || false, // Track purchased status
-    source: 'past'
+    source: 'past',
+    paymentStatus: exam.paymentStatus || 'pending',
   };
 }

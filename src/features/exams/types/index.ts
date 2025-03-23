@@ -103,6 +103,7 @@ export interface ExamPaper {
   lastUpdatedDate: string;
   type: keyof typeof PaperType | string;
   examId?: number;
+  paymentStatus?: string;
 }
 
 /**
