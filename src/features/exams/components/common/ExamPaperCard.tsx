@@ -115,72 +115,67 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
   };
 
   return (
-    <Card className="hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full overflow-hidden border-t-4" style={{ borderTopColor: paper.source === 'model' ? '#3b82f6' : paper.source === 'past' ? '#8b5cf6' : paper.source === 'subject' ? '#10b981' : '#06b6d4' }}>
-      <CardHeader className="pb-3">
+    <Card className="hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full overflow-hidden border-t-4 rounded-lg" 
+      style={{ 
+        borderTopColor: paper.source === 'model' ? '#3b82f6' : paper.source === 'past' ? '#8b5cf6' : paper.source === 'subject' ? '#10b981' : '#06b6d4',
+        borderTopWidth: '6px'
+      }}>
+      <CardHeader className="pb-3 pt-4">
         <div className="flex justify-between items-start">
           <div className="flex flex-col">
-            <div className="flex flex-wrap gap-2 mb-2">
-              <Badge className={`${getPaperTypeColor()}`}>
-              <div className="flex items-center space-x-1">
-                {getPaperTypeIcon()}
-                <span className="ml-1">{paper.source.charAt(0).toUpperCase() + paper.source.slice(1)} Paper</span>
-              </div>
-            </Badge>
-            {isPremium && (
-              <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 flex items-center gap-1">
-                <Crown className="h-3 w-3 text-yellow-600" />
-                Premium
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <Badge className={`${getPaperTypeColor()} font-medium`}>
+                <div className="flex items-center space-x-1">
+                  {getPaperTypeIcon()}
+                  <span className="ml-1">{paper.source.charAt(0).toUpperCase() + paper.source.slice(1)} Paper</span>
+                </div>
               </Badge>
-            )}
-            {isPremium && hasPremiumAccess && (
-              <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3 text-green-600" />
-                Purchased
-              </Badge>
-            )}
+              {isPremium && (
+                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 flex items-center gap-1 font-medium">
+                  <Crown className="h-3 w-3 text-yellow-600" />
+                  Premium
+                </Badge>
+              )}
+              {isPremium && hasPremiumAccess && (
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 flex items-center gap-1 font-medium">
+                  <CheckCircle2 className="h-3 w-3 text-green-600" />
+                  Purchased
+                </Badge>
+              )}
             </div>
-            <CardTitle className="text-xl line-clamp-2">{paper.title}</CardTitle>
-            {paper.description && (
-              <CardDescription className="mt-2 line-clamp-2">{paper.description}</CardDescription>
-            )}
-            {isPremium && !hasPremiumAccess && paper.price && (
-              <div className="mt-2 text-yellow-800 font-semibold">
-                ${paper.price.toFixed(2)}
-              </div>
-            )}
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4 flex-grow">
         <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-slate-50">
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-slate-50 shadow-sm">
             <FileText className="h-5 w-5 text-slate-600 mb-1" />
             <span className="text-lg font-semibold">{paper.total_questions}</span>
-            <span className="text-xs text-slate-500">Questions</span>
+            <span className="text-xs text-slate-500 font-medium">Questions</span>
           </div>
-          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-slate-50">
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-slate-50 shadow-sm">
             <Clock className="h-5 w-5 text-slate-600 mb-1" />
             <span className="text-lg font-semibold">{paper.time_limit}</span>
-            <span className="text-xs text-slate-500">Minutes</span>
+            <span className="text-xs text-slate-500 font-medium">Minutes</span>
           </div>
         </div>
         
-        <div className="pt-2">
-          <div className="flex justify-between items-center mb-2">
+        <div className="pt-3">
+          <div className="flex justify-between items-center mb-3 bg-slate-50 p-2 rounded-lg">
             <span className="text-sm font-medium">Difficulty</span>
             {renderDifficultyBadge()}
           </div>
           
           <div className="mt-4">
-            <span className="text-sm font-medium mb-2 block">Topics Covered</span>
-            <div className="flex flex-wrap gap-1.5">
+            <span className="text-sm font-medium mb-2.5 block">Topics Covered</span>
+            <div className="flex flex-wrap gap-2">
               {paper.topics_covered.slice(0, 4).map(topic => (
-                <Badge key={topic} variant="outline" className="text-xs">
+                <Badge key={topic} variant="outline" className="text-xs px-2 py-1 border-slate-200 bg-slate-50">
                   {topic}
                 </Badge>
               ))}
               {paper.topics_covered.length > 4 && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs px-2 py-1 border-slate-200 bg-slate-50">
                   +{paper.topics_covered.length - 4} more
                 </Badge>
               )}
@@ -189,11 +184,11 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
         </div>
 
         {progress?.score && (
-          <div className="mt-3 pt-3 border-t border-slate-100">
-            <div className="flex items-center text-muted-foreground justify-between">
-              <span className="text-sm">Last Attempt</span>
-              <div className="flex items-center">
-                <TrendingUp className="h-4 w-4 mr-1" />
+          <div className="mt-4 pt-3 border-t border-slate-100">
+            <div className="flex items-center text-muted-foreground justify-between bg-slate-50 rounded-lg p-2">
+              <span className="text-sm font-medium">Last Attempt</span>
+              <div className="flex items-center bg-white px-2 py-1 rounded-md border border-slate-200">
+                <TrendingUp className="h-4 w-4 mr-1 text-blue-500" />
                 <span className="font-medium">{progress.score}%</span>
               </div>
             </div>
@@ -208,7 +203,10 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
           <Button 
             onClick={() => onStart(paper)} 
             variant={!hasPremiumAccess ? "outline" : "default"}
-            className={`gap-1 ${!hasPremiumAccess ? "bg-yellow-50 text-yellow-800 border-yellow-300 hover:bg-yellow-100" : ""}`}
+            size="lg"
+            className={`gap-2 font-medium transition-all duration-300 ${!hasPremiumAccess 
+              ? "bg-yellow-50 text-yellow-800 border-yellow-300 hover:bg-yellow-100 hover:text-yellow-900 hover:border-yellow-400 shadow-sm" 
+              : "shadow-md hover:shadow-lg"}`}
           >
             {!hasPremiumAccess ? (
               <>
