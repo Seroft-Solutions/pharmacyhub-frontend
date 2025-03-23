@@ -101,8 +101,9 @@ function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
     time_limit: exam.durationMinutes,
     is_premium: exam.premium,
     premium: exam.premium,
-    price: exam.premium ? 2000 : 0, // Fixed price of PKR 2,000 for premium papers
+    price: exam.price || 0,
     purchased: exam.purchased || false, // Include purchased status
+    universalAccess: exam.universalAccess || false, // Include universal access status
     source: 'subject'
   };
 }

@@ -9,7 +9,9 @@ import {
   BookOpen,
   Award,
   ArrowRight,
-  Tag
+  Tag,
+  Crown,
+  Lock
 } from 'lucide-react';
 import { 
   Card, 
@@ -32,8 +34,28 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
   progress, 
   onStart 
 }) => {
+  // Check if paper is premium - handle both properties that might indicate premium status
+  const isPremium = paper.is_premium || paper.premium;
+  
+  // Check if user has access to this premium paper
+  const hasPremiumAccess = 
+    // Either the paper isn't premium, or...
+    !isPremium || 
+    // User has purchased this specific paper, or...
+    paper.purchased || 
+    // User has universal access to all premium content
+    paper.universalAccess;
   // For debugging
-  console.log('Paper in ExamPaperCard:', paper);
+  console.log('Paper in ExamPaperCard:', JSON.stringify({
+    id: paper.id,
+    title: paper.title,
+    is_premium: paper.is_premium,
+    premium: paper.premium,
+    purchased: paper.purchased,
+    universalAccess: paper.universalAccess,
+    price: paper.price
+  }, null, 2));
+  console.log('Is Premium:', isPremium, 'Has Access:', hasPremiumAccess);
 
   const difficultyVariants = {
     'easy': 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200',
@@ -96,16 +118,35 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
     <Card className="hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full overflow-hidden border-t-4" style={{ borderTopColor: paper.source === 'model' ? '#3b82f6' : paper.source === 'past' ? '#8b5cf6' : paper.source === 'subject' ? '#10b981' : '#06b6d4' }}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
-          <div>
-            <Badge className={`mb-2 ${getPaperTypeColor()}`}>
+          <div className="flex flex-col">
+            <div className="flex flex-wrap gap-2 mb-2">
+              <Badge className={`${getPaperTypeColor()}`}>
               <div className="flex items-center space-x-1">
                 {getPaperTypeIcon()}
                 <span className="ml-1">{paper.source.charAt(0).toUpperCase() + paper.source.slice(1)} Paper</span>
               </div>
             </Badge>
+            {isPremium && (
+              <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 flex items-center gap-1">
+                <Crown className="h-3 w-3 text-yellow-600" />
+                Premium
+              </Badge>
+            )}
+            {isPremium && hasPremiumAccess && (
+              <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3 text-green-600" />
+                Purchased
+              </Badge>
+            )}
+            </div>
             <CardTitle className="text-xl line-clamp-2">{paper.title}</CardTitle>
             {paper.description && (
               <CardDescription className="mt-2 line-clamp-2">{paper.description}</CardDescription>
+            )}
+            {isPremium && !hasPremiumAccess && paper.price && (
+              <div className="mt-2 text-yellow-800 font-semibold">
+                ${paper.price.toFixed(2)}
+              </div>
             )}
           </div>
         </div>
@@ -166,11 +207,20 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
           </div>
           <Button 
             onClick={() => onStart(paper)} 
-            variant="default"
-            className="gap-1"
+            variant={!hasPremiumAccess ? "outline" : "default"}
+            className={`gap-1 ${!hasPremiumAccess ? "bg-yellow-50 text-yellow-800 border-yellow-300 hover:bg-yellow-100" : ""}`}
           >
-            Start Paper
-            <ArrowRight className="h-4 w-4" />
+            {!hasPremiumAccess ? (
+              <>
+                Purchase Access
+                <Lock className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Start Paper
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </Button>
         </div>
       </CardFooter>

@@ -75,7 +75,10 @@ export const ExamLanding: React.FC<ExamLandingProps> = ({
   };
 
   const handleStartPaper = (paper: ExamPaperMetadata) => {
-    if (paper.is_premium && !userProgress?.premium_access) {
+    // Check for premium using both flags
+    const isPremium = paper.is_premium || paper.premium;
+    // Do not redirect to pricing if user has purchased this paper or has universal access
+    if (isPremium && !paper.purchased && !userProgress?.premium_access) {
       router.push('/pricing');
       return;
     }

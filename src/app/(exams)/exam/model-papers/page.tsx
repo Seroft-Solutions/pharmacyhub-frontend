@@ -197,10 +197,11 @@ function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
     topics_covered: exam.tags || [],
     total_questions: exam.questionCount,
     time_limit: exam.durationMinutes,
-    is_premium: false, // Always set premium flag to false
-    premium: false,    // Always set premium flag to false
-    price: 0,          // Always set price to 0
-    purchased: true,   // Always set purchased to true
+    is_premium: exam.premium, // Use the premium flag from the API
+    premium: exam.premium,    // Use the premium flag from the API
+    price: exam.price || 0,   // Use the price from the API
+    purchased: exam.purchased || false, // Use purchased status from API
+    universalAccess: exam.universalAccess || false, // Use universal access status from API
     source: 'model'
   };
 }
