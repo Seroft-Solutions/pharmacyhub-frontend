@@ -151,6 +151,7 @@ export interface ExamPaperMetadata {
   purchased?: boolean;
   universalAccess?: boolean; // Indicates if the user has access to all premium exams
   source: string; // 'model', 'past', 'subject', 'practice'
+  paymentStatus?: string; // 'PAID', 'PENDING', 'FAILED', 'NOT_PAID', 'NOT_REQUIRED'
 }
 
 // Component props interfaces
