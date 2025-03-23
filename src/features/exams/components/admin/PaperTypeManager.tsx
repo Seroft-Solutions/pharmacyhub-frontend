@@ -22,7 +22,7 @@ interface PaperTypeManagerProps {
  */
 export const PaperTypeManager: React.FC<PaperTypeManagerProps> = ({ examId }) => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<string>(PaperType.PRACTICE);
+  const [activeTab, setActiveTab] = useState<string>(PaperType.MODEL);
   const isEditMode = !!examId;
   
   // Fetch exam data if in edit mode

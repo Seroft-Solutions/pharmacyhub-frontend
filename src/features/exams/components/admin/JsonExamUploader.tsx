@@ -635,7 +635,6 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
                 </label>
                 <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted flex items-center justify-between">
                   <span className="text-sm">
-                    {paperType === PaperType.PRACTICE && 'Practice'}
                     {paperType === PaperType.MODEL && 'Model'}
                     {paperType === PaperType.PAST && 'Past'}
                     {paperType === PaperType.SUBJECT && 'Subject'}
