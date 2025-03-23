@@ -1,3 +1,9 @@
+Can you go through from this ai-plan directory and see Readme.md file you will see, we have a detailed plan of implementation
+D:\code\PharmacyHub\pharmacyhub-frontend\ai-plan
+We have to achieve this and mark it complete as well for the traceability, if it is already marked then resume from where we left earlier.
+use move_file tool to move all the old files to deprecated folder and I also dont need backward compatibily. As currently this is not in production.
+you can check my VCS status to understand where we are at this time from the development perspective. We need to use move_file tool to move old files after the completion of every migration
+
 # 💼 General Agent Instructions
 
 > **Agent Philosophy:**  
