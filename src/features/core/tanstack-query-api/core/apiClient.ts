@@ -302,7 +302,5 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Export safeUrlIncludes for use in other modules
-export { safeUrlIncludes };
-
+// safeUrlIncludes is already exported above
 export default apiClient;

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserX, Shield, ArrowLeft, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
-import UAParser from 'ua-parser-js';
+import UAParser from '../../utils/uaParser';
 
 interface SessionDetailsProps {
   session: SessionData;
