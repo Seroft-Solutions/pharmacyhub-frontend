@@ -1,22 +1,33 @@
-// Main exports for the payments feature
+/**
+ * Payments Feature Module
+ * 
+ * This index file exports all components, hooks, and utilities
+ * related to payments functionality.
+ */
 
-// Export components
-export { PaymentModal } from './components/PaymentModal';
-export { PaymentHistory } from './components/PaymentHistory';
-export { PremiumExamCard } from './components/PremiumExamCard';
-export { PaperPricingManager } from './components/PaperPricingManager';
-export { ExamPurchaseFlow } from './components/ExamPurchaseFlow';
+// Export API hooks
+export * from './api/hooks';
 
-// Export hooks
-export { usePremiumExam } from './hooks/usePremiumExam';
+// Export premium components
+export { default as PremiumExamInfoProvider } from './premium/components/PremiumExamInfoProvider';
+export { usePremiumExamInfo } from './premium/components/PremiumExamInfoProvider';
 
-// Export premium features ("pay once, access all")
-export { 
-  usePremiumStatus,
-  useUniversalAccessCheck,
-  useExamAccessCheck,
-  premiumAccessHooks
-} from './premium';
+// Export manual payment store
+export {
+  useManualPaymentStore,
+  default as manualPaymentStore
+} from './manual/store/manualPaymentStore';
 
-// Export types
-export * from './types';
+// Export manual payment hooks
+export {
+  useManualExamAccess,
+  useManualPendingRequest,
+  useUserManualPaymentRequests,
+  usePremiumExamInfo as usePremiumExamInfoHook
+} from './manual/hooks/useManualPayment';
+
+// Export storage utilities
+export {
+  clearManualPaymentStorage,
+  resetManualPaymentStore
+} from './manual/utils/resetStorage';

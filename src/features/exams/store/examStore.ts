@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { Question, ExamSession, UserAnswer } from '../model/mcqTypes';
+import { throttledStorage } from '@/features/core/storage';
 
 interface ExamState {
   // Exam data
@@ -220,6 +221,7 @@ export const useExamStore = create<ExamState>()(
     }),
     {
       name: 'exam-store',
+      storage: createJSONStorage(() => throttledStorage),
       partialize: (state) => ({
         // Only persist these fields
         examId: state.examId,

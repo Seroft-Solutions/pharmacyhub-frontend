@@ -40,18 +40,23 @@ export const apiClient: AxiosInstance = axios.create({
   }
 });
 
-// Replace parameters in URL path
-export const replaceUrlParams = (url: string, params: Record<string, any>): string => {
-  if (!url || typeof url !== 'string') {
-    console.error('Invalid URL provided to replaceUrlParams:', url);
+// Replace parameters in URL path - Fixed to handle various URL types properly
+export const replaceUrlParams = (url: string | undefined, params: Record<string, any>): string => {
+  // Check if url is valid and convert to string if needed
+  if (url === undefined || url === null) {
+    console.error('Invalid URL provided to replaceUrlParams: undefined or null');
     return '';
   }
   
+  // Ensure url is a string
+  const urlString = String(url);
+  
+  // Check if params is valid
   if (!params || typeof params !== 'object') {
-    return url;
+    return urlString;
   }
   
-  let processedUrl = url;
+  let processedUrl = urlString;
   
   // Replace path parameters (e.g., :id, :userId)
   Object.keys(params).forEach(key => {
@@ -88,6 +93,15 @@ export const replaceUrlParams = (url: string, params: Record<string, any>): stri
   return processedUrl;
 };
 
+// Safe URL includes helper - Fixed to handle various URL types properly
+export const safeUrlIncludes = (url: any, searchString: string): boolean => {
+  if (!url) return false;
+  
+  // Convert to string if needed
+  const urlString = typeof url === 'string' ? url : String(url);
+  return urlString.includes(searchString);
+};
+
 // Request interceptor for handling auth tokens
 apiClient.interceptors.request.use(
   (config: AxiosRequestConfig) => {
@@ -97,13 +111,13 @@ apiClient.interceptors.request.use(
     // Log request for debugging
     logApiRequest(config);
     
-    // Debug URL format for relativeURL issues
+    // Debug URL format for relativeURL issues - Fixed to use safe includes
     if (DEBUG && config.url) {
       logger.debug('API Request URL analysis:', {
         url: config.url,
         urlType: typeof config.url,
-        hasColon: config.url.includes(':'),
-        segments: config.url.split('/'),
+        hasColon: safeUrlIncludes(config.url, ':'),
+        segments: String(config.url).split('/'),
         params: config.params
       });
     }
@@ -133,8 +147,12 @@ apiClient.interceptors.response.use(
     // Log response for debugging
     logApiResponse(response);
     
+    // Fixed: Use safeUrlIncludes instead of direct includes
+    const isUserMeEndpoint = safeUrlIncludes(response.config?.url, '/users/me') || 
+                             safeUrlIncludes(response.config?.url, '/me');
+    
     // For /me endpoint, log the complete response
-    if (response.config?.url?.includes('/users/me') || response.config?.url?.includes('/me')) {
+    if (isUserMeEndpoint) {
       logger.debug('Me endpoint response:', {
         url: response.config.url,
         status: response.status,
@@ -159,9 +177,7 @@ apiClient.interceptors.response.use(
       const metadata = hasMetadata ? response.data.metadata : undefined;
       
       // For the /me endpoint, we want to modify the response to include roles from metadata
-      if ((response.config?.url?.includes('/users/me') || response.config?.url?.includes('/me')) && 
-          metadata && metadata.userType) {
-        
+      if (isUserMeEndpoint && metadata && metadata.userType) {
         logger.debug('Processing /me endpoint with metadata:', {
           metadata,
           userType: metadata.userType,
@@ -218,8 +234,12 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
+    // Fixed: Use safeUrlIncludes instead of direct includes
+    const isUserMeEndpoint = safeUrlIncludes(error.config?.url, '/users/me') || 
+                             safeUrlIncludes(error.config?.url, '/me');
+                             
     // Add better logging for specific endpoint errors
-    if (error.config?.url?.includes('/users/me') || error.config?.url?.includes('/me')) {
+    if (isUserMeEndpoint) {
       logger.error('Profile request error:', { 
         url: error.config?.url,
         status: error.response?.status,
@@ -233,8 +253,8 @@ apiClient.interceptors.response.use(
     // Log error for debugging
     logApiError(error);
     
-    // Handle token refresh and retry original request
-    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/token/refresh')) {
+    // Handle token refresh and retry original request - Fixed: Use safeUrlIncludes
+    if (error.response?.status === 401 && !safeUrlIncludes(error.config?.url, '/auth/token/refresh')) {
       try {
         // Try to refresh token
         const refreshToken = tokenManager.getRefreshToken();
@@ -281,5 +301,8 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Export safeUrlIncludes for use in other modules
+export { safeUrlIncludes };
 
 export default apiClient;

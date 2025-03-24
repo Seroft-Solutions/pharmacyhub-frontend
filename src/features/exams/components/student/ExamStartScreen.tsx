@@ -13,24 +13,198 @@ import {
   DollarSignIcon,
   ChevronUp,
   BookOpenIcon,
-  GraduationCapIcon
+  GraduationCapIcon,
+  LockIcon
 } from 'lucide-react';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { usePremiumExamInfo } from '@/features/payments/premium/components/PremiumExamInfoProvider';
 
 /**
  * ExamStartScreen - Simplified component with enhanced header
+ * Now uses the PremiumExamInfoProvider context
  */
 export const ExamStartScreen = ({
   exam,
-  premiumInfo,
   isStarting,
   isOnline,
   startError,
   handleStartExam
 }) => {
   const isMobile = useMobileStore(selectIsMobile);
+  
+  // Get premium info from context instead of props
+  const { isPremium, hasAccess, hasPending, isLoading } = usePremiumExamInfo();
 
+  // If no access and premium, show access denied
+  if (isPremium && !hasAccess && !hasPending && !isLoading) {
+    return (
+      <div className="w-full bg-white">
+        {/* Header with Premium Lock Indicator */}
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-400 text-white p-5 rounded-b-lg shadow-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mt-12 -mr-12"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-8 -mb-8"></div>
+
+          <div className="flex items-center">
+            <LockIcon className="h-7 w-7 mr-3" />
+            <div>
+              <h1 className="text-2xl font-bold">
+                {exam.title}
+              </h1>
+              <div className="mt-1 flex items-center">
+                <div className="inline-flex items-center px-2 py-1 rounded-full bg-amber-400 text-white text-xs font-medium mr-2">
+                  <DollarSignIcon className="h-3 w-3 mr-1" />
+                  Premium
+                </div>
+                <div className="text-sm opacity-90">This premium content requires payment</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-4 text-center py-3 border-b">
+          <div className="flex flex-col items-center">
+            <Clock8Icon className="h-5 w-5 text-blue-600 mb-1" />
+            <div className="text-xs text-gray-500 mb-0.5">Duration</div>
+            <div className="text-sm font-medium">{exam.duration || exam.durationMinutes || 60} min</div>
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <ClipboardListIcon className="h-5 w-5 text-green-600 mb-1" />
+            <div className="text-xs text-gray-500 mb-0.5">Questions</div>
+            <div className="text-sm font-medium">{exam.questions?.length || exam.questionCount || 7}</div>
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <CheckCircleIcon className="h-5 w-5 text-blue-600 mb-1" />
+            <div className="text-xs text-gray-500 mb-0.5">Total Marks</div>
+            <div className="text-sm font-medium">{exam.totalMarks || 7}</div>
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <AlertTriangleIcon className="h-5 w-5 text-amber-600 mb-1" />
+            <div className="text-xs text-gray-500 mb-0.5">Passing</div>
+            <div className="text-sm font-medium">{exam.passingMarks || 5}</div>
+          </div>
+        </div>
+
+        {/* Access denied notice */}
+        <div className="m-2">
+          <div className="bg-amber-50 rounded-md p-4">
+            <div className="flex items-start">
+              <LockIcon className="h-5 w-5 text-amber-500 mt-0.5 mr-3 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-amber-800">Premium Content</h3>
+                <p className="text-sm text-amber-700 mt-1">
+                  This is premium content that requires payment or subscription for access.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Purchase Button */}
+        <div className="px-2 my-3">
+          <Button
+            onClick={() => window.location.href = `/payments/manual/${exam.id}`}
+            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-2 rounded-md"
+          >
+            <span className="flex items-center justify-center">
+              <DollarSignIcon className="h-4 w-4 mr-2" />
+              Purchase Access
+            </span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  
+  // If pending payment request exists
+  if (isPremium && hasPending && !isLoading) {
+    return (
+      <div className="w-full bg-white">
+        {/* Header with Pending Indicator */}
+        <div className="bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500 text-white p-5 rounded-b-lg shadow-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mt-12 -mr-12"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-8 -mb-8"></div>
+
+          <div className="flex items-center">
+            <AlertTriangleIcon className="h-7 w-7 mr-3" />
+            <div>
+              <h1 className="text-2xl font-bold">
+                {exam.title}
+              </h1>
+              <div className="mt-1 flex items-center">
+                <div className="inline-flex items-center px-2 py-1 rounded-full bg-amber-400 text-white text-xs font-medium mr-2">
+                  <DollarSignIcon className="h-3 w-3 mr-1" />
+                  Premium
+                </div>
+                <div className="text-sm opacity-90">Payment is being processed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-4 text-center py-3 border-b">
+          <div className="flex flex-col items-center">
+            <Clock8Icon className="h-5 w-5 text-blue-600 mb-1" />
+            <div className="text-xs text-gray-500 mb-0.5">Duration</div>
+            <div className="text-sm font-medium">{exam.duration || exam.durationMinutes || 60} min</div>
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <ClipboardListIcon className="h-5 w-5 text-green-600 mb-1" />
+            <div className="text-xs text-gray-500 mb-0.5">Questions</div>
+            <div className="text-sm font-medium">{exam.questions?.length || exam.questionCount || 7}</div>
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <CheckCircleIcon className="h-5 w-5 text-blue-600 mb-1" />
+            <div className="text-xs text-gray-500 mb-0.5">Total Marks</div>
+            <div className="text-sm font-medium">{exam.totalMarks || 7}</div>
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <AlertTriangleIcon className="h-5 w-5 text-amber-600 mb-1" />
+            <div className="text-xs text-gray-500 mb-0.5">Passing</div>
+            <div className="text-sm font-medium">{exam.passingMarks || 5}</div>
+          </div>
+        </div>
+
+        {/* Payment pending notice */}
+        <div className="m-2">
+          <div className="bg-blue-50 rounded-md p-4">
+            <div className="flex items-start">
+              <AlertTriangleIcon className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-blue-800">Payment Pending</h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  Your payment for this exam is being processed. You will gain access once your payment is verified.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pending Button */}
+        <div className="px-2 my-3">
+          <Button
+            disabled
+            className="w-full bg-gray-300 hover:bg-gray-300 cursor-not-allowed text-white py-2 rounded-md"
+          >
+            <span className="flex items-center justify-center">
+              <AlertTriangleIcon className="h-4 w-4 mr-2" />
+              Payment Pending
+            </span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Normal start screen for non-premium or premium with access
   return (
     <div className="w-full bg-white">
       {/* Enhanced Header with Title */}
@@ -46,7 +220,7 @@ export const ExamStartScreen = ({
               {exam.title}
             </h1>
             <div className="mt-1 flex items-center">
-              {premiumInfo?.premium && (
+              {isPremium && (
                 <div className="inline-flex items-center px-2 py-1 rounded-full bg-amber-400 text-white text-xs font-medium mr-2">
                   <DollarSignIcon className="h-3 w-3 mr-1" />
                   Premium

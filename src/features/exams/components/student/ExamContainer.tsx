@@ -28,7 +28,6 @@ import {
 
 // Import hooks and components
 import { useExamSession } from '../../hooks/useExamSession';
-import { usePremiumExamInfoQuery } from '@/features/payments/api/hooks';
 import { useExamStore } from '../../store/examStore';
 import { useExamAnalytics } from '../../hooks/useExamAnalytics';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
@@ -42,6 +41,9 @@ import { ExamResults } from '../results/ExamResults';
 import { ExamHeader } from './ExamHeader';
 import { ExamNavigationBar } from './ExamNavigationBar';
 
+// Import premium provider
+import { PremiumExamInfoProvider, usePremiumExamInfo } from '@/features/payments/premium/components/PremiumExamInfoProvider';
+
 // Import mobile support
 import { 
   useMobileStore, 
@@ -51,7 +53,7 @@ import {
   ResponsiveContainer
 } from '@/features/core/mobile-support';
 
-// Import the new ExamStartScreen component
+// Import the ExamStartScreen component
 import { ExamStartScreen } from './ExamStartScreen';
 
 interface ExamContainerProps {
@@ -87,8 +89,8 @@ function ExamContainerInternal({
   // Use mobile support to detect viewport size
   const isMobile = useMobileStore(selectIsMobile);
   
-  // Check premium status
-  const { data: premiumInfo, isLoading: isLoadingPremiumInfo } = usePremiumExamInfoQuery(examId);
+  // Get premium info from context
+  const { isPremium } = usePremiumExamInfo();
   
   // Setup analytics tracking
   const analytics = useExamAnalytics(examId, userId);
@@ -152,7 +154,6 @@ function ExamContainerInternal({
   
   // Handle exam start with analytics
   const handleStartExam = () => {
-    // No premium check needed - pay once, access all is implemented
     analytics.trackEvent('exam_start', { examId, userId });
     
     startExam(
@@ -449,7 +450,6 @@ function ExamContainerInternal({
     return (
       <ExamStartScreen 
         exam={exam}
-        premiumInfo={premiumInfo}
         isStarting={isStarting}
         isOnline={isOnline}
         startError={startError}
@@ -465,7 +465,7 @@ function ExamContainerInternal({
       <ExamHeader 
         title={exam.title}
         description={exam.description}
-        isPremium={premiumInfo?.premium}
+        isPremium={isPremium}
       />
       
       {/* Mobile navigation bar positioned at the top for mobile */}
@@ -681,15 +681,17 @@ function ExamContainerInternal({
 }
 
 /**
- * ExamContainer with Error Boundary
+ * ExamContainer with Error Boundary and PremiumExamInfoProvider
  * 
- * Wraps the ExamContainer component with an error boundary to
- * gracefully handle errors during exam taking.
+ * Wraps the ExamContainer component with a premium info provider and
+ * an error boundary to gracefully handle errors during exam taking.
  */
 export function ExamContainer(props: ExamContainerProps) {
   return (
     <ExamErrorBoundary onExit={props.onExit}>
-      <ExamContainerInternal {...props} />
+      <PremiumExamInfoProvider examId={props.examId}>
+        <ExamContainerInternal {...props} />
+      </PremiumExamInfoProvider>
     </ExamErrorBoundary>
   );
 }
