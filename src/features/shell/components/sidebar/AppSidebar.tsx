@@ -37,6 +37,7 @@ import {
 import { useNavigationStore } from '../../store/navigationStore';
 import { useSidebarStore } from '../../store/sidebarStore';
 import { useAuth } from '@/features/core/auth/hooks';
+import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 
 // Import admin features
 import { ADMIN_FEATURES } from '../../navigation/adminFeatures';
@@ -62,6 +63,11 @@ export function AppSidebar({
   const router = useRouter();
   const { expandedItems, toggleItem } = useSidebarStore();
   const { user } = useAuth();
+  const isMobile = useMobileStore(selectIsMobile);
+  
+  // Auto-adjust sidebar variant for mobile
+  const responsiveVariant = isMobile ? "floating" : variant;
+  const responsiveCollapsible = isMobile ? "offcanvas" : collapsible;
   
   const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('SUPER_ADMIN');
   
@@ -145,11 +151,23 @@ export function AppSidebar({
     }
   ] : [];
   
+  // Mobile specific click handler to close sidebar after navigation
+  const handleItemClick = (href: string) => {
+    router.push(href);
+    // In mobile, automatically close the sidebar after navigation
+    if (isMobile) {
+      // Add a small delay to allow rendering to complete
+      setTimeout(() => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      }, 150);
+    }
+  };
+  
   return (
     <Sidebar 
       className={cn("border-r", className)}
-      variant={variant}
-      collapsible={collapsible}
+      variant={responsiveVariant}
+      collapsible={responsiveCollapsible}
     >
       <SidebarHeader className="flex flex-col">
         <div className="flex items-center p-3 border-b">
@@ -168,7 +186,7 @@ export function AppSidebar({
           {dashboardItems.map(item => (
             <SidebarMenuItem key={item.id}>
               <SidebarMenuButton
-                onClick={() => router.push(item.href)}
+                onClick={() => handleItemClick(item.href)}
                 isActive={item.isActive}
                 tooltip={item.label}
               >
@@ -205,7 +223,7 @@ export function AppSidebar({
                     {examItems.map(item => (
                       <SidebarMenuSubItem key={item.id}>
                         <SidebarMenuSubButton
-                          onClick={() => router.push(item.href)}
+                          onClick={() => handleItemClick(item.href)}
                           isActive={item.isActive}
                         >
                           <item.icon className="mr-2 h-4 w-4" />
@@ -227,7 +245,7 @@ export function AppSidebar({
               {adminItems.map(item => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
-                    onClick={() => router.push(item.href)}
+                    onClick={() => handleItemClick(item.href)}
                     isActive={item.isActive}
                     tooltip={item.label}
                   >
@@ -247,7 +265,7 @@ export function AppSidebar({
               {otherItems.map(item => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
-                    onClick={() => router.push(item.href)}
+                    onClick={() => handleItemClick(item.href)}
                     isActive={item.isActive}
                     tooltip={item.label}
                   >

@@ -5,6 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Flag, Bookmark } from 'lucide-react';
 import { Question, UserAnswer } from '../../model/standardTypes';
+import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 
 interface McqQuestionCardProps {
   question: Question;
@@ -34,6 +35,9 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
   const [timeSpent, setTimeSpent] = useState(0);
   const [startTime, setStartTime] = useState(Date.now());
   
+  // Use the mobile support feature to detect mobile viewport
+  const isMobile = useMobileStore(selectIsMobile);
+  
   // Reset the start time when the question changes
   useEffect(() => {
     setStartTime(Date.now());
@@ -62,44 +66,44 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
   };
   
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className={isMobile ? "shadow-sm border-gray-200" : ""}>
+      <CardHeader className={isMobile ? "pb-1.5 px-3 pt-2.5" : "pb-3"}>
         <div className="flex justify-between items-start">
           <div>
-            <div className="text-sm text-gray-500 mb-1">
+            <div className={`text-gray-500 mb-1 ${isMobile ? "text-xs" : "text-sm"}`}>
               Question {questionNumber} of {totalQuestions}
             </div>
-            <CardTitle className="text-xl">
+            <CardTitle className={isMobile ? "text-base" : "text-xl"}>
               {question.text}
             </CardTitle>
           </div>
           <Button
             variant="outline"
-            size="sm"
+            size={isMobile ? "xs" : "sm"}
             className={`flex items-center gap-1 ${
               isFlagged ? 'bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200' : ''
-            }`}
+            } ${isMobile ? 'h-8 px-2' : ''}`}
             onClick={onFlag}
           >
             {isFlagged ? (
               <>
-                <Bookmark className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                <Bookmark className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} fill-yellow-500 text-yellow-500`} />
                 <span className="hidden sm:inline">Flagged</span>
               </>
             ) : (
               <>
-                <Flag className="h-4 w-4" />
+                <Flag className={isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
                 <span className="hidden sm:inline">Flag</span>
               </>
             )}
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className={isMobile ? "px-3 py-2" : ""}>
         <RadioGroup
           value={selectedOption}
           onValueChange={handleOptionChange}
-          className="space-y-3"
+          className={isMobile ? "space-y-1.5" : "space-y-3"}
           disabled={isReview}
         >
           {question.options.map((option) => {
@@ -109,7 +113,7 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
             return (
               <div 
                 key={option.id}
-                className={`flex items-center space-x-2 p-3 rounded-md border ${
+                className={`flex items-center space-x-2 ${isMobile ? 'p-1.5 text-sm' : 'p-3'} rounded-md border ${
                   isCorrectInReview 
                     ? 'bg-green-50 border-green-300' 
                     : isIncorrectSelection 
@@ -122,17 +126,17 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
                 <RadioGroupItem 
                   value={option.id.toString()} 
                   id={`option-${option.id}`}
-                  className={
+                  className={`${isMobile ? 'h-4 w-4' : ''} ${
                     isCorrectInReview 
                       ? 'text-green-600 border-green-600' 
                       : isIncorrectSelection 
                       ? 'text-red-600 border-red-600' 
                       : ''
-                  }
+                  }`}
                 />
                 <Label 
                   htmlFor={`option-${option.id}`} 
-                  className={`flex-grow cursor-pointer ${
+                  className={`flex-grow cursor-pointer ${isMobile ? 'text-xs leading-tight' : ''} ${
                     isCorrectInReview 
                       ? 'text-green-800' 
                       : isIncorrectSelection 
@@ -151,15 +155,15 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
         </RadioGroup>
         
         {isReview && question.explanation && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-medium text-blue-800 mb-2">Explanation</h3>
-            <p className="text-blue-700">{question.explanation}</p>
+          <div className={`${isMobile ? "mt-3 p-2 text-xs" : "mt-6 p-4"} bg-blue-50 border border-blue-200 rounded-lg`}>
+            <h3 className={`font-medium text-blue-800 ${isMobile ? 'text-xs mb-1' : 'mb-2'}`}>Explanation</h3>
+            <p className={`text-blue-700 ${isMobile ? 'text-xs' : ''}`}>{question.explanation}</p>
           </div>
         )}
       </CardContent>
-      <CardFooter className="pt-2 text-xs text-gray-500 justify-between">
-        <div>Points: {question.marks}</div>
-        {!isReview && <div>Time spent: {timeSpent} seconds</div>}
+      <CardFooter className={`pt-1 text-xs text-gray-500 justify-between ${isMobile ? "px-3 pb-2" : ""}`}>
+        <div className={isMobile ? "text-xs" : ""}>Points: {question.marks}</div>
+        {!isReview && <div className={isMobile ? "text-xs" : ""}>Time spent: {timeSpent} seconds</div>}
       </CardFooter>
     </Card>
   );

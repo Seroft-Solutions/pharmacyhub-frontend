@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useLoginForm } from '@/features/core/auth/hooks/useLoginForm';
+import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 
 // Import shadcn UI components
 import { Button } from '@/components/ui/button';
@@ -27,33 +28,35 @@ export const LoginForm = () => {
     handleSubmit,
     handleSocialLogin
   } = useLoginForm();
+  
+  const isMobile = useMobileStore(selectIsMobile);
 
   return (
-    <Card className="border-none shadow-2xl backdrop-blur-sm bg-white/90">
-      <CardHeader className="space-y-1 pb-6">
+    <Card className={`border-none shadow-2xl backdrop-blur-sm bg-white/90 ${isMobile ? 'w-[95%] mx-auto max-w-md' : ''}`}>
+      <CardHeader className={`space-y-1 ${isMobile ? 'pb-4 pt-5' : 'pb-6'}`}>
         <div className="flex justify-center mb-4">
           <div
-            className="size-20 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center p-5 shadow-lg">
-            <LogIn className="text-white h-10 w-10"/>
+            className={`${isMobile ? 'size-16' : 'size-20'} rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center ${isMobile ? 'p-4' : 'p-5'} shadow-lg`}>
+            <LogIn className={`text-white ${isMobile ? 'h-8 w-8' : 'h-10 w-10'}`}/>
           </div>
         </div>
-        <CardTitle className="text-2xl font-bold text-center text-gray-800">
+        <CardTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center text-gray-800`}>
           Welcome to PharmacyHub
         </CardTitle>
-        <CardDescription className="text-center text-gray-600">
+        <CardDescription className={`text-center text-gray-600 ${isMobile ? 'text-sm' : ''}`}>
           Sign in to access your pharmacy dashboard
         </CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className={isMobile ? 'px-4' : ''}>
         {error && (
-          <div className="mb-6 p-3 rounded flex items-center space-x-2 bg-red-50 border border-red-200 text-red-700">
+          <div className={`mb-${isMobile ? '4' : '6'} p-3 rounded flex items-center space-x-2 bg-red-50 border border-red-200 text-red-700`}>
             <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0"/>
             <p className="text-sm">{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className={`space-y-${isMobile ? '4' : '5'}`}>
           <div className="space-y-2">
             <Label htmlFor="email" className="text-gray-700 font-medium">
               Email
@@ -67,7 +70,7 @@ export const LoginForm = () => {
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 border-gray-300 bg-white focus:border-blue-500 transition-all"
+                className={`pl-10 border-gray-300 bg-white focus:border-blue-500 transition-all ${isMobile ? 'h-10 text-sm' : ''}`}
                 required
               />
             </div>
@@ -80,7 +83,7 @@ export const LoginForm = () => {
               </Label>
               <Link
                 href="/forgot-password"
-                className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-medium text-blue-600 hover:text-blue-700 transition-colors`}
               >
                 Forgot password?
               </Link>
@@ -94,7 +97,7 @@ export const LoginForm = () => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 border-gray-300 bg-white focus:border-blue-500 transition-all"
+                className={`pl-10 border-gray-300 bg-white focus:border-blue-500 transition-all ${isMobile ? 'h-10 text-sm' : ''}`}
                 required
               />
             </div>
@@ -109,7 +112,7 @@ export const LoginForm = () => {
             />
             <Label
               htmlFor="remember_me"
-              className="text-sm font-normal text-gray-600 cursor-pointer"
+              className={`${isMobile ? 'text-xs' : 'text-sm'} font-normal text-gray-600 cursor-pointer`}
             >
               Remember me for 30 days
             </Label>
@@ -118,7 +121,7 @@ export const LoginForm = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300"
+            className={`w-full ${isMobile ? 'h-10 text-sm' : 'h-11'} font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300`}
           >
             {isLoading ? (
               <>
@@ -131,7 +134,7 @@ export const LoginForm = () => {
           </Button>
         </form>
 
-        <div className="mt-8">
+        <div className={`mt-${isMobile ? '6' : '8'}`}>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <Separator className="w-full"/>
@@ -143,12 +146,12 @@ export const LoginForm = () => {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className={`mt-${isMobile ? '4' : '6'} grid grid-cols-2 gap-3`}>
             <Button
               type="button"
               variant="outline"
               onClick={() => handleSocialLogin('google')}
-              className="bg-white font-normal hover:bg-gray-50 transition-colors"
+              className={`bg-white font-normal hover:bg-gray-50 transition-colors ${isMobile ? 'text-xs h-9' : ''}`}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path
@@ -175,7 +178,7 @@ export const LoginForm = () => {
               type="button"
               variant="outline"
               onClick={() => handleSocialLogin('facebook')}
-              className="bg-white font-normal hover:bg-gray-50 transition-colors"
+              className={`bg-white font-normal hover:bg-gray-50 transition-colors ${isMobile ? 'text-xs h-9' : ''}`}
             >
               <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path fill="#1877F2"
@@ -187,8 +190,8 @@ export const LoginForm = () => {
         </div>
       </CardContent>
 
-      <CardFooter className="flex flex-col items-center justify-center p-6 border-t bg-gray-50 rounded-b-lg">
-        <p className="text-sm text-gray-600">
+      <CardFooter className={`flex flex-col items-center justify-center ${isMobile ? 'p-4' : 'p-6'} border-t bg-gray-50 rounded-b-lg`}>
+        <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600`}>
           Don&apos;t have an account?{' '}
           <Link
             href="/register"

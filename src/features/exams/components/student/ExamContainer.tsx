@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from 'sonner';
 import logger from '@/shared/lib/logger';
 import { 
@@ -21,7 +22,8 @@ import {
   LifeBuoy as LifeBuoyIcon,
   Map as MapIcon,
   LockIcon,
-  DollarSignIcon
+  DollarSignIcon,
+  Menu
 } from 'lucide-react';
 
 // Import hooks and components
@@ -37,6 +39,142 @@ import { ExamProgress } from './ExamProgress';
 import { ExamTimer } from '../common/ExamTimer';
 import { ExamSummary } from './ExamSummary';
 import { ExamResults } from '../results/ExamResults';
+import { ExamHeader } from './ExamHeader';
+import { ExamNavigationBar } from './ExamNavigationBar';
+
+// Import mobile support
+import { 
+  useMobileStore, 
+  selectIsMobile, 
+  MobileOnly, 
+  DesktopOnly,
+  ResponsiveContainer
+} from '@/features/core/mobile-support';
+
+// Extract the exam start screen to a separate component
+const ExamStartScreen = ({ 
+  exam, 
+  premiumInfo, 
+  isStarting, 
+  isOnline, 
+  startError, 
+  handleStartExam 
+}) => {
+  const isMobile = useMobileStore(selectIsMobile);
+  
+  return (
+    <Card className="w-full shadow-lg border-t-4 border-t-blue-500 rounded-xl overflow-hidden">
+      <CardHeader className={`pb-3 border-b bg-gradient-to-r from-blue-50 to-white ${isMobile ? 'px-3 py-3' : ''}`}>
+        <div className="flex justify-between items-center">
+          <CardTitle className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-blue-700`}>
+            {exam.title}
+            {premiumInfo?.premium && (
+              <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-amber-300 to-amber-500 text-white">
+                <DollarSignIcon className="h-3 w-3 mr-1" />
+                Premium
+              </Badge>
+            )}
+          </CardTitle>
+          <NetworkStatusIndicator />
+        </div>
+      </CardHeader>
+      <CardContent className={`py-8 ${isMobile ? 'px-3' : ''}`}>
+        <div className="space-y-8">
+          
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'md:grid-cols-2 gap-6'} bg-gradient-to-r from-blue-50 to-white p-6 rounded-xl shadow-sm border border-blue-100`}>
+            <div className="flex items-center space-x-4">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Clock8Icon className="h-8 w-8 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Duration</h3>
+                <p className="text-xl font-medium">{exam.duration || exam.durationMinutes || 0} minutes</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="bg-green-100 p-3 rounded-full">
+                <ClipboardListIcon className="h-8 w-8 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Questions</h3>
+                <p className="text-xl font-medium">{exam.questions?.length || exam.questionCount || 0}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="bg-indigo-100 p-3 rounded-full">
+                <CheckCircleIcon className="h-8 w-8 text-indigo-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Total Marks</h3>
+                <p className="text-xl font-medium">{exam.totalMarks}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="bg-amber-100 p-3 rounded-full">
+                <AlertTriangleIcon className="h-8 w-8 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Passing Marks</h3>
+                <p className="text-xl font-medium">{exam.passingMarks}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className={`bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg shadow-sm ${isMobile ? 'text-sm' : ''}`}>
+            <h3 className="text-blue-800 font-medium text-lg mb-4">Instructions:</h3>
+            <ul className="list-disc list-inside text-blue-700 space-y-2">
+              <li>Read each question carefully before answering.</li>
+              <li>You can flag questions to review later.</li>
+              <li>Once the time is up, the exam will be submitted automatically.</li>
+              <li>You can review all your answers before final submission.</li>
+              <li>You must click the "Start Exam" button to begin.</li>
+            </ul>
+          </div>
+          
+          {!isOnline && (
+            <Alert variant="warning" className="bg-amber-50 border-amber-200">
+              <AlertTriangleIcon className="h-4 w-4" />
+              <AlertTitle>Limited connectivity</AlertTitle>
+              <AlertDescription>
+                You are currently offline. Your progress will be saved locally, but you need an internet connection to submit the exam.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <Button 
+            onClick={handleStartExam} 
+            disabled={isStarting || !isOnline}
+            className={`w-full bg-blue-600 hover:bg-blue-700 py-6 text-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 rounded-lg ${isMobile ? 'py-4' : ''}`}
+            size="lg"
+          >
+            {isStarting ? (
+              <span className="flex items-center justify-center">
+                <Loader2Icon className="h-5 w-5 mr-2 animate-spin" /> 
+                Starting...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center">
+                <PlayIcon className="h-5 w-5 mr-2" />
+                Start Exam
+              </span>
+            )}
+          </Button>
+          
+          {startError && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {startError instanceof Error ? startError.message : 'Failed to start exam'}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 interface ExamContainerProps {
   examId: number;
@@ -64,8 +202,12 @@ function ExamContainerInternal({
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [showNavSheet, setShowNavSheet] = useState(false);
   // Track submission state across different callbacks with useRef
   const isSubmittingRef = useRef(false);
+  
+  // Use mobile support to detect viewport size
+  const isMobile = useMobileStore(selectIsMobile);
   
   // Check premium status
   const { data: premiumInfo, isLoading: isLoadingPremiumInfo } = usePremiumExamInfoQuery(examId);
@@ -130,35 +272,6 @@ function ExamContainerInternal({
     };
   }, []);
   
-  // Debug logging
-  useEffect(() => {
-    if (exam && process.env.NODE_ENV === 'development') {
-      console.log('Exam data structure:', {
-        id: exam.id,
-        title: exam.title,
-        description: exam.description,
-        duration: exam.duration,
-        durationMinutes: exam.durationMinutes,
-        totalMarks: exam.totalMarks,
-        passingMarks: exam.passingMarks,
-        hasQuestions: !!exam.questions,
-        questionsLength: exam.questions?.length,
-        questionCount: exam.questionCount,
-        allKeys: Object.keys(exam)
-      });
-      
-      if (questions && questions.length > 0) {
-        console.log('First question structure:', {
-          id: questions[0].id,
-          text: questions[0].text,
-          questionNumber: questions[0].questionNumber,
-          numOptions: questions[0].options?.length,
-          allKeys: Object.keys(questions[0])
-        });
-      }
-    }
-  }, [exam, questions]);
-  
   // Handle exam start with analytics
   const handleStartExam = () => {
     // No premium check needed - pay once, access all is implemented
@@ -184,6 +297,10 @@ function ExamContainerInternal({
   const handleNavigateToQuestion = (index: number) => {
     analytics.trackEvent('question_navigate', { from: currentQuestionIndex, to: index });
     navigateToQuestion(index);
+    // Close the navigation sheet on mobile after selection
+    if (isMobile) {
+      setShowNavSheet(false);
+    }
   };
   
   // Track answer selection
@@ -304,8 +421,6 @@ function ExamContainerInternal({
     }
   };
   
-  // Note: Using Badge component from UI library
-  
   // Handle review answers action
   const handleReviewAnswers = () => {
     analytics.trackEvent('exam_review_answers');
@@ -351,18 +466,6 @@ function ExamContainerInternal({
   const answeredQuestionsSet = new Set(
     Object.values(answers).map(answer => answer.questionId)
   );
-  
-  // Debug logging for answers and flagged questions
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Answered questions:', {
-        answersObj: answers,
-        answersArray: Object.values(answers).map(a => a.questionId),
-        answeredQuestionsSet: Array.from(answeredQuestionsSet),
-        flaggedQuestions: Array.from(flaggedQuestions)
-      });
-    }
-  }, [answers, flaggedQuestions, answeredQuestionsSet]);
   
   // Handle timer expiration
   useEffect(() => {
@@ -466,133 +569,125 @@ function ExamContainerInternal({
   // Display exam start screen if not started
   if (!attemptId && !isStarting) {
     return (
-      <Card className="w-full shadow-lg border-t-4 border-t-blue-500 rounded-xl overflow-hidden">
-        <CardHeader className="pb-3 border-b bg-gradient-to-r from-blue-50 to-white">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-bold text-blue-700">
-              {exam.title}
-              {premiumInfo?.premium && (
-                <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-amber-300 to-amber-500 text-white">
-                  <DollarSignIcon className="h-3 w-3 mr-1" />
-                  Premium
-                </Badge>
-              )}
-            </CardTitle>
-            <NetworkStatusIndicator />
-          </div>
-        </CardHeader>
-        <CardContent className="py-8">
-          <div className="space-y-8">
-            
-            <div className="grid md:grid-cols-2 gap-6 bg-gradient-to-r from-blue-50 to-white p-6 rounded-xl shadow-sm border border-blue-100">
-              <div className="flex items-center space-x-4">
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <Clock8Icon className="h-8 w-8 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Duration</h3>
-                  <p className="text-xl font-medium">{exam.duration || exam.durationMinutes || 0} minutes</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="bg-green-100 p-3 rounded-full">
-                  <ClipboardListIcon className="h-8 w-8 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Questions</h3>
-                  <p className="text-xl font-medium">{questions.length || exam.questionCount || 0}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="bg-indigo-100 p-3 rounded-full">
-                  <CheckCircleIcon className="h-8 w-8 text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Total Marks</h3>
-                  <p className="text-xl font-medium">{exam.totalMarks}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="bg-amber-100 p-3 rounded-full">
-                  <AlertTriangleIcon className="h-8 w-8 text-amber-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Passing Marks</h3>
-                  <p className="text-xl font-medium">{exam.passingMarks}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg shadow-sm">
-              <h3 className="text-blue-800 font-medium text-lg mb-4">Instructions:</h3>
-              <ul className="list-disc list-inside text-blue-700 space-y-2">
-                <li>Read each question carefully before answering.</li>
-                <li>You can flag questions to review later.</li>
-                <li>Once the time is up, the exam will be submitted automatically.</li>
-                <li>You can review all your answers before final submission.</li>
-                <li>You must click the "Start Exam" button to begin.</li>
-              </ul>
-            </div>
-            
-            {!isOnline && (
-              <Alert variant="warning" className="bg-amber-50 border-amber-200">
-                <AlertTriangleIcon className="h-4 w-4" />
-                <AlertTitle>Limited connectivity</AlertTitle>
-                <AlertDescription>
-                  You are currently offline. Your progress will be saved locally, but you need an internet connection to submit the exam.
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <Button 
-              onClick={handleStartExam} 
-              disabled={isStarting || !isOnline}
-              className="w-full bg-blue-600 hover:bg-blue-700 py-6 text-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 rounded-lg"
-              size="lg"
-            >
-              {isStarting ? (
-                <span className="flex items-center justify-center">
-                  <Loader2Icon className="h-5 w-5 mr-2 animate-spin" /> 
-                  Starting...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center">
-                  <PlayIcon className="h-5 w-5 mr-2" />
-                  Start Exam
-                </span>
-              )}
-            </Button>
-            
-            {startError && (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {startError instanceof Error ? startError.message : 'Failed to start exam'}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <ExamStartScreen 
+        exam={exam}
+        premiumInfo={premiumInfo}
+        isStarting={isStarting}
+        isOnline={isOnline}
+        startError={startError}
+        handleStartExam={handleStartExam}
+      />
     );
   }
   
   // Main exam interface
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {/* Main question area - takes up more space */}
-      <div className="md:col-span-2 lg:col-span-3 space-y-4">
-        <Card className="shadow-md border border-gray-100 overflow-hidden">
-          <CardHeader className="pb-3 border-b bg-gradient-to-r from-blue-50 to-white">
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="text-xl font-bold text-blue-700">{exam.title}</CardTitle>
-                <p className="text-sm text-gray-500 mt-1">{exam.description}</p>
+    <div className="flex flex-col min-h-full">
+      {/* Exam Header */}
+      <ExamHeader 
+        title={exam.title}
+        description={exam.description}
+        isPremium={premiumInfo?.premium}
+      />
+      
+      {/* Mobile navigation bar positioned at the top for mobile */}
+      <MobileOnly>
+        <ExamNavigationBar
+          currentIndex={currentQuestionIndex}
+          totalQuestions={questions.length}
+          answeredQuestions={answeredQuestionsSet}
+          flaggedQuestions={flaggedQuestions}
+          questions={questions}
+          onNavigate={handleNavigateToQuestion}
+          onFinishExam={toggleSummary}
+          durationInMinutes={exam.duration || exam.durationMinutes || 60}
+          onTimeExpired={handleExamTimeExpired}
+          isCompleted={isCompleted}
+        />
+      </MobileOnly>
+      
+      {/* Main content area */}
+      <div className={`flex-grow ${isMobile ? 'pb-16' : ''}`}>
+        <div className={isMobile ? "flex flex-col" : "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4"}>
+          {/* Main question area - takes up more space */}
+          <div className={isMobile ? "w-full" : "md:col-span-2 lg:col-span-3 space-y-4"}>
+            <div className="mt-4">
+              {/* Progress bar on mobile */}
+              <MobileOnly>
+                <ExamProgress 
+                  currentQuestion={currentQuestionIndex}
+                  totalQuestions={questions.length}
+                  answeredQuestions={answeredQuestionsSet.size}
+                  flaggedQuestionsCount={flaggedQuestions.size}
+                  hideTimer={true}
+                />
+              </MobileOnly>
+              
+              {/* Timer on desktop */}
+              <DesktopOnly>
+                <Card className="shadow-md border border-gray-100 overflow-hidden">
+                  <CardContent className="pt-4">
+                    <div className="grid grid-cols-1 gap-4 mb-4">
+                      <ExamProgress 
+                        currentQuestion={currentQuestionIndex}
+                        totalQuestions={questions.length}
+                        answeredQuestions={answeredQuestionsSet.size}
+                        flaggedQuestionsCount={flaggedQuestions.size}
+                        hideTimer={true}
+                      />
+                    </div>
+                    
+                    <Separator className="my-4" />
+                  </CardContent>
+                </Card>
+              </DesktopOnly>
+            </div>
+
+            <div>
+              {currentQuestion && (
+                <QuestionDisplay
+                  question={currentQuestion}
+                  userAnswer={answers[currentQuestion.id]?.selectedOption}
+                  isFlagged={isFlagged(currentQuestion.id)}
+                  onAnswerSelect={handleAnswerQuestion}
+                  onFlagQuestion={handleToggleFlag}
+                />
+              )}
+            </div>
+            
+            {/* Desktop only navigation buttons */}
+            <DesktopOnly>
+              <div className="flex justify-between gap-2 mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateToQuestion(Math.max(0, currentQuestionIndex - 1))}
+                  disabled={currentQuestionIndex === 0}
+                  className="px-4 py-2 rounded-lg"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateToQuestion(Math.min(questions.length - 1, currentQuestionIndex + 1))}
+                  disabled={currentQuestionIndex === questions.length - 1}
+                  className="px-4 py-2 rounded-lg"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
               </div>
+            </DesktopOnly>
+          </div>
+          
+          {/* Side panel with timer and navigation - desktop only */}
+          <DesktopOnly>
+            <div className="space-y-4">
               {showTimer && (
-                <div className="md:hidden w-24">
+                <div className="hidden md:block">
                   <ExamTimer
                     durationInMinutes={exam.duration || exam.durationMinutes || 60}
                     onTimeExpired={handleExamTimeExpired}
@@ -600,91 +695,89 @@ function ExamContainerInternal({
                   />
                 </div>
               )}
+              
+              <Card className="shadow-md border border-gray-100 overflow-hidden">
+                <CardHeader className="pb-2 pt-3 border-b bg-gradient-to-r from-blue-50 to-white">
+                  <div className="flex items-center gap-1.5">
+                    <MapIcon className="h-4 w-4 text-blue-600" />
+                    <CardTitle className="text-sm font-medium text-blue-700">Questions Navigator</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <QuestionNavigation
+                    currentIndex={currentQuestionIndex}
+                    totalQuestions={questions.length}
+                    answeredQuestions={answeredQuestionsSet}
+                    flaggedQuestions={flaggedQuestions}
+                    onNavigate={handleNavigateToQuestion}
+                    onFinishExam={() => toggleSummary()}
+                    questions={questions}
+                  />
+                </CardContent>
+              </Card>
             </div>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <ExamProgress 
-                currentQuestion={currentQuestionIndex}
-                totalQuestions={questions.length}
-                answeredQuestions={answeredQuestionsSet.size}
-                flaggedQuestionsCount={flaggedQuestions.size}
-                hideTimer={true} /* Hide the timer in ExamProgress */
-              />
-            </div>
-            
-            <Separator className="my-4" />
-          </CardContent>
-        </Card>
-
-        <div>
-          {currentQuestion && (
-            <QuestionDisplay
-              question={currentQuestion}
-              userAnswer={answers[currentQuestion.id]?.selectedOption}
-              isFlagged={isFlagged(currentQuestion.id)}
-              onAnswerSelect={handleAnswerQuestion}
-              onFlagQuestion={handleToggleFlag}
-            />
-          )}
-        </div>
-        
-        <div className="flex justify-between gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateToQuestion(Math.max(0, currentQuestionIndex - 1))}
-            disabled={currentQuestionIndex === 0}
-            className="px-4 py-2 rounded-lg"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
+          </DesktopOnly>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateToQuestion(Math.min(questions.length - 1, currentQuestionIndex + 1))}
-            disabled={currentQuestionIndex === questions.length - 1}
-            className="px-4 py-2 rounded-lg"
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      </div>
-      
-      {/* Side panel with timer and navigation */}
-      <div className="space-y-4">
-        {showTimer && (
-          <div className="hidden md:block">
-            <ExamTimer
-              durationInMinutes={exam.duration || exam.durationMinutes || 60}
-              onTimeExpired={handleExamTimeExpired}
-              isCompleted={isCompleted}
-            />
-          </div>
-        )}
-        
-        <Card className="shadow-md border border-gray-100 overflow-hidden">
-          <CardHeader className="pb-2 pt-3 border-b bg-gradient-to-r from-blue-50 to-white">
-            <div className="flex items-center gap-1.5">
-              <MapIcon className="h-4 w-4 text-blue-600" />
-              <CardTitle className="text-sm font-medium text-blue-700">Questions Navigator</CardTitle>
+          {/* Floating timer for mobile */}
+          <MobileOnly>
+            <div className="fixed bottom-20 right-4 z-20">
+              {showTimer && (
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button size="sm" variant="outline" className="shadow-md rounded-full h-12 w-12 bg-white p-0 flex items-center justify-center">
+                      <Clock8Icon className="h-6 w-6 text-blue-600" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="h-1/3">
+                    <div className="flex items-center justify-center h-full">
+                      <ExamTimer
+                        durationInMinutes={exam.duration || exam.durationMinutes || 60}
+                        onTimeExpired={handleExamTimeExpired}
+                        isCompleted={isCompleted}
+                      />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
             </div>
-          </CardHeader>
-          <CardContent className="p-4">
-            <QuestionNavigation
-              currentIndex={currentQuestionIndex}
-              totalQuestions={questions.length}
-              answeredQuestions={answeredQuestionsSet}
-              flaggedQuestions={flaggedQuestions}
-              onNavigate={handleNavigateToQuestion}
-              onFinishExam={() => toggleSummary()}
-              questions={questions}
-            />
-          </CardContent>
-        </Card>
+          </MobileOnly>
+
+          {/* Bottom fixed mobile-only navigation bar */}
+          <MobileOnly>
+            <div className="fixed bottom-0 left-0 right-0 border-t bg-white shadow-md px-2 py-1.5 z-10">
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateToQuestion(Math.max(0, currentQuestionIndex - 1))}
+                  disabled={currentQuestionIndex === 0}
+                  className="px-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <Button 
+                  onClick={() => toggleSummary()}
+                  className="bg-blue-600 hover:bg-blue-700 text-xs"
+                  variant="default"
+                >
+                  <LifeBuoyIcon className="h-3 w-3 mr-1" />
+                  Review & Finish
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateToQuestion(Math.min(questions.length - 1, currentQuestionIndex + 1))}
+                  disabled={currentQuestionIndex === questions.length - 1}
+                  className="px-2"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </MobileOnly>
+        </div>
       </div>
       
       {!isOnline && (
