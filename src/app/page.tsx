@@ -4,8 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/shared/auth';
-import { 
-  ArrowRight, Clock, WhatsApp
+import {
+  ArrowRight, Mail, BellRing, Clock, CalendarDays,
+  Sparkles, CheckCircle, Link2, FileText,
+  Facebook, Twitter, Instagram, Linkedin,
+  Phone, MapPin,MessageCircle
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +57,27 @@ export default function Home() {
       setLaunchDate(newLaunchDate);
     }
   }, [isAuthenticated, router]);
+
+
+  const CountdownItem = ({ value, label }: { value: number, label: string }) => (
+    <div className="flex flex-col items-center">
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg px-4 py-2 text-white font-bold text-xl md:text-3xl min-w-[70px] text-center shadow-md">
+        {value.toString().padStart(2, '0')}
+      </div>
+      <span className="text-xs md:text-sm text-gray-600 mt-1 font-medium">{label}</span>
+    </div>
+  );
+
+
+  const FeatureCard = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
+    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-colors duration-300 group">
+      <div className="h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center mb-5 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+        <Icon className="h-7 w-7 text-blue-600 group-hover:text-white transition-colors duration-300" />
+      </div>
+      <h3 className="text-xl font-semibold mb-3 group-hover:text-blue-600 transition-colors duration-300">{title}</h3>
+      <p className="text-gray-600">{description}</p>
+    </div>
+  );
 
   // Countdown timer
   useEffect(() => {
@@ -132,188 +156,149 @@ export default function Home() {
       </header>
 
       {/* Hero Section - Matching Image 1 */}
-      <section className="pt-28 pb-16 relative bg-blue-50/50">
+      <section className="pt-32 md:pt-40 pb-16 md:pb-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-70" />
+        <div className="absolute inset-0 bg-[url('/Images/med.jpg')] opacity-5" />
+
+        {/* Floating Elements - Reduced opacity */}
+        <div className="absolute top-1/4 right-[15%] w-24 h-24 bg-blue-400 rounded-full opacity-5"></div>
+        <div className="absolute bottom-1/3 left-[10%] w-32 h-32 bg-indigo-500 rounded-full opacity-5"></div>
+        <div className="absolute top-1/3 left-[20%] w-16 h-16 bg-purple-400 rounded-full opacity-5"></div>
+
         <div className="container mx-auto px-4 relative">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
-            <div className="inline-block px-3 py-1 bg-blue-100 rounded-full text-blue-700 font-medium text-sm mb-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8"
+          >
+            <div className="inline-block px-5 py-2 bg-blue-100 rounded-full text-blue-700 font-semibold text-sm mb-4 shadow-sm">
               Launching Soon
             </div>
-            
-            <h1 className="text-5xl md:text-6xl font-bold text-blue-600">
-              PharmacyHub
+
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Pharmacy
+              </span>
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Hub
+              </span>
             </h1>
-            
-            <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto">
+
+            <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto px-4 md:px-0 leading-relaxed">
               A comprehensive platform connecting pharmacists, pharmacy managers, and proprietors for a better healthcare ecosystem.
             </p>
-            
-            {/* Countdown Timer - Matching Image 1 */}
-            <div className="mt-12">
-              <p className="text-gray-600 mb-4 flex items-center justify-center text-base">
-                <Clock className="w-4 h-4 mr-2 text-blue-600" />
+
+            {/* Countdown Timer with Improved Styling */}
+            <div className="mt-12 md:mt-16">
+              <p className="text-gray-600 mb-6 flex items-center justify-center text-lg">
+                <Clock className="w-5 h-5 mr-2 text-blue-600" />
                 Launching in
               </p>
-              <div className="flex justify-center gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="bg-blue-600 rounded-lg px-4 py-2 text-white font-bold text-2xl w-16 text-center">
-                    {countdown.days.toString().padStart(2, '0')}
-                  </div>
-                  <span className="text-xs text-gray-500 mt-1">Days</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="bg-blue-600 rounded-lg px-4 py-2 text-white font-bold text-2xl w-16 text-center">
-                    {countdown.hours.toString().padStart(2, '0')}
-                  </div>
-                  <span className="text-xs text-gray-500 mt-1">Hours</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="bg-blue-600 rounded-lg px-4 py-2 text-white font-bold text-2xl w-16 text-center">
-                    {countdown.minutes.toString().padStart(2, '0')}
-                  </div>
-                  <span className="text-xs text-gray-500 mt-1">Minutes</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="bg-blue-600 rounded-lg px-4 py-2 text-white font-bold text-2xl w-16 text-center">
-                    {countdown.seconds.toString().padStart(2, '0')}
-                  </div>
-                  <span className="text-xs text-gray-500 mt-1">Seconds</span>
-                </div>
+              <div className="flex justify-center gap-4 md:gap-6">
+                <CountdownItem value={countdown.days} label="Days" />
+                <CountdownItem value={countdown.hours} label="Hours" />
+                <CountdownItem value={countdown.minutes} label="Minutes" />
+                <CountdownItem value={countdown.seconds} label="Seconds" />
               </div>
             </div>
-            
+
             {/* CTA Button */}
             <div className="mt-10">
               <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg"
+                size="lg"
+                className="text-base md:text-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 transition-all duration-300 py-2.5 md:py-3 px-6 md:px-8 rounded-full shadow-md hover:shadow-lg"
                 onClick={() => window.scrollTo({ top: document.getElementById('subscribe')?.offsetTop || 2000, behavior: 'smooth' })}
               >
                 Join the Waitlist
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* What Is PharmacyHub Section */}
-      <section id="about" className="py-16 bg-white">
+      <section id="about" className="py-20 md:py-28 bg-white relative">
+        {/* Removed diagonal background that was causing issues */}
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <div className="inline-block px-3 py-1 bg-blue-100 rounded-full text-blue-700 font-medium text-sm mb-4">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <div className="inline-block px-4 py-1 bg-blue-100 rounded-full text-blue-700 font-medium text-sm mb-4">
               About the Platform
             </div>
-            <h2 className="text-3xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
               What is <span className="text-blue-600">PharmacyHub</span>?
             </h2>
-            <p className="text-gray-600">
-              PharmacyHub is a comprehensive platform designed specifically for pharmacy professionals, 
-              students, and educators. We're creating an integrated ecosystem that seamlessly connects 
+            <p className="text-lg md:text-xl text-gray-600">
+              PharmacyHub is a comprehensive platform designed specifically for pharmacy professionals,
+              students, and educators. We're creating an integrated ecosystem that seamlessly connects
               exam preparation, certification management, and professional networking, all in one place.
             </p>
           </div>
 
-          {/* Feature cards grid - Matching screenshot */}
-          <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-            <div className="bg-white rounded-lg p-6 transition-all">
-              <div className="text-blue-100 mb-4">
-                <svg className="w-6 h-6 text-blue-100" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 16L6 10H18L12 16Z"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Exam Preparation</h3>
-              <p className="text-gray-600 text-sm">
-                Access comprehensive exam materials, practice tests, and personalized study plans to excel in your pharmacy certifications.
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg p-6 transition-all">
-              <div className="text-blue-100 mb-4">
-                <svg className="w-6 h-6 text-blue-100" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 16L6 10H18L12 16Z"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Pharmacy Licensing</h3>
-              <p className="text-gray-600 text-sm">
-                Easily track, manage, and renew your pharmacy licenses and certifications with automated reminders and documentation.
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg p-6 transition-all">
-              <div className="text-blue-100 mb-4">
-                <svg className="w-6 h-6 text-blue-100" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 16L6 10H18L12 16Z"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Professional Connections</h3>
-              <p className="text-gray-600 text-sm">
-                Connect with fellow pharmacy professionals, share knowledge, and discover career opportunities within the industry.
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg p-6 transition-all">
-              <div className="text-blue-100 mb-4">
-                <svg className="w-6 h-6 text-blue-100" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 16L6 10H18L12 16Z"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Regulatory Compliance</h3>
-              <p className="text-gray-600 text-sm">
-                Stay up-to-date with the latest regulatory requirements and compliance standards affecting the pharmacy profession.
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg p-6 transition-all">
-              <div className="text-blue-100 mb-4">
-                <svg className="w-6 h-6 text-blue-100" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 16L6 10H18L12 16Z"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Resource Library</h3>
-              <p className="text-gray-600 text-sm">
-                Access a comprehensive library of pharmacy resources, research papers, and continuing education materials.
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg p-6 transition-all">
-              <div className="text-blue-100 mb-4">
-                <svg className="w-6 h-6 text-blue-100" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 16L6 10H18L12 16Z"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Support Network</h3>
-              <p className="text-gray-600 text-sm">
-                Get assistance from our team of experts and connect with peers to solve complex pharmacy practice challenges.
-              </p>
-            </div>
+          {/* Feature cards grid with better styling */}
+          <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mt-12">
+            <FeatureCard
+              icon={Sparkles}
+              title="Exam Preparation"
+              description="Access comprehensive exam materials, practice tests, and personalized study plans to excel in your pharmacy certifications."
+            />
+            <FeatureCard
+              icon={CalendarDays}
+              title="Pharmacy Licensing"
+              description="Easily track, manage, and renew your pharmacy licenses and certifications with automated reminders and documentation."
+            />
+            <FeatureCard
+              icon={Link2}
+              title="Professional Connections"
+              description="Connect with fellow pharmacy professionals, share knowledge, and discover career opportunities within the industry."
+            />
+            <FeatureCard
+              icon={BellRing}
+              title="Regulatory Compliance"
+              description="Stay up-to-date with the latest regulatory requirements and compliance standards affecting the pharmacy profession."
+            />
+            <FeatureCard
+              icon={FileText}
+              title="Resource Library"
+              description="Access a comprehensive library of pharmacy resources, research papers, and continuing education materials."
+            />
+            <FeatureCard
+              icon={CheckCircle}
+              title="Support Network"
+              description="Get assistance from our team of experts and connect with peers to solve complex pharmacy practice challenges."
+            />
           </div>
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section id="subscribe" className="py-16 bg-blue-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
+      {/* Newsletter Section - Enhanced */}
+      <section id="subscribe" className="py-16 md:py-24 bg-gradient-to-br from-blue-50 to-indigo-50 relative">
+        <div className="absolute inset-0 bg-[url('/Images/med.jpg')] opacity-3" />
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-2xl mx-auto text-center bg-white p-8 md:p-10 rounded-2xl shadow-xl border border-gray-100">
             <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
-            <p className="text-gray-600 mb-8">
+            <p className="text-lg text-gray-600 mb-8">
               Be the first to know when PharmacyHub launches. Subscribe to our newsletter for exclusive updates, early access opportunities, and special offers.
             </p>
 
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <div className="flex-1">
-                <Input 
-                  type="email" 
-                  placeholder="Your email address" 
+                <Input
+                  type="email"
+                  placeholder="Your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full h-12 border-gray-300 focus:border-blue-500"
+                  className="w-full h-12 border-gray-300 focus:border-blue-500 transition-all duration-300"
                 />
               </div>
-              <Button 
+              <Button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-6"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white h-12 px-6 hover:shadow-lg transition-all duration-300"
               >
                 Subscribe
+                <Mail className="ml-2 h-4 w-4" />
               </Button>
             </form>
 
@@ -325,6 +310,7 @@ export default function Home() {
                 className="mt-6 text-center"
               >
                 <div className="inline-flex items-center justify-center px-4 py-2 bg-green-100 text-green-700 rounded-full">
+                  <CheckCircle className="h-4 w-4 mr-2" />
                   Thank you for subscribing! We'll keep you updated.
                 </div>
               </motion.div>
@@ -430,7 +416,7 @@ export default function Home() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <WhatsApp className="h-5 w-5 mr-3 text-blue-600 mt-0.5" />
+                    <MessageCircle className="h-5 w-5 mr-3 text-blue-600 mt-0.5" />
                     <span>+923137020758</span>
                   </a>
                 </li>
