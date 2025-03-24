@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Pill } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface ModernMinimalistLogoProps {
   size?: "small" | "default" | "large";
@@ -37,6 +38,11 @@ const ModernMinimalistLogo: React.FC<ModernMinimalistLogoProps> = ({
   const selectedSize = sizeClasses[size];
   
   return (
+    <motion.div
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
     <div className={`flex items-center space-x-2 ${selectedSize.container}`}>
       <div className={`relative ${selectedSize.iconBox} flex items-center justify-center`}>
         {/* Background square with rotation */}
@@ -73,6 +79,7 @@ const ModernMinimalistLogo: React.FC<ModernMinimalistLogoProps> = ({
         }
       `}</style>
     </div>
+    </motion.div>
   );
 };
 
