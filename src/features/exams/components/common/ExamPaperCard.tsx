@@ -203,23 +203,16 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
 
   return (
     <>
-      <Card className="hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full overflow-hidden rounded-xl border border-slate-200" >
+      {/* PHAR-172: Optimized card width and spacing */}
+      <Card className="hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full overflow-hidden rounded-xl border border-slate-200 max-w-xs mx-auto w-full" >
       {/* Colored bar at the top based on paper type */}
       <div className={`w-full h-2 ${paper.source === 'model' ? 'bg-blue-500' : paper.source === 'past' ? 'bg-purple-500' : paper.source === 'subject' ? 'bg-emerald-500' : 'bg-cyan-500'}`}></div>
       
-      <CardHeader className="pb-1 pt-2">
+      <CardHeader className="pb-1 pt-2 px-2">
         <div className="flex flex-col w-full">
-          {/* Top row with type badges and paper ID */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          {/* Badge row */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
             <div className="flex items-center gap-1.5">
-              {/* Paper Type Badge */}
-              <Badge className={`${getPaperTypeColor()} font-medium ${paper.source === 'model' ? 'border-blue-200' : paper.source === 'past' ? 'border-purple-200' : paper.source === 'subject' ? 'border-emerald-200' : 'border-cyan-200'} text-xs py-0.5 px-1.5`}>
-                <div className="flex items-center gap-1">
-                  {getPaperTypeIcon()}
-                  <span>{paper.source.charAt(0).toUpperCase() + paper.source.slice(1)}</span>
-                </div>
-              </Badge>
-              
               {/* Premium Badge */}
               {isPremium && (
                 <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 flex items-center gap-1 font-medium text-xs py-0.5 px-1.5">
@@ -228,19 +221,18 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
                 </Badge>
               )}
               
-              {/* Paper ID */}
-              <div className="text-xs text-slate-500 ml-1">ID: <span className="font-medium">{paper.id}</span></div>
+              {/* Purchased badge */}
+              {isPremium && paymentStatus === 'PAID' && (
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 flex items-center gap-1 font-medium text-xs py-0.5 px-1.5">
+                  <CheckCircle2 className="h-2.5 w-2.5 text-green-600" />
+                  Purchased
+                </Badge>
+              )}
             </div>
           </div>
           
-          {/* Payment Status Badges */}
-          <div className="flex flex-wrap gap-1.5 mb-1">
-            {isPremium && paymentStatus === 'PAID' && (
-              <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 flex items-center gap-1 font-medium text-xs py-0.5 px-1.5">
-                <CheckCircle2 className="h-2.5 w-2.5 text-green-600" />
-                Purchased
-              </Badge>
-            )}
+          {/* Payment Status Badges (except Purchased, which was moved above) */}
+          <div className="flex flex-wrap gap-1.5 mb-1 justify-center">
             {isPremium && paymentStatus === 'PENDING' && (
               <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 flex items-center gap-1 font-medium text-xs py-0.5 px-1.5">
                 <Clock3 className="h-2.5 w-2.5 text-blue-600" />
@@ -256,26 +248,26 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
           </div>
           
           {/* Title and description */}
-          <div className="mb-2">
-          <CardTitle className="text-base line-clamp-1 mb-1">{paper.title}</CardTitle>
+          <div className="mb-2 text-center">
+            <CardTitle className="text-base line-clamp-1 mb-1">{paper.title}</CardTitle>
             {paper.description && (
                 <CardDescription className="text-xs line-clamp-2 text-slate-500">{paper.description}</CardDescription>
               )}
-            </div>
+          </div>
         </div>
       </CardHeader>
       
-      <CardContent className="px-3 pt-0 pb-2 flex-grow">
+      <CardContent className="px-2 pt-0 pb-2 flex-grow">
         <div className="flex flex-col space-y-2">
-          {/* Question Count and Time Limit */}
-          <div className="grid grid-cols-2 gap-2 mb-2">
+          {/* PHAR-172: Optimized Question Count and Time Limit with tighter spacing */}
+          <div className="grid grid-cols-2 gap-1.5 mb-2">
             <div className="flex items-center p-1.5 rounded-md bg-slate-50 shadow-sm border border-slate-100">
-              <FileText className="h-3.5 w-3.5 text-blue-600 mr-1.5" />
+              <FileText className="h-3.5 w-3.5 text-blue-600 mr-1" />
               <span className="text-sm font-bold text-slate-800">{paper.total_questions}</span>
               <span className="text-xs text-slate-500 ml-1">Questions</span>
             </div>
             <div className="flex items-center p-1.5 rounded-md bg-slate-50 shadow-sm border border-slate-100">
-              <Clock className="h-3.5 w-3.5 text-purple-600 mr-1.5" />
+              <Clock className="h-3.5 w-3.5 text-purple-600 mr-1" />
               <span className="text-sm font-bold text-slate-800">{paper.time_limit}</span>
               <span className="text-xs text-slate-500 ml-1">Minutes</span>
             </div>
@@ -287,31 +279,14 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
               <span className="text-xs font-medium">Difficulty</span>
               {renderDifficultyBadge()}
             </div>
-            
-            {/* Topics */}
-            <div>
-              <span className="text-xs font-medium mb-1 inline-block">Topics</span>
-              <div className="flex flex-wrap gap-1">
-                {paper.topics_covered.slice(0, 3).map(topic => (
-                  <Badge key={topic} variant="outline" className="text-xs px-1.5 py-0 border-slate-200 bg-slate-50 text-xs">
-                    {topic}
-                  </Badge>
-                ))}
-                {paper.topics_covered.length > 3 && (
-                  <Badge variant="outline" className="text-xs px-1.5 py-0 border-slate-200 bg-slate-50">
-                    +{paper.topics_covered.length - 3}
-                  </Badge>
-                )}
-              </div>
-            </div>
           </div>
 
-          {/* Last Attempt Score */}
+          {/* Last Attempt Score - More compact layout */}
           {progress?.score && (
             <div className="mt-2 pt-2 border-t border-slate-100">
-              <div className="flex items-center text-muted-foreground justify-between bg-slate-50 rounded-lg p-2">
+              <div className="flex items-center text-muted-foreground justify-between bg-slate-50 rounded-lg p-1.5">
                 <span className="text-xs font-medium">Last Attempt</span>
-                <div className="flex items-center bg-white px-2 py-1 rounded-md border border-slate-200">
+                <div className="flex items-center bg-white px-2 py-0.5 rounded-md border border-slate-200">
                   <TrendingUp className="h-3.5 w-3.5 mr-1 text-blue-500" />
                   <span className="font-medium text-sm">{progress.score}%</span>
                 </div>
@@ -321,19 +296,19 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
         </div>
       </CardContent>
       
-      {/* Updated Card Footer with cleaner styling */}
-      <CardFooter className="p-3 pt-2 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-gray-50">
-        <div className="w-full flex justify-between items-center">
-        <div className="flex items-center">
-        {renderProgressBadge()}
-        </div>
+      {/* Card Footer */}
+      <CardFooter className="p-2.5 pt-2 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-gray-50">
+        <div className="w-full flex flex-col items-center">
+          <div className="flex items-center mb-1.5">
+            {renderProgressBadge()}
+          </div>
           <Button 
             onClick={handleButtonClick} 
             variant={!hasPremiumAccess ? "outline" : "default"}
             size="sm"
             // Disable the button if payment is pending
             disabled={paymentStatus === 'PENDING'}
-            className={`gap-1 font-medium transition-all duration-300 shadow-sm hover:shadow-md ${
+            className={`w-5/6 gap-1 font-medium transition-all duration-300 shadow-sm hover:shadow-md ${
               // If user has premium access, use the blue gradient
               hasPremiumAccess 
                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
@@ -341,7 +316,7 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
                 : getButtonStylesByStatus(paymentStatus)
             }`}
           >
-            {/* Explicitly check payment status for button text */}
+            {/* Button content based on payment status */}
             {paymentStatus === 'PENDING' ? (
               <>
                 Waiting for approval
@@ -361,7 +336,7 @@ export const ExamPaperCard: React.FC<ExamPaperCardProps> = ({
         paper={paper}
       />
       
-      {/* Manual Payment Form - Using existing component */}
+      {/* Manual Payment Form */}
       {paymentFormOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-auto">

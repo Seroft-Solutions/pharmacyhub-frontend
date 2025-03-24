@@ -45,46 +45,37 @@ function ModelPapersContent() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="border border-slate-200 rounded-lg h-96 overflow-hidden flex flex-col animate-pulse">
+        {/* PHAR-172: Updated skeleton loading grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="border border-slate-200 rounded-lg h-80 overflow-hidden flex flex-col animate-pulse">
               <div className="h-3 w-full bg-blue-200"></div>
-              <div className="p-6 pb-3">
+              <div className="p-4 pb-2">
                 <div className="h-6 w-24 bg-slate-200 rounded mb-3"></div>
                 <div className="h-7 w-3/4 bg-slate-200 rounded mb-2"></div>
                 <div className="h-4 w-5/6 bg-slate-100 rounded"></div>
               </div>
-              <div className="p-6 pt-0 flex-grow space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-100 rounded-lg p-4 flex flex-col items-center space-y-2">
+              <div className="p-4 pt-0 flex-grow space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-slate-100 rounded-lg p-3 flex flex-col items-center space-y-1">
                     <div className="h-5 w-5 bg-slate-200 rounded"></div>
                     <div className="h-6 w-8 bg-slate-200 rounded"></div>
-                    <div className="h-3 w-16 bg-slate-200 rounded"></div>
                   </div>
-                  <div className="bg-slate-100 rounded-lg p-4 flex flex-col items-center space-y-2">
+                  <div className="bg-slate-100 rounded-lg p-3 flex flex-col items-center space-y-1">
                     <div className="h-5 w-5 bg-slate-200 rounded"></div>
                     <div className="h-6 w-8 bg-slate-200 rounded"></div>
-                    <div className="h-3 w-16 bg-slate-200 rounded"></div>
                   </div>
                 </div>
                 <div className="pt-2">
-                  <div className="flex justify-between items-center mb-3">
+                  <div className="flex justify-between items-center mb-2">
                     <div className="h-4 w-16 bg-slate-200 rounded"></div>
                     <div className="h-6 w-20 bg-slate-200 rounded"></div>
                   </div>
-                  <div className="mt-4">
-                    <div className="h-4 w-24 bg-slate-200 rounded mb-3"></div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[1, 2, 3].map((j) => (
-                        <div key={j} className="h-6 w-16 bg-slate-200 rounded"></div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               </div>
-              <div className="p-6 pt-4 border-t border-slate-200">
-                <div className="flex justify-end">
-                  <div className="h-9 w-28 bg-slate-200 rounded"></div>
+              <div className="p-4 pt-3 border-t border-slate-200">
+                <div className="flex justify-center">
+                  <div className="h-8 w-28 bg-slate-200 rounded"></div>
                 </div>
               </div>
             </div>
@@ -173,7 +164,7 @@ function ModelPapersContent() {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {papers.map((paper) => (
             <ExamPaperCard
               key={paper.id}
@@ -204,6 +195,5 @@ function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
     universalAccess: exam.universalAccess || false, // Use universal access status from API
     source: 'model',
     paymentStatus: exam.paymentStatus || 'pending',
-
   };
 }
