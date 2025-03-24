@@ -2,6 +2,27 @@
  * Utility functions for payment approvals
  */
 
+interface User {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: string;
+}
+
+interface ManualPaymentRequest {
+  id: number;
+  user: User;
+  exam?: {
+    title: string;
+  };
+  amount?: number;
+  senderNumber?: string;
+}
+
+interface ArrayLike {
+  length: number;
+}
+
 /**
  * Format currency with safeguards for invalid values
  */
@@ -20,18 +41,21 @@ export const formatCurrency = (amount: number | null | undefined) => {
 };
 
 /**
- * Format date with safeguards
+ * Format date with safeguards and proper timezone handling
  */
 export const formatDate = (dateString: string | null | undefined) => {
   if (!dateString) return 'N/A';
   
   try {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Create date object and format with timezone information
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZoneName: 'short'  // Adds timezone indicator (e.g., PKT)
     });
   } catch (error) {
     console.error('Error formatting date:', error);
@@ -56,7 +80,7 @@ export const formatTransactionReference = (reference: string | null | undefined)
 /**
  * Get user display name with fallbacks
  */
-export const getUserDisplayName = (user: any) => {
+export const getUserDisplayName = (user: User | null | undefined) => {
   if (!user) return 'Unknown user';
   
   const firstName = user.firstName || '';
@@ -70,7 +94,7 @@ export const getUserDisplayName = (user: any) => {
 /**
  * Generate WhatsApp link for contacting user
  */
-export const generateWhatsAppLink = (request: any) => {
+export const generateWhatsAppLink = (request: ManualPaymentRequest | null | undefined) => {
   if (!request) return '#';
   
   const userName = getUserDisplayName(request.user);
@@ -108,7 +132,11 @@ export const getStatusColor = (status: string) => {
 /**
  * Helper to determine if data is loading or has issues
  */
-export const getDataState = (isLoading: boolean, isError: boolean, data: any[] | undefined) => {
+export const getDataState = (
+  isLoading: boolean, 
+  isError: boolean, 
+  data: ArrayLike | undefined
+) => {
   if (isLoading) return 'loading';
   if (isError) return 'error';
   if (!data || data.length === 0) return 'empty';
