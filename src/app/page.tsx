@@ -41,20 +41,30 @@ export default function Home() {
       router.replace('/dashboard');
     }
 
+    // Define a fixed launch date for everyone
+    const FIXED_LAUNCH_DATE = new Date('2025-03-27T00:00:00Z').toISOString(); // Example: Dec 31, 2024
+
     // Check if we already have a launch date stored
     const savedLaunchDate = localStorage.getItem('pharmacyHubLaunchDate');
-    
+    const now = new Date();
+
     if (savedLaunchDate) {
-      // Use the stored date
-      setLaunchDate(new Date(savedLaunchDate));
+      // Compare with our fixed date
+      const storedDate = new Date(savedLaunchDate);
+      const fixedDate = new Date(FIXED_LAUNCH_DATE);
+
+      // If the stored date doesn't match our fixed date or has passed, update it
+      if (storedDate.getTime() !== fixedDate.getTime() || storedDate.getTime() <= now.getTime()) {
+        localStorage.setItem('pharmacyHubLaunchDate', FIXED_LAUNCH_DATE);
+        setLaunchDate(new Date(FIXED_LAUNCH_DATE));
+      } else {
+        // Use the existing date
+        setLaunchDate(storedDate);
+      }
     } else {
-      // Create a new date 3 days from now
-      const newLaunchDate = new Date();
-      newLaunchDate.setDate(newLaunchDate.getDate() + 3);
-      
-      // Save it to localStorage for persistence
-      localStorage.setItem('pharmacyHubLaunchDate', newLaunchDate.toISOString());
-      setLaunchDate(newLaunchDate);
+      // No stored date, use our fixed date
+      localStorage.setItem('pharmacyHubLaunchDate', FIXED_LAUNCH_DATE);
+      setLaunchDate(new Date(FIXED_LAUNCH_DATE));
     }
   }, [isAuthenticated, router]);
 

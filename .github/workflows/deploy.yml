@@ -72,22 +72,22 @@ jobs:
 
       # Only install dependencies if you have tests that need to run
       # If you don't have tests, you can comment out these steps
-      - name: Install dependencies
-        run: |
-          if [ -f "package.json" ] && grep -q "\"test\"" package.json; then
-            npm ci --legacy-peer-deps --prefer-offline --no-audit --progress=false
-          else
-            echo "Skipping dependency installation as no tests are needed"
-          fi
-      
-      - name: Run tests
-        run: |
-          if [ -f "package.json" ] && grep -q "\"test\"" package.json; then
-            npm test || echo "No tests found, skipping"
-          else
-            echo "Skipping tests as they are not configured"
-          fi
-      
+#      - name: Install dependencies
+#        run: |
+#          if [ -f "package.json" ] && grep -q "\"test\"" package.json; then
+#            npm ci --legacy-peer-deps --prefer-offline --no-audit --progress=false
+#          else
+#            echo "Skipping dependency installation as no tests are needed"
+#          fi
+#
+#      - name: Run tests
+#        run: |
+#          if [ -f "package.json" ] && grep -q "\"test\"" package.json; then
+#            npm test || echo "No tests found, skipping"
+#          else
+#            echo "Skipping tests as they are not configured"
+#          fi
+#
       # We'll remove this step as the build will be done in the Dockerfile
       # - name: Build Next.js application
       #   run: npm run build
