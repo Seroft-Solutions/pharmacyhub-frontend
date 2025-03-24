@@ -16,7 +16,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: Error | null;
-  login: (username: string, password: string) => Promise<UserProfile>;
+  login: (username: string, password: string, deviceInfo?: Record<string, string>) => Promise<UserProfile>;
   logout: () => Promise<void>;
   refreshUserProfile: () => Promise<UserProfile | null>;
   
@@ -212,7 +212,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [fetchProfile]);
 
   // Login function
-  const login = async (username: string, password: string): Promise<UserProfile> => {
+  const login = async (username: string, password: string, deviceInfo?: Record<string, string>): Promise<UserProfile> => {
     // In development mode with auth bypass, return the mock user
     if (process.env.NODE_ENV === 'development' && DEV_CONFIG.bypassAuth) {
       const mockUser = createMockUser();
@@ -226,12 +226,20 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     try {
       // Log login attempt for debugging
-      logger.debug('[Auth] Login attempt', { emailAddress: username, apiEndpoint: authService.queryKeys.all()[0] });
+      logger.debug('[Auth] Login attempt', { 
+        emailAddress: username, 
+        apiEndpoint: authService.queryKeys.all()[0],
+        deviceId: deviceInfo?.deviceId
+      });
+      
+      // Get device info if not provided
+      const deviceData = deviceInfo || tokenManager.getAuthDataForLogin();
 
-      // Use the login mutation from authService
+      // Use the login mutation from authService with device info
       const response = await loginMutation({ 
         emailAddress: username,
-        password 
+        password,
+        ...deviceData
       });
       
       // Log successful response

@@ -24,7 +24,8 @@ const getApiBasePath = (defaultPath: string): string => {
 // Base URLs for API endpoints
 export const API_BASE_URLS = {
   AUTH: getApiBasePath('auth'),
-  USERS: getApiBasePath('users')
+  USERS: getApiBasePath('users'),
+  SESSIONS: getApiBasePath('sessions')
 };
 
 /**
@@ -41,6 +42,7 @@ export const AUTH_ENDPOINTS = {
   REQUEST_PASSWORD_RESET: `${API_BASE_URLS.AUTH}/password/reset-request`,
   RESET_PASSWORD: `${API_BASE_URLS.AUTH}/password/reset`,
   VALIDATE_RESET_TOKEN: `${API_BASE_URLS.AUTH}/password/validate-token`,
+  VERIFY_OTP: `${API_BASE_URLS.AUTH}/verify-otp`,
   
   // Current user operations
   PROFILE: `${API_BASE_URLS.USERS}/me`,
@@ -55,6 +57,14 @@ export const AUTH_ENDPOINTS = {
   USER_UPDATE: `${API_BASE_URLS.USERS}/:id`,
   USER_PATCH: `${API_BASE_URLS.USERS}/:id`,
   USER_DELETE: `${API_BASE_URLS.USERS}/:id`,
+  
+  // Session management endpoints
+  VALIDATE_SESSION: `${API_BASE_URLS.SESSIONS}/validate`,
+  USER_SESSIONS: `${API_BASE_URLS.SESSIONS}/users/:id`,
+  TERMINATE_SESSION: `${API_BASE_URLS.SESSIONS}/:id`,
+  TERMINATE_OTHER_SESSIONS: `${API_BASE_URLS.SESSIONS}/users/:id/terminate-others`,
+  REQUIRE_OTP: `${API_BASE_URLS.SESSIONS}/users/:id/require-otp`,
+  SESSION_MONITORING: `${API_BASE_URLS.SESSIONS}/monitoring`,
 };
 
 /**
@@ -68,6 +78,19 @@ export const USER_ENDPOINTS_MAP = {
   update: AUTH_ENDPOINTS.USER_UPDATE,
   patch: AUTH_ENDPOINTS.USER_PATCH,
   delete: AUTH_ENDPOINTS.USER_DELETE
+};
+
+/**
+ * Map for session management operations
+ * Used with createApiHooks factory
+ */
+export const SESSION_ENDPOINTS_MAP = {
+  list: AUTH_ENDPOINTS.SESSION_MONITORING,
+  detail: AUTH_ENDPOINTS.USER_SESSIONS,
+  validate: AUTH_ENDPOINTS.VALIDATE_SESSION,
+  terminate: AUTH_ENDPOINTS.TERMINATE_SESSION,
+  terminateOthers: AUTH_ENDPOINTS.TERMINATE_OTHER_SESSIONS,
+  requireOtp: AUTH_ENDPOINTS.REQUIRE_OTP
 };
 
 export default AUTH_ENDPOINTS;

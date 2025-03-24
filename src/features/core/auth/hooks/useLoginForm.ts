@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './useAuth';
+import { tokenManager } from '../core/tokenManager';
 import { apiClient } from '@/features/core/tanstack-query-api';
 import { AUTH_ENDPOINTS } from '../api/constants';
+import { useDeviceId } from '../anti-sharing/hooks/useDeviceId';
+import { useSessionValidation } from '../anti-sharing/hooks/useSessionValidation';
+import { useAntiSharingStore } from '../anti-sharing/store';
+import { LoginStatus } from '../anti-sharing/types';
 
 export const useLoginForm = (redirectPath = '/dashboard') => {
   const [email, setEmail] = useState('');
@@ -12,8 +17,26 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Anti-sharing states
+  const [showOtpChallenge, setShowOtpChallenge] = useState(false);
+  const [showValidationError, setShowValidationError] = useState(false);
+  
   const router = useRouter();
   const { login } = useAuth();
+  
+  // Anti-sharing hooks
+  const { deviceId, getDeviceInfo } = useDeviceId();
+  const { validateSession, loginStatus } = useSessionValidation();
+  const setSessionId = useAntiSharingStore(state => state.setSessionId);
+  const antiSharingError = useAntiSharingStore(state => state.error);
+
+  // Update error if anti-sharing validation fails
+  useEffect(() => {
+    if (antiSharingError) {
+      setError(antiSharingError);
+    }
+  }, [antiSharingError]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +44,14 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
     setIsLoading(true);
 
     try {
-      console.log('Attempting login with:', { email, endpoint: AUTH_ENDPOINTS.LOGIN });
+      // Get device information for anti-sharing protection
+      const deviceInfo = getDeviceInfo();
+      
+      console.log('Attempting login with:', { 
+        email, 
+        endpoint: AUTH_ENDPOINTS.LOGIN,
+        deviceId: deviceInfo.deviceId
+      });
       
       // Log API details for debugging
       console.debug('API details:', {
@@ -31,18 +61,35 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
         fullEndpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL}${AUTH_ENDPOINTS.LOGIN}`
       });
       
-      // Try direct API call first for debugging
-      // For debugging only
-      // Direct API call removed to avoid duplication
-      /* const directResponse = await apiClient.post(AUTH_ENDPOINTS.LOGIN, { 
-        emailAddress: email, 
-        password 
-      });
+      // Now use the Auth context login with device info
+      const loginResponse = await login(email, password, deviceInfo);
       
-      console.log('Direct API call removed to avoid duplication'); */
+      // Validate session for anti-sharing protection
+      if (loginResponse?.user?.id) {
+        const validationResult = await validateSession(loginResponse.user.id.toString());
+        
+        // Handle validation result
+        if (!validationResult.valid) {
+          setIsLoading(false);
+          
+          if (validationResult.requiresOtp) {
+            // Show OTP challenge modal
+            setShowOtpChallenge(true);
+            return;
+          } else {
+            // Show validation error dialog
+            setShowValidationError(true);
+            return;
+          }
+        }
+        
+        // Store session ID if provided
+        if (validationResult.sessionId) {
+          setSessionId(validationResult.sessionId);
+        }
+      }
       
-      // Now use the Auth context login
-      await login(email, password);
+      // If we reach here, login and validation were successful
       router.push(redirectPath);
     } catch (err) {
       console.error('Login error:', err);
@@ -84,7 +131,7 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
     } finally {
       setIsLoading(false);
     }
-  }, [email, password, login, router, redirectPath]);
+  }, [email, password, login, router, redirectPath, getDeviceInfo, validateSession, setSessionId]);
 
   const handleSocialLogin = useCallback((provider: 'google' | 'facebook') => {
     // For social login, we'll redirect to Keycloak's login page with the selected provider
@@ -99,6 +146,62 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
     window.location.href = `${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid&kc_idp_hint=${identityProvider}`;
   }, []);
 
+  // Handle OTP verification
+  const handleOtpVerification = async (otp: string): Promise<boolean> => {
+    try {
+      // Call the OTP verification API
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          otp,
+          deviceId,
+          userAgent: navigator.userAgent
+        }),
+      });
+      
+      if (!response.ok) {
+        return false;
+      }
+      
+      const result = await response.json();
+      
+      // Store session ID if provided
+      if (result.sessionId) {
+        setSessionId(result.sessionId);
+      }
+      
+      // Redirect after successful verification
+      router.push(redirectPath);
+      
+      return true;
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      return false;
+    }
+  };
+
+  // Handle validation error continuation
+  const handleValidationContinue = () => {
+    setShowValidationError(false);
+    
+    if (loginStatus === LoginStatus.TOO_MANY_DEVICES) {
+      // Redirect to device management page
+      router.push('/account/devices');
+    } else {
+      // Show OTP challenge for other validation errors
+      setShowOtpChallenge(true);
+    }
+  };
+
+  // Cancel login attempt
+  const handleCancel = () => {
+    setShowValidationError(false);
+    setShowOtpChallenge(false);
+  };
+
   return {
     email,
     setEmail,
@@ -109,6 +212,13 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
     error,
     isLoading,
     handleSubmit,
-    handleSocialLogin
+    handleSocialLogin,
+    // Anti-sharing properties
+    showOtpChallenge,
+    showValidationError,
+    loginStatus,
+    handleOtpVerification,
+    handleValidationContinue,
+    handleCancel
   };
 };

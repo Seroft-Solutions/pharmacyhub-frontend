@@ -46,7 +46,7 @@ export const userApiHooks = createApiHooks<UserProfile>(
 export const useLogin = () => {
   const queryClient = useQueryClient();
   
-  return useApiMutation<AuthResponse, LoginRequest>(
+  return useApiMutation<AuthResponse, LoginRequest & Record<string, string>>(
     AUTH_ENDPOINTS.LOGIN,
     {
       requiresAuth: false,
@@ -310,6 +310,18 @@ export const useVerifyEmail = () => {
 };
 
 /**
+ * Hook for verifying OTP
+ */
+export const useVerifyOtp = () => {
+  return useApiMutation<{ sessionId: string }, { otp: string; deviceId: string; userAgent: string }>(
+    AUTH_ENDPOINTS.VERIFY_OTP,
+    {
+      requiresAuth: true,
+    }
+  );
+};
+
+/**
  * Export all hooks as a unified service
  */
 export const authService = {
@@ -330,6 +342,7 @@ export const authService = {
   useUpdatePreferences,
   useEmailVerificationStatus,
   useVerifyEmail,
+  useVerifyOtp,
   
   // Query keys for custom queries
   queryKeys: userApiHooks.queryKeys

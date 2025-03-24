@@ -6,6 +6,8 @@
  */
 import { logger } from '@/shared/lib/logger';
 import { unwrapAuthResponse } from '@/features/core/tanstack-query-api';
+import { DEVICE_STORAGE_KEY } from '../anti-sharing/constants';
+import { generateUUID } from '../anti-sharing/core/deviceManager';
 
 // Define storage keys for tokens
 export const TOKEN_CONFIG = {
@@ -13,6 +15,7 @@ export const TOKEN_CONFIG = {
   ACCESS_TOKEN_KEY: 'accessToken',
   REFRESH_TOKEN_KEY: 'refreshToken',
   TOKEN_EXPIRY_KEY: 'tokenExpiry',
+  DEVICE_ID_KEY: DEVICE_STORAGE_KEY,
   
   // Legacy keys for backward compatibility
   LEGACY: {
@@ -199,6 +202,28 @@ export const tokenManager = {
   },
   
   /**
+   * Get the device ID from localStorage or generate a new one
+   */
+  getDeviceId: (): string => {
+    if (typeof window === 'undefined') return '';
+    
+    try {
+      let deviceId = localStorage.getItem(TOKEN_CONFIG.DEVICE_ID_KEY);
+      
+      if (!deviceId) {
+        deviceId = generateUUID();
+        localStorage.setItem(TOKEN_CONFIG.DEVICE_ID_KEY, deviceId);
+        logger.debug('[Auth] Generated new device ID');
+      }
+      
+      return deviceId;
+    } catch (error) {
+      logger.error('[Auth] Error getting device ID', error);
+      return '';
+    }
+  },
+  
+  /**
    * Check if a valid token exists
    */
   hasToken: (): boolean => {
@@ -258,6 +283,9 @@ export const tokenManager = {
         logger.debug('[Auth] Setting refresh token');
         tokenManager.setRefreshToken(tokens.refreshToken);
       }
+      
+      // Ensure device ID is set
+      tokenManager.getDeviceId();
     }
   },
   
@@ -281,6 +309,9 @@ export const tokenManager = {
       // Clear any other auth-related data
       localStorage.removeItem('auth_user');
       localStorage.removeItem('user_profile');
+      
+      // Note: We don't clear the device ID on logout
+      // This allows us to track the same device across sessions
       
       logger.debug('[Auth] All auth data cleared from storage');
     } catch (error) {
@@ -319,6 +350,21 @@ export const tokenManager = {
       logger.error('[Auth] Failed to extract roles from token', error);
       return [];
     }
+  },
+  
+  /**
+   * Get auth data for login request
+   * Includes device information for anti-sharing protection
+   */
+  getAuthDataForLogin: (): Record<string, string> => {
+    if (typeof window === 'undefined') return {};
+    
+    return {
+      deviceId: tokenManager.getDeviceId(),
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      language: navigator.language,
+    };
   }
 };
 

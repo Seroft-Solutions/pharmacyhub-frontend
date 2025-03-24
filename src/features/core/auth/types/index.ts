@@ -44,6 +44,10 @@ export interface UserProfile {
 export interface LoginRequest {
   emailAddress: string;
   password: string;
+  deviceId?: string;
+  userAgent?: string;
+  platform?: string;
+  language?: string;
 }
 
 export interface RegisterRequest {
@@ -54,6 +58,8 @@ export interface RegisterRequest {
   contactNumber?: string;
   userType?: string;
   openToConnect?: boolean;
+  deviceId?: string;
+  userAgent?: string;
 }
 
 export interface AuthTokens {
@@ -66,6 +72,8 @@ export interface AuthTokens {
 export interface AuthResponse {
   tokens: AuthTokens;
   user: UserProfile;
+  sessionId?: string;
+  validationStatus?: string;
 }
 
 export interface RegistrationData {
@@ -125,4 +133,17 @@ export interface UserPreferences {
   notifications?: boolean;
   dashboard?: Record<string, any>;
   [key: string]: any;
+}
+
+export interface OtpVerificationRequest {
+  otp: string;
+  deviceId: string;
+  userAgent?: string;
+  sessionId?: string;
+}
+
+export interface OtpVerificationResponse {
+  success: boolean;
+  sessionId?: string;
+  message?: string;
 }
