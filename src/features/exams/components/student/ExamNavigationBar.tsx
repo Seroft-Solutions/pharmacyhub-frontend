@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Menu, Clock } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ExamTimer } from '../common/ExamTimer';
+import { ExamTimerCard } from '../common/ExamTimerCard';
 import { QuestionNavigation } from './QuestionNavigation';
 import { useMobileStore, selectIsMobile, MobileOnly, DesktopOnly } from '@/features/core/mobile-support';
 
@@ -17,6 +18,7 @@ interface ExamNavigationBarProps {
   durationInMinutes: number;
   onTimeExpired: () => void;
   isCompleted: boolean;
+  timeRemaining: number;
 }
 
 export const ExamNavigationBar: React.FC<ExamNavigationBarProps> = ({
@@ -29,7 +31,8 @@ export const ExamNavigationBar: React.FC<ExamNavigationBarProps> = ({
   onFinishExam,
   durationInMinutes,
   onTimeExpired,
-  isCompleted
+  isCompleted,
+  timeRemaining
 }) => {
   const isMobile = useMobileStore(selectIsMobile);
   
@@ -101,8 +104,9 @@ export const ExamNavigationBar: React.FC<ExamNavigationBarProps> = ({
         
         {/* Desktop timer */}
         <DesktopOnly>
-          <ExamTimer
-            durationInMinutes={durationInMinutes}
+          <ExamTimerCard
+            totalTimeInSeconds={durationInMinutes * 60}
+            timeRemainingInSeconds={timeRemaining}
             onTimeExpired={onTimeExpired}
             isCompleted={isCompleted}
           />

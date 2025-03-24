@@ -46,12 +46,27 @@ export const ExamLayout = () => {
                 if (timeRemaining <= 1) {
                     handleTimeUp();
                 } else {
-                    useExamStore.setState({ timeRemaining: timeRemaining - 1 });
+                    // Use decrementTimer from the store for consistency
+                    useExamStore.getState().decrementTimer();
                 }
             }, 1000);
+            
+            // Debug time remaining
+            console.debug(`Timer updated: ${timeRemaining}s remaining`);
         }
         return () => clearInterval(timer);
     }, [timeRemaining, isPaused]);
+    
+    // Ensure timer display is accurate
+    useEffect(() => {
+        // Force timer update when component mounts
+        if (currentPaper && currentPaper.content.time_limit > 0 && timeRemaining === 0) {
+            // If timeRemaining is 0 but we have a time limit, reset the timer
+            const initialTime = currentPaper.content.time_limit * 60;
+            useExamStore.setState({ timeRemaining: initialTime });
+            console.debug(`Timer initialized: ${initialTime}s`);
+        }
+    }, [currentPaper, timeRemaining]);
 
     const handleAnswer = (answer: string) => {
         if (!currentPaper) return;

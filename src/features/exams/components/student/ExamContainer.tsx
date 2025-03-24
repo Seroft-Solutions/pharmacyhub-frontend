@@ -36,6 +36,8 @@ import { QuestionDisplay } from './QuestionDisplay';
 import { QuestionNavigation } from './QuestionNavigation';
 import { ExamProgress } from './ExamProgress';
 import { ExamTimer } from '../common/ExamTimer';
+import { ExamTimerCard } from '../common/ExamTimerCard';
+import { HeaderTimeRemaining } from '../common/HeaderTimeRemaining';
 import { ExamSummary } from './ExamSummary';
 import { ExamResults } from '../results/ExamResults';
 import { ExamHeader } from './ExamHeader';
@@ -481,6 +483,7 @@ function ExamContainerInternal({
           durationInMinutes={exam.duration || exam.durationMinutes || 60}
           onTimeExpired={handleExamTimeExpired}
           isCompleted={isCompleted}
+          timeRemaining={timeRemaining}
         />
       </MobileOnly>
       
@@ -497,7 +500,9 @@ function ExamContainerInternal({
                   totalQuestions={questions.length}
                   answeredQuestions={answeredQuestionsSet.size}
                   flaggedQuestionsCount={flaggedQuestions.size}
-                  hideTimer={true}
+                  hideTimer={false}
+                  totalTimeInSeconds={exam.duration * 60 || exam.durationMinutes * 60 || 3600}
+                  timeRemainingInSeconds={timeRemaining}
                 />
               </MobileOnly>
               
@@ -566,8 +571,9 @@ function ExamContainerInternal({
             <div className="space-y-4">
               {showTimer && (
                 <div className="hidden md:block">
-                  <ExamTimer
-                    durationInMinutes={exam.duration || exam.durationMinutes || 60}
+                  <ExamTimerCard
+                    totalTimeInSeconds={exam.duration * 60 || exam.durationMinutes * 60 || 3600}
+                    timeRemainingInSeconds={timeRemaining}
                     onTimeExpired={handleExamTimeExpired}
                     isCompleted={isCompleted}
                   />
@@ -608,8 +614,9 @@ function ExamContainerInternal({
                   </SheetTrigger>
                   <SheetContent side="bottom" className="h-1/3">
                     <div className="flex items-center justify-center h-full">
-                      <ExamTimer
-                        durationInMinutes={exam.duration || exam.durationMinutes || 60}
+                      <ExamTimerCard
+                        totalTimeInSeconds={exam.duration * 60 || exam.durationMinutes * 60 || 3600}
+                        timeRemainingInSeconds={timeRemaining}
                         onTimeExpired={handleExamTimeExpired}
                         isCompleted={isCompleted}
                       />

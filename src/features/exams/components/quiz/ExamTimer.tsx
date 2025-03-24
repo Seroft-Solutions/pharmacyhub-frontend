@@ -37,6 +37,9 @@ export const ExamTimer: React.FC<ExamTimerProps> = ({
   
   // Check time thresholds for warnings
   useEffect(() => {
+    // Check if total time is valid to avoid division by zero
+    if (totalTime <= 0) return;
+    
     // Warning at 25% remaining time
     if (remainingTime <= totalTime * 0.25 && remainingTime > totalTime * 0.1) {
       setIsWarning(true);
@@ -55,10 +58,13 @@ export const ExamTimer: React.FC<ExamTimerProps> = ({
     if (remainingTime <= 0 && !isPaused) {
       onTimeUp();
     }
-  }, [remainingTime, totalTime, isPaused, onTimeUp]);
+    
+    // Debug info - remove in production
+    console.debug(`Timer: ${remainingTime}s / ${totalTime}s (${progressPercentage.toFixed(1)}%)`);
+  }, [remainingTime, totalTime, isPaused, onTimeUp, progressPercentage]);
   
-  // Calculate progress percentage
-  const progressPercentage = Math.max(0, (remainingTime / totalTime) * 100);
+  // Calculate progress percentage - ensure it's calculated correctly
+  const progressPercentage = Math.max(0, Math.min(100, (remainingTime / totalTime) * 100));
   
   return (
     <div className={`rounded-lg p-4 ${
@@ -112,7 +118,7 @@ export const ExamTimer: React.FC<ExamTimerProps> = ({
             ? 'text-yellow-700' 
             : 'text-slate-700'
         }`}>
-          {formatTimeDisplay(remainingTime)}
+          {formatTimeDisplay(Math.max(0, remainingTime))}
         </span>
       </div>
       

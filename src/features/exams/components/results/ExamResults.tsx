@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Question, ExamResult, QuestionResult, UserAnswer } from '../../model/standardTypes';
 import { formatTimeVerbose } from '../../utils/formatTime';
+import { useExamScoreCalculation } from './useExamScoreCalculation';
 
 interface ExamResultsProps {
   result: ExamResult;
@@ -32,6 +33,7 @@ interface ExamResultsProps {
   onTryAgain?: () => void;
   onBackToDashboard?: () => void;
   onReturnToDashboard?: () => void; // For backward compatibility
+  showPerformanceInsights?: boolean; // Option to hide performance insights
 }
 
 export const ExamResults: React.FC<ExamResultsProps> = ({
@@ -41,7 +43,8 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
   onReview,
   onTryAgain,
   onBackToDashboard,
-  onReturnToDashboard
+  onReturnToDashboard,
+  showPerformanceInsights = false // Default to false based on user feedback
 }) => {
   const getPassFailMessage = () => {
     if (result.isPassed) {
@@ -62,13 +65,12 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
   };
 
   const passFailInfo = getPassFailMessage();
-  const scorePercentage = (result.score / result.totalMarks) * 100;
   
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-500";
-    if (score >= 60) return "text-yellow-500";
-    return "text-red-500";
-  };
+  // Use the custom hook for consistent score calculation and formatting
+  const scoreInfo = useExamScoreCalculation(result);
+  
+  // For backward compatibility
+  const scorePercentage = scoreInfo.percentage;
 
   const formatTimeStr = (seconds: number) => {
     return formatTimeVerbose(seconds);
@@ -94,11 +96,11 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           {/* Score overview */}
           <div className="text-center">
             <h3 className="text-sm uppercase text-gray-500 mb-2">Your Score</h3>
-            <div className={`text-4xl font-bold ${getScoreColor(scorePercentage)}`}>
-              {scorePercentage.toFixed(1)}%
+            <div className={`text-4xl font-bold ${scoreInfo.scoreColor}`}>
+              {scoreInfo.displayPercentage}
             </div>
             <div className="text-sm text-gray-600 mt-1">
-              ({result.score} out of {result.totalMarks} marks)
+              {scoreInfo.displayValue} marks
             </div>
             
             <div className="mt-6">
@@ -215,8 +217,8 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
         </CardFooter>
       </Card>
       
-      {/* Section for top mistakes or performance insights */}
-      {result.questionResults && result.questionResults.length > 0 && (
+      {/* Section for top mistakes or performance insights - only shown if explicitly requested */}
+      {showPerformanceInsights && result.questionResults && result.questionResults.length > 0 && (
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-xl flex items-center">

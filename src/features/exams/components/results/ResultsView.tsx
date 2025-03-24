@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useExamStore } from '../../store/examStore';
 import { useRouter } from 'next/navigation';
+import { calculateExamScore } from '../../utils/calculateExamScore';
 
 export const ResultsView = () => {
     const router = useRouter();
@@ -41,8 +42,18 @@ export const ResultsView = () => {
     const totalAttempted = Object.keys(answers).length;
     const correctAnswers = Object.values(answers).filter(a => a.isCorrect).length;
     const incorrectAnswers = totalAttempted - correctAnswers;
-    const score = correctAnswers - (incorrectAnswers * 0.25);
-    const percentage = (score / totalQuestions) * 100;
+    const unansweredQuestions = totalQuestions - totalAttempted;
+    
+    // Use the standardized score calculation
+    const scoreResult = calculateExamScore(
+        totalQuestions,
+        correctAnswers,
+        incorrectAnswers,
+        unansweredQuestions
+    );
+    
+    const score = scoreResult.score;
+    const percentage = scoreResult.percentage;
     const timeSpent = (currentPaper.timeLimit * 60) - timeRemaining;
 
     const isPassed = percentage >= currentPaper.passingCriteria.passingScore;

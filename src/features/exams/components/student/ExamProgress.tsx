@@ -2,6 +2,7 @@ import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircleIcon, AlertCircleIcon, HelpCircleIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { HeaderTimeRemaining } from '../common/HeaderTimeRemaining';
 
 interface ExamProgressProps {
   currentQuestion: number;
@@ -10,6 +11,8 @@ interface ExamProgressProps {
   flaggedQuestionsCount?: number;
   timePercentage?: number;
   hideTimer?: boolean;
+  totalTimeInSeconds?: number;
+  timeRemainingInSeconds?: number;
 }
 
 export function ExamProgress({
@@ -18,7 +21,9 @@ export function ExamProgress({
   answeredQuestions,
   flaggedQuestionsCount = 0,
   timePercentage = 100,
-  hideTimer = false
+  hideTimer = false,
+  totalTimeInSeconds,
+  timeRemainingInSeconds
 }: ExamProgressProps) {
   const progressPercentage = (answeredQuestions / totalQuestions) * 100;
   
@@ -71,19 +76,30 @@ export function ExamProgress({
         />
       </div>
       
-      {!hideTimer && timePercentage < 100 && (
+      {!hideTimer && (
         <div className="space-y-1">
-          <div className="flex justify-between text-xs">
-            <span>Time Remaining</span>
-            <span className={getTimeColor()}>{Math.round(timePercentage)}%</span>
-          </div>
-          <Progress 
-            value={timePercentage} 
-            className={cn(
-              "h-1.5",
-              timePercentage > 50 ? "bg-green-100" : timePercentage > 25 ? "bg-amber-100" : "bg-red-100"
-            )}
-          />
+          {totalTimeInSeconds && timeRemainingInSeconds ? (
+            // Use the new HeaderTimeRemaining component when we have actual time values
+            <HeaderTimeRemaining
+              totalTime={totalTimeInSeconds}
+              remainingTime={timeRemainingInSeconds}
+            />
+          ) : (
+            // Fall back to the old implementation if no time values provided
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span>Time Remaining</span>
+                <span className={getTimeColor()}>{Math.round(timePercentage)}%</span>
+              </div>
+              <Progress 
+                value={timePercentage} 
+                className={cn(
+                  "h-1.5",
+                  timePercentage > 50 ? "bg-green-100" : timePercentage > 25 ? "bg-amber-100" : "bg-red-100"
+                )}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
