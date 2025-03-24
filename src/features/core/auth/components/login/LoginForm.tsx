@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useLoginForm } from '@/features/core/auth/hooks/useLoginForm';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
@@ -13,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 
 // Import icons
-import { AlertCircle, Loader2, LockKeyhole, LogIn, Mail } from 'lucide-react';
+import { AlertCircle, Loader2, LockKeyhole, LogIn, Mail, Eye, EyeOff } from 'lucide-react';
 
 // Import anti-sharing components
 import { LoginValidationError } from '@/features/core/auth/anti-sharing/components/LoginValidationError';
@@ -40,6 +41,7 @@ export const LoginForm = () => {
     handleCancel
   } = useLoginForm();
   
+  const [showPassword, setShowPassword] = useState(false);
   const isMobile = useMobileStore(selectIsMobile);
 
   return (
@@ -105,13 +107,21 @@ export const LoginForm = () => {
                   className="absolute left-3 top-3 h-4 w-4 text-gray-500 group-focus-within:text-blue-500 transition-colors"/>
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className={`pl-10 border-gray-300 bg-white focus:border-blue-500 transition-all ${isMobile ? 'h-10 text-sm' : ''}`}
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
