@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserAnswer } from '../../model/standardTypes';
 import { CheckCircle2, Flag, HelpCircle } from 'lucide-react';
+import { useMcqExamStore } from '../../store/mcqExamStore';
 
 interface McqQuestionNavigationProps {
   totalQuestions: number;
@@ -23,6 +24,14 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
   onQuestionSelect,
   minimumRequired = 0
 }) => {
+  // Get resetQuestionUI function from the store
+  const resetQuestionUI = useMcqExamStore(state => state.resetQuestionUI);
+  
+  // Create a wrapper for onQuestionSelect that resets UI state first
+  const handleQuestionSelect = (index: number) => {
+    resetQuestionUI();
+    onQuestionSelect(index);
+  };
   const questionNumbers = Array.from({ length: totalQuestions }, (_, i) => i);
   const answeredCount = Object.keys(answers).length;
   const flaggedCount = flaggedQuestions.size;
@@ -135,7 +144,7 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
                   size="sm"
                   variant={getButtonVariant(index)}
                   className={`h-10 w-10 p-0 relative ${getButtonStyles(index)}`}
-                  onClick={() => onQuestionSelect(index)}
+                  onClick={() => handleQuestionSelect(index)}
                 >
                   {index + 1}
                   {flaggedQuestions.has(questionId) && (

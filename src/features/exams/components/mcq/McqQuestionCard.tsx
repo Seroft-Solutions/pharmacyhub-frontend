@@ -3,9 +3,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Flag, Bookmark } from 'lucide-react';
+import { Flag, Bookmark, HelpCircle } from 'lucide-react';
 import { Question, UserAnswer } from '../../model/standardTypes';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMcqExamStore } from '../../store/mcqExamStore';
 
 interface McqQuestionCardProps {
   question: Question;
@@ -18,6 +19,7 @@ interface McqQuestionCardProps {
   isReview?: boolean;
   correctAnswer?: string;
   onNext?: () => void;
+  showExplanationButton?: boolean;
 }
 
 export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
@@ -29,7 +31,8 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
   onAnswer,
   onFlag,
   isReview = false,
-  correctAnswer
+  correctAnswer,
+  showExplanationButton = true
 }) => {
   const [selectedOption, setSelectedOption] = useState<string | undefined>(currentAnswer);
   const [timeSpent, setTimeSpent] = useState(0);
@@ -37,6 +40,10 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
   
   // Use the mobile support feature to detect mobile viewport
   const isMobile = useMobileStore(selectIsMobile);
+  
+  // Get state from mcqExamStore
+  const showExplanation = useMcqExamStore(state => state.showExplanation);
+  const toggleExplanation = useMcqExamStore(state => state.toggleExplanation);
   
   // Reset the start time when the question changes
   useEffect(() => {
@@ -77,26 +84,43 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
               {question.text}
             </CardTitle>
           </div>
-          <Button
-            variant="outline"
-            size={isMobile ? "xs" : "sm"}
-            className={`flex items-center gap-1 ${
-              isFlagged ? 'bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200' : ''
-            } ${isMobile ? 'h-8 px-2' : ''}`}
-            onClick={onFlag}
-          >
-            {isFlagged ? (
-              <>
-                <Bookmark className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} fill-yellow-500 text-yellow-500`} />
-                <span className="hidden sm:inline">Flagged</span>
-              </>
-            ) : (
-              <>
-                <Flag className={isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
-                <span className="hidden sm:inline">Flag</span>
-              </>
+          <div className="flex space-x-2">
+            {showExplanationButton && question.explanation && (
+              <Button
+                variant="outline"
+                size={isMobile ? "xs" : "sm"}
+                className={`flex items-center gap-1 ${
+                  showExplanation ? 'bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-200' : ''
+                } ${isMobile ? 'h-8 px-2' : ''}`}
+                onClick={toggleExplanation}
+              >
+                <HelpCircle className={isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+                <span className="hidden sm:inline">
+                  {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+                </span>
+              </Button>
             )}
-          </Button>
+            <Button
+              variant="outline"
+              size={isMobile ? "xs" : "sm"}
+              className={`flex items-center gap-1 ${
+                isFlagged ? 'bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200' : ''
+              } ${isMobile ? 'h-8 px-2' : ''}`}
+              onClick={onFlag}
+            >
+              {isFlagged ? (
+                <>
+                  <Bookmark className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} fill-yellow-500 text-yellow-500`} />
+                  <span className="hidden sm:inline">Flagged</span>
+                </>
+              ) : (
+                <>
+                  <Flag className={isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+                  <span className="hidden sm:inline">Flag</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className={isMobile ? "px-3 py-2" : ""}>
@@ -154,7 +178,7 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
           })}
         </RadioGroup>
         
-        {isReview && question.explanation && (
+        {(isReview || showExplanation) && question.explanation && (
           <div className={`${isMobile ? "mt-3 p-2 text-xs" : "mt-6 p-4"} bg-blue-50 border border-blue-200 rounded-lg`}>
             <h3 className={`font-medium text-blue-800 ${isMobile ? 'text-xs mb-1' : 'mb-2'}`}>Explanation</h3>
             <p className={`text-blue-700 ${isMobile ? 'text-xs' : ''}`}>{question.explanation}</p>

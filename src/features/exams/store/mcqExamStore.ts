@@ -29,6 +29,8 @@ interface McqExamState {
   isLoading: boolean;
   error?: string;
   examResult?: ExamResult;
+  showExplanation: boolean;
+  highlightedAnswerId: number | null;
   
   // Actions
   fetchPublishedExams: () => Promise<Exam[]>;
@@ -41,6 +43,8 @@ interface McqExamState {
   flagQuestion: (questionId: number) => Promise<void>;
   unflagQuestion: (questionId: number) => Promise<void>;
   toggleFlagQuestion: (questionId: number) => Promise<void>;
+  toggleExplanation: () => void;
+  resetQuestionUI: () => void;
   pauseExam: () => void;
   resumeExam: () => void;
   completeExam: () => Promise<void>;
@@ -59,6 +63,8 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
   isPaused: false,
   isCompleted: false,
   isLoading: false,
+  showExplanation: false,
+  highlightedAnswerId: null,
   
   fetchPublishedExams: async () => {
     try {
@@ -201,13 +207,25 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
   nextQuestion: () => {
     const { currentQuestionIndex, currentExam } = get();
     if (currentExam?.questions && currentQuestionIndex < currentExam.questions.length - 1) {
+      // Reset UI state first
+      get().resetQuestionUI();
       set({ currentQuestionIndex: currentQuestionIndex + 1 });
     }
+  },
+  
+  toggleExplanation: () => {
+    set((state) => ({ showExplanation: !state.showExplanation }));
+  },
+  
+  resetQuestionUI: () => {
+    set({ showExplanation: false, highlightedAnswerId: null });
   },
   
   previousQuestion: () => {
     const { currentQuestionIndex } = get();
     if (currentQuestionIndex > 0) {
+      // Reset UI state first
+      get().resetQuestionUI();
       set({ currentQuestionIndex: currentQuestionIndex - 1 });
     }
   },
@@ -215,6 +233,8 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
   navigateToQuestion: (index) => {
     const { currentExam } = get();
     if (currentExam?.questions && index >= 0 && index < currentExam.questions.length) {
+      // Reset UI state first
+      get().resetQuestionUI();
       set({ currentQuestionIndex: index });
     }
   },
@@ -384,7 +404,9 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
       isPaused: false,
       isCompleted: false,
       examResult: undefined,
-      error: undefined
+      error: undefined,
+      showExplanation: false,
+      highlightedAnswerId: null
     });
   },
   
