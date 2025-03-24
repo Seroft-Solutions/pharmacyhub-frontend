@@ -1,0 +1,97 @@
+  /* Exam pages */
+  .exam-start-card {
+    max-width: 100% !important;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
+  
+  .exam-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .exam-container {
+    padding: 0.5rem !important;
+  }/* 
+ * Mobile-specific styles to improve the responsive experience
+ * These styles are used globally across the application
+ */
+
+/* Global mobile adjustments */
+@media (max-width: 768px) {
+  /* Adjust sidebar width for mobile */
+  :root {
+    --sidebar-width-mobile: 85vw !important;
+  }
+  
+  /* Style the custom no-close-button class */
+  .no-close-button > button {
+    display: none !important;
+  }
+  
+  /* Ensure content is properly sized */
+  [data-sidebar="sidebar"][data-mobile="true"] {
+    max-width: var(--sidebar-width-mobile) !important;
+    min-width: 0 !important;
+  }
+  
+  /* Improve sidebar trigger button hit area */
+  [data-sidebar="trigger"],
+  [data-sidebar="mobile-trigger"] {
+    height: 2.5rem !important;
+    width: 2.5rem !important;
+    margin-right: 0.25rem;
+  }
+  
+  /* Make sidebar sheet visible above other elements */
+  .sidebar-sheet {
+    z-index: 999 !important;
+  }
+  
+  /* Adjust content area padding */
+  [data-sidebar="content-area"] {
+    padding: 1rem !important;
+  }
+  
+  /* Make top navigation more compact */
+  .topbar-container {
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  /* Adjust modal sizes */
+  .modal-container {
+    width: calc(100% - 2rem) !important;
+    max-width: 95vw !important;
+  }
+  
+  /* Sidebar close button styling */
+  .sidebar-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    height: 32px !important;
+    width: 32px !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.05);
+    z-index: 10;
+  }
+  
+  /* Override all default Sheet close buttons */
+  [role="dialog"] button[type="button"],
+  [data-state="open"] > button[type="button"],
+  [data-radix-sheet-content] > button[type="button"],
+  [data-radix-sheet-content] [data-radix-sheet-close],
+  [data-radix-dialog-content] > button[type="button"],
+  .sidebar-sheet button[data-radix-collection-item] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+}

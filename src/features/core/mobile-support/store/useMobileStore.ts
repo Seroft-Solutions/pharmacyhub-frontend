@@ -63,11 +63,31 @@ if (typeof window !== 'undefined') {
   
   // Listen for resize events with debounce for performance
   let resizeTimer: NodeJS.Timeout;
-  window.addEventListener('resize', () => {
+  
+  const handleResize = () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       useMobileStore.getState().checkViewport();
-    }, 100); // 100ms debounce
+    }, 50); // 50ms debounce (reduced for better response)
+  };
+  
+  // Add resize listener
+  window.addEventListener('resize', handleResize);
+  
+  // Add orientation change listener for mobile devices
+  window.addEventListener('orientationchange', () => {
+    // Check immediately on orientation change
+    useMobileStore.getState().checkViewport();
+    
+    // Also check after a slight delay to ensure accurate values
+    setTimeout(() => {
+      useMobileStore.getState().checkViewport();
+    }, 100);
+  });
+  
+  // Initial check after DOM content loaded to ensure accurate values
+  document.addEventListener('DOMContentLoaded', () => {
+    useMobileStore.getState().checkViewport();
   });
 }
 

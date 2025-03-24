@@ -10,13 +10,14 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+// Import custom sheet with hideCloseButton prop
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
+} from "@/features/shell/components/sidebar/custom-sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -28,7 +29,7 @@ import {
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
+const SIDEBAR_WIDTH_MOBILE = "var(--sidebar-width-mobile, 18rem)"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
@@ -200,17 +201,32 @@ const Sidebar = React.forwardRef<
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        <Sheet 
+          open={openMobile} 
+          onOpenChange={setOpenMobile} 
+          {...props} 
+          className="sidebar-sheet"
+          onCloseAutoFocus={(event) => {
+            // Prevent the focus from returning to the trigger
+            event.preventDefault();
+          }}
+          // Force empty element for the Sheet's close button
+          close={<></>}
+        >
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
+            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground max-w-[var(--sidebar-width-mobile,85vw)] no-close-button"
+            style={{
+              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+            } as React.CSSProperties}
             side={side}
+            closeThreshold={0.6} // Higher threshold means it's easier to close
+            onInteractOutside={(e) => {
+              // Allow explicit close via clicking outside
+              setOpenMobile(false);
+            }}
+            hideCloseButton={true} // Use our custom prop to hide the close button
           >
             <SheetHeader className="sr-only">
               <SheetTitle>Sidebar</SheetTitle>

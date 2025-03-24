@@ -5,6 +5,9 @@
  * Provides utilities, components, and state management for handling different device sizes.
  */
 
+// Import mobile styles to ensure they're loaded
+import './utils/mobile-styles.css';
+
 // Export all components
 export { 
   MobileWrapper,

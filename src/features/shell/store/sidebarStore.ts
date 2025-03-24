@@ -108,9 +108,13 @@ export const useSidebarStore = create<SidebarState>()(
         isSidebarOpen: isOpen
       }),
       
-      toggleMobileSidebar: () => set((state) => ({
-        isMobileSidebarOpen: !state.isMobileSidebarOpen
-      })),
+      toggleMobileSidebar: () => set((state) => {
+        // Always prioritize opening the sidebar in mobile view
+        // This ensures better user experience for mobile navigation
+        return {
+          isMobileSidebarOpen: !state.isMobileSidebarOpen
+        };
+      }),
       
       setMobileSidebarOpen: (isOpen: boolean) => set({
         isMobileSidebarOpen: isOpen

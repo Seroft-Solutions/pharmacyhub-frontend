@@ -19,7 +19,8 @@ import {
   HelpCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
+import { SidebarCloseButton } from "./SidebarCloseButton";
+import { 
   Sidebar,
   SidebarContent,
   SidebarHeader,
@@ -30,8 +31,12 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
-  SidebarMenuAction
+  SidebarMenuAction,
+  useSidebar
 } from "@/components/ui/sidebar";
+
+// Import our custom sheet component with no close button
+import { Sheet, SheetContentNoClose } from "./SheetNoClose";
 
 // Import navigation data
 import { useNavigationStore } from '../../store/navigationStore';
@@ -64,10 +69,27 @@ export function AppSidebar({
   const { expandedItems, toggleItem } = useSidebarStore();
   const { user } = useAuth();
   const isMobile = useMobileStore(selectIsMobile);
+  const { setOpenMobile } = useSidebar();
   
   // Auto-adjust sidebar variant for mobile
   const responsiveVariant = isMobile ? "floating" : variant;
   const responsiveCollapsible = isMobile ? "offcanvas" : collapsible;
+  
+  // Ensure mobile sidebar is properly sized
+  useEffect(() => {
+    if (isMobile) {
+      // Update CSS variable to control sidebar width in mobile view
+      document.documentElement.style.setProperty('--sidebar-width-mobile', '85vw');
+    } else {
+      // Reset to default value when not in mobile
+      document.documentElement.style.removeProperty('--sidebar-width-mobile');
+    }
+    
+    return () => {
+      // Clean up when component unmounts
+      document.documentElement.style.removeProperty('--sidebar-width-mobile');
+    };
+  }, [isMobile]);
   
   const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('SUPER_ADMIN');
   
@@ -158,8 +180,10 @@ export function AppSidebar({
     if (isMobile) {
       // Add a small delay to allow rendering to complete
       setTimeout(() => {
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      }, 150);
+        // Properly close the sidebar in mobile view
+        // Use the context method directly
+        setOpenMobile(false);
+      }, 50); // Reduced timing for better response
     }
   };
   
@@ -169,7 +193,10 @@ export function AppSidebar({
       variant={responsiveVariant}
       collapsible={responsiveCollapsible}
     >
-      <SidebarHeader className="flex flex-col">
+      <SidebarHeader className="flex flex-col relative"> {/* Added relative positioning for absolute positioned children */}
+        {/* Add back button for mobile */}
+        {isMobile && <SidebarCloseButton className="text-muted-foreground" />}
+        
         <div className="flex items-center p-3 border-b">
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <div className="bg-primary h-7 w-7 rounded-md flex items-center justify-center text-primary-foreground">

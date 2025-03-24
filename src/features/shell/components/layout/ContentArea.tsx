@@ -18,6 +18,7 @@ interface ContentAreaProps {
 export function ContentArea({ children, className }: ContentAreaProps) {
   return (
     <main 
+      data-sidebar="content-area"
       className={cn(
         "flex-1 overflow-auto p-4 md:p-6 relative w-full h-full",
         className
