@@ -27,14 +27,14 @@ const ExplanationBox = ({ explanation, isMobile }) => {
   );
 };
 
-const QuestionOption = ({ index, option, isSelected, isCorrect, showExplanation, questionId, onClick, isMobile }) => {
+const QuestionOption = ({ index, option, isSelected, isCorrect, showExplanation, questionId, onClick, isMobile, hasUserSelection }) => {
   // Determine styling based on explanation visibility and correctness
   let optionClassName = `flex items-center space-x-3 border ${isMobile ? 'p-2' : 'p-3'} rounded-lg transition-all duration-200`;
   
-  // Apply different styling when explanation is shown
-  if (showExplanation && isSelected !== undefined) {
+  // Apply different styling when explanation is shown AND user has made a selection
+  if (showExplanation && hasUserSelection) {
     if (isCorrect) {
-      // Highlight correct option in green only when explanation is shown and user has selected an answer
+      // Highlight correct option in green when explanation is shown and user has made any selection
       optionClassName = cn(optionClassName, "border-green-500 bg-green-50 shadow-md");
     } else if (isSelected) {
       // Only highlight selected incorrect options in red
@@ -74,7 +74,7 @@ const QuestionOption = ({ index, option, isSelected, isCorrect, showExplanation,
           </Label>
         </div>
           
-        {showExplanation && isSelected !== undefined ? (
+        {showExplanation && hasUserSelection ? (
           isCorrect ? (
             <CheckCircleIcon className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-green-500 flex-shrink-0`} />
           ) : isSelected ? (
@@ -174,6 +174,12 @@ export function QuestionDisplay({
   };
 
   const toggleExplanation = () => {
+    // If there's no selection and explanation is hidden, show a message
+    if (selectedOption === undefined && !showExplanation) {
+      // Could show a toast message here instead
+      alert("Please select an answer first before viewing the explanation.");
+      return;
+    }
     setShowExplanation(!showExplanation);
   };
 
@@ -186,6 +192,8 @@ export function QuestionDisplay({
   
   // Define a safe handler for when question.options might be undefined
   const renderOptions = () => {
+    const hasUserSelection = selectedOption !== undefined;
+    
     if (!question.options || !Array.isArray(question.options)) {
       return (
         <div className="text-red-500 p-4 border border-red-200 rounded-md bg-red-50">
@@ -211,6 +219,7 @@ export function QuestionDisplay({
             questionId={question.id}
             onClick={() => handleAnswerSelect(index.toString())}
             isMobile={isMobile}
+            hasUserSelection={hasUserSelection}
           />
         ))}
       </RadioGroup>
@@ -236,6 +245,7 @@ export function QuestionDisplay({
                 size="sm"
                 className="flex items-center space-x-1 rounded-lg"
                 onClick={toggleExplanation}
+                title={selectedOption === undefined ? "Please select an option first" : ""}
               >
                 {showExplanation ? (
                   <>
@@ -294,6 +304,7 @@ export function QuestionDisplay({
               size="xs"
               className="text-xs h-7 px-2"
               onClick={toggleExplanation}
+              title={selectedOption === undefined ? "Please select an option first" : ""}
             >
               {showExplanation ? (
                 <>
@@ -310,7 +321,7 @@ export function QuestionDisplay({
           </div>
         )}
         
-        {showExplanation && selectedOption && question.explanation && (
+        {showExplanation && selectedOption !== undefined && question.explanation && (
           <ExplanationBox explanation={question.explanation} isMobile={isMobile} />
         )}
       </CardContent>
