@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserAnswer } from '../../model/standardTypes';
 import { CheckCircle2, Flag, HelpCircle } from 'lucide-react';
 import { useMcqExamStore } from '../../store/mcqExamStore';
+import logger from '@/shared/lib/logger';
 
 interface McqQuestionNavigationProps {
   totalQuestions: number;
@@ -29,7 +30,14 @@ export const McqQuestionNavigation: React.FC<McqQuestionNavigationProps> = ({
   
   // Create a wrapper for onQuestionSelect that resets UI state first
   const handleQuestionSelect = (index: number) => {
+    // First reset the UI state
     resetQuestionUI();
+    // Log the navigation action
+    logger.debug('McqQuestionNavigation: Navigating to question', {
+      from: currentQuestion,
+      to: index
+    });
+    // Then navigate to the selected question
     onQuestionSelect(index);
   };
   const questionNumbers = Array.from({ length: totalQuestions }, (_, i) => i);

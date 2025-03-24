@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -7,6 +7,7 @@ import { Flag, Bookmark, HelpCircle } from 'lucide-react';
 import { Question, UserAnswer } from '../../model/standardTypes';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 import { useMcqExamStore } from '../../store/mcqExamStore';
+import logger from '@/shared/lib/logger';
 
 interface McqQuestionCardProps {
   question: Question;
@@ -32,8 +33,12 @@ export const McqQuestionCard = React.forwardRef<{resetUI: () => void}, McqQuesti
   onFlag,
   isReview = false,
   correctAnswer,
+  onNext,
   showExplanationButton = true
 }) => {
+  // Refs to track question changes more reliably
+  const previousQuestionIdRef = useRef<number | null>(null);
+  
   const [selectedOption, setSelectedOption] = useState<string | undefined>(currentAnswer);
   const [timeSpent, setTimeSpent] = useState(0);
   const [startTime, setStartTime] = useState(Date.now());
@@ -46,16 +51,36 @@ export const McqQuestionCard = React.forwardRef<{resetUI: () => void}, McqQuesti
   const highlightedAnswerId = useMcqExamStore(state => state.highlightedAnswerId);
   const toggleExplanation = useMcqExamStore(state => state.toggleExplanation);
   const answerQuestionStore = useMcqExamStore(state => state.answerQuestion);
+  const resetQuestionUI = useMcqExamStore(state => state.resetQuestionUI);
   
-  // Reset the start time and UI state when the question changes
+  // CRITICAL FIX: Reset UI when the question changes by watching the question ID
   useEffect(() => {
-    setStartTime(Date.now());
-    setSelectedOption(currentAnswer);
-    
-    // Get the reset function from the store and call it when the question changes
-    const resetQuestionUI = useMcqExamStore.getState().resetQuestionUI;
+    // Only reset if the question ID is different from the previous one
+    if (previousQuestionIdRef.current !== question.id) {
+      logger.debug('McqQuestionCard: Question changed - resetting UI', {
+        from: previousQuestionIdRef.current,
+        to: question.id
+      });
+      
+      // Reset UI state in the store
+      resetQuestionUI();
+      
+      // Reset local component state
+      setStartTime(Date.now());
+      setSelectedOption(currentAnswer);
+      
+      // Update the ref to the current question ID
+      previousQuestionIdRef.current = question.id;
+    }
+  }, [question.id, currentAnswer, resetQuestionUI]);
+  
+  // Double-safety: Watch for question number changes as well
+  useEffect(() => {
+    logger.debug('McqQuestionCard: Question number changed - resetting UI', {
+      questionNumber
+    });
     resetQuestionUI();
-  }, [question.id, currentAnswer]);
+  }, [questionNumber, resetQuestionUI]);
   
   // Update the time spent on this question
   useEffect(() => {
@@ -65,6 +90,13 @@ export const McqQuestionCard = React.forwardRef<{resetUI: () => void}, McqQuesti
     
     return () => clearInterval(timer);
   }, [startTime]);
+  
+  // Cleanup on unmount - ensure everything is reset
+  useEffect(() => {
+    return () => {
+      resetQuestionUI();
+    };
+  }, [resetQuestionUI]);
   
   const handleOptionChange = (value: string) => {
     setSelectedOption(value);
@@ -88,6 +120,15 @@ export const McqQuestionCard = React.forwardRef<{resetUI: () => void}, McqQuesti
     }
   };
   
+  // Handle explanation toggle with proper logging
+  const handleToggleExplanation = () => {
+    logger.debug('McqQuestionCard: Toggling explanation', {
+      questionId: question.id,
+      currentState: showExplanation
+    });
+    toggleExplanation();
+  };
+  
   return (
     <Card className={isMobile ? "shadow-sm border-gray-200" : ""}>
       <CardHeader className={isMobile ? "pb-1.5 px-3 pt-2.5" : "pb-3"}>
@@ -108,7 +149,7 @@ export const McqQuestionCard = React.forwardRef<{resetUI: () => void}, McqQuesti
                 className={`flex items-center gap-1 ${
                   showExplanation ? 'bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-200' : ''
                 } ${isMobile ? 'h-8 px-2' : ''}`}
-                onClick={toggleExplanation}
+                onClick={handleToggleExplanation}
               >
                 <HelpCircle className={isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
                 <span className="hidden sm:inline">
@@ -194,6 +235,7 @@ export const McqQuestionCard = React.forwardRef<{resetUI: () => void}, McqQuesti
           })}
         </RadioGroup>
         
+        {/* Only show explanation conditionally based on showExplanation state */}
         {(isReview || showExplanation) && question.explanation && (
           <div className={`${isMobile ? "mt-3 p-2 text-xs" : "mt-6 p-4"} bg-blue-50 border border-blue-200 rounded-lg`}>
             <h3 className={`font-medium text-blue-800 ${isMobile ? 'text-xs mb-1' : 'mb-2'}`}>Explanation</h3>

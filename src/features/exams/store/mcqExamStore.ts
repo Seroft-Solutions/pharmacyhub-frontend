@@ -196,6 +196,13 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
   },
   
   answerQuestion: (answer) => {
+    // Log the answer action for debugging
+    logger.debug('mcqExamStore: Answering question', {
+      questionId: answer.questionId,
+      answerId: answer.answerId,
+      timestamp: answer.timestamp
+    });
+    
     set((state) => ({
       userAnswers: {
         ...state.userAnswers,
@@ -226,9 +233,11 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
       highlightedAnswerId: null 
     });
     
-    // Logging for debugging
-    logger.debug('QuestionUI state reset', { 
-      timestamp: new Date().toISOString() 
+    // Enhanced logging for better debugging
+    logger.debug('mcqExamStore: QuestionUI state reset', { 
+      timestamp: new Date().toISOString(),
+      currentQuestionIndex: get().currentQuestionIndex,
+      examId: get().currentExam?.id
     });
   },
   
