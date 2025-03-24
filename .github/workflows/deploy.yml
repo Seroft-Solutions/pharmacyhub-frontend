@@ -7,7 +7,7 @@ defaults:
 
 on:
   push:
-    branches: [ dev, qa ]
+    branches: [ dev, qa, main ]
   pull_request:
     branches: [ dev, qa, main ]
   workflow_dispatch:
@@ -92,42 +92,42 @@ jobs:
       # - name: Build Next.js application
       #   run: npm run build
       
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          buildkitd-flags: --debug
-          driver-opts: |
-            image=moby/buildkit:latest
-            network=host
-      
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ env.DOCKER_IMAGE }}:${{ env.DEPLOY_ENV }}
-          build-args: |
-            NODE_ENV=${{ env.DEPLOY_ENV }}
-            ENV_FILE=deploy/env/${{ env.ENV_FILE }}
-          # Improved caching strategy
-          cache-from: |
-            type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
-            type=registry,ref=${{ env.DOCKER_IMAGE }}:${{ env.DEPLOY_ENV }}
-          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
-          # Add platform-specific build to speed up
-          platforms: linux/amd64
-          # Enable build concurrency
-          provenance: false
-          # Add build output to see progress
-          outputs: type=image,name=${{ env.DOCKER_IMAGE }}:${{ env.DEPLOY_ENV }},push-by-digest=false,push=true
-      
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v3
+#        with:
+#          buildkitd-flags: --debug
+#          driver-opts: |
+#            image=moby/buildkit:latest
+#            network=host
+#
+#      - name: Login to Docker Hub
+#        uses: docker/login-action@v3
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#
+#      - name: Build and push Docker image
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          file: ./Dockerfile
+#          push: true
+#          tags: ${{ env.DOCKER_IMAGE }}:${{ env.DEPLOY_ENV }}
+#          build-args: |
+#            NODE_ENV=${{ env.DEPLOY_ENV }}
+#            ENV_FILE=deploy/env/${{ env.ENV_FILE }}
+#          # Improved caching strategy
+#          cache-from: |
+#            type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+#            type=registry,ref=${{ env.DOCKER_IMAGE }}:${{ env.DEPLOY_ENV }}
+#          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+#          # Add platform-specific build to speed up
+#          platforms: linux/amd64
+#          # Enable build concurrency
+#          provenance: false
+#          # Add build output to see progress
+#          outputs: type=image,name=${{ env.DOCKER_IMAGE }}:${{ env.DEPLOY_ENV }},push-by-digest=false,push=true
+#
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
