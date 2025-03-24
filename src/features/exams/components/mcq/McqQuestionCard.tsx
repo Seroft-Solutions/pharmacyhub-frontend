@@ -22,7 +22,7 @@ interface McqQuestionCardProps {
   showExplanationButton?: boolean;
 }
 
-export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
+export const McqQuestionCard = React.forwardRef<{resetUI: () => void}, McqQuestionCardProps>(({
   question,
   questionNumber,
   totalQuestions,
@@ -43,12 +43,18 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
   
   // Get state from mcqExamStore
   const showExplanation = useMcqExamStore(state => state.showExplanation);
+  const highlightedAnswerId = useMcqExamStore(state => state.highlightedAnswerId);
   const toggleExplanation = useMcqExamStore(state => state.toggleExplanation);
+  const answerQuestionStore = useMcqExamStore(state => state.answerQuestion);
   
-  // Reset the start time when the question changes
+  // Reset the start time and UI state when the question changes
   useEffect(() => {
     setStartTime(Date.now());
     setSelectedOption(currentAnswer);
+    
+    // Get the reset function from the store and call it when the question changes
+    const resetQuestionUI = useMcqExamStore.getState().resetQuestionUI;
+    resetQuestionUI();
   }, [question.id, currentAnswer]);
   
   // Update the time spent on this question
@@ -62,7 +68,17 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
   
   const handleOptionChange = (value: string) => {
     setSelectedOption(value);
+    // Call local onAnswer prop for backwards compatibility
     onAnswer(value);
+    
+    // Also update store state with the answer
+    if (question && question.id) {
+      answerQuestionStore({
+        questionId: question.id,
+        answerId: value,
+        timestamp: new Date().toISOString()
+      });
+    }
     
     // Auto-navigate to next question after 1 second delay
     if (onNext && !isReview) {
@@ -142,7 +158,7 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
                     ? 'bg-green-50 border-green-300' 
                     : isIncorrectSelection 
                     ? 'bg-red-50 border-red-300' 
-                    : selectedOption === option.id.toString() 
+                    : selectedOption === option.id.toString() || highlightedAnswerId === option.id
                     ? 'bg-blue-50 border-blue-300' 
                     : 'bg-white hover:bg-slate-50'
                 }`}
@@ -191,4 +207,14 @@ export const McqQuestionCard: React.FC<McqQuestionCardProps> = ({
       </CardFooter>
     </Card>
   );
-};
+}, (ref) => {
+  return {
+    resetUI: () => {
+      // This will be exposed to parent components to reset this component's UI state
+      useMcqExamStore.getState().resetQuestionUI();
+    }
+  };
+});
+
+// Export with displayName for better debugging
+McqQuestionCard.displayName = 'McqQuestionCard';

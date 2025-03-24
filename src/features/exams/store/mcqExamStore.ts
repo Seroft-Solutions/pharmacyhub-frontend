@@ -201,6 +201,8 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
         ...state.userAnswers,
         [answer.questionId]: answer,
       },
+      // Set the highlighted answer ID when answering
+      highlightedAnswerId: parseInt(answer.answerId)
     }));
   },
   
@@ -218,7 +220,16 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
   },
   
   resetQuestionUI: () => {
-    set({ showExplanation: false, highlightedAnswerId: null });
+    // Clear both the explanation and highlighting state
+    set({ 
+      showExplanation: false, 
+      highlightedAnswerId: null 
+    });
+    
+    // Logging for debugging
+    logger.debug('QuestionUI state reset', { 
+      timestamp: new Date().toISOString() 
+    });
   },
   
   previousQuestion: () => {
