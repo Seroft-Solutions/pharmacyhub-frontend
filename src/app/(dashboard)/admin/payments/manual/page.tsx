@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ManualPaymentsAdminDashboard } from '@/features/payments/manual/components/admin/ManualPaymentsAdminDashboard';
-import { usePermissions } from '@/features/auth/hooks/usePermissions';
+import { usePermissions } from '@/features/core/rbac/hooks/usePermissions';
 import { PERMISSIONS } from '@/features/core/rbac/permissions';
 import { AccessDenied } from '@/components/AccessDenied';
 
