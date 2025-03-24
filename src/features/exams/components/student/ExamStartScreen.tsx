@@ -1,10 +1,8 @@
 "use client";
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   CheckCircleIcon,
   ClipboardListIcon,
@@ -12,19 +10,16 @@ import {
   AlertTriangleIcon,
   Clock8Icon,
   Play as PlayIcon,
-  DollarSignIcon
+  DollarSignIcon,
+  ChevronUp,
+  BookOpenIcon,
+  GraduationCapIcon
 } from 'lucide-react';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 
-// Import responsive styles
-import '@/features/exams/styles/exam-responsive.css';
-
 /**
- * ExamStartScreen - Responsive component for displaying exam information before starting
- *
- * This component shows exam metadata and instructions with proper responsiveness
- * for both mobile and desktop views.
+ * ExamStartScreen - Simplified component with enhanced header
  */
 export const ExamStartScreen = ({
   exam,
@@ -37,125 +32,127 @@ export const ExamStartScreen = ({
   const isMobile = useMobileStore(selectIsMobile);
 
   return (
-    <Card className="exam-start-card w-full shadow-lg border-t-4 border-t-blue-500 rounded-xl overflow-hidden">
-      <CardHeader className={`pb-3 border-b bg-gradient-to-r from-blue-50 to-white ${isMobile ? 'px-4 py-4' : 'px-6 py-5'}`}>
-        <div className="flex justify-between items-center">
-          <CardTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-blue-700`}>
-            {exam.title}
-            {premiumInfo?.premium && (
-              <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-amber-300 to-amber-500 text-white">
-                <DollarSignIcon className="h-3 w-3 mr-1" />
-                Premium
-              </Badge>
-            )}
-          </CardTitle>
-          <NetworkStatusIndicator />
-        </div>
-      </CardHeader>
+    <div className="w-full bg-white">
+      {/* Enhanced Header with Title */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 text-white p-5 rounded-b-lg shadow-md relative overflow-hidden">
+        {/* Decorative element */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mt-12 -mr-12"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-8 -mb-8"></div>
 
-      <CardContent className={`pt-6 pb-6 ${isMobile ? 'px-4' : 'px-6'}`}>
-        <div className={`space-y-${isMobile ? '5' : '6'}`}>
-
-          {/* Exam Stats - Responsive Grid */}
-          <div className="exam-stats-grid bg-gradient-to-r from-blue-50 to-white p-4 rounded-xl shadow-sm border border-blue-100">
-            {/* Duration */}
-            <div className="exam-stats-item flex items-center space-x-3">
-              <div className={`bg-blue-100 p-${isMobile ? '2' : '3'} rounded-full`}>
-                <Clock8Icon className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-blue-600`} />
-              </div>
-              <div>
-                <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold text-gray-500`}>Duration</h3>
-                <p className={`${isMobile ? 'text-lg' : 'text-xl'} font-medium`}>{exam.duration || exam.durationMinutes || 60} minutes</p>
-              </div>
-            </div>
-
-            {/* Questions */}
-            <div className="exam-stats-item flex items-center space-x-3">
-              <div className={`bg-green-100 p-${isMobile ? '2' : '3'} rounded-full`}>
-                <ClipboardListIcon className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-green-600`} />
-              </div>
-              <div>
-                <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold text-gray-500`}>Questions</h3>
-                <p className={`${isMobile ? 'text-lg' : 'text-xl'} font-medium`}>{exam.questions?.length || exam.questionCount || 7}</p>
-              </div>
-            </div>
-
-            {/* Total Marks */}
-            <div className="exam-stats-item flex items-center space-x-3">
-              <div className={`bg-indigo-100 p-${isMobile ? '2' : '3'} rounded-full`}>
-                <CheckCircleIcon className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-indigo-600`} />
-              </div>
-              <div>
-                <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold text-gray-500`}>Total Marks</h3>
-                <p className={`${isMobile ? 'text-lg' : 'text-xl'} font-medium`}>{exam.totalMarks || 7}</p>
-              </div>
-            </div>
-
-            {/* Passing Marks */}
-            <div className="exam-stats-item flex items-center space-x-3">
-              <div className={`bg-amber-100 p-${isMobile ? '2' : '3'} rounded-full`}>
-                <AlertTriangleIcon className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-amber-600`} />
-              </div>
-              <div>
-                <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold text-gray-500`}>Passing Marks</h3>
-                <p className={`${isMobile ? 'text-lg' : 'text-xl'} font-medium`}>{exam.passingMarks || 5}</p>
-              </div>
+        <div className="flex items-center">
+          <GraduationCapIcon className="h-7 w-7 mr-3" />
+          <div>
+            <h1 className="text-2xl font-bold">
+              {exam.title}
+            </h1>
+            <div className="mt-1 flex items-center">
+              {premiumInfo?.premium && (
+                <div className="inline-flex items-center px-2 py-1 rounded-full bg-amber-400 text-white text-xs font-medium mr-2">
+                  <DollarSignIcon className="h-3 w-3 mr-1" />
+                  Premium
+                </div>
+              )}
+              <div className="text-sm opacity-90">Enhance your knowledge with our expertly curated questions</div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Instructions - Adjusted for Mobile */}
-          <div className="exam-instructions bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-sm">
-            <h3 className="text-blue-800 font-medium mb-3">Instructions:</h3>
-            <ul className="list-disc list-inside text-blue-700 space-y-1.5">
-              <li>Read each question carefully before answering.</li>
-              <li>You can flag questions to review later.</li>
-              <li>Once the time is up, the exam will be submitted automatically.</li>
-              <li>You can review all your answers before final submission.</li>
-              <li>You must click the "Start Exam" button to begin.</li>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-4 text-center py-3 border-b">
+        <div className="flex flex-col items-center">
+          <Clock8Icon className="h-5 w-5 text-blue-600 mb-1" />
+          <div className="text-xs text-gray-500 mb-0.5">Duration</div>
+          <div className="text-sm font-medium">{exam.duration || exam.durationMinutes || 60} min</div>
+        </div>
+        
+        <div className="flex flex-col items-center">
+          <ClipboardListIcon className="h-5 w-5 text-green-600 mb-1" />
+          <div className="text-xs text-gray-500 mb-0.5">Questions</div>
+          <div className="text-sm font-medium">{exam.questions?.length || exam.questionCount || 7}</div>
+        </div>
+        
+        <div className="flex flex-col items-center">
+          <CheckCircleIcon className="h-5 w-5 text-blue-600 mb-1" />
+          <div className="text-xs text-gray-500 mb-0.5">Total Marks</div>
+          <div className="text-sm font-medium">{exam.totalMarks || 7}</div>
+        </div>
+        
+        <div className="flex flex-col items-center">
+          <AlertTriangleIcon className="h-5 w-5 text-amber-600 mb-1" />
+          <div className="text-xs text-gray-500 mb-0.5">Passing</div>
+          <div className="text-sm font-medium">{exam.passingMarks || 5}</div>
+        </div>
+      </div>
+
+      {/* Instructions Section */}
+      <div className="m-2">
+        <div className="bg-blue-50 rounded-md">
+          <div className="flex items-center justify-between px-4 py-2 text-blue-800 font-medium">
+            Instructions
+            <ChevronUp className="h-4 w-4 text-blue-600" />
+          </div>
+          
+          <div className="px-4 py-3">
+            <ul className="space-y-2">
+              <li className="flex items-start">
+                <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                <span className="text-sm text-blue-700">Read each question carefully before answering.</span>
+              </li>
+              <li className="flex items-start">
+                <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                <span className="text-sm text-blue-700">You can flag questions to review later.</span>
+              </li>
+              <li className="flex items-start">
+                <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                <span className="text-sm text-blue-700">Once the time is up, the exam will be submitted automatically.</span>
+              </li>
+              <li className="flex items-start">
+                <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                <span className="text-sm text-blue-700">You can review all your answers before final submission.</span>
+              </li>
+              <li className="flex items-start">
+                <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                <span className="text-sm text-blue-700">You must click the "Start Exam" button to begin.</span>
+              </li>
             </ul>
           </div>
-
-          {/* Offline Warning */}
-          {!isOnline && (
-            <Alert variant="warning" className="bg-amber-50 border-amber-200">
-              <AlertTriangleIcon className="h-4 w-4" />
-              <AlertTitle>Limited connectivity</AlertTitle>
-              <AlertDescription>
-                You are currently offline. Your progress will be saved locally, but you need an internet connection to submit the exam.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Start Button - Responsive Sizing */}
-          <Button
-            onClick={handleStartExam}
-            disabled={isStarting || !isOnline}
-            className="exam-button w-full bg-blue-600 hover:bg-blue-700 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1 rounded-lg"
-            size="default"
-          >
-            {isStarting ? (
-              <span className="flex items-center justify-center">
-                <Loader2Icon className="h-5 w-5 mr-2 animate-spin" />
-                Starting...
-              </span>
-            ) : (
-              <span className="flex items-center justify-center">
-                <PlayIcon className="h-5 w-5 mr-2" />
-                Start Exam
-              </span>
-            )}
-          </Button>
-
-          {/* Error Display */}
-          {startError && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                {startError instanceof Error ? startError.message : 'Failed to start exam'}
-              </AlertDescription>
-            </Alert>
-          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Start Button */}
+      <div className="px-2 my-3">
+        <Button
+          onClick={handleStartExam}
+          disabled={isStarting || !isOnline}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"
+        >
+          {isStarting ? (
+            <span className="flex items-center justify-center">
+              <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+              Starting...
+            </span>
+          ) : (
+            <span className="flex items-center justify-center">
+              <PlayIcon className="h-4 w-4 mr-2" />
+              Start Exam
+            </span>
+          )}
+        </Button>
+      </div>
+
+      {/* Error Message */}
+      {startError && (
+        <div className="fixed bottom-16 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-full shadow-lg">
+            <AlertTriangleIcon className="h-5 w-5" />
+            <span className="font-medium text-sm">1 error</span>
+            <button className="ml-2 text-white">
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
