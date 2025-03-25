@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -26,7 +26,8 @@ import { ScoreBreakdown } from './ScoreBreakdown';
 import { StatisticsDisplay } from './StatisticsDisplay';
 import { ScoreOverview } from './ScoreOverview';
 import { QuestionFilter } from './QuestionFilter';
-import { createQuestionStatusMap } from '../../types/QuestionStatus';
+import { QuestionDialog } from './QuestionDialog';
+import { createQuestionStatusMap, QuestionStatus } from '../../types/QuestionStatus';
 import { calculateExamStatistics } from '../../utils/examStatisticsCalculator';
 
 interface ExamResultsProps {
@@ -103,13 +104,18 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
     };
   }, [questions, userAnswers, result]);
   
+  // State for selected question dialog
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedQuestionStatus, setSelectedQuestionStatus] = useState<QuestionStatus>(QuestionStatus.UNANSWERED);
+  
   // Handler for question selection from the filter
   const handleSelectQuestion = (questionId: number) => {
-    if (onReviewQuestion) {
-      onReviewQuestion(questionId);
-    } else if (onReview) {
-      // If no specific handler, just go to review mode
-      onReview();
+    const question = questions?.find(q => q.id === questionId);
+    if (question) {
+      setSelectedQuestion(question);
+      setSelectedQuestionStatus(calculatedStats.questionStatusMap[questionId] || QuestionStatus.UNANSWERED);
+      setDialogOpen(true);
     }
   };
 
@@ -187,6 +193,15 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
               </div>
             </div>
           </div>
+          
+          {/* Question Dialog */}
+          <QuestionDialog 
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            question={selectedQuestion}
+            status={selectedQuestionStatus}
+            userAnswer={userAnswers?.[selectedQuestion?.id]}
+          />
           
           {/* Question Filter Component - New addition for filtering questions by status */}
           {questions && userAnswers && questions.length > 0 && (

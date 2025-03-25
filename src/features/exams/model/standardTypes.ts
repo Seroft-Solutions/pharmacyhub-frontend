@@ -1,3 +1,38 @@
+// User answer to a question
+export interface UserAnswer {
+  questionId: number;
+  selectedOption: number;
+  isCorrect?: boolean;
+}
+
+// Question result in exam results
+export interface QuestionResult {
+  questionId: number;
+  userAnswer: number;
+  correctAnswer: number;
+  isCorrect: boolean;
+  points: number;
+  explanation: string;
+}
+
+// Exam result model
+export interface ExamResult {
+  attemptId: number;
+  examId: number;
+  examTitle: string;
+  score: number;
+  totalMarks: number;
+  passingMarks: number;
+  isPassed: boolean;
+  timeSpent: number;
+  totalQuestions: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  unanswered: number;
+  completedAt: string;
+  questionResults?: QuestionResult[];
+}
+
 // Exam difficulty levels
 export enum Difficulty {
   EASY = 'EASY',
@@ -19,8 +54,9 @@ export interface Option {
   text: string;
 }
 
-// Structure of a question
+// Question model
 export interface Question {
+  id: number;
   questionNumber: number;
   text: string;
   options: Option[];
