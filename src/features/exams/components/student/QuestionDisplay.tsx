@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { ExamAlertDialog } from '../shared/ExamAlertDialog';
 import { Question, UserAnswer } from '../../model/mcqTypes';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -173,14 +174,21 @@ export function QuestionDisplay({
     onFlagQuestion(question.id);
   };
 
+  // Alert dialog state
+  const [alertOpen, setAlertOpen] = useState(false);
+
   const toggleExplanation = () => {
     // If there's no selection and explanation is hidden, show a message
     if (selectedOption === undefined && !showExplanation) {
-      // Could show a toast message here instead
-      alert("Please select an answer first before viewing the explanation.");
+      // Show our custom alert dialog instead of the default browser alert
+      setAlertOpen(true);
       return;
     }
     setShowExplanation(!showExplanation);
+  };
+
+  const handleAlertClose = () => {
+    setAlertOpen(false);
   };
 
   const [selectedOption, setSelectedOption] = useState<string | undefined>(userAnswer?.toString());
@@ -227,8 +235,17 @@ export function QuestionDisplay({
   };
 
   return (
-    <Card className={`w-full ${isMobile ? 'shadow-sm' : 'shadow-lg'} border ${isMobile ? 'border-gray-200' : 'border-gray-100'} rounded-xl overflow-hidden`}>
-      <CardHeader className={`${isMobile ? 'pb-1.5 px-3 pt-2' : 'pb-2'} border-b bg-gradient-to-r from-blue-50 to-white`}>
+    <>
+      <ExamAlertDialog
+        isOpen={alertOpen}
+        onClose={handleAlertClose}
+        title="Action Required"
+        message="Please select an answer first before viewing the explanation."
+        actionLabel="Got it"
+      />
+
+      <Card className={`w-full ${isMobile ? 'shadow-sm' : 'shadow-lg'} border ${isMobile ? 'border-gray-200' : 'border-gray-100'} rounded-xl overflow-hidden`}>
+        <CardHeader className={`${isMobile ? 'pb-1.5 px-3 pt-2' : 'pb-2'} border-b bg-gradient-to-r from-blue-50 to-white`}>
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <span className={`bg-blue-600 text-white ${isMobile ? 'text-xs w-6 h-6' : 'text-sm w-8 h-8'} font-medium rounded-full flex items-center justify-center ${isMobile ? 'mr-2' : 'mr-3'} shadow-sm`}>
@@ -326,5 +343,6 @@ export function QuestionDisplay({
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
