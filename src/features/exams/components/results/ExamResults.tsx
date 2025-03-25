@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -11,19 +11,23 @@ import { Button } from "@/components/ui/button";
 import {
   CheckCircle2,
   XCircle,
-  AlertCircle,
   Award,
   Clock,
   BarChart,
   ArrowRight,
   Printer
 } from 'lucide-react';
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Question, ExamResult, QuestionResult, UserAnswer } from '../../model/standardTypes';
 import { formatTimeVerbose } from '../../utils/formatTime';
 import { useExamScoreCalculation } from './useExamScoreCalculation';
+import { ScoreBreakdown } from './ScoreBreakdown';
+import { StatisticsDisplay } from './StatisticsDisplay';
+import { ScoreOverview } from './ScoreOverview';
+import { QuestionFilter } from './QuestionFilter';
+import { createQuestionStatusMap } from '../../types/QuestionStatus';
+import { calculateExamStatistics } from '../../utils/examStatisticsCalculator';
 
 interface ExamResultsProps {
   result: ExamResult;
@@ -34,8 +38,12 @@ interface ExamResultsProps {
   onBackToDashboard?: () => void;
   onReturnToDashboard?: () => void; // For backward compatibility
   showPerformanceInsights?: boolean; // Option to hide performance insights
+  onReviewQuestion?: (questionId: number) => void; // For reviewing specific questions
 }
 
+/**
+ * Enhanced ExamResults component with improved statistics display and question filtering
+ */
 export const ExamResults: React.FC<ExamResultsProps> = ({
   result,
   questions,
@@ -44,7 +52,8 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
   onTryAgain,
   onBackToDashboard,
   onReturnToDashboard,
-  showPerformanceInsights = false // Default to false based on user feedback
+  showPerformanceInsights = false,
+  onReviewQuestion
 }) => {
   const getPassFailMessage = () => {
     if (result.isPassed) {
@@ -67,10 +76,42 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
   const passFailInfo = getPassFailMessage();
   
   // Use the custom hook for consistent score calculation and formatting
-  const scoreInfo = useExamScoreCalculation(result);
+  // Pass questions and userAnswers for accurate calculation
+  const scoreInfo = useExamScoreCalculation(result, questions, userAnswers);
   
-  // For backward compatibility
-  const scorePercentage = scoreInfo.percentage;
+  // Calculate accurate statistics using the examStatisticsCalculator
+  const calculatedStats = useMemo(() => {
+    if (!questions || !userAnswers) {
+      return {
+        questionStatusMap: {},
+        correctAnswers: result.correctAnswers,
+        incorrectAnswers: result.incorrectAnswers,
+        unanswered: result.unanswered,
+        totalQuestions: result.totalQuestions
+      };
+    }
+    
+    // Use our fixed calculator to get accurate statistics
+    const stats = calculateExamStatistics(questions, userAnswers);
+    
+    return {
+      questionStatusMap: stats.questionStatusMap,
+      correctAnswers: stats.correctAnswers,
+      incorrectAnswers: stats.incorrectAnswers,
+      unanswered: stats.unanswered,
+      totalQuestions: stats.totalQuestions
+    };
+  }, [questions, userAnswers, result]);
+  
+  // Handler for question selection from the filter
+  const handleSelectQuestion = (questionId: number) => {
+    if (onReviewQuestion) {
+      onReviewQuestion(questionId);
+    } else if (onReview) {
+      // If no specific handler, just go to review mode
+      onReview();
+    }
+  };
 
   const formatTimeStr = (seconds: number) => {
     return formatTimeVerbose(seconds);
@@ -93,72 +134,35 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
         </CardHeader>
         
         <CardContent className="space-y-8">
-          {/* Score overview */}
-          <div className="text-center">
-            <h3 className="text-sm uppercase text-gray-500 mb-2">Your Score</h3>
-            <div className={`text-4xl font-bold ${scoreInfo.scoreColor}`}>
-              {scoreInfo.displayPercentage}
-            </div>
-            <div className="text-sm text-gray-600 mt-1">
-              {scoreInfo.displayValue} marks
-            </div>
-            
-            <div className="mt-6">
-              <Progress
-                value={scorePercentage}
-                className="h-3"
-                indicatorClassName={result.isPassed ? "bg-green-500" : "bg-red-500"}
-              />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>0%</span>
-                <span>{result.passingMarks / result.totalMarks * 100}% (Pass Mark)</span>
-                <span>100%</span>
-              </div>
-            </div>
-          </div>
+          {/* Score Overview Component */}
+          <ScoreOverview 
+            scoreInfo={scoreInfo}
+            isPassed={result.isPassed}
+            passingMarks={result.passingMarks}
+            totalMarks={result.totalMarks}
+          />
           
           <Separator />
           
-          {/* Statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-slate-50 rounded-lg p-4 flex items-center">
-              <div className="bg-blue-100 p-3 mr-4 rounded-full">
-                <CheckCircle2 className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Correct Answers</p>
-                <p className="text-lg font-semibold">
-                  {result.correctAnswers} ({(result.correctAnswers / result.totalQuestions * 100).toFixed(0)}%)
-                </p>
-              </div>
-            </div>
-            
-            <div className="bg-slate-50 rounded-lg p-4 flex items-center">
-              <div className="bg-red-100 p-3 mr-4 rounded-full">
-                <XCircle className="h-5 w-5 text-red-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Incorrect Answers</p>
-                <p className="text-lg font-semibold">
-                  {result.incorrectAnswers} ({(result.incorrectAnswers / result.totalQuestions * 100).toFixed(0)}%)
-                </p>
-              </div>
-            </div>
-            
-            <div className="bg-slate-50 rounded-lg p-4 flex items-center">
-              <div className="bg-yellow-100 p-3 mr-4 rounded-full">
-                <AlertCircle className="h-5 w-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Unanswered</p>
-                <p className="text-lg font-semibold">
-                  {result.unanswered} ({(result.unanswered / result.totalQuestions * 100).toFixed(0)}%)
-                </p>
-              </div>
-            </div>
-          </div>
+          {/* Statistics Component with accurate statistics */}
+          <StatisticsDisplay 
+            correctAnswers={calculatedStats.correctAnswers}
+            incorrectAnswers={calculatedStats.incorrectAnswers}
+            unanswered={calculatedStats.unanswered}
+            totalQuestions={calculatedStats.totalQuestions}
+            questionStatusMap={calculatedStats.questionStatusMap}
+          />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Score Breakdown Component with accurate statistics */}
+          <ScoreBreakdown 
+            correctAnswers={calculatedStats.correctAnswers}
+            incorrectAnswers={calculatedStats.incorrectAnswers}
+            unanswered={calculatedStats.unanswered}
+            totalMarks={result.totalMarks}
+            scoreInfo={scoreInfo}
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className="bg-slate-50 rounded-lg p-4 flex items-center">
               <div className="bg-purple-100 p-3 mr-4 rounded-full">
                 <Clock className="h-5 w-5 text-purple-600" />
@@ -183,6 +187,18 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
               </div>
             </div>
           </div>
+          
+          {/* Question Filter Component - New addition for filtering questions by status */}
+          {questions && userAnswers && questions.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm uppercase text-gray-500 mb-3">Question Review</h3>
+              <QuestionFilter 
+                questions={questions}
+                questionStatusMap={calculatedStats.questionStatusMap}
+                onSelectQuestion={handleSelectQuestion}
+              />
+            </div>
+          )}
         </CardContent>
         
         <CardFooter className="flex flex-col sm:flex-row justify-between gap-4 bg-gray-50 px-6 py-4">
@@ -246,17 +262,19 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
                       {topic.score.toFixed(0)}%
                     </Badge>
                   </div>
-                  <Progress 
-                    value={topic.score} 
-                    className="h-2"
-                    indicatorClassName={
-                      topic.score > 70 
-                        ? "bg-green-500" 
-                        : topic.score > 40 
-                          ? "bg-yellow-500" 
-                          : "bg-red-500"
-                    }
-                  />
+                  {/* Using a basic div for progress since we don't have access to the Progress component */}
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full ${
+                        topic.score > 70 
+                          ? "bg-green-500" 
+                          : topic.score > 40 
+                            ? "bg-yellow-500" 
+                            : "bg-red-500"
+                      }`}
+                      style={{ width: `${topic.score}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
