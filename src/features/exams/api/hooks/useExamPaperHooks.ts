@@ -14,13 +14,21 @@ import type { ExamPaper } from '../../types';
 /**
  * Utility function to process response data into paper format with correct paper type
  */
+/**
+ * Utility function to process response data into paper format with correct paper type
+ * and sort them in ascending order by ID
+ * @param exams - The exams data from API response
+ * @param defaultType - The default paper type if not specified
+ * @returns Array of ExamPaper objects sorted by ID in ascending order
+ */
 function processPaperResponse(exams: any, defaultType: string = 'PRACTICE'): ExamPaper[] {
   if (!exams) return [];
   
   // Handle case where exams are wrapped in an API response
   const examsArray = exams.data ? exams.data : (Array.isArray(exams) ? exams : []);
   
-  return examsArray.map((exam: any) => ({
+  // Map the exams array to ExamPaper objects
+  const mappedExams = examsArray.map((exam: any) => ({
     id: exam.id,
     title: exam.title,
     description: exam.description,
@@ -38,6 +46,14 @@ function processPaperResponse(exams: any, defaultType: string = 'PRACTICE'): Exa
     durationMinutes: exam.durationMinutes || exam.duration || 0,
     paymentStatus: exam.paymentStatus,
   }));
+  
+  // PHAR-176: Sort papers by ID in ascending order
+  // Convert ID to number for proper numeric sorting
+  return mappedExams.sort((a, b) => {
+    const idA = typeof a.id === 'number' ? a.id : parseInt(a.id, 10);
+    const idB = typeof b.id === 'number' ? b.id : parseInt(b.id, 10);
+    return idA - idB;
+  });
 }
 
 /**
