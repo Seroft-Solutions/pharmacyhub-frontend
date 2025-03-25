@@ -220,15 +220,6 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
                 Try Again
               </Button>
             )}
-            
-            {onReview && (
-              <Button 
-                onClick={onReview}
-                className="w-full sm:w-auto"
-              >
-                Review Answers <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
           </div>
         </CardFooter>
       </Card>

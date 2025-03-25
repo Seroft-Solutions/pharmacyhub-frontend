@@ -388,15 +388,15 @@ function ExamContainerInternal({
     toggleSummary();
   };
   
-  // Handle try again action
+  // Handle try again action - returns to the exam start screen
   const handleTryAgain = () => {
     analytics.trackEvent('exam_try_again');
     // Reset all states for a fresh start
     setAttemptId(null);
     setShowResults(false);
     useExamStore.getState().resetExam();
-    // Start a new attempt immediately
-    handleStartExam();
+    // Do not start a new attempt immediately - just reset the state
+    // This will cause the exam start screen to be shown
   };
   
   // Handle timer expiration with analytics
