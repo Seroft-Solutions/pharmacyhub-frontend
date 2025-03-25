@@ -8,27 +8,53 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   CheckCircle2,
   XCircle,
   Award,
   Clock,
   BarChart,
-  ArrowRight,
-  Printer
+  Printer,
+  HelpCircle,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle
 } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Question, ExamResult, QuestionResult, UserAnswer } from '../../model/standardTypes';
 import { formatTimeVerbose } from '../../utils/formatTime';
 import { useExamScoreCalculation } from './useExamScoreCalculation';
-import { ScoreBreakdown } from './ScoreBreakdown';
-import { StatisticsDisplay } from './StatisticsDisplay';
-import { ScoreOverview } from './ScoreOverview';
-import { QuestionFilter } from './QuestionFilter';
 import { QuestionDialog } from './QuestionDialog';
 import { createQuestionStatusMap, QuestionStatus } from '../../types/QuestionStatus';
 import { calculateExamStatistics } from '../../utils/examStatisticsCalculator';
+import { create } from 'zustand';
+
+// Define Zustand store for exam results state
+interface ExamResultsState {
+  selectedQuestionId: number | null;
+  isDialogOpen: boolean;
+  activeTab: string;
+  isBreakdownExpanded: boolean;
+  setSelectedQuestionId: (id: number | null) => void;
+  setDialogOpen: (open: boolean) => void;
+  setActiveTab: (tab: string) => void;
+  toggleBreakdown: () => void;
+}
+
+const useExamResultsStore = create<ExamResultsState>((set) => ({
+  selectedQuestionId: null,
+  isDialogOpen: false,
+  activeTab: 'all',
+  isBreakdownExpanded: false,
+  setSelectedQuestionId: (id) => set({ selectedQuestionId: id }),
+  setDialogOpen: (open) => set({ isDialogOpen: open }),
+  setActiveTab: (tab) => set({ activeTab: tab }),
+  toggleBreakdown: () => set((state) => ({ isBreakdownExpanded: !state.isBreakdownExpanded })),
+}));
 
 interface ExamResultsProps {
   result: ExamResult;
@@ -43,7 +69,7 @@ interface ExamResultsProps {
 }
 
 /**
- * Enhanced ExamResults component with improved statistics display and question filtering
+ * Exam results component with statistics and question filtering
  */
 export const ExamResults: React.FC<ExamResultsProps> = ({
   result,
@@ -56,32 +82,20 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
   showPerformanceInsights = false,
   onReviewQuestion
 }) => {
-  const getPassFailMessage = () => {
-    if (result.isPassed) {
-      return {
-        icon: <CheckCircle2 className="h-12 w-12 text-green-500" />,
-        title: "Congratulations!",
-        message: "You have passed the exam.",
-        color: "text-green-500"
-      };
-    } else {
-      return {
-        icon: <XCircle className="h-12 w-12 text-red-500" />,
-        title: "Not Passed",
-        message: "You did not meet the passing criteria.",
-        color: "text-red-500"
-      };
-    }
-  };
-
-  const passFailInfo = getPassFailMessage();
+  // Use Zustand store for state management
+  const { 
+    selectedQuestionId, 
+    isDialogOpen, 
+    activeTab,
+    isBreakdownExpanded,
+    setSelectedQuestionId, 
+    setDialogOpen, 
+    setActiveTab,
+    toggleBreakdown
+  } = useExamResultsStore();
   
-  // Use the custom hook for consistent score calculation and formatting
-  // Pass questions and userAnswers for accurate calculation
-  const scoreInfo = useExamScoreCalculation(result, questions, userAnswers);
-  
-  // Calculate accurate statistics using the examStatisticsCalculator
-  const calculatedStats = useMemo(() => {
+  // Calculate exam statistics
+  const stats = useMemo(() => {
     if (!questions || !userAnswers) {
       return {
         questionStatusMap: {},
@@ -92,145 +106,241 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
       };
     }
     
-    // Use our fixed calculator to get accurate statistics
-    const stats = calculateExamStatistics(questions, userAnswers);
-    
-    return {
-      questionStatusMap: stats.questionStatusMap,
-      correctAnswers: stats.correctAnswers,
-      incorrectAnswers: stats.incorrectAnswers,
-      unanswered: stats.unanswered,
-      totalQuestions: stats.totalQuestions
-    };
+    return calculateExamStatistics(questions, userAnswers);
   }, [questions, userAnswers, result]);
   
-  // State for selected question dialog
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedQuestionStatus, setSelectedQuestionStatus] = useState<QuestionStatus>(QuestionStatus.UNANSWERED);
+  // Use exam score calculation hook
+  const scoreInfo = useExamScoreCalculation(result, questions, userAnswers);
   
-  // Handler for question selection from the filter
+  // Get selected question for the dialog
+  const selectedQuestion = useMemo(() => {
+    if (!selectedQuestionId || !questions) return null;
+    return questions.find(q => q.id === selectedQuestionId) || null;
+  }, [selectedQuestionId, questions]);
+  
+  // Selected question status
+  const selectedQuestionStatus = useMemo(() => {
+    if (!selectedQuestionId || !stats.questionStatusMap) return QuestionStatus.UNANSWERED;
+    return stats.questionStatusMap[selectedQuestionId] || QuestionStatus.UNANSWERED;
+  }, [selectedQuestionId, stats.questionStatusMap]);
+  
+  // Handle selecting a question
   const handleSelectQuestion = (questionId: number) => {
-    const question = questions?.find(q => q.id === questionId);
-    if (question) {
-      setSelectedQuestion(question);
-      setSelectedQuestionStatus(calculatedStats.questionStatusMap[questionId] || QuestionStatus.UNANSWERED);
-      setDialogOpen(true);
-    }
+    setSelectedQuestionId(questionId);
+    setDialogOpen(true);
   };
-
+  
+  // Format time string
   const formatTimeStr = (seconds: number) => {
     return formatTimeVerbose(seconds);
   };
-
+  
+  // Filter questions based on active tab
+  const filteredQuestions = useMemo(() => {
+    if (!questions) return [];
+    
+    switch (activeTab) {
+      case 'correct':
+        return questions.filter(q => stats.questionStatusMap[q.id] === QuestionStatus.ANSWERED_CORRECT);
+      case 'incorrect':
+        return questions.filter(q => stats.questionStatusMap[q.id] === QuestionStatus.ANSWERED_INCORRECT);
+      case 'unanswered':
+        return questions.filter(q => stats.questionStatusMap[q.id] === QuestionStatus.UNANSWERED);
+      default:
+        return questions;
+    }
+  }, [questions, activeTab, stats.questionStatusMap]);
+  
+  // Calculate pass percentage
+  const passPercentage = (result.passingMarks / result.totalMarks) * 100;
+  
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
-      <Card className="border-2 mb-8">
-        <CardHeader className="text-center pb-2">
-          <div className="flex justify-center mb-4">
-            {passFailInfo.icon}
+    <div className="max-w-3xl mx-auto px-2">
+      <Card className="border shadow-sm">
+        {/* Header with result title and pass/fail status */}
+        <CardHeader className="pb-2 space-y-0">
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center">
+              {result.isPassed ? (
+                <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+              ) : (
+                <XCircle className="h-5 w-5 text-red-500 mr-2" />
+              )}
+              <CardTitle className="text-lg">{result.examTitle}</CardTitle>
+            </div>
+            <Badge 
+              className={`${result.isPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+            >
+              {result.isPassed ? 'Passed' : 'Not Passed'}
+            </Badge>
           </div>
-          <CardTitle className="text-2xl">{result.examTitle}</CardTitle>
-          <CardDescription className="text-lg font-semibold mt-2">
-            <span className={passFailInfo.color}>{passFailInfo.title}</span>
-            <span className="block text-base font-normal mt-1">
-              {passFailInfo.message}
-            </span>
+          <CardDescription className="text-sm">
+            You {result.isPassed ? 'have met' : 'did not meet'} the passing criteria.
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="space-y-8">
-          {/* Score Overview Component */}
-          <ScoreOverview 
-            scoreInfo={scoreInfo}
-            isPassed={result.isPassed}
-            passingMarks={result.passingMarks}
-            totalMarks={result.totalMarks}
-          />
-          
-          <Separator />
-          
-          {/* Statistics Component with accurate statistics */}
-          <StatisticsDisplay 
-            correctAnswers={calculatedStats.correctAnswers}
-            incorrectAnswers={calculatedStats.incorrectAnswers}
-            unanswered={calculatedStats.unanswered}
-            totalQuestions={calculatedStats.totalQuestions}
-            questionStatusMap={calculatedStats.questionStatusMap}
-          />
-          
-          {/* Score Breakdown Component with accurate statistics */}
-          <ScoreBreakdown 
-            correctAnswers={calculatedStats.correctAnswers}
-            incorrectAnswers={calculatedStats.incorrectAnswers}
-            unanswered={calculatedStats.unanswered}
-            totalMarks={result.totalMarks}
-            scoreInfo={scoreInfo}
-          />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div className="bg-slate-50 rounded-lg p-4 flex items-center">
-              <div className="bg-purple-100 p-3 mr-4 rounded-full">
-                <Clock className="h-5 w-5 text-purple-600" />
+        <CardContent className="space-y-4 pb-2">
+          {/* Score and Progress Section */}
+          <div className="bg-gray-50 rounded-lg p-3">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-sm text-gray-600">Your Score</div>
+              <div className="text-sm text-gray-600">Passing: {result.passingMarks}/{result.totalMarks}</div>
+            </div>
+            
+            <div className="flex items-baseline justify-between mb-2">
+              <div className={`text-2xl font-bold ${result.isPassed ? 'text-green-600' : 'text-red-600'}`}>
+                {scoreInfo.displayValue}/{result.totalMarks}
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Time Spent</p>
-                <p className="text-lg font-semibold">
-                  {formatTimeStr(result.timeSpent)}
-                </p>
+              <div className="text-sm">
+                marks ({scoreInfo.displayPercentage})
               </div>
             </div>
             
-            <div className="bg-slate-50 rounded-lg p-4 flex items-center">
-              <div className="bg-green-100 p-3 mr-4 rounded-full">
-                <Award className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Passing Mark</p>
-                <p className="text-lg font-semibold">
-                  {result.passingMarks} ({(result.passingMarks / result.totalMarks * 100).toFixed(0)}%)
-                </p>
-              </div>
+            <Progress
+              value={scoreInfo.percentage}
+              className="h-2"
+            />
+          </div>
+          
+          {/* Statistics Section - Simple row with colored pills */}
+          <div className="flex justify-between gap-2">
+            <div className="flex-1 p-2 bg-green-50 rounded-lg text-center border border-green-100">
+              <div className="text-lg font-semibold text-green-700">{stats.correctAnswers}</div>
+              <div className="text-xs text-green-600">Correct</div>
+            </div>
+            <div className="flex-1 p-2 bg-red-50 rounded-lg text-center border border-red-100">
+              <div className="text-lg font-semibold text-red-700">{stats.incorrectAnswers}</div>
+              <div className="text-xs text-red-600">Incorrect</div>
+            </div>
+            <div className="flex-1 p-2 bg-amber-50 rounded-lg text-center border border-amber-100">
+              <div className="text-lg font-semibold text-amber-700">{stats.unanswered}</div>
+              <div className="text-xs text-amber-600">Unanswered</div>
             </div>
           </div>
           
+          {/* Time and Breakdown Section */}
+          <div className="flex gap-2">
+            <div className="flex-1 p-2 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 text-blue-500 mr-1.5" />
+                <div className="text-xs text-blue-600">Time Spent</div>
+              </div>
+              <div className="text-sm font-medium mt-1">{formatTimeStr(result.timeSpent)}</div>
+            </div>
+            
+            <div className="flex-1 p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <button 
+                className="w-full flex items-center justify-between"
+                onClick={toggleBreakdown}
+              >
+                <div className="flex items-center">
+                  <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
+                  <div className="text-xs text-indigo-600">Score Details</div>
+                </div>
+                {isBreakdownExpanded ? (
+                  <ChevronUp className="h-3 w-3 text-indigo-500" />
+                ) : (
+                  <ChevronDown className="h-3 w-3 text-indigo-500" />
+                )}
+              </button>
+              
+              {isBreakdownExpanded && (
+                <div className="mt-2 pt-2 border-t border-indigo-200 text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span>Correct answers:</span>
+                    <span className="text-green-600">+{stats.correctAnswers}</span>
+                  </div>
+                  {stats.incorrectAnswers > 0 && (
+                    <div className="flex justify-between">
+                      <span>Negative marking:</span>
+                      <span className="text-red-600">-{(stats.incorrectAnswers * 0.25).toFixed(1)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-medium border-t border-indigo-200 pt-1 mt-1">
+                    <span>Final Score:</span>
+                    <span>{result.score}/{result.totalMarks}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Question Review Section */}
+          {questions && questions.length > 0 && (
+            <div className="mt-2">
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-sm font-medium">Question Review</div>
+                <Badge variant="outline" className="h-5 px-2 font-normal">
+                  {result.totalQuestions} questions
+                </Badge>
+              </div>
+              
+              <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-4 mb-2 h-8">
+                  <TabsTrigger value="all" className="text-xs py-0">All</TabsTrigger>
+                  <TabsTrigger value="correct" className="text-xs py-0">Correct</TabsTrigger>
+                  <TabsTrigger value="incorrect" className="text-xs py-0">Incorrect</TabsTrigger>
+                  <TabsTrigger value="unanswered" className="text-xs py-0">Unanswered</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value={activeTab} className="mt-0">
+                  <div className="max-h-64 overflow-y-auto pr-1">
+                    {filteredQuestions.length === 0 ? (
+                      <div className="text-center py-4 text-sm text-gray-500">
+                        No questions in this category
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {filteredQuestions.map(question => (
+                          <QuestionItem 
+                            key={question.id}
+                            question={question}
+                            status={stats.questionStatusMap[question.id] || QuestionStatus.UNANSWERED}
+                            onClick={() => handleSelectQuestion(question.id)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+          
           {/* Question Dialog */}
           <QuestionDialog 
-            open={dialogOpen}
+            open={isDialogOpen}
             onOpenChange={setDialogOpen}
             question={selectedQuestion}
             status={selectedQuestionStatus}
-            userAnswer={userAnswers?.[selectedQuestion?.id]}
+            userAnswer={userAnswers?.[selectedQuestionId || 0]}
           />
-          
-          {/* Question Filter Component - New addition for filtering questions by status */}
-          {questions && userAnswers && questions.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-sm uppercase text-gray-500 mb-3">Question Review</h3>
-              <QuestionFilter 
-                questions={questions}
-                questionStatusMap={calculatedStats.questionStatusMap}
-                onSelectQuestion={handleSelectQuestion}
-              />
-            </div>
-          )}
         </CardContent>
         
-        <CardFooter className="flex flex-col sm:flex-row justify-between gap-4 bg-gray-50 px-6 py-4">
+        <CardFooter className="flex justify-between pt-3 pb-3 border-t">
           <Button 
             variant="outline" 
+            size="sm"
             onClick={onBackToDashboard || onReturnToDashboard}
-            className="w-full sm:w-auto"
           >
             Back to Dashboard
           </Button>
           
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
+            
             {onTryAgain && (
               <Button 
-                variant="outline" 
+                size="sm"
                 onClick={onTryAgain}
-                className="w-full sm:w-auto"
               >
                 Try Again
               </Button>
@@ -238,74 +348,60 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           </div>
         </CardFooter>
       </Card>
-      
-      {/* Section for top mistakes or performance insights - only shown if explicitly requested */}
-      {showPerformanceInsights && result.questionResults && result.questionResults.length > 0 && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center">
-              <BarChart className="h-5 w-5 mr-2" />
-              Performance Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <h3 className="font-medium mb-4">Areas for Improvement</h3>
-            <div className="space-y-4">
-              {getTopicPerformance(result.questionResults).map((topic) => (
-                <div key={topic.name} className="bg-slate-50 p-4 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium">{topic.name}</span>
-                    <Badge 
-                      variant={topic.score > 70 ? "success" : topic.score > 40 ? "warning" : "destructive"}
-                      className={`px-2 py-1 ${
-                        topic.score > 70 
-                          ? "bg-green-100 text-green-800" 
-                          : topic.score > 40 
-                            ? "bg-yellow-100 text-yellow-800" 
-                            : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {topic.score.toFixed(0)}%
-                    </Badge>
-                  </div>
-                  {/* Using a basic div for progress since we don't have access to the Progress component */}
-                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full ${
-                        topic.score > 70 
-                          ? "bg-green-500" 
-                          : topic.score > 40 
-                            ? "bg-yellow-500" 
-                            : "bg-red-500"
-                      }`}
-                      style={{ width: `${topic.score}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      
-      <div className="flex justify-center mt-6">
-        <Button variant="outline" onClick={() => window.print()} className="flex items-center">
-          <Printer className="h-4 w-4 mr-2" />
-          Print Results
-        </Button>
-      </div>
     </div>
   );
 };
 
-// Helper function to analyze performance by topics
-// This is a placeholder - in a real implementation, questions would have topics assigned
-function getTopicPerformance(questionResults: QuestionResult[]): { name: string; score: number; }[] {
-  // Mock implementation - in reality, this would analyze the question results
-  return [
-    { name: "Pharmacology", score: 75 },
-    { name: "Clinical Practice", score: 45 },
-    { name: "Pharmaceutical Calculations", score: 90 },
-    { name: "Medicinal Chemistry", score: 30 },
-  ];
+// Question item component
+interface QuestionItemProps {
+  question: Question;
+  status: QuestionStatus;
+  onClick: () => void;
 }
+
+const QuestionItem: React.FC<QuestionItemProps> = ({
+  question,
+  status,
+  onClick
+}) => {
+  const getStatusColor = () => {
+    switch (status) {
+      case QuestionStatus.ANSWERED_CORRECT:
+        return "bg-green-50 border-green-200 hover:bg-green-100";
+      case QuestionStatus.ANSWERED_INCORRECT:
+        return "bg-red-50 border-red-200 hover:bg-red-100";
+      case QuestionStatus.UNANSWERED:
+        return "bg-amber-50 border-amber-200 hover:bg-amber-100";
+      default:
+        return "bg-gray-50 border-gray-200 hover:bg-gray-100";
+    }
+  };
+  
+  const getStatusIcon = () => {
+    switch (status) {
+      case QuestionStatus.ANSWERED_CORRECT:
+        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      case QuestionStatus.ANSWERED_INCORRECT:
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      case QuestionStatus.UNANSWERED:
+        return <AlertCircle className="h-4 w-4 text-amber-600" />;
+      default:
+        return <HelpCircle className="h-4 w-4 text-gray-600" />;
+    }
+  };
+  
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center w-full p-2 rounded-md border text-left text-sm transition-colors ${getStatusColor()}`}
+    >
+      <div className="mr-2 bg-white h-6 w-6 rounded-full flex items-center justify-center text-xs border">
+        {question.questionNumber}
+      </div>
+      <div className="flex-1 truncate text-xs mr-1.5">
+        {question.text.length > 30 ? question.text.substring(0, 30) + "..." : question.text}
+      </div>
+      {getStatusIcon()}
+    </button>
+  );
+};
