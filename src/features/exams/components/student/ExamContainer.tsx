@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from 'sonner';
@@ -671,6 +672,7 @@ function ExamContainerInternal({
                     flaggedQuestions={flaggedQuestions}
                     onNavigate={handleNavigateToQuestion}
                     onFinishExam={() => toggleSummary()}
+                    onDirectSubmit={handleSubmitExam}
                     questions={questions}
                   />
                 </CardContent>
@@ -717,14 +719,46 @@ function ExamContainerInternal({
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 
-                <Button 
-                  onClick={() => toggleSummary()}
-                  className="bg-blue-600 hover:bg-blue-700 text-xs"
-                  variant="default"
-                >
-                  <LifeBuoyIcon className="h-3 w-3 mr-1" />
-                  Review & Finish
-                </Button>
+                {/* Mobile Review & Finish Button with Direct Submit */}
+                {isSubmittingRef.current ? (
+                  <Button 
+                    disabled
+                    className="bg-blue-600 hover:bg-blue-700 text-xs"
+                    variant="default"
+                  >
+                    <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
+                    Submitting...
+                  </Button>
+                ) : (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        className="bg-blue-600 hover:bg-blue-700 text-xs"
+                        variant="default"
+                      >
+                        <LifeBuoyIcon className="h-3 w-3 mr-1" />
+                        Review & Finish
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Submit Exam?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {questions.length - answeredQuestionsSet.size > 0 
+                            ? `You still have ${questions.length - answeredQuestionsSet.size} unanswered questions. Once submitted, you cannot change your answers.`
+                            : `Are you sure you want to submit your exam? Once submitted, you cannot change your answers.`
+                          }
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSubmitExam}>
+                          Submit Exam
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
                 
                 <Button
                   variant="outline"

@@ -44,6 +44,10 @@
     - Use `open_nodes` to access specific stored ideas for reuse.
 
 
+When I click on the Review and Finish Button, it should not show the Exam Summary page, it should open dialog and then display the statistics page directly
+
+
+
 Exam result is not displaying the correct visibility of stats, like correct answers, wrong answers, and unanswered answers.
 
 There is still calculations problem. From the exam screen we can detect, if the user has selected the correct answer or not and then we need to manage it here.

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -90,6 +91,7 @@ interface QuestionNavigationProps {
   flaggedQuestions: Set<number>;
   onNavigate: (index: number) => void;
   onFinishExam: () => void;
+  onDirectSubmit?: () => void; // New prop for direct submission flow
   questions?: any[]; // Add this to receive the questions array
 }
 
@@ -100,6 +102,7 @@ export function QuestionNavigation({
   flaggedQuestions,
   onNavigate,
   onFinishExam,
+  onDirectSubmit,
   questions = [] // Default to empty array if not provided
 }: QuestionNavigationProps) {
   const [activeTab, setActiveTab] = useState<string>('compact');
@@ -342,14 +345,45 @@ export function QuestionNavigation({
       <QuestionStatusLegend isMobile={isMobile} />
       
       {/* Submit Button */}
-      <Button 
-        onClick={onFinishExam}
-        className={`w-full bg-blue-600 hover:bg-blue-700 text-white ${isMobile ? 'mt-2 text-xs py-1.5' : 'mt-4 py-2.5'} transition-all duration-200 shadow hover:shadow-md hover:-translate-y-0.5 rounded-lg`}
-        variant="default"
-      >
-        <LifeBuoyIcon className={isMobile ? "h-3 w-3 mr-1" : "h-4 w-4 mr-2"} />
-        Review & Finish
-      </Button>
+      {onDirectSubmit ? (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button 
+              className={`w-full bg-blue-600 hover:bg-blue-700 text-white ${isMobile ? 'mt-2 text-xs py-1.5' : 'mt-4 py-2.5'} transition-all duration-200 shadow hover:shadow-md hover:-translate-y-0.5 rounded-lg`}
+              variant="default"
+            >
+              <LifeBuoyIcon className={isMobile ? "h-3 w-3 mr-1" : "h-4 w-4 mr-2"} />
+              Review & Finish
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Submit Exam?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {totalQuestions - answeredQuestions.size > 0 
+                  ? `You still have ${totalQuestions - answeredQuestions.size} unanswered questions. Once submitted, you cannot change your answers.`
+                  : `Are you sure you want to submit your exam? Once submitted, you cannot change your answers.`
+                }
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={onDirectSubmit}>
+                Submit Exam
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      ) : (
+        <Button 
+          onClick={onFinishExam}
+          className={`w-full bg-blue-600 hover:bg-blue-700 text-white ${isMobile ? 'mt-2 text-xs py-1.5' : 'mt-4 py-2.5'} transition-all duration-200 shadow hover:shadow-md hover:-translate-y-0.5 rounded-lg`}
+          variant="default"
+        >
+          <LifeBuoyIcon className={isMobile ? "h-3 w-3 mr-1" : "h-4 w-4 mr-2"} />
+          Review & Finish
+        </Button>
+      )}
     </div>
   );
 }
