@@ -10,14 +10,15 @@ import { calculateExamScore, formatScore } from '../../utils/calculateExamScore'
  */
 export function useExamScoreCalculation(result: ExamResult) {
   return useMemo(() => {
-    const { correctAnswers, incorrectAnswers, unanswered, totalQuestions } = result;
+    const { correctAnswers, incorrectAnswers, unanswered, totalQuestions, passingMarks = 40 } = result;
     
     // Calculate the score using the standardized calculation function
     const scoreResult = calculateExamScore(
       totalQuestions,
       correctAnswers,
       incorrectAnswers,
-      unanswered
+      unanswered,
+      passingMarks
     );
     
     // Format the score for display
@@ -37,7 +38,7 @@ export function useExamScoreCalculation(result: ExamResult) {
       ...scoreResult,
       ...formattedScore,
       scoreColor: getScoreColor(scoreResult.percentage),
-      isPassing: result.isPassed,
+      isPassing: scoreResult.isPassing, // Use calculated isPassing instead of result.isPassed
     };
   }, [result]);
 }

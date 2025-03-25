@@ -9,6 +9,8 @@ describe('calculateExamScore', () => {
     expect(result.percentage).toBe(60);
     expect(result.correctMarks).toBe(60);
     expect(result.incorrectPenalty).toBe(0);
+    expect(result.isPassing).toBe(true);
+    expect(result.passingMarks).toBe(40);
   });
   
   test('should calculate score correctly with correct and incorrect answers', () => {
@@ -19,6 +21,8 @@ describe('calculateExamScore', () => {
     expect(result.percentage).toBe(55);
     expect(result.correctMarks).toBe(60);
     expect(result.incorrectPenalty).toBe(-5);
+    expect(result.isPassing).toBe(true);
+    expect(result.passingMarks).toBe(40);
   });
   
   test('should calculate score correctly with all answers incorrect', () => {
@@ -29,6 +33,8 @@ describe('calculateExamScore', () => {
     expect(result.percentage).toBe(-25);
     expect(result.correctMarks).toBe(0);
     expect(result.incorrectPenalty).toBe(-25);
+    expect(result.isPassing).toBe(false);
+    expect(result.passingMarks).toBe(40);
   });
   
   test('should log warning if question counts do not add up', () => {
@@ -42,6 +48,16 @@ describe('calculateExamScore', () => {
     
     // Restore console.warn
     console.warn = originalWarn;
+  });
+  
+  test('should use custom passing marks when provided', () => {
+    const result = calculateExamScore(100, 50, 20, 30, 60);
+    
+    expect(result.score).toBe(45); // 50 - (20 * 0.25)
+    expect(result.totalMarks).toBe(100);
+    expect(result.percentage).toBe(45);
+    expect(result.isPassing).toBe(false); // 45 < 60
+    expect(result.passingMarks).toBe(60);
   });
 });
 

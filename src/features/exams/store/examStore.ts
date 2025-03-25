@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Question, ExamSession, UserAnswer } from '../model/mcqTypes';
 import { throttledStorage } from '@/features/core/storage';
+import logger from '@/shared/lib/logger';
 
 interface ExamState {
   // Exam data
@@ -39,6 +40,7 @@ interface ExamState {
   setReviewMode: (isReview: boolean) => void;
   completeExam: () => void;
   resetExam: () => void;
+  forceResetExamState: () => void; // New method for complete reset including localStorage
   
   // Getters
   hasAnswer: (questionId: number) => boolean;
@@ -65,6 +67,10 @@ export const useExamStore = create<ExamState>()(
       
       // Actions
       startExam: (examId, questions, durationInMinutes) => {
+        // First, force a complete state reset including localStorage
+        get().forceResetExamState();
+        
+        // Then set the new exam state
         set({
           examId,
           questions,
@@ -194,6 +200,73 @@ export const useExamStore = create<ExamState>()(
           showSummary: false,
           reviewMode: false,
         });
+      },
+      
+      forceResetExamState: () => {
+        logger.info('examStore: Forcing complete exam state reset');
+        
+        // 1. Clear any persisted state in localStorage
+        try {
+          if (typeof window !== 'undefined') {
+            // Remove any persisted state in localStorage by looking for exam-related keys
+            const possibleKeys = [
+              'exam-store',
+              'exam-store-state',
+              'mcq-exam-store',
+              'mcq-exam-store-state',
+              'examStore',
+              'useExamStore',
+              'mcqExamStore',
+              'useMcqExamStore',
+              'zustand-exam',
+              'zustand-mcq'
+            ];
+            
+            // Try to remove known keys
+            for (const key of possibleKeys) {
+              try {
+                localStorage.removeItem(key);
+                logger.debug(`examStore: Cleared persisted state for key: ${key}`);
+              } catch (e) {
+                // Ignore individual key errors
+              }
+            }
+            
+            // Also try to find and remove any keys containing 'exam' or 'mcq'
+            try {
+              for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.toLowerCase().includes('exam') || key.toLowerCase().includes('mcq'))) {
+                  localStorage.removeItem(key);
+                  logger.debug(`examStore: Cleared matching state for key: ${key}`);
+                }
+              }
+            } catch (e) {
+              logger.warn('examStore: Failed to search localStorage keys:', e);
+            }
+          }
+        } catch (error) {
+          logger.error('examStore: Failed to clear localStorage:', error);
+        }
+        
+        // 2. Reset the store state
+        get().resetExam();
+        
+        // 3. Also try to reset mcqExamStore if it exists
+        try {
+          if (typeof window !== 'undefined' && window['useMcqExamStore'] && typeof window['useMcqExamStore'].getState === 'function') {
+            // Use as any type since we're dynamically accessing it
+            const mcqStore = (window['useMcqExamStore'] as any);
+            if (mcqStore.getState().resetExam) {
+              mcqStore.getState().resetExam();
+              logger.debug('examStore: Reset mcqExamStore state');
+            }
+          }
+        } catch (error) {
+          logger.warn('examStore: Failed to reset mcqExamStore:', error);
+        }
+        
+        logger.info('examStore: State reset completed');
       },
       
       // Getters

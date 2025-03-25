@@ -29,6 +29,7 @@ import {
 // Import hooks and components
 import { useExamSession } from '../../hooks/useExamSession';
 import { useExamStore } from '../../store/examStore';
+import { useMcqExamStore } from '../../store/mcqExamStore';
 import { useExamAnalytics } from '../../hooks/useExamAnalytics';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
 import { ExamErrorBoundary } from '../common/ExamErrorBoundary';
@@ -156,8 +157,83 @@ function ExamContainerInternal({
   
   // Handle exam start with analytics
   const handleStartExam = () => {
+    // Track analytics event
     analytics.trackEvent('exam_start', { examId, userId });
     
+    // Force a complete reset of the exam state in both stores
+    try {
+      logger.info('Forcing complete exam state reset before starting');
+      
+      // First, try to reset through examStore which has our new enhanced method
+      if (typeof useExamStore !== 'undefined' && useExamStore.getState().forceResetExamState) {
+        useExamStore.getState().forceResetExamState();
+        logger.debug('Reset exam state through forceResetExamState');
+      } else {
+        // Fallback: manually clear localStorage
+        if (typeof window !== 'undefined') {
+          try {
+            // Function to clear pattern matching localStorage keys
+            const clearLocalStorageKeys = (pattern) => {
+              const keysToRemove = [];
+              for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.toLowerCase().includes(pattern)) {
+                  keysToRemove.push(key);
+                }
+              }
+              
+              keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                logger.debug(`Cleared matching persisted state for key: ${key}`);
+              });
+            };
+            
+            // Clear all exam and mcq related keys
+            clearLocalStorageKeys('exam');
+            clearLocalStorageKeys('mcq');
+            
+            // Also try specific known keys
+            const possibleKeys = [
+              'exam-store',
+              'mcq-exam-store',
+              'zustand-exam-store',
+              'zustand-mcq-store'
+            ];
+            
+            for (const key of possibleKeys) {
+              try {
+                localStorage.removeItem(key);
+                logger.debug(`Cleared persisted state for key: ${key}`);
+              } catch (e) {
+                // Ignore individual key errors
+              }
+            }
+          } catch (err) {
+            logger.warn('Failed to clear localStorage:', err);
+          }
+        }
+        
+        // Manually reset each store
+        if (typeof useExamStore !== 'undefined' && useExamStore.getState().resetExam) {
+          useExamStore.getState().resetExam();
+          logger.debug('Reset exam state through resetExam');
+        }
+        
+        if (typeof useMcqExamStore !== 'undefined' && useMcqExamStore.getState().resetExam) {
+          useMcqExamStore.getState().resetExam();
+          logger.debug('Reset exam state through mcqExamStore.resetExam');
+        }
+        
+        if (typeof useMcqExamStore !== 'undefined' && useMcqExamStore.getState().resetExamState) {
+          useMcqExamStore.getState().resetExamState();
+          logger.debug('Reset exam state through mcqExamStore.resetExamState');
+        }
+      }
+    } catch (error) {
+      logger.warn('Error during manual exam state reset:', error);
+    }
+    
+    // Now start the exam with a clean state
     startExam(
       { userId },
       {

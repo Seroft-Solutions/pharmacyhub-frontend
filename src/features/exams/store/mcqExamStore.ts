@@ -49,6 +49,7 @@ interface McqExamState {
   resumeExam: () => void;
   completeExam: () => Promise<void>;
   resetExam: () => void;
+  resetExamState: () => void; // New method for complete state reset
   updateTimeRemaining: (seconds: number) => void;
   decrementTimer: () => void;
   toggleSummary: () => void;
@@ -120,13 +121,88 @@ export const useMcqExamStore = create<McqExamState>((set, get) => ({
     }
   },
   
+  // Completely reset the exam state to initial values
+  resetExamState: () => {
+    logger.debug('mcqExamStore: Completely resetting exam state');
+    
+    // Clear any persisted state first
+    try {
+      if (typeof window !== 'undefined') {
+        // Remove any persisted state in localStorage by looking for mcq-related state keys
+        // The actual key might vary depending on how zustand persist middleware is configured
+        // Try a few common patterns to be safe
+        const possibleKeys = [
+          'mcq-exam-store',
+          'mcq-exam-store-state',
+          'exam-store',
+          'exam-store-state',
+          'mcq-store',
+          'useMcqExamStore',
+          // When using zustand persist middleware, it can have different formats
+          // depending on the configuration so we try a few patterns
+          'zustand-mcq-store',
+          'zustand-exam-store'
+        ];
+        
+        for (const key of possibleKeys) {
+          try {
+            localStorage.removeItem(key);
+            logger.debug(`mcqExamStore: Cleared persisted state for key: ${key}`);
+          } catch (err) {
+            // Ignore errors for individual keys
+          }
+        }
+        
+        // Also try to find any keys containing 'mcq' or 'exam'
+        try {
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.toLowerCase().includes('mcq') || key.toLowerCase().includes('exam'))) {
+              keysToRemove.push(key);
+            }
+          }
+          
+          keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+            logger.debug(`mcqExamStore: Cleared matching state for key: ${key}`);
+          });
+        } catch (err) {
+          logger.warn('Failed to search localStorage keys:', err);
+        }
+      }
+    } catch (error) {
+      logger.error('Failed to clear persisted state', { error });
+    }
+    
+    // Reset all state properties to default values
+    set({
+      currentExam: undefined,
+      currentAttempt: undefined,
+      currentQuestionIndex: 0,
+      timeRemaining: 0,
+      userAnswers: {},
+      flaggedQuestions: new Set<number>(),
+      isPaused: false,
+      isCompleted: false,
+      isLoading: false,
+      error: undefined,
+      examResult: undefined,
+      showExplanation: false,
+      highlightedAnswerId: null
+    });
+  },
+  
   startExam: async (examId) => {
     try {
+      // First completely reset the state
+      get().resetExamState();
+      
+      // Then start loading
       set({ isLoading: true });
-      // First get the exam if not already loaded
-      if (!get().currentExam || get().currentExam.id !== examId) {
-        await get().fetchExamById(examId);
-      }
+      
+      // Get the exam
+      await get().fetchExamById(examId);
       
       try {
         // Use direct fetch to start the exam

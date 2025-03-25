@@ -18,13 +18,26 @@ export interface ExamScoreResult {
   percentage: number;          // Score as percentage (e.g., 55%)
   correctMarks: number;        // Marks from correct answers (e.g., 60)
   incorrectPenalty: number;    // Penalty from incorrect answers (e.g., -5)
+  isPassing: boolean;          // Whether the score meets passing threshold
+  passingMarks: number;        // The minimum marks needed to pass (e.g., 40)
 }
 
+/**
+ * Calculate exam score with negative marking
+ * 
+ * @param totalQuestions Total number of questions in the exam
+ * @param correctAnswers Number of questions answered correctly
+ * @param incorrectAnswers Number of questions answered incorrectly
+ * @param unansweredQuestions Number of questions left unanswered
+ * @param passingMarks Optional passing marks percentage (defaults to 40)
+ * @returns An object containing score calculations
+ */
 export function calculateExamScore(
   totalQuestions: number,
   correctAnswers: number,
   incorrectAnswers: number,
-  unansweredQuestions: number = 0
+  unansweredQuestions: number = 0,
+  passingMarks: number = 40
 ): ExamScoreResult {
   // Validation checks
   if (correctAnswers + incorrectAnswers + unansweredQuestions !== totalQuestions) {
@@ -49,12 +62,17 @@ export function calculateExamScore(
   // Calculate percentage
   const percentage = (score / totalMarks) * 100;
   
+  // Determine if passed (using provided or default passing marks)
+  const isPassing = percentage >= passingMarks;
+  
   return {
     score,
     totalMarks,
     percentage,
     correctMarks,
     incorrectPenalty,
+    isPassing,
+    passingMarks
   };
 }
 

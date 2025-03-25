@@ -23,12 +23,14 @@ interface ExamReviewProps {
   result: ExamResult;
   onBack: () => void;
   onFinish: () => void;
+  readonly?: boolean; // Always enforce read-only mode (default: true)
 }
 
 export const ExamReview: React.FC<ExamReviewProps> = ({
   result,
   onBack,
-  onFinish
+  onFinish,
+  readonly = true // Default to read-only mode for review
 }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   
@@ -91,10 +93,18 @@ export const ExamReview: React.FC<ExamReviewProps> = ({
         <CardHeader className="pb-2 flex flex-col sm:flex-row sm:items-start sm:justify-between">
           <div>
             <CardTitle className="text-xl">Question {currentQuestionIndex + 1}</CardTitle>
-            <CardDescription>
+            <CardDescription className="flex items-center">
               {currentQuestion.isCorrect 
-                ? <span className="text-green-600 font-medium">Correct</span> 
-                : <span className="text-red-600 font-medium">Incorrect</span>}
+                ? <>
+                    <CheckCircle2 className="h-4 w-4 text-green-600 mr-1" />
+                    <span className="text-green-600 font-medium">Correct</span>
+                  </> 
+                : <>
+                    <XCircle className="h-4 w-4 text-red-600 mr-1" />
+                    <span className="text-red-600 font-medium">Incorrect</span>
+                    {currentQuestion.userAnswerId === null && 
+                      <span className="text-gray-500 ml-2">(Not answered)</span>}
+                  </>}
             </CardDescription>
           </div>
           <div className="mt-2 sm:mt-0">
@@ -104,7 +114,9 @@ export const ExamReview: React.FC<ExamReviewProps> = ({
             >
               {currentQuestion.isCorrect 
                 ? `+${currentQuestion.earnedPoints}` 
-                : "+0"} / {currentQuestion.points} points
+                : currentQuestion.userAnswerId === null 
+                  ? "+0" 
+                  : "-0.25"} / {currentQuestion.points} points
             </Badge>
           </div>
         </CardHeader>
@@ -197,7 +209,9 @@ export const ExamReview: React.FC<ExamReviewProps> = ({
               } ${
                 q.isCorrect 
                   ? "bg-green-50 border-green-200 text-green-800" 
-                  : "bg-red-50 border-red-200 text-red-800"
+                  : q.userAnswerId === null
+                    ? "bg-gray-50 border-gray-200 text-gray-800" // Not answered
+                    : "bg-red-50 border-red-200 text-red-800"   // Wrong answer
               }`}
               onClick={() => navigateToQuestion(index)}
             >
