@@ -15,6 +15,7 @@ import { useExamStore } from '../store/examStore';
 import { Question, UserAnswer } from '../model/mcqTypes';
 import { toast } from 'sonner';
 import { transformQuestionsArray } from '../utils/dataMappers';
+import { logger } from '../../../shared/lib/logger';
 import {
   useExamDetail as useExam,
   useExamQuestions,
@@ -90,16 +91,11 @@ export const useExamSession = (examId: number) => {
     error: submitError
   } = useSubmitExamMutation(attemptId || 0);
   
-  // Load state from Zustand store
+  // Intentionally not loading state from Zustand store to ensure fresh starts
+  // This disables the resume functionality as requested
   useEffect(() => {
-    const examStore = useExamStore.getState();
-    if (examStore.examId === examId) {
-      setCurrentQuestionIndex(examStore.currentQuestionIndex);
-      setAnswers(examStore.answers);
-      setFlaggedQuestions(examStore.flaggedQuestions);
-      setTimeRemaining(examStore.timeRemaining);
-      setIsCompleted(examStore.isCompleted);
-    }
+    // Log that we're not loading previous state
+    logger.info('Resume functionality disabled - all exams will start fresh');
   }, [examId]);
   
   // Timer effect
