@@ -102,6 +102,7 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
   const [duration, setDuration] = useState<number>(60); // Default 60 minutes
   const [difficulty, setDifficulty] = useState<string>(Difficulty.MEDIUM);
   const [paperType, setPaperType] = useState<string>(defaultPaperType);
+  const [passingMarks, setPassingMarks] = useState<number>(defaultPaperType === PaperType.MODEL ? 40 : 60); // Fixed default based on paper type
   const [metadata, setMetadata] = useState<Record<string, any>>({});
   const [jsonFile, setJsonFile] = useState<File | null>(null);
   const [jsonContent, setJsonContent] = useState<string>('');
@@ -129,10 +130,13 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
     setPaperType(defaultPaperType);
   }, [defaultPaperType]);
 
-  // Reset metadata when paper type changes
+  // Reset metadata when paper type changes and update passing marks
   useEffect(() => {
     setMetadata({});
     setErrors({});
+    
+    // Update passing marks based on paper type (fixed values)
+    setPassingMarks(paperType === PaperType.MODEL ? 40 : 60);
   }, [paperType]);
   
   // Pre-fill form with exam data when in edit mode
@@ -150,6 +154,14 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
       // Set difficulty
       const examDifficulty = examToEdit.metadata?.difficulty || Difficulty.MEDIUM;
       setDifficulty(examDifficulty);
+      
+      // Set passing marks if available, otherwise use fixed default based on paper type
+      if (examToEdit.passingMarks) {
+        setPassingMarks(examToEdit.passingMarks);
+      } else {
+        // Default based on paper type
+        setPassingMarks(paperType === PaperType.MODEL ? 40 : 60);
+      }
       
       // Set premium status and price
       setIsPremium(!!examToEdit.isPremium);
@@ -219,6 +231,13 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
     
     if (!duration || duration <= 0) {
       newErrors.duration = 'Valid duration is required';
+    }
+    
+    // Validate passing marks
+    if (passingMarks === undefined || passingMarks === null) {
+      newErrors.passingMarks = 'Passing marks is required';
+    } else if (passingMarks < 0) {
+      newErrors.passingMarks = 'Passing marks must be a non-negative number';
     }
     
     // Validate JSON file only for create mode, not for edit mode
@@ -328,22 +347,32 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
       // Create tags based on paperType and metadata
       const tags = metadataToTags(fullMetadata, paperType);
 
+      // Determine passing marks based on paper type
+      const passingMarksValue = paperType === PaperType.MODEL ? 40 : 60;
+      
       // Prepare common payload fields that match the ExamRequestDTO structure exactly
       const commonPayload = {
         title,
         description,
         duration: Number(duration),
         totalMarks: 100, // Default value
-        passingMarks: 60, // Default value
+        passingMarks: passingMarksValue, // Set based on paper type
         tags,
         isPremium,
         price: isPremium ? 2000 : 0,
         // Do not include other fields not defined in ExamRequestDTO
       };
       
+      if (DEBUG) {
+        console.log(`Using passing marks value of ${passingMarksValue} for ${paperType} paper`);
+      }
+      
       if (editMode && examToEdit) {
       // Update existing exam with a simpler payload
       // Only include fields defined in ExamRequestDTO
+      
+      // Determine passing marks based on paper type
+      const passingMarksValue = paperType === PaperType.MODEL ? 40 : 60;
       
       // Create a payload that exactly matches ExamRequestDTO structure
       const updatePayload = {
@@ -351,13 +380,17 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
         description: description || examToEdit.description || 'Updated exam description',
         duration: Number(duration) || examToEdit.duration || 60,
         totalMarks: examToEdit.totalMarks || 100,
-        passingMarks: examToEdit.passingMarks || 60,
+        passingMarks: examToEdit.passingMarks || passingMarksValue, // Use paper type specific default if no existing value
         status: examToEdit.status || 'PUBLISHED',
         tags: tags || examToEdit.tags || [],
         isPremium: isPremium,
         price: isPremium ? 2000 : 0,
         isCustomPrice: false
       };
+      
+      if (DEBUG) {
+        console.log(`Edit mode: Using passing marks value of ${updatePayload.passingMarks} for ${paperType} paper`);
+      }
       
       // Remove any undefined values
       Object.keys(updatePayload).forEach(key => {
@@ -459,10 +492,15 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
         // Create new exam
         const createPayload = {
           ...commonPayload,
-          passingMarks: Math.ceil(questions.length * 0.6), // Default 60% passing mark
+          // Use the custom passing marks value from the form
+          passingMarks: passingMarks,
           status: 'DRAFT',
           jsonContent,
         };
+        
+        if (DEBUG) {
+          console.log(`Using passing marks value of ${createPayload.passingMarks} for ${paperType} paper`);          
+        }
         
         // Log the payload for debugging
         if (DEBUG) {
@@ -590,7 +628,7 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
               {errors.description && <p className="text-xs text-red-500">{errors.description}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium" htmlFor="duration">
                   Duration (minutes) <span className="text-red-500">*</span>
@@ -626,6 +664,24 @@ export const JsonExamUploader: React.FC<JsonExamUploaderProps> = ({
                     <SelectItem value={Difficulty.HARD}>Hard</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Passing Marks field */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium" htmlFor="passingMarks">
+                  Passing Marks <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  id="passingMarks"
+                  type="number"
+                  value={passingMarks}
+                  onChange={e => setPassingMarks(parseInt(e.target.value))}
+                  min={1}
+                  required
+                  disabled={isSubmitting}
+                  className={errors.passingMarks ? 'border-red-500' : ''}
+                />
+                {errors.passingMarks && <p className="text-xs text-red-500">{errors.passingMarks}</p>}
               </div>
 
               {/* Paper Type dropdown is now hidden since it's redundant with the tabs */}
