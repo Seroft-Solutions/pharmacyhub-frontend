@@ -44,55 +44,68 @@
     - Use `open_nodes` to access specific stored ideas for reuse.
 
 
+Exam result is not displaying the correct visibility of stats, like correct answers, wrong answers, and unanswered answers.
 
-### 🎯 **Issue Summary:**
-When starting a new exam, the previous exam state is **not reset properly** — this results in leftover data (like selected answers, timer state, or progress) being carried over into the new session.
+There is still calculations problem. From the exam screen we can detect, if the user has selected the correct answer or not and then we need to manage it here.
+
+I am hoping you are getting my point.
 
 
-1. **Navigates to Exam Page:**
-   - You open the exam section of the application.
-   - The UI loads the exam screen where questions are listed with answer options.
+For Example
+Total Questions: 100 Multiple Choice Questions (MCQs)
 
-2. **Starts the Exam:**
-   - You click the “Start Exam” or similar button.
-   - Timer begins.
-   - The first question is shown.
+Attempted Questions: 80 MCQs
 
-3. **Selects Some Answers:**
-   - You select answers for a few questions (e.g., Q1, Q2, etc.).
-   - You may even navigate to different pages/questions.
+Unattempted Questions: 20 MCQs (No marks awarded or deducted)
 
-4. **Leaves the Exam:**
-   - Either by going back or reloading the page — you simulate ending or exiting the session.
+Correct Answers: 60 MCQs (Each correct answer = +1 mark)
 
-5. **Restarts the Exam:**
-   - You go back to the exam and start it again.
-   - **Bug Appears:** Previously selected answers are still present.
-   - Timer might not be reset properly.
-   - The progress made in the earlier attempt seems to persist instead of starting fresh.
+Incorrect Answers: 20 MCQs (Each wrong attempt = -0.25 mark)
 
----
+Final Score Calculation:
+Correct Answers Contribution: 60 × 1 = 60 marks
 
-### 🐞 **Bug Behavior Observed:**
-- Exam state is **not reset** when a new exam is started.
-- Expected behavior is: **Each new exam session should begin from a clean state** — no answers selected, timer reset, progress cleared.
+Negative Marking for Incorrect Answers: 20 × (-0.25) = -5 marks
 
----
+Unanswered Questions Contribution: 20 × 0 = 0 marks
 
-### ✅ **Expected Behavior:**
-- When clicking **“Start Exam”**, the app should:
-   - Clear all previously selected answers.
-   - Reset the timer to full duration.
-   - Load the first question as if it's a fresh session.
-   - Clear any stored progress or question flags from the previous session.
+Total Score:
+60 - 5 = 55 marks (out of 100)
 
----
+This method ensures fair evaluation with negative marking applied only to incorrect responses while unanswered questions remain neutral.
 
-### 💡 Suggested Fix:
-Ensure that the following actions happen on "Start Exam":
-- Clear relevant local state (e.g., Redux store, local storage, or backend session).
-- Reinitialize the timer.
-- Remove any saved answers or cached question states.
-- Handle re-entry logic cleanly in the component lifecycle.
 
----
+
+
+
+
+User Profile Fixes:
+
+1.	Profile Information:
+
+o	Currently, user profile features are not functional.
+
+o	Profile should include at least:
+
+	Username
+
+	Editable password option
+
+
+We need to remove from the app top bar
+We need to move it into the sidebar just like the other options.
+We need to foucs on shadcn sidear
+
+
+
+
+
+
+
+10. **For terminal-level tasks like builds, tests, or Git:**
+   - Use `execute_command` within the terminal.
+   - You have to go to relevant project directory first.
+   - git status command is used to check the status of the project.
+   - git add . command is used to add all the files to the staging area.
+   - git commit -m "commit message" command is used to commit the changes.
+   - git push origin main command is used to push the changes to the remote repository.

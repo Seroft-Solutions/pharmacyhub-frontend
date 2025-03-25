@@ -14,6 +14,7 @@ import {
 import {
     CheckCircle,
     XCircle,
+    AlertCircle,
     Trophy,
     Clock,
     BarChart,
@@ -30,11 +31,12 @@ import { useMcqExamStore } from '../../store/mcqExamStore';
 import { Loader2 } from 'lucide-react';
 import { examService } from '../../api/core/examService';
 import { FlaggedQuestion } from '../../model/mcqTypes';
+import { Badge } from '@/components/ui/badge';
 
 export const McqExamResults: React.FC = () => {
     const router = useRouter();
     const { examResult, currentExam, currentAttempt, flaggedQuestions, resetExam, isLoading, error } = useMcqExamStore();
-    const [reviewMode, setReviewMode] = useState<'all' | 'incorrect' | 'flagged'>('all');
+    const [reviewMode, setReviewMode] = useState<'all' | 'incorrect' | 'flagged' | 'unanswered'>('all');
     const [loadingFlagged, setLoadingFlagged] = useState(false);
     const [serverFlaggedQuestions, setServerFlaggedQuestions] = useState<FlaggedQuestion[]>([]);
 
@@ -112,19 +114,55 @@ export const McqExamResults: React.FC = () => {
         router.push(`/exam/${currentExam.id}`);
     };
 
+    // Determine if questions were answered or not
+    const questionStatuses = new Map();
+    
+    // If we have questionResults with userAnswerId, we can determine unanswered questions
+    if (examResult.questionResults) {
+        examResult.questionResults.forEach(qr => {
+            if (qr.userAnswerId) {
+                questionStatuses.set(qr.questionId, { 
+                    status: qr.isCorrect ? 'correct' : 'incorrect',
+                    userAnswerId: qr.userAnswerId
+                });
+            } else {
+                questionStatuses.set(qr.questionId, { status: 'unanswered' });
+            }
+        });
+    }
+    
+    // Count questions by status
+    const correctCount = examResult.correctAnswers || 0;
+    const incorrectCount = examResult.incorrectAnswers || 0;
+    const unansweredCount = examResult.unanswered || 0;
+    
+    // Validate the counts
+    const totalQuestions = currentExam.questions?.length || 0;
+    
     // Filter questions based on the selected review mode
-    const filteredQuestionResults = examResult.questionResults.filter(question => {
-        if (reviewMode === 'incorrect') {
-            return !question.isCorrect;
-        }
-        if (reviewMode === 'flagged') {
-            // Check if this question was flagged
-            const questionIds = serverFlaggedQuestions.map(fq => fq.questionId);
-            return questionIds.includes(question.questionId);
-        }
-        return true; // 'all' mode shows everything
-    });
+    let filteredQuestionResults = examResult.questionResults || [];
+    
+    if (reviewMode === 'incorrect') {
+        filteredQuestionResults = filteredQuestionResults.filter(qr => 
+            !qr.isCorrect && qr.userAnswerId // Only truly incorrect (selected wrong answer)
+        );
+    } else if (reviewMode === 'unanswered') {
+        filteredQuestionResults = filteredQuestionResults.filter(qr => 
+            !qr.userAnswerId // No answer selected
+        );
+    } else if (reviewMode === 'flagged') {
+        // Check if this question was flagged
+        const questionIds = serverFlaggedQuestions.map(fq => fq.questionId);
+        filteredQuestionResults = filteredQuestionResults.filter(qr => 
+            questionIds.includes(qr.questionId)
+        );
+    }
 
+    // Function to calculate penalty for incorrect answers
+    const calculatePenalty = (count) => {
+        return (count * -0.25).toFixed(1);
+    };
+    
     return (
         <div className="container py-8">
             <div className="max-w-4xl mx-auto">
@@ -152,54 +190,88 @@ export const McqExamResults: React.FC = () => {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <Card className="bg-muted/10">
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <Card className="bg-blue-50 border-blue-200">
                                 <CardContent className="flex items-center p-4">
-                                    <div className="mr-4 rounded-lg bg-primary/10 p-2">
-                                        <BarChart className="h-5 w-5 text-primary" />
+                                    <div className="mr-4 rounded-lg bg-blue-100 p-2">
+                                        <CheckCircle className="h-5 w-5 text-blue-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Score</p>
-                                        <p className="text-xl font-bold">{examResult.score.toFixed(1)}%</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <Card className="bg-muted/10">
-                                <CardContent className="flex items-center p-4">
-                                    <div className="mr-4 rounded-lg bg-primary/10 p-2">
-                                        <CheckCircle className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Correct Answers</p>
-                                        <p className="text-xl font-bold">
-                                            {examResult.questionResults.filter(q => q.isCorrect).length} / {examResult.questionResults.length}
+                                        <p className="text-sm font-medium text-blue-700">Correct Answers</p>
+                                        <p className="text-xl font-bold text-blue-800">
+                                            {correctCount} ({Math.round((correctCount / totalQuestions) * 100)}%)
                                         </p>
+                                        <p className="text-xs text-blue-600">+{correctCount} marks</p>
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-muted/10">
+                            
+                            <Card className="bg-red-50 border-red-200">
                                 <CardContent className="flex items-center p-4">
-                                    <div className="mr-4 rounded-lg bg-primary/10 p-2">
-                                        <Clock className="h-5 w-5 text-primary" />
+                                    <div className="mr-4 rounded-lg bg-red-100 p-2">
+                                        <XCircle className="h-5 w-5 text-red-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Time Spent</p>
-                                        <p className="text-xl font-bold">{formatTime(examResult.timeSpent)}</p>
+                                        <p className="text-sm font-medium text-red-700">Incorrect Answers</p>
+                                        <p className="text-xl font-bold text-red-800">
+                                            {incorrectCount} ({Math.round((incorrectCount / totalQuestions) * 100)}%)
+                                        </p>
+                                        <p className="text-xs text-red-600">{calculatePenalty(incorrectCount)} mark penalty</p>
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-muted/10">
+                            
+                            <Card className="bg-yellow-50 border-yellow-200">
                                 <CardContent className="flex items-center p-4">
-                                    <div className="mr-4 rounded-lg bg-primary/10 p-2">
-                                        <BookOpen className="h-5 w-5 text-primary" />
+                                    <div className="mr-4 rounded-lg bg-yellow-100 p-2">
+                                        <AlertCircle className="h-5 w-5 text-yellow-600" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Passing Score</p>
-                                        <p className="text-xl font-bold">{examResult.passingMarks.toFixed(1)}%</p>
+                                        <p className="text-sm font-medium text-yellow-700">Unanswered</p>
+                                        <p className="text-xl font-bold text-yellow-800">
+                                            {unansweredCount} ({Math.round((unansweredCount / totalQuestions) * 100)}%)
+                                        </p>
+                                        <p className="text-xs text-yellow-600">0 marks (no penalty)</p>
                                     </div>
                                 </CardContent>
                             </Card>
                         </div>
+                        
+                        {/* Score Breakdown */}
+                        <Card className="bg-slate-50 rounded-lg p-4 mb-6">
+                          <div className="flex justify-between items-center mb-3">
+                            <h3 className="text-sm uppercase text-gray-500">Score Breakdown</h3>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 px-2">
+                              Negative marking applied
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Correct Answers ({correctCount} × 1.0):</span>
+                              <span className="font-semibold text-green-600">+{correctCount.toFixed(1)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Incorrect Answers ({incorrectCount} × -0.25):</span>
+                              <span className="font-semibold text-red-600">{calculatePenalty(incorrectCount)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Unanswered Questions ({unansweredCount} × 0):</span>
+                              <span className="font-semibold">0.0</span>
+                            </div>
+                            <div className="border-t pt-2 mt-2 flex justify-between">
+                              <span className="font-semibold">Final Score (out of {totalQuestions}):</span>
+                              <span className="font-semibold">{(correctCount - (incorrectCount * 0.25)).toFixed(1)}</span>
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500 italic">
+                              <p>• Correct answers earn 1 mark each</p>
+                              <p>• Incorrect selections deduct 0.25 marks each</p>
+                              <p>• Unanswered questions receive 0 marks (no penalty)</p>
+                              <p>• Passing mark: {examResult.passingMarks}%</p>
+                            </div>
+                          </div>
+                        </Card>
 
                         <div className="space-y-4">
                             <div>
@@ -209,7 +281,8 @@ export const McqExamResults: React.FC = () => {
                                 </div>
                                 <Progress 
                                     value={examResult.score} 
-                                    className={`h-3 ${examResult.isPassed ? 'bg-green-600' : 'bg-red-600'}`} 
+                                    className="h-3"
+                                    indicatorClassName={examResult.isPassed ? 'bg-green-600' : 'bg-red-600'}
                                 />
                                 <div className="mt-1">
                                     <span className="text-xs text-muted-foreground">
@@ -236,14 +309,18 @@ export const McqExamResults: React.FC = () => {
                     <div className="flex justify-between items-center">
                         <h2 className="text-2xl font-bold tracking-tight">Detailed Review</h2>
                         <Tabs defaultValue="all" className="w-full max-w-md" onValueChange={(value) => setReviewMode(value as any)}>
-                            <TabsList className="grid w-full grid-cols-3">
+                            <TabsList className="grid w-full grid-cols-4">
                                 <TabsTrigger value="all" className="flex items-center justify-center gap-1">
                                     <PencilIcon className="h-4 w-4" />
-                                    <span>All Questions</span>
+                                    <span>All</span>
                                 </TabsTrigger>
                                 <TabsTrigger value="incorrect" className="flex items-center justify-center gap-1">
                                     <XCircle className="h-4 w-4" />
                                     <span>Incorrect</span>
+                                </TabsTrigger>
+                                <TabsTrigger value="unanswered" className="flex items-center justify-center gap-1">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <span>Unanswered</span>
                                 </TabsTrigger>
                                 <TabsTrigger value="flagged" className="flex items-center justify-center gap-1">
                                     <Flag className="h-4 w-4" />
@@ -259,6 +336,8 @@ export const McqExamResults: React.FC = () => {
                                 <div className="p-3 rounded-full bg-muted mb-3">
                                     {reviewMode === 'incorrect' ? (
                                         <CheckCircle className="h-6 w-6 text-green-500" />
+                                    ) : reviewMode === 'unanswered' ? (
+                                        <AlertCircle className="h-6 w-6 text-yellow-500" />
                                     ) : (
                                         <BookmarkIcon className="h-6 w-6 text-blue-500" />
                                     )}
@@ -266,6 +345,8 @@ export const McqExamResults: React.FC = () => {
                                 <h3 className="text-lg font-medium mb-1">
                                     {reviewMode === 'incorrect' 
                                         ? 'All questions answered correctly!' 
+                                        : reviewMode === 'unanswered'
+                                        ? 'All questions were answered'
                                         : reviewMode === 'flagged' 
                                             ? 'No questions were flagged for review' 
                                             : 'No questions found'}
@@ -273,6 +354,8 @@ export const McqExamResults: React.FC = () => {
                                 <p className="text-muted-foreground text-center max-w-md">
                                     {reviewMode === 'incorrect' 
                                         ? 'Great job! You didn&apos;t miss any questions on this exam.' 
+                                        : reviewMode === 'unanswered'
+                                        ? 'You answered all questions in this exam, even if some were incorrect.'
                                         : reviewMode === 'flagged' 
                                             ? 'You can flag questions during the exam for later review' 
                                             : 'Try selecting a different filter option'}
@@ -280,75 +363,94 @@ export const McqExamResults: React.FC = () => {
                             </CardContent>
                         </Card>
                     ) : (
-                        filteredQuestionResults.map((questionResult, index) => (
-                            <Card 
-                                key={questionResult.questionId} 
-                                className={`border-l-4 ${
-                                    serverFlaggedQuestions.some(fq => fq.questionId === questionResult.questionId)
-                                        ? 'border-l-amber-500'
-                                        : questionResult.isCorrect
-                                            ? 'border-l-green-500'
-                                            : 'border-l-red-500'
-                                }`}
-                            >
-                                <CardHeader className="pb-2">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex items-center gap-2">
-                                            <CardTitle className="text-lg">Question {index + 1}</CardTitle>
-                                            {serverFlaggedQuestions.some(fq => fq.questionId === questionResult.questionId) && (
-                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                                    <Flag className="h-3 w-3 mr-1" />
-                                                    Flagged
-                                                </span>
+                        filteredQuestionResults.map((questionResult, index) => {
+                            // Determine the card border color
+                            let borderColor = 'border-l-blue-500'; // default
+                            if (!questionResult.userAnswerId) {
+                                // Unanswered
+                                borderColor = 'border-l-yellow-500';
+                            } else if (questionResult.isCorrect) {
+                                // Correct
+                                borderColor = 'border-l-green-500';
+                            } else {
+                                // Incorrect
+                                borderColor = 'border-l-red-500';
+                            }
+                            
+                            // If flagged, override with amber
+                            if (serverFlaggedQuestions.some(fq => fq.questionId === questionResult.questionId)) {
+                                borderColor = 'border-l-amber-500';
+                            }
+                            
+                            return (
+                                <Card 
+                                    key={questionResult.questionId} 
+                                    className={`border-l-4 ${borderColor}`}
+                                >
+                                    <CardHeader className="pb-2">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center gap-2">
+                                                <CardTitle className="text-lg">Question {index + 1}</CardTitle>
+                                                {serverFlaggedQuestions.some(fq => fq.questionId === questionResult.questionId) && (
+                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                        <Flag className="h-3 w-3 mr-1" />
+                                                        Flagged
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {!questionResult.userAnswerId ? (
+                                                <div className="flex items-center text-yellow-600">
+                                                    <AlertCircle className="h-5 w-5 mr-1" />
+                                                    <span>Unanswered</span>
+                                                </div>
+                                            ) : questionResult.isCorrect ? (
+                                                <div className="flex items-center text-green-600">
+                                                    <CheckCircle className="h-5 w-5 mr-1" />
+                                                    <span>Correct</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center text-red-600">
+                                                    <XCircle className="h-5 w-5 mr-1" />
+                                                    <span>Incorrect</span>
+                                                </div>
                                             )}
                                         </div>
-                                        {questionResult.isCorrect ? (
-                                            <div className="flex items-center text-green-600">
-                                                <CheckCircle className="h-5 w-5 mr-1" />
-                                                <span>Correct</span>
+                                        <p className="text-base font-medium mt-1">{questionResult.questionText}</p>
+                                    </CardHeader>
+                                    <CardContent className="pb-2">
+                                        <div className="space-y-2">
+                                            {questionResult.userAnswerId && (
+                                                <div className="border p-3 rounded-md">
+                                                    <p className="text-sm font-medium text-muted-foreground mb-1">Your Answer:</p>
+                                                    <p className={`${questionResult.isCorrect ? 'text-green-600' : 'text-red-600'} font-medium`}>
+                                                        {currentExam.questions?.find(q => q.id === questionResult.questionId)?.options.find(o => o.id === questionResult.userAnswerId)?.text || 'Unknown option'}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            
+                                            {(!questionResult.isCorrect || !questionResult.userAnswerId) && (
+                                                <div className="border p-3 rounded-md border-green-200 bg-green-50">
+                                                    <p className="text-sm font-medium text-muted-foreground mb-1">Correct Answer:</p>
+                                                    <p className="text-green-600 font-medium">
+                                                        {currentExam.questions?.find(q => q.id === questionResult.questionId)?.options.find(o => o.id === questionResult.correctAnswerId)?.text || 'Unknown option'}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            
+                                            <div className="border p-3 rounded-md mt-2">
+                                                <p className="text-sm font-medium text-muted-foreground mb-1">Explanation:</p>
+                                                <p className="text-sm">{questionResult.explanation}</p>
                                             </div>
-                                        ) : (
-                                            <div className="flex items-center text-red-600">
-                                                <XCircle className="h-5 w-5 mr-1" />
-                                                <span>Incorrect</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <p className="text-base font-medium mt-1">{questionResult.questionText}</p>
-                                </CardHeader>
-                                <CardContent className="pb-2">
-                                    <div className="space-y-2">
-                                        {questionResult.userAnswerId && (
-                                            <div className="border p-3 rounded-md">
-                                                <p className="text-sm font-medium text-muted-foreground mb-1">Your Answer:</p>
-                                                <p className={`${questionResult.isCorrect ? 'text-green-600' : 'text-red-600'} font-medium`}>
-                                                    {currentExam.questions?.find(q => q.id === questionResult.questionId)?.options.find(o => o.id === questionResult.userAnswerId)?.text || 'Unknown option'}
-                                                </p>
-                                            </div>
-                                        )}
-                                        
-                                        {!questionResult.isCorrect && (
-                                            <div className="border p-3 rounded-md border-green-200 bg-green-50">
-                                                <p className="text-sm font-medium text-muted-foreground mb-1">Correct Answer:</p>
-                                                <p className="text-green-600 font-medium">
-                                                    {currentExam.questions?.find(q => q.id === questionResult.questionId)?.options.find(o => o.id === questionResult.correctAnswerId)?.text || 'Unknown option'}
-                                                </p>
-                                            </div>
-                                        )}
-                                        
-                                        <div className="border p-3 rounded-md mt-2">
-                                            <p className="text-sm font-medium text-muted-foreground mb-1">Explanation:</p>
-                                            <p className="text-sm">{questionResult.explanation}</p>
                                         </div>
-                                    </div>
-                                </CardContent>
-                                <CardFooter>
-                                    <div className="text-sm text-muted-foreground">
-                                        Points: {questionResult.earnedPoints} / {questionResult.points}
-                                    </div>
-                                </CardFooter>
-                            </Card>
-                        ))
+                                    </CardContent>
+                                    <CardFooter>
+                                        <div className="text-sm text-muted-foreground">
+                                            Points: {questionResult.earnedPoints} / {questionResult.points}
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                            );
+                        })
                     )}
                 </div>
             </div>

@@ -42,8 +42,14 @@ export function calculateExamScore(
   // Validation checks
   if (correctAnswers + incorrectAnswers + unansweredQuestions !== totalQuestions) {
     console.warn(
-      'Inconsistent question counts:', 
-      { totalQuestions, correctAnswers, incorrectAnswers, unansweredQuestions }
+      'Inconsistent question counts in calculateExamScore:', 
+      { 
+        totalQuestions, 
+        sumOfCategories: correctAnswers + incorrectAnswers + unansweredQuestions,
+        correctAnswers, 
+        incorrectAnswers, 
+        unansweredQuestions 
+      }
     );
   }
 
@@ -51,10 +57,12 @@ export function calculateExamScore(
   const correctMarks = correctAnswers * 1;
   
   // Calculate penalty for incorrect answers (-0.25 each)
+  // Note: this penalty only applies to actively answered incorrect questions,
+  // not to unanswered questions
   const incorrectPenalty = incorrectAnswers * -0.25;
   
-  // Calculate total score
-  const score = correctMarks + incorrectPenalty;
+  // Calculate total score (ensure it doesn't go below 0)
+  const score = Math.max(0, correctMarks + incorrectPenalty);
   
   // Total possible marks equals the total number of questions
   const totalMarks = totalQuestions;
