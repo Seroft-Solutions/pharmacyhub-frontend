@@ -1,54 +1,59 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   CheckCircle2,
   XCircle,
-  Clock,
-  Calendar,
-  Printer,
-  AlertCircle,
-  ChevronLeft,
-  RefreshCw,
   Award,
-  Target,
-  CheckSquare,
-  ArrowRight,
-  BarChart3
+  Clock,
+  BarChart,
+  Printer,
+  HelpCircle,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle
 } from 'lucide-react';
+import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Question, ExamResult, UserAnswer } from '../../model/standardTypes';
+import { Question, ExamResult, QuestionResult, UserAnswer } from '../../model/standardTypes';
 import { formatTimeVerbose } from '../../utils/formatTime';
 import { useExamScoreCalculation } from './useExamScoreCalculation';
 import { QuestionDialog } from './QuestionDialog';
-import { QuestionStatus } from '../../types/QuestionStatus';
+import { createQuestionStatusMap, QuestionStatus } from '../../types/QuestionStatus';
 import { calculateExamStatistics } from '../../utils/examStatisticsCalculator';
 import { create } from 'zustand';
-import { motion } from 'framer-motion';
 
 // Define Zustand store for exam results state
 interface ExamResultsState {
   selectedQuestionId: number | null;
   isDialogOpen: boolean;
   activeTab: string;
+  isBreakdownExpanded: boolean;
   setSelectedQuestionId: (id: number | null) => void;
   setDialogOpen: (open: boolean) => void;
   setActiveTab: (tab: string) => void;
+  toggleBreakdown: () => void;
 }
 
 const useExamResultsStore = create<ExamResultsState>((set) => ({
   selectedQuestionId: null,
   isDialogOpen: false,
   activeTab: 'all',
+  isBreakdownExpanded: false,
   setSelectedQuestionId: (id) => set({ selectedQuestionId: id }),
   setDialogOpen: (open) => set({ isDialogOpen: open }),
   setActiveTab: (tab) => set({ activeTab: tab }),
+  toggleBreakdown: () => set((state) => ({ isBreakdownExpanded: !state.isBreakdownExpanded })),
 }));
 
 interface ExamResultsProps {
@@ -58,33 +63,35 @@ interface ExamResultsProps {
   onReview?: () => void;
   onTryAgain?: () => void;
   onBackToDashboard?: () => void;
-  onReturnToDashboard?: () => void;
-  showPerformanceInsights?: boolean;
-  onReviewQuestion?: (questionId: number) => void;
+  onReturnToDashboard?: () => void; // For backward compatibility
+  showPerformanceInsights?: boolean; // Option to hide performance insights
+  onReviewQuestion?: (questionId: number) => void; // For reviewing specific questions
 }
 
 /**
- * Enhanced exam results component with modern UI and animations
+ * Exam results component with statistics and question filtering
  */
 export const ExamResults: React.FC<ExamResultsProps> = ({
   result,
   questions,
   userAnswers,
+  onReview,
   onTryAgain,
   onBackToDashboard,
-  onReturnToDashboard
+  onReturnToDashboard,
+  showPerformanceInsights = false,
+  onReviewQuestion
 }) => {
-  // Track active animations
-  const [scoreAnimated, setScoreAnimated] = useState(false);
-  
   // Use Zustand store for state management
   const { 
     selectedQuestionId, 
     isDialogOpen, 
     activeTab,
+    isBreakdownExpanded,
     setSelectedQuestionId, 
     setDialogOpen, 
-    setActiveTab
+    setActiveTab,
+    toggleBreakdown
   } = useExamResultsStore();
   
   // Calculate exam statistics
@@ -95,7 +102,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
         correctAnswers: result.correctAnswers || 0,
         incorrectAnswers: result.incorrectAnswers || 0,
         unanswered: result.unanswered || 0,
-        totalQuestions: result.totalQuestions || 7
+        totalQuestions: result.totalQuestions || 7 // Fallback to 7 questions as seen in UI
       };
     }
     
@@ -123,6 +130,11 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
     setDialogOpen(true);
   };
   
+  // Format time string
+  const formatTimeStr = (seconds: number) => {
+    return formatTimeVerbose(seconds);
+  };
+  
   // Filter questions based on active tab
   const filteredQuestions = useMemo(() => {
     if (!questions) return [];
@@ -138,192 +150,177 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
         return questions;
     }
   }, [questions, activeTab, stats.questionStatusMap]);
-
-  // Calculate final score
-  const finalScore = Math.max(0, stats.correctAnswers - (stats.incorrectAnswers * 0.25));
-
-  // After component mounts, animate the score
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setScoreAnimated(true);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Get result status badge style
-  const getStatusBadgeStyle = () => {
-    return result.isPassed 
-      ? "bg-gradient-to-r from-green-100 to-green-200 text-green-800" 
-      : "bg-gradient-to-r from-red-100 to-red-200 text-red-800";
-  };
+  
+  // Calculate pass percentage
+  const passPercentage = (result.passingMarks / result.totalMarks) * 100;
   
   return (
-    <div className="max-w-3xl mx-auto">
-      <Card className="border shadow-md overflow-hidden">
-        {/* Paper Header - With Gradient Background */}
-        <div className="bg-gradient-to-r from-slate-50 to-blue-50 p-4 border-b">
-          <div className="flex items-center justify-between">
+    <div className="max-w-3xl mx-auto px-2">
+      <Card className="border shadow-sm">
+        {/* Header with result title and pass/fail status */}
+        <CardHeader className="pb-2 space-y-0">
+          <div className="flex justify-between items-center mb-2">
             <div className="flex items-center">
               {result.isPassed ? (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center mr-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                </div>
+                <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center mr-3">
-                  <XCircle className="h-5 w-5 text-red-600" />
-                </div>
+                <XCircle className="h-5 w-5 text-red-500 mr-2" />
               )}
-              <div>
-                <h2 className="text-lg font-medium">{result.examTitle}</h2>
-                <p className="text-sm text-gray-600">You did not meet the passing criteria.</p>
-              </div>
+              <CardTitle className="text-lg">{result.examTitle}</CardTitle>
             </div>
-            <Badge className={`ml-2 py-1 px-3 ${getStatusBadgeStyle()}`}>
+            <Badge 
+              className={`${result.isPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+            >
               {result.isPassed ? 'Passed' : 'Not Passed'}
             </Badge>
           </div>
-        </div>
+          <CardDescription className="text-sm">
+            You {result.isPassed ? 'have met' : 'did not meet'} the passing criteria.
+          </CardDescription>
+        </CardHeader>
         
-        <CardContent className="p-0">
-          {/* Score and Passing Mark - With Animation */}
-          <div className="grid grid-cols-2 p-4 bg-gradient-to-r from-slate-50 to-blue-50">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Your Score</p>
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className={`text-3xl font-bold ${result.isPassed ? 'text-green-600' : 'text-red-600'}`}
-              >
-                {finalScore}
-              </motion.div>
-              <motion.div 
-                initial={{ width: "0%" }}
-                animate={{ width: scoreAnimated ? `${(finalScore / result.totalMarks) * 100}%` : "0%" }}
-                transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                className="h-2 bg-blue-500 rounded-full mt-2"
-                style={{ maxWidth: "120px" }}
-              />
+        <CardContent className="space-y-4 pb-2">
+          {/* Score and Progress Section */}
+          <div className="bg-gray-50 rounded-lg p-3">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-sm text-gray-600">Your Score</div>
+              <div className="text-sm text-gray-600">Passing: {result.passingMarks}</div>
             </div>
-            <div className="text-right">
-              <div className="flex items-center justify-end mb-1">
-                <Target className="h-4 w-4 text-blue-500 mr-1.5" />
-                <p className="text-sm text-gray-600">Passing: <span className="font-medium">{result.passingMarks} marks</span></p>
+            
+            <div className="flex items-baseline justify-between mb-2">
+              <div className={`text-2xl font-bold ${result.isPassed ? 'text-green-600' : 'text-red-600'}`}>
+                {Math.max(0, stats.correctAnswers - (stats.incorrectAnswers * 0.25))}
               </div>
+              <div className="text-sm">
+                marks
+              </div>
+            </div>
+            
+            <Progress
+              value={(Math.max(0, stats.correctAnswers - (stats.incorrectAnswers * 0.25)) / stats.totalQuestions) * 100}
+              className="h-2"
+            />
+          </div>
+          
+          {/* Statistics Section - Simple row with colored pills */}
+          <div className="flex justify-between gap-2">
+            <div className="flex-1 p-2 bg-green-50 rounded-lg text-center border border-green-100">
+              <div className="text-lg font-semibold text-green-700">{stats.correctAnswers}</div>
+              <div className="text-xs text-green-600">Correct</div>
+            </div>
+            <div className="flex-1 p-2 bg-red-50 rounded-lg text-center border border-red-100">
+              <div className="text-lg font-semibold text-red-700">{stats.incorrectAnswers}</div>
+              <div className="text-xs text-red-600">Incorrect</div>
+            </div>
+            <div className="flex-1 p-2 bg-amber-50 rounded-lg text-center border border-amber-100">
+              <div className="text-lg font-semibold text-amber-700">{stats.unanswered}</div>
+              <div className="text-xs text-amber-600">Unanswered</div>
             </div>
           </div>
           
-          {/* Score Details - 2 Column Grid */}
-          <div className="grid grid-cols-2 gap-3 p-4 pt-0">
-            <div className="flex items-center p-2 bg-white rounded-lg border border-blue-100 shadow-sm hover:bg-blue-50 transition-colors">
-              <Clock className="h-4 w-4 text-blue-500 mr-2" />
-              <span className="text-sm text-gray-600">Time:</span>
-              <span className="ml-auto text-sm font-medium">1 second</span>
-            </div>
-            <div className="flex items-center p-2 bg-white rounded-lg border border-green-100 shadow-sm hover:bg-green-50 transition-colors">
-              <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
-              <span className="text-sm text-gray-600">Correct:</span>
-              <span className="ml-auto text-sm font-medium text-green-600">+1</span>
-            </div>
-            <div className="flex items-center p-2 bg-white rounded-lg border border-blue-100 shadow-sm hover:bg-blue-50 transition-colors">
-              <CheckSquare className="h-4 w-4 text-blue-500 mr-2" />
-              <span className="text-sm text-gray-600">Attempted:</span>
-              <span className="ml-auto text-sm font-medium">3</span>
-            </div>
-            <div className="flex items-center p-2 bg-white rounded-lg border border-red-100 shadow-sm hover:bg-red-50 transition-colors">
-              <XCircle className="h-4 w-4 text-red-500 mr-2" />
-              <span className="text-sm text-gray-600">Penalty:</span>
-              <span className="ml-auto text-sm font-medium text-red-600">-0.5</span>
-            </div>
-          </div>
-          
-          {/* Statistics Section - Animated Cards */}
-          <div className="grid grid-cols-3 gap-3 p-4 pt-0">
-            <motion.div 
-              whileHover={{ y: -2, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}
-              className="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg border border-green-200 text-center"
-            >
-              <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white mb-1">
-                <span className="text-green-700 font-medium">{stats.correctAnswers}</span>
+          {/* Time and Breakdown Section */}
+          <div className="grid grid-cols-3 gap-2">
+            {/* Time Spent */}
+            <div className="p-2 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 text-blue-500 mr-1.5" />
+                <div className="text-xs text-blue-600">Time Spent</div>
               </div>
-              <p className="text-xs text-green-700">Correct</p>
-            </motion.div>
-            <motion.div 
-              whileHover={{ y: -2, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}
-              className="bg-gradient-to-br from-red-50 to-red-100 p-3 rounded-lg border border-red-200 text-center"
-            >
-              <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white mb-1">
-                <span className="text-red-700 font-medium">{stats.incorrectAnswers}</span>
+              <div className="text-sm font-medium mt-1 truncate">{formatTimeStr(result.timeSpent)}</div>
+            </div>
+            
+            {/* Score Details - First Column */}
+            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <div className="flex items-center">
+                <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
+                <div className="text-xs text-indigo-600">Correct</div>
               </div>
-              <p className="text-xs text-red-700">Incorrect</p>
-            </motion.div>
-            <motion.div 
-              whileHover={{ y: -2, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}
-              className="bg-gradient-to-br from-amber-50 to-amber-100 p-3 rounded-lg border border-amber-200 text-center"
-            >
-              <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white mb-1">
-                <span className="text-amber-700 font-medium">{stats.unanswered}</span>
-              </div>
-              <p className="text-xs text-amber-700">Unanswered</p>
-            </motion.div>
-          </div>
-          
-          {/* Question Review Section - Enhanced Tabs */}
-          {questions && questions.length > 0 && (
-            <div className="p-4 pt-0">
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center">
-                  <BarChart3 className="h-4 w-4 text-blue-500 mr-1.5" />
-                  <h3 className="text-sm font-medium">Question Review</h3>
+              <div className="text-xs space-y-1 mt-1">
+                <div className="flex justify-between">
+                  <span>Value:</span>
+                  <span className="text-green-600">+{stats.correctAnswers}</span>
                 </div>
-                <Badge variant="outline" className="bg-blue-50 text-blue-700">
+              </div>
+            </div>
+            
+            {/* Score Details - Second Column */}
+            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <div className="flex items-center">
+                <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
+                <div className="text-xs text-indigo-600">Negative</div>
+              </div>
+              <div className="text-xs space-y-1 mt-1">
+                <div className="flex justify-between">
+                  <span>Penalty:</span>
+                  <span className="text-red-600">-{(stats.incorrectAnswers * 0.25).toFixed(1)}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Questions attempted */}
+            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <div className="flex items-center">
+                <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
+                <div className="text-xs text-indigo-600">Attempted</div>
+              </div>
+              <div className="text-xs space-y-1 mt-1">
+                <div className="flex justify-between">
+                  <span>Count:</span>
+                  <span>{stats.correctAnswers + stats.incorrectAnswers}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Final Score */}
+            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <div className="flex items-center">
+                <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
+                <div className="text-xs text-indigo-600">Final Score</div>
+              </div>
+              <div className="text-xs space-y-1 mt-1">
+                <div className="flex justify-between font-medium">
+                  <span>Total:</span>
+                  <span>{Math.max(0, stats.correctAnswers - (stats.incorrectAnswers * 0.25))}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Question Review Section */}
+          {questions && questions.length > 0 && (
+            <div className="mt-2">
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-sm font-medium">Question Review</div>
+                <Badge variant="outline" className="h-5 px-2 font-normal">
                   {result.totalQuestions} questions
                 </Badge>
               </div>
               
-              <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mt-2">
-                <TabsList className="grid grid-cols-4 h-9 bg-slate-100 p-1 rounded-lg">
-                  <TabsTrigger 
-                    value="all" 
-                    className="text-xs rounded data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
-                  >
-                    All
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="correct" 
-                    className="text-xs rounded data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm"
-                  >
-                    Correct
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="incorrect" 
-                    className="text-xs rounded data-[state=active]:bg-white data-[state=active]:text-red-700 data-[state=active]:shadow-sm"
-                  >
-                    Incorrect
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="unanswered" 
-                    className="text-xs rounded data-[state=active]:bg-white data-[state=active]:text-amber-700 data-[state=active]:shadow-sm"
-                  >
-                    Unanswered
-                  </TabsTrigger>
+              <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-4 mb-2 h-8">
+                  <TabsTrigger value="all" className="text-xs py-0">All</TabsTrigger>
+                  <TabsTrigger value="correct" className="text-xs py-0">Correct</TabsTrigger>
+                  <TabsTrigger value="incorrect" className="text-xs py-0">Incorrect</TabsTrigger>
+                  <TabsTrigger value="unanswered" className="text-xs py-0">Unanswered</TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value={activeTab} className="mt-2">
-                  <div className="max-h-[280px] overflow-y-auto rounded-lg border border-slate-100 divide-y divide-slate-100">
+                <TabsContent value={activeTab} className="mt-0">
+                  <div className="max-h-64 overflow-y-auto pr-1">
                     {filteredQuestions.length === 0 ? (
-                      <div className="text-center py-6 text-sm text-gray-500">
+                      <div className="text-center py-4 text-sm text-gray-500">
                         No questions in this category
                       </div>
                     ) : (
-                      filteredQuestions.map((question) => (
-                        <QuestionItemEnhanced 
-                          key={question.id}
-                          question={question}
-                          status={stats.questionStatusMap[question.id] || QuestionStatus.UNANSWERED}
-                          onClick={() => handleSelectQuestion(question.id)}
-                        />
-                      ))
+                      <div className="space-y-1.5">
+                        {filteredQuestions.map(question => (
+                          <QuestionItem 
+                            key={question.id}
+                            question={question}
+                            status={stats.questionStatusMap[question.id] || QuestionStatus.UNANSWERED}
+                            onClick={() => handleSelectQuestion(question.id)}
+                          />
+                        ))}
+                      </div>
                     )}
                   </div>
                 </TabsContent>
@@ -341,31 +338,32 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           />
         </CardContent>
         
-        <CardFooter className="flex justify-between p-4 border-t bg-gradient-to-r from-slate-50 to-blue-50">
+        <CardFooter className="flex justify-between pt-3 pb-3 border-t">
           <Button 
             variant="outline" 
+            size="sm"
             onClick={onBackToDashboard || onReturnToDashboard}
-            className="bg-white hover:bg-blue-50 transition-colors"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" /> Back to Dashboard
+            Back to Dashboard
           </Button>
           
           <div className="flex gap-2">
             <Button 
-              variant="outline"
+              variant="outline" 
+              size="sm"
               onClick={() => window.print()}
-              className="flex items-center gap-1.5 bg-white hover:bg-blue-50 transition-colors"
+              className="flex items-center gap-1.5"
             >
-              <Printer className="h-4 w-4" />
-              <span>Print</span>
+              <Printer className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Print</span>
             </Button>
             
             {onTryAgain && (
               <Button 
+                size="sm"
                 onClick={onTryAgain}
-                className="bg-blue-600 hover:bg-blue-700 transition-colors"
               >
-                <RefreshCw className="h-4 w-4 mr-1.5" /> Try Again
+                Try Again
               </Button>
             )}
           </div>
@@ -375,69 +373,56 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
   );
 };
 
-// Enhanced question item component with better visuals
+// Question item component
 interface QuestionItemProps {
   question: Question;
   status: QuestionStatus;
   onClick: () => void;
 }
 
-const QuestionItemEnhanced: React.FC<QuestionItemProps> = ({
+const QuestionItem: React.FC<QuestionItemProps> = ({
   question,
   status,
   onClick
 }) => {
-  const getLeftBorderColor = () => {
+  const getStatusColor = () => {
     switch (status) {
       case QuestionStatus.ANSWERED_CORRECT:
-        return "border-l-4 border-l-green-500";
+        return "bg-green-50 border-green-200 hover:bg-green-100";
       case QuestionStatus.ANSWERED_INCORRECT:
-        return "border-l-4 border-l-red-500";
+        return "bg-red-50 border-red-200 hover:bg-red-100";
       case QuestionStatus.UNANSWERED:
-        return "border-l-4 border-l-amber-500";
+        return "bg-amber-50 border-amber-200 hover:bg-amber-100";
       default:
-        return "border-l-4 border-l-gray-300";
+        return "bg-gray-50 border-gray-200 hover:bg-gray-100";
     }
   };
   
   const getStatusIcon = () => {
     switch (status) {
       case QuestionStatus.ANSWERED_CORRECT:
-        return (
-          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-          </div>
-        );
+        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
       case QuestionStatus.ANSWERED_INCORRECT:
-        return (
-          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
-            <XCircle className="h-4 w-4 text-red-600" />
-          </div>
-        );
+        return <XCircle className="h-4 w-4 text-red-600" />;
       case QuestionStatus.UNANSWERED:
-        return (
-          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
-          </div>
-        );
+        return <AlertCircle className="h-4 w-4 text-amber-600" />;
       default:
-        return null;
+        return <HelpCircle className="h-4 w-4 text-gray-600" />;
     }
   };
   
   return (
-    <motion.button
-      whileHover={{ backgroundColor: "#f9fafb" }}
+    <button
       onClick={onClick}
-      className={`flex items-center w-full p-3 text-left ${getLeftBorderColor()}`}
+      className={`flex items-center w-full p-2 rounded-md border text-left text-sm transition-colors ${getStatusColor()}`}
     >
-      <div className="w-6 h-6 flex items-center justify-center mr-3 text-sm font-medium rounded-full bg-slate-100">
+      <div className="mr-2 bg-white h-6 w-6 rounded-full flex items-center justify-center text-xs border">
         {question.questionNumber}
       </div>
-      <div className="flex-1 text-sm mr-2 line-clamp-1">
-        {question.text}
+      <div className="flex-1 truncate text-xs mr-1.5">
+        {question.text.length > 30 ? question.text.substring(0, 30) + "..." : question.text}
       </div>
       {getStatusIcon()}
-    </motion.button>
+    </button>
   );
 };
