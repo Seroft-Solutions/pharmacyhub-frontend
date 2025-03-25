@@ -265,7 +265,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
                   <>
                     <div className="flex justify-between">
                       <span>Time per question:</span>
-                      <span>{Math.round(result.timeSpent / result.totalQuestions)} seconds</span>
+                      <span>{Math.max(1, Math.round(result.timeSpent / stats.totalQuestions))} seconds</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Accuracy rate:</span>
@@ -275,7 +275,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
                 )}
                 <div className="flex justify-between font-medium border-t border-indigo-200 pt-1 mt-1">
                   <span>Final Score:</span>
-                  <span>{result.score}/{result.totalMarks}</span>
+                  <span>{scoreInfo.score.toFixed(1)}/{result.totalMarks}</span>
                 </div>
               </div>
             </div>
