@@ -99,11 +99,14 @@ export function formatScore(
 ) {
   const percentage = (score / totalMarks) * 100;
   
+  // Format score to display without decimal places if it's a whole number
+  const scoreDisplay = Number.isInteger(score) ? score.toString() : score.toFixed(decimalPlaces);
+  
   return {
     raw: score,
     total: totalMarks,
     percentage,
-    displayValue: `${score.toFixed(decimalPlaces)} out of ${totalMarks}`,
+    displayValue: scoreDisplay,
     displayPercentage: `${percentage.toFixed(decimalPlaces)}%`,
   };
 }

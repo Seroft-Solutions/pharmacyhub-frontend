@@ -7,11 +7,13 @@ interface ScoreBreakdownProps {
   incorrectAnswers: number;
   unanswered: number;
   totalMarks: number;
+  timeSpent?: number;
   scoreInfo: ExamScoreResult & {
     displayValue: string;
     displayPercentage: string;
     scoreColor: string;
   };
+  showDetailedStats?: boolean;
 }
 
 /**
@@ -23,7 +25,9 @@ export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({
   incorrectAnswers,
   unanswered,
   totalMarks,
-  scoreInfo
+  timeSpent = 0,
+  scoreInfo,
+  showDetailedStats = true
 }) => {
   return (
     <div>
@@ -48,9 +52,31 @@ export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({
             <span className="text-gray-600">Unanswered Questions ({unanswered} × 0):</span>
             <span className="font-semibold">0.0</span>
           </div>
+          {showDetailedStats && (
+            <>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Questions Attempted:</span>
+                <span className="font-semibold">{correctAnswers + incorrectAnswers}/{totalMarks}</span>
+              </div>
+              {timeSpent > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Time per Question:</span>
+                  <span className="font-semibold">{Math.round(timeSpent / totalMarks)} seconds</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Accuracy Rate:</span>
+                <span className="font-semibold">
+                  {correctAnswers + incorrectAnswers > 0 
+                    ? Math.round((correctAnswers / (correctAnswers + incorrectAnswers)) * 100) 
+                    : 0}%
+                </span>
+              </div>
+            </>
+          )}
           <div className="border-t pt-2 mt-2 flex justify-between">
             <span className="font-semibold">Final Score (out of {totalMarks}):</span>
-            <span className="font-semibold">{scoreInfo.score.toFixed(1)}</span>
+            <span className="font-semibold">{scoreInfo.score}</span>
           </div>
           <div className="mt-2 text-xs text-gray-500 italic">
             <p>• Correct answers earn 1 mark each</p>

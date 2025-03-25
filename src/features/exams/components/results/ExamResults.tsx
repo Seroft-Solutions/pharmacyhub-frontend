@@ -192,7 +192,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
                 {scoreInfo.displayValue}/{result.totalMarks}
               </div>
               <div className="text-sm">
-                marks ({scoreInfo.displayPercentage})
+                marks
               </div>
             </div>
             
@@ -229,39 +229,55 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
             </div>
             
             <div className="flex-1 p-2 bg-indigo-50 rounded-lg border border-indigo-100">
-              <button 
-                className="w-full flex items-center justify-between"
-                onClick={toggleBreakdown}
-              >
+              <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
                   <div className="text-xs text-indigo-600">Score Details</div>
                 </div>
-                {isBreakdownExpanded ? (
-                  <ChevronUp className="h-3 w-3 text-indigo-500" />
-                ) : (
-                  <ChevronDown className="h-3 w-3 text-indigo-500" />
-                )}
-              </button>
-              
-              {isBreakdownExpanded && (
-                <div className="mt-2 pt-2 border-t border-indigo-200 text-xs space-y-1">
-                  <div className="flex justify-between">
-                    <span>Correct answers:</span>
-                    <span className="text-green-600">+{stats.correctAnswers}</span>
-                  </div>
-                  {stats.incorrectAnswers > 0 && (
-                    <div className="flex justify-between">
-                      <span>Negative marking:</span>
-                      <span className="text-red-600">-{(stats.incorrectAnswers * 0.25).toFixed(1)}</span>
-                    </div>
+                <button 
+                  onClick={toggleBreakdown}
+                  className="focus:outline-none"
+                >
+                  {isBreakdownExpanded ? (
+                    <ChevronUp className="h-3 w-3 text-indigo-500" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 text-indigo-500" />
                   )}
-                  <div className="flex justify-between font-medium border-t border-indigo-200 pt-1 mt-1">
-                    <span>Final Score:</span>
-                    <span>{result.score}/{result.totalMarks}</span>
-                  </div>
+                </button>
+              </div>
+              
+              <div className="mt-2 pt-2 border-t border-indigo-200 text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span>Correct answers:</span>
+                  <span className="text-green-600">+{stats.correctAnswers}</span>
                 </div>
-              )}
+                {stats.incorrectAnswers > 0 && (
+                  <div className="flex justify-between">
+                    <span>Negative marking:</span>
+                    <span className="text-red-600">-{(stats.incorrectAnswers * 0.25).toFixed(1)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>Questions attempted:</span>
+                  <span>{stats.correctAnswers + stats.incorrectAnswers}/{stats.totalQuestions}</span>
+                </div>
+                {isBreakdownExpanded && (
+                  <>
+                    <div className="flex justify-between">
+                      <span>Time per question:</span>
+                      <span>{Math.round(result.timeSpent / result.totalQuestions)} seconds</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Accuracy rate:</span>
+                      <span>{stats.correctAnswers > 0 ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.incorrectAnswers)) * 100) : 0}%</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex justify-between font-medium border-t border-indigo-200 pt-1 mt-1">
+                  <span>Final Score:</span>
+                  <span>{result.score}/{result.totalMarks}</span>
+                </div>
+              </div>
             </div>
           </div>
           

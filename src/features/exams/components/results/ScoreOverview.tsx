@@ -29,10 +29,10 @@ export const ScoreOverview: React.FC<ScoreOverviewProps> = ({
     <div className="text-center">
       <h3 className="text-sm uppercase text-gray-500 mb-2">Your Score</h3>
       <div className={`text-4xl font-bold ${scoreInfo.scoreColor}`}>
-        {scoreInfo.displayPercentage}
+        {scoreInfo.displayValue}
       </div>
       <div className="text-sm text-gray-600 mt-1">
-        {scoreInfo.displayValue} marks
+        out of {totalMarks} marks
       </div>
       {scoreInfo.incorrectPenalty !== 0 && (
         <div className="text-xs text-gray-500 mt-1 italic">
