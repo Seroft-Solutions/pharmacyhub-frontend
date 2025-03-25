@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -157,6 +157,8 @@ function ExamContainerInternal({
   }, []);
   
   // Handle exam start with analytics
+  // This will be defined later in the code
+
   const handleStartExam = () => {
     // Track analytics event
     analytics.trackEvent('exam_start', { examId, userId });
@@ -389,7 +391,8 @@ function ExamContainerInternal({
   };
   
   // Handle try again action - returns to the exam start screen and ensures complete state reset
-  const handleTryAgain = () => {
+  const handleTryAgain = useCallback(() => {
+    logger.info('Executing handleTryAgain to reset exam state');
     analytics.trackEvent('exam_try_again');
     
     // Reset submission flag to allow future submissions
@@ -471,7 +474,7 @@ function ExamContainerInternal({
     } catch (error) {
       logger.warn('Error during exam state reset:', error);
     }
-  };
+  }, [analytics]);
   
   // Handle timer expiration with analytics
   const handleExamTimeExpired = () => {

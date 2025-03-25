@@ -196,6 +196,8 @@ export function QuestionDisplay({
   // Update selected option when userAnswer prop changes
   useEffect(() => {
     setSelectedOption(userAnswer?.toString());
+    // Reset explanation state when question changes
+    setShowExplanation(false);
   }, [userAnswer]);
   
   // Define a safe handler for when question.options might be undefined

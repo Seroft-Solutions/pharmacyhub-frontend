@@ -59,7 +59,8 @@ export function calculateExamScore(
   // Calculate penalty for incorrect answers (-0.25 each)
   // Note: this penalty only applies to actively answered incorrect questions,
   // not to unanswered questions
-  const incorrectPenalty = incorrectAnswers * -0.25;
+  const negativePenaltyPerQuestion = 0.25;
+  const incorrectPenalty = incorrectAnswers * -negativePenaltyPerQuestion;
   
   // Calculate total score (ensure it doesn't go below 0)
   const score = Math.max(0, correctMarks + incorrectPenalty);

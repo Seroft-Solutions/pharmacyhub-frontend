@@ -24,12 +24,12 @@ export function getQuestionStatus(
   correctAnswerMap: Record<number, string | null>
 ): QuestionStatus {
   // If no user answer for this question, it's unanswered
-  if (!userAnswers[questionId]) {
+  if (!userAnswers[questionId] || !userAnswers[questionId].selectedOption) {
     return QuestionStatus.UNANSWERED;
   }
   
   // If we don't know the correct answer yet, it's pending
-  if (!correctAnswerMap[questionId]) {
+  if (correctAnswerMap[questionId] === null || correctAnswerMap[questionId] === undefined) {
     return QuestionStatus.ANSWERED_PENDING;
   }
   
@@ -37,7 +37,10 @@ export function getQuestionStatus(
   const userAnswer = userAnswers[questionId];
   const correctAnswer = correctAnswerMap[questionId];
   
-  return userAnswer.answerId === correctAnswer
+  // Handle different formats of answers (selectedOption or answerId)
+  const userSelection = userAnswer.selectedOption || userAnswer.answerId;
+  
+  return userSelection == correctAnswer
     ? QuestionStatus.ANSWERED_CORRECT
     : QuestionStatus.ANSWERED_INCORRECT;
 }
@@ -59,15 +62,18 @@ export function createQuestionStatusMap(
   for (const question of questions) {
     let correctAnswerId = null;
     
-    if (typeof question.correctAnswer === 'string') {
+    // Handle different formats of correct answer data
+    if (question.correctOption) {
+      correctAnswerId = question.correctOption?.toString();
+    } else if (typeof question.correctAnswer === 'string') {
       // Find the option with matching label
-      const correctOption = question.options.find(
+      const correctOption = question.options?.find(
         (opt: any) => opt.label?.toUpperCase() === question.correctAnswer?.toUpperCase()
       );
       correctAnswerId = correctOption?.id?.toString() || null;
     } else {
       // Find the option with isCorrect property
-      const correctOption = question.options.find((opt: any) => opt.isCorrect === true);
+      const correctOption = question.options?.find((opt: any) => opt.isCorrect === true);
       correctAnswerId = correctOption?.id?.toString() || null;
     }
     

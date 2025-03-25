@@ -28,7 +28,10 @@ export function formatTimeDisplay(totalSeconds: number) {
  * Format time in seconds to a verbose string
  */
 export function formatTimeVerbose(totalSeconds: number) {
-  const { hours, minutes, remainingSeconds } = formatTime(totalSeconds);
+  // Ensure we have at least 1 second for display purposes
+  const effectiveSeconds = Math.max(1, totalSeconds);
+  
+  const { hours, minutes, remainingSeconds } = formatTime(effectiveSeconds);
   
   let result = '';
   

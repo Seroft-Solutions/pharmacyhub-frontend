@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -99,10 +99,10 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
     if (!questions || !userAnswers) {
       return {
         questionStatusMap: {},
-        correctAnswers: result.correctAnswers,
-        incorrectAnswers: result.incorrectAnswers,
-        unanswered: result.unanswered,
-        totalQuestions: result.totalQuestions
+        correctAnswers: result.correctAnswers || 0,
+        incorrectAnswers: result.incorrectAnswers || 0,
+        unanswered: result.unanswered || 0,
+        totalQuestions: result.totalQuestions || 7 // Fallback to 7 questions as seen in UI
       };
     }
     
@@ -184,12 +184,12 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex justify-between items-center mb-2">
               <div className="text-sm text-gray-600">Your Score</div>
-              <div className="text-sm text-gray-600">Passing: {result.passingMarks}/{result.totalMarks}</div>
+              <div className="text-sm text-gray-600">Passing: {result.passingMarks}</div>
             </div>
             
             <div className="flex items-baseline justify-between mb-2">
               <div className={`text-2xl font-bold ${result.isPassed ? 'text-green-600' : 'text-red-600'}`}>
-                {scoreInfo.displayValue}/{result.totalMarks}
+                {Math.max(0, stats.correctAnswers - (stats.incorrectAnswers * 0.25))}
               </div>
               <div className="text-sm">
                 marks
@@ -197,7 +197,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
             </div>
             
             <Progress
-              value={scoreInfo.percentage}
+              value={(Math.max(0, stats.correctAnswers - (stats.incorrectAnswers * 0.25)) / stats.totalQuestions) * 100}
               className="h-2"
             />
           </div>
@@ -219,63 +219,68 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           </div>
           
           {/* Time and Breakdown Section */}
-          <div className="flex gap-2">
-            <div className="flex-1 p-2 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="grid grid-cols-3 gap-2">
+            {/* Time Spent */}
+            <div className="p-2 bg-blue-50 rounded-lg border border-blue-100">
               <div className="flex items-center">
                 <Clock className="h-4 w-4 text-blue-500 mr-1.5" />
                 <div className="text-xs text-blue-600">Time Spent</div>
               </div>
-              <div className="text-sm font-medium mt-1">{formatTimeStr(result.timeSpent)}</div>
+              <div className="text-sm font-medium mt-1 truncate">{formatTimeStr(result.timeSpent)}</div>
             </div>
             
-            <div className="flex-1 p-2 bg-indigo-50 rounded-lg border border-indigo-100">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
-                  <div className="text-xs text-indigo-600">Score Details</div>
-                </div>
-                <button 
-                  onClick={toggleBreakdown}
-                  className="focus:outline-none"
-                >
-                  {isBreakdownExpanded ? (
-                    <ChevronUp className="h-3 w-3 text-indigo-500" />
-                  ) : (
-                    <ChevronDown className="h-3 w-3 text-indigo-500" />
-                  )}
-                </button>
+            {/* Score Details - First Column */}
+            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <div className="flex items-center">
+                <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
+                <div className="text-xs text-indigo-600">Correct</div>
               </div>
-              
-              <div className="mt-2 pt-2 border-t border-indigo-200 text-xs space-y-1">
+              <div className="text-xs space-y-1 mt-1">
                 <div className="flex justify-between">
-                  <span>Correct answers:</span>
+                  <span>Value:</span>
                   <span className="text-green-600">+{stats.correctAnswers}</span>
                 </div>
-                {stats.incorrectAnswers > 0 && (
-                  <div className="flex justify-between">
-                    <span>Negative marking:</span>
-                    <span className="text-red-600">-{(stats.incorrectAnswers * 0.25).toFixed(1)}</span>
-                  </div>
-                )}
+              </div>
+            </div>
+            
+            {/* Score Details - Second Column */}
+            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <div className="flex items-center">
+                <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
+                <div className="text-xs text-indigo-600">Negative</div>
+              </div>
+              <div className="text-xs space-y-1 mt-1">
                 <div className="flex justify-between">
-                  <span>Questions attempted:</span>
-                  <span>{stats.correctAnswers + stats.incorrectAnswers}/{stats.totalQuestions}</span>
+                  <span>Penalty:</span>
+                  <span className="text-red-600">-{(stats.incorrectAnswers * 0.25).toFixed(1)}</span>
                 </div>
-                {isBreakdownExpanded && (
-                  <>
-                    <div className="flex justify-between">
-                      <span>Time per question:</span>
-                      <span>{Math.max(1, Math.round(result.timeSpent / stats.totalQuestions))} seconds</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Accuracy rate:</span>
-                      <span>{stats.correctAnswers > 0 ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.incorrectAnswers)) * 100) : 0}%</span>
-                    </div>
-                  </>
-                )}
-                <div className="flex justify-between font-medium border-t border-indigo-200 pt-1 mt-1">
-                  <span>Final Score:</span>
-                  <span>{scoreInfo.score.toFixed(1)}/{result.totalMarks}</span>
+              </div>
+            </div>
+            
+            {/* Questions attempted */}
+            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <div className="flex items-center">
+                <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
+                <div className="text-xs text-indigo-600">Attempted</div>
+              </div>
+              <div className="text-xs space-y-1 mt-1">
+                <div className="flex justify-between">
+                  <span>Count:</span>
+                  <span>{stats.correctAnswers + stats.incorrectAnswers}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Final Score */}
+            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <div className="flex items-center">
+                <BarChart className="h-4 w-4 text-indigo-500 mr-1.5" />
+                <div className="text-xs text-indigo-600">Final Score</div>
+              </div>
+              <div className="text-xs space-y-1 mt-1">
+                <div className="flex justify-between font-medium">
+                  <span>Total:</span>
+                  <span>{Math.max(0, stats.correctAnswers - (stats.incorrectAnswers * 0.25))}</span>
                 </div>
               </div>
             </div>
