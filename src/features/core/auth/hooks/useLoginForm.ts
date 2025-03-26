@@ -95,11 +95,15 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
       console.error('Login error:', err);
       
       if (err instanceof Error) {
-        // More detailed error handling
-        if (err.message.includes('403') || err.message.includes('Forbidden')) {
-          setError('Access forbidden - check API permissions and CORS settings');
-        } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-          setError('Invalid email or password');
+      // More detailed error handling
+      if (err.message.includes('unverified') || err.message.includes('not verified') || err.message.includes('verification')) {
+      setError('Your account has not been verified. Please check your email for verification instructions.');
+        // Offer option to resend verification
+      console.debug('Account verification required for:', email);
+          } else if (err.message.includes('403') || err.message.includes('Forbidden')) {
+            setError('Access forbidden - check API permissions and CORS settings');
+          } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+            setError('Invalid email or password');
         } else if (err.message.includes('Network Error')) {
           setError(`Network error - check if the backend server is running at ${process.env.NEXT_PUBLIC_API_BASE_URL}`);
         } else if (err.message.includes('404') || err.message.includes('Not Found')) {

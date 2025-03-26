@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { usePermissions, useAccess } from "@/features/core/rbac/hooks";
 import { useSession, useAuth } from "@/features/core/auth/hooks";
 import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRoleStore } from "@/features/shell/store/roleStore";
 import {ExamDashboard} from "@/features/exams";
 import ExamDashboardPage from "@/app/(exams)/exam/dashboard/page";
 import { logger } from "@/shared/lib/logger";
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { authService } from '@/features/core/auth/api/services/authService';
 
 function DashboardMetrics() {
   // Using useAccess for feature-specific checks
@@ -92,7 +94,43 @@ export default function DashboardPage() {
   const { hasRole } = usePermissions();
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
   const isMobile = useMobileStore(selectIsMobile);
+  
+  // Get user verification status - simulating since user profile should include this
+  const userIsVerified = session?.user?.verified !== false; // Default to true if not specified
+  
+  // Get resend verification mutation
+  const { mutateAsync: resendVerification } = authService.useResendVerification();
+  
+  // Handle resending verification email
+  const handleResendVerification = async () => {
+    if (!session?.user?.email) return;
+    
+    try {
+      setIsResendingVerification(true);
+      
+      // Get device info
+      const deviceInfo = {
+        deviceId: window.navigator.userAgent + Date.now(),
+        userAgent: window.navigator.userAgent,
+        ipAddress: 'client-side'
+      };
+      
+      // Call the resend verification API
+      await resendVerification({
+        emailAddress: session.user.email,
+        ...deviceInfo
+      });
+      
+      alert('Verification email sent! Please check your inbox.');
+    } catch (error) {
+      console.error('Failed to resend verification email:', error);
+      alert('Failed to resend verification email. Please try again later.');
+    } finally {
+      setIsResendingVerification(false);
+    }
+  };
   
   // Check if user has admin role - using the RBAC system directly
   const isAdmin = hasRole('ADMIN') || hasRole('PER_ADMIN');
@@ -129,6 +167,26 @@ export default function DashboardPage() {
           User Dashboard
         </p>
       </div>
+
+      {/* Verification Status Alert */}
+      {!userIsVerified && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-md">
+          <div className="flex items-start">
+            <AlertTriangle className="h-5 w-5 text-yellow-400 mt-0.5 mr-3" />
+            <div>
+              <p className="text-sm text-yellow-700 font-medium">Your account is not verified</p>
+              <p className="text-sm text-yellow-600 mt-1">Please check your email for the verification link, or click below to resend it.</p>
+              <button 
+                onClick={handleResendVerification}
+                disabled={isResendingVerification}
+                className="mt-3 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isResendingVerification ? 'Sending...' : 'Resend Verification Email'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Metrics Section */}
       <ExamDashboardPage />

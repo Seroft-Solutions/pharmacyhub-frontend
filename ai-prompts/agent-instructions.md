@@ -1,3 +1,23 @@
+### Feature-Based Architecture
+
+#### Objective
+We are trying to develop features based on feature-based architechure and you can explore all the code base and you will see we have already had a very solid foundation
+
+#### Project Structure & Directories
+- Feature-Based Directory:  
+  `D:\code\PharmacyHub\pharmacyhub-frontend\src\features`
+- Key Features:
+    - Auth: Handles authentication and role management.
+    - rbac feature for centertalized role based access control.
+    - TanStack Query API: Manages API calls.
+
+
+#### Codebase Directories
+- Frontend Code: `D:\code\macyHub\pharmacyhub-frontend`
+- Backend Code: `D:\code\PharmacyHub\pharmacyhub-backend`
+  Phar
+  By following this structured approach, we ensure an efficient, systematic feature development.
+
 ### 💼 General Agent Instructions
 
 1. **Use `sequentialthinking`** to understand the complete flow of a task or feature.

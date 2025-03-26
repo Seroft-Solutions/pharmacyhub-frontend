@@ -322,6 +322,24 @@ export const useVerifyOtp = () => {
 };
 
 /**
+ * Hook for resending verification email
+ */
+export const useResendVerification = () => {
+  return useApiMutation<void, { emailAddress: string, deviceId?: string, userAgent?: string, ipAddress?: string }>(
+    AUTH_ENDPOINTS.RESEND_VERIFICATION,
+    {
+      requiresAuth: false,
+      onSuccess: () => {
+        console.debug('[Auth] Verification email resent successfully');
+      },
+      onError: (error) => {
+        console.error('[Auth] Failed to resend verification email:', error);
+      }
+    }
+  );
+};
+
+/**
  * Export all hooks as a unified service
  */
 export const authService = {
@@ -343,6 +361,7 @@ export const authService = {
   useEmailVerificationStatus,
   useVerifyEmail,
   useVerifyOtp,
+  useResendVerification,
   
   // Query keys for custom queries
   queryKeys: userApiHooks.queryKeys

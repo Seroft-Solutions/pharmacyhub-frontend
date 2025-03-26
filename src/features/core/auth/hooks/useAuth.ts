@@ -5,7 +5,10 @@
 import { useCallback } from 'react';
 import { useAuthContext } from '../core/AuthContext';
 import { authService } from '../api/services/authService';
-import type { RegistrationData } from '../types';
+import { authApiService } from '../api/services/authApiService';
+import { unwrapAuthResponse } from '@/features/core/tanstack-query-api';
+import { tokenManager } from '../core/tokenManager';
+import type { RegistrationData, UserProfile } from '../types';
 
 /**
  * Main auth hook that combines context state and auth operations
@@ -63,6 +66,33 @@ export const useAuth = () => {
     }
   }, [resetPasswordMutation]);
 
+  // Social login callback function to process code from OAuth provider
+  const processSocialLogin = useCallback(async (code: string, deviceInfo?: Record<string, string>): Promise<UserProfile> => {
+    try {
+      // Get device info if not provided
+      const deviceData = deviceInfo || tokenManager.getAuthDataForLogin();
+      
+      // Exchange authorization code for tokens
+      const response = await authApiService.processSocialLogin(code, deviceData);
+      
+      // Unwrap the API response
+      const unwrappedResponse = unwrapAuthResponse(response);
+      
+      // Validate the unwrapped response
+      if (!unwrappedResponse || !unwrappedResponse.tokens || !unwrappedResponse.user) {
+        throw new Error('Invalid social login response: Missing tokens or user data');
+      }
+
+      // Initialize token manager with the response
+      tokenManager.initializeFromAuthResponse(unwrappedResponse);
+      
+      return unwrappedResponse.user;
+    } catch (error) {
+      console.error('Social login processing error:', error);
+      throw error;
+    }
+  }, []);
+
   return {
     // Context state and methods
     ...authContext,
@@ -71,6 +101,7 @@ export const useAuth = () => {
     register,
     requestPasswordReset,
     resetPassword,
+    processSocialLogin,
 
     // Loading and error states
     isRegistering: registerMutation.isPending,

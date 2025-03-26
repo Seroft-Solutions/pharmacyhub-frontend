@@ -55,7 +55,7 @@ export const LoginValidationError: React.FC<LoginValidationErrorProps> = ({
       case LoginStatus.OTP_REQUIRED:
         return 'Verify Identity';
       case LoginStatus.TOO_MANY_DEVICES:
-        return 'Manage Devices';
+        return 'Log Out Other Devices'; // Changed to be more descriptive of what will happen
       default:
         return 'Continue';
     }

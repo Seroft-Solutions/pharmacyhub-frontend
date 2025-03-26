@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useLoginForm } from '@/features/core/auth/hooks/useLoginForm';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { authService } from '@/features/core/auth/api/services/authService';
 
 // Import shadcn UI components
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,41 @@ export const LoginForm = () => {
   
   const [showPassword, setShowPassword] = useState(false);
   const isMobile = useMobileStore(selectIsMobile);
+  
+  // State to track if we're resending a verification email
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+  
+  // Get resend verification mutation
+  const { mutateAsync: resendVerification } = authService.useResendVerification();
+  
+  // Function to handle resending verification email
+  const handleResendVerification = useCallback(async () => {
+    if (!email) return;
+    
+    try {
+      setIsResendingVerification(true);
+      
+      // Get device info
+      const deviceInfo = {
+        deviceId: window.navigator.userAgent + Date.now(),
+        userAgent: window.navigator.userAgent,
+        ipAddress: 'client-side'
+      };
+      
+      // Call the resend verification API
+      await resendVerification({
+        emailAddress: email,
+        ...deviceInfo
+      });
+      
+      alert('Verification email sent! Please check your inbox.');
+    } catch (error) {
+      console.error('Failed to resend verification email:', error);
+      alert('Failed to resend verification email. Please try again later.');
+    } finally {
+      setIsResendingVerification(false);
+    }
+  }, [email, resendVerification]);
 
   return (
     <>
@@ -66,7 +102,18 @@ export const LoginForm = () => {
           {error && (
             <div className={`mb-${isMobile ? '4' : '6'} p-3 rounded flex items-center space-x-2 bg-red-50 border border-red-200 text-red-700`}>
               <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0"/>
-              <p className="text-sm">{error}</p>
+              <div className="flex-1">
+                <p className="text-sm">{error}</p>
+                {error.includes('not verified') && (
+                  <button 
+                    onClick={handleResendVerification}
+                    disabled={isResendingVerification}
+                    className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none"
+                  >
+                    {isResendingVerification ? 'Sending...' : 'Resend verification email'}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

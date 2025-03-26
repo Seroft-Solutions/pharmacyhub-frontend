@@ -58,7 +58,7 @@ We are trying to develop features based on feature based architechure and you ca
 - Ensure, you never need to write any temp fix, any mock thing
 
 #### Codebase Directories
-- Frontend Code: `D:\code\PharmacyHub\pharmacyhub-frontend`
+- Frontend Code: `D:\code\macyHub\pharmacyhub-frontend`
 - Backend Code: `D:\code\PharmacyHub\pharmacyhub-backend`
-
+  Phar
 By following this structured approach, we ensure an efficient, systematic feature development.

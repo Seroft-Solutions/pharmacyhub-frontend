@@ -1,3 +1,30 @@
+### Feature-Based Architecture
+
+#### Objective
+We are trying to develop features based on feature-based architechure and you can explore all the code base and you will see we have already had a very solid foundation
+
+#### Project Structure & Directories
+- Feature-Based Directory:  
+  `D:\code\PharmacyHub\pharmacyhub-frontend\src\features`
+- Key Features:
+   - Auth: Handles authentication and role management.
+   - rbac feature for centertalized role based access control.
+   - TanStack Query API: Manages API calls.
+
+
+#### Codebase Directories
+- Frontend Code: `D:\code\macyHub\pharmacyhub-frontend`
+- Backend Code: `D:\code\PharmacyHub\pharmacyhub-backend`
+  Phar
+  By following this structured approach, we ensure an efficient, systematic feature development.
+
+
+### Requirement
+-
+I have Login with google button as well, we need to handle this as well.
+
+Can you please make sure our application handle this requiest and gets registered into our application. You might need to handle it on the backend properly. Can you please do it as well
+
 ### 💼 General Agent Instructions
 
 - 🧱 A new principle to **focus on feature-based architecture** for scalability.
@@ -50,74 +77,3 @@
 - git add . command is used to add all the files to the staging area.
 - git commit -m "commit message" command is used to commit the changes.
 - git push origin main command is used to push the changes to the remote repository.
-
-
-When I click on the Review and Finish Button, it should not show the Exam Summary page, it should open dialog and then display the statistics page directly
-
-
-
-Exam result is not displaying the correct visibility of stats, like correct answers, wrong answers, and unanswered answers.
-
-There is still calculations problem. From the exam screen we can detect, if the user has selected the correct answer or not and then we need to manage it here.
-
-I am hoping you are getting my point.
-
-
-For Example
-Total Questions: 100 Multiple Choice Questions (MCQs)
-
-Attempted Questions: 80 MCQs
-
-Unattempted Questions: 20 MCQs (No marks awarded or deducted)
-
-Correct Answers: 60 MCQs (Each correct answer = +1 mark)
-
-Incorrect Answers: 20 MCQs (Each wrong attempt = -0.25 mark)
-
-Final Score Calculation:
-Correct Answers Contribution: 60 × 1 = 60 marks
-
-Negative Marking for Incorrect Answers: 20 × (-0.25) = -5 marks
-
-Unanswered Questions Contribution: 20 × 0 = 0 marks
-
-Total Score:
-60 - 5 = 55 marks (out of 100)
-
-This method ensures fair evaluation with negative marking applied only to incorrect responses while unanswered questions remain neutral.
-
-
-
-
-
-
-User Profile Fixes:
-
-1.	Profile Information:
-
-o	Currently, user profile features are not functional.
-
-o	Profile should include at least:
-
-	Username
-
-	Editable password option
-
-
-We need to remove from the app top bar
-We need to move it into the sidebar just like the other options.
-We need to foucs on shadcn sidear
-
-
-
-
-
-
-
-10. **For terminal-level tasks like builds, tests, or Git:**
-   - Use `execute_command` within the terminal.
-   - You have to go to relevant project directory first.
-   - git status command is used to check the status of the project.
-   - git add . command is used to add all the files to the staging area.
-   - git commit -m "commit message" command is used to commit the changes.
-   - git push origin main command is used to push the changes to the remote repository.
