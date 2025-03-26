@@ -71,11 +71,12 @@ export const ForgotPasswordForm = () => {
       try {
         // Primary method: Use the hook with email parameter
         // It will be transformed to emailAddress in the hook
-        await requestPasswordReset({ email });
+        await requestPasswordReset(requestData);
       } catch (hookError) {
         console.error("Hook method failed, trying direct API call", hookError);
         
         // Fallback method: If the hook failed, try a direct API call
+        console.log('Attempting direct API call with:', requestData);
         await apiClient.post(AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET, requestData);
       }
       
@@ -242,37 +243,7 @@ export const ForgotPasswordForm = () => {
         )}
 
         {renderCurrentStep()}
-        
-        {/* Debug information in development mode */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-4 pt-2 border-t border-gray-100">
-            <button 
-              type="button" 
-              onClick={() => setDebugMode(!debugMode)}
-              className="text-xs text-gray-400 hover:text-gray-600"
-            >
-              {debugMode ? 'Hide Debug Info' : 'Show Debug Info'}
-            </button>
-            
-            {debugMode && (
-              <div className="mt-2 p-2 bg-gray-50 text-left rounded text-xs font-mono overflow-auto max-h-60">
-                <p>Endpoint: {AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET}</p>
-                <p>isPending: {isPending ? 'true' : 'false'}</p>
-                <p>Error: {error || 'None'}</p>
-                <p>Email: {email || 'Not entered'}</p>
-                <p>Current Step: {currentStep}</p>
-                {lastRequestData && (
-                  <>
-                    <p className="mt-2 text-blue-500">Last Request Data:</p>
-                    <pre className="text-xs overflow-auto">
-                      {JSON.stringify(lastRequestData, null, 2)}
-                    </pre>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+
       </CardContent>
 
       {currentStep === 'request' && (
