@@ -148,6 +148,7 @@ export const authApiService = createExtendedApiService<User, {
   register: (userData: RegisterRequest) => Promise<ApiResponse<AuthResponse>>;
   logout: () => Promise<ApiResponse<void>>;
   refreshToken: (token: string) => Promise<ApiResponse<AuthTokens>>;
+  processSocialLogin: (code: string, deviceInfo?: Record<string, string>) => Promise<ApiResponse<AuthResponse>>;
   
   // Profile operations
   getUserProfile: () => Promise<ApiResponse<UserProfile>>;
@@ -209,6 +210,40 @@ export const authApiService = createExtendedApiService<User, {
         tokenStorage.storeTokens(response.data);
       }
       return response;
+    },
+    
+    processSocialLogin: async (code, deviceInfo) => {
+      // Use the dedicated Google callback endpoint in SocialAuthController
+      const socialAuthEndpoint = '/api/social-auth/google/callback';
+      
+      // Create the payload with the code and device information
+      const payload = {
+        code,
+        callbackUrl: `${window.location.origin}/auth/callback`,
+        ...deviceInfo
+      };
+      
+      logger.debug('[Auth] Processing Google social login with code', { 
+        endpoint: socialAuthEndpoint,
+        deviceInfo: deviceInfo ? true : false
+      });
+      
+      try {
+        const response = await apiClient.post<AuthResponse>(socialAuthEndpoint, payload);
+        
+        // Store tokens if available
+        if (response.data?.tokens) {
+          tokenStorage.storeTokens(response.data.tokens);
+          logger.debug('[Auth] Successfully stored tokens from Google login');
+        } else {
+          logger.warn('[Auth] No tokens received from Google login response');
+        }
+        
+        return response;
+      } catch (error) {
+        logger.error('[Auth] Google login error', error);
+        throw error;
+      }
     },
     
     // Profile operations
