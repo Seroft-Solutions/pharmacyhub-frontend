@@ -212,12 +212,15 @@ export const useUpdateProfile = () => {
  * Hook for requesting a password reset
  */
 export const useRequestPasswordReset = () => {
-  return useApiMutation<void, PasswordResetRequest>(
-    AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET,
-    {
-      requiresAuth: false
+  return useApiMutation<void, { email: string }>(AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET, {
+    requiresAuth: false,
+    // Transform the payload to match backend expectations
+    onMutate: (variables) => {
+      console.debug('[Auth] Password reset request variables:', { email: variables.email });
+      // Transform to what the backend expects
+      return { emailAddress: variables.email };
     }
-  );
+  });
 };
 
 /**

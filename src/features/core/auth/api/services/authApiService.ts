@@ -297,7 +297,7 @@ export const authApiService = createExtendedApiService<User, {
     
     // Password reset
     requestPasswordReset: async (email) => {
-      return await apiClient.post<void>(AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET, { email });
+      return await apiClient.post<void>(AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET, { emailAddress: email });
     },
     
     validateResetToken: async (token) => {

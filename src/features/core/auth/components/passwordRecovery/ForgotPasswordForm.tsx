@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AUTH_ENDPOINTS } from '@/features/core/auth/api/constants';
 import { authService } from '@/features/core/auth/api/services/authService';
 import { ResetStep } from '../../model/types';
+import { apiClient } from '@/features/core/tanstack-query-api';
 
 // Import shadcn UI components
 import { Button } from '@/components/ui/button';
@@ -29,11 +30,29 @@ export const ForgotPasswordForm = () => {
   const [currentStep, setCurrentStep] = useState<ResetStep>('request');
   
   // Use the auth service hook directly
-  // Use the auth service hook directly
   const { mutateAsync: requestPasswordReset, isPending } = authService.useRequestPasswordReset();
   
   // Debug mode for development
   const [debugMode, setDebugMode] = useState(false);
+  const [lastRequestData, setLastRequestData] = useState<any>(null);
+
+  // Get user's browser/device info to help with debugging
+  const getUserAgent = () => {
+    if (typeof window !== 'undefined') {
+      return window.navigator.userAgent;
+    }
+    return 'unknown';
+  };
+  
+  const getRequestData = () => {
+    // Format data as the backend expects it
+    return { 
+      emailAddress: email,
+      ipAddress: '',
+      userAgent: getUserAgent(),
+      deviceId: 'web-' + Math.random().toString(36).substring(2, 9)
+    };
+  };
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +64,21 @@ export const ForgotPasswordForm = () => {
     }
 
     try {
-      await requestPasswordReset({ email });
+      // For backend compatibility, use the emailAddress property instead of email
+      const requestData = getRequestData();
+      setLastRequestData(requestData);
+      
+      try {
+        // Primary method: Use the hook with email parameter
+        // It will be transformed to emailAddress in the hook
+        await requestPasswordReset({ email });
+      } catch (hookError) {
+        console.error("Hook method failed, trying direct API call", hookError);
+        
+        // Fallback method: If the hook failed, try a direct API call
+        await apiClient.post(AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET, requestData);
+      }
+      
       setCurrentStep('success');
     } catch (err) {
       // Store full error for debug display
@@ -61,6 +94,10 @@ export const ForgotPasswordForm = () => {
           setError('Too many reset attempts. Please try again later.');
         } else if (errorMessage.includes('no endpoint') || errorMessage.includes('404')) {
           setError('Service temporarily unavailable. Please try again later.');
+        } else if (errorMessage.includes('400') || errorMessage.includes('bad request')) {
+          setError('Invalid email format or missing required information.');
+        } else if (errorMessage.includes('validation')) {
+          setError('Validation failed. Please check your input.');
         } else {
           setError(err.message || 'Failed to send reset email');
         }
@@ -224,6 +261,14 @@ export const ForgotPasswordForm = () => {
                 <p>Error: {error || 'None'}</p>
                 <p>Email: {email || 'Not entered'}</p>
                 <p>Current Step: {currentStep}</p>
+                {lastRequestData && (
+                  <>
+                    <p className="mt-2 text-blue-500">Last Request Data:</p>
+                    <pre className="text-xs overflow-auto">
+                      {JSON.stringify(lastRequestData, null, 2)}
+                    </pre>
+                  </>
+                )}
               </div>
             )}
           </div>

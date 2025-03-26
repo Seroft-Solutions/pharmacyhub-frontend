@@ -88,7 +88,8 @@ export interface RegistrationData {
 }
 
 export interface PasswordResetRequest {
-  email: string;
+  email?: string;
+  emailAddress?: string;
 }
 
 export interface PasswordResetCompletion {
