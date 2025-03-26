@@ -42,6 +42,20 @@ export default function AuthCallbackPage() {
       setLoading(false);
       return;
     }
+    
+    // Validate the state parameter to protect against CSRF attacks
+    const storedState = sessionStorage.getItem('oauth_state');
+    const receivedState = state;
+    
+    if (!storedState || !receivedState || storedState !== receivedState) {
+      logger.error('[Social Auth] State validation failed');
+      setError('Security validation failed. Please try again.');
+      setLoading(false);
+      return;
+    }
+    
+    // Clear the stored state after validation
+    sessionStorage.removeItem('oauth_state');
 
     const handleSocialLoginCallback = async () => {
       try {

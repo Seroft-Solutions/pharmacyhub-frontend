@@ -95,15 +95,15 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
       console.error('Login error:', err);
       
       if (err instanceof Error) {
-      // More detailed error handling
-      if (err.message.includes('unverified') || err.message.includes('not verified') || err.message.includes('verification')) {
-      setError('Your account has not been verified. Please check your email for verification instructions.');
-        // Offer option to resend verification
-      console.debug('Account verification required for:', email);
-          } else if (err.message.includes('403') || err.message.includes('Forbidden')) {
-            setError('Access forbidden - check API permissions and CORS settings');
-          } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-            setError('Invalid email or password');
+        // More detailed error handling
+        if (err.message.includes('unverified') || err.message.includes('not verified') || err.message.includes('verification')) {
+          setError('Your account has not been verified. Please check your email for verification instructions.');
+          // Offer option to resend verification
+          console.debug('Account verification required for:', email);
+        } else if (err.message.includes('403') || err.message.includes('Forbidden')) {
+          setError('Access forbidden - check API permissions and CORS settings');
+        } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+          setError('Invalid email or password');
         } else if (err.message.includes('Network Error')) {
           setError(`Network error - check if the backend server is running at ${process.env.NEXT_PUBLIC_API_BASE_URL}`);
         } else if (err.message.includes('404') || err.message.includes('Not Found')) {
@@ -137,17 +137,35 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
     }
   }, [email, password, login, router, redirectPath, getDeviceInfo, validateSession, setSessionId]);
 
-  const handleSocialLogin = useCallback((provider: 'google' | 'facebook') => {
-    // For social login, we'll redirect to Keycloak's login page with the selected provider
-    const KEYCLOAK_BASE_URL = process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL || 'http://localhost:8080';
-    const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'pharmacyhub';
-    const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'pharmacyhub-client';
-
-    // Direct backend callback URL
-    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
-    const identityProvider = provider === 'google' ? 'google' : 'facebook';
-
-    window.location.href = `${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid&kc_idp_hint=${identityProvider}`;
+  const handleSocialLogin = useCallback((provider: 'google') => {
+    // Get Google configuration value
+    const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '387701996335-oq98hgapilg9kf0ddljvh4omikf8b3qi.apps.googleusercontent.com';
+    
+    // Set up callback URL
+    const callbackUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
+    
+    // Add state parameter for CSRF protection
+    const state = Math.random().toString(36).substring(2);
+    // Store state in sessionStorage for validation in the callback
+    sessionStorage.setItem('oauth_state', state);
+    
+    // Google OAuth 2.0 parameters
+    const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+    const googleParams = new URLSearchParams({
+      client_id: GOOGLE_CLIENT_ID,
+      redirect_uri: `${window.location.origin}/auth/callback`,
+      response_type: 'code',
+      scope: 'openid email profile',
+      state: state,
+      access_type: 'offline',
+      prompt: 'select_account'
+    });
+    
+    // Log redirect for debugging
+    console.log(`[Auth] Redirecting to Google OAuth, callback: ${window.location.origin}/auth/callback`);
+    
+    // Redirect to Google OAuth
+    window.location.href = `${googleAuthUrl}?${googleParams.toString()}`;
   }, []);
 
   // Handle OTP verification

@@ -27,7 +27,9 @@ import {
   ShieldCheck,
   CheckCircle2,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 type FormStep = 'account' | 'personal' | 'confirmation';
@@ -40,7 +42,6 @@ const initialFormData = {
   firstName: '',
   lastName: '',
   phoneNumber: '',
-  userType: 'GENERAL_USER',
   acceptTerms: false
 };
 
@@ -65,10 +66,6 @@ const validateRegistrationForm = (data: typeof initialFormData) => {
   // Password validation
   if (!data.password) {
     errors.password = 'Password is required';
-  } else if (data.password.length < 8) {
-    errors.password = 'Password must be at least 8 characters';
-  } else if (!/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\S+$).{8,}$/.test(data.password)) {
-    errors.password = 'Password must contain at least one digit, lowercase letter, uppercase letter, special character (@#$%^&+=!), and no spaces';
   }
   
   // Confirm password validation
@@ -104,6 +101,8 @@ export const RegisterForm = () => {
   const [currentStep, setCurrentStep] = useState<FormStep>('account');
   const [passwordStrength, setPasswordStrength] = useState(calculatePasswordStrength(''));
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const { register, login, connectivityStatus = { hasIssues: false } } = useAuth();
   const router = useRouter();
@@ -193,19 +192,13 @@ export const RegisterForm = () => {
     }
 
     try {
-      // Map GENERAL_USER to PHARMACIST for backend compatibility
-      let userTypeForBackend = formData.userType;
-      if (userTypeForBackend === 'GENERAL_USER') {
-        userTypeForBackend = 'PHARMACIST'; // Use PHARMACIST as the default for general users
-      }
-
       // Prepare data for API
       const registrationData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         emailAddress: formData.email, // Changed from email to emailAddress
         password: formData.password,
-        userType: userTypeForBackend, // Use the mapped user type
+        userType: 'PHARMACIST', // Always use PHARMACIST as the mapped value for General User
         contactNumber: formData.phoneNumber || undefined,
         openToConnect: false
       };
@@ -369,13 +362,21 @@ export const RegisterForm = () => {
           <Input
             id="password"
             name="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             value={formData.password}
             onChange={handleChange}
             className={`pl-10 border-gray-300 bg-white ${errors.password ? "border-red-500 ring-red-500" : ""}`}
             required
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
           {errors.password && (
             <p className="mt-1 text-sm text-red-500">{errors.password}</p>
           )}
@@ -415,13 +416,21 @@ export const RegisterForm = () => {
           <Input
             id="confirmPassword"
             name="confirmPassword"
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             placeholder="••••••••"
             value={formData.confirmPassword}
             onChange={handleChange}
             className={`pl-10 border-gray-300 bg-white ${errors.confirmPassword ? "border-red-500 ring-red-500" : ""}`}
             required
           />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+            tabIndex={-1}
+          >
+            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
           {errors.confirmPassword && (
             <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
           )}
@@ -509,26 +518,21 @@ export const RegisterForm = () => {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="userType" className="text-gray-700">
-          Account type
-        </Label>
-        <Select 
-          value={formData.userType} 
-          onValueChange={(value) => handleSelectChange('userType', value)}
-        >
-          <SelectTrigger className="w-full border-gray-300 bg-white">
-            <SelectValue placeholder="Select account type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="GENERAL_USER">General User</SelectItem>
-            <SelectItem value="PHARMACIST">Pharmacist</SelectItem>
-            <SelectItem value="PHARMACY_MANAGER">Pharmacy Manager</SelectItem>
-            <SelectItem value="PROPRIETOR">Pharmacy Proprietor</SelectItem>
-            <SelectItem value="SALESMAN">Pharmacy Salesperson</SelectItem>
-            <SelectItem value="ADMIN">Administrator</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-gray-500 mt-1">Your account type determines which features you can access</p>
+      <Label htmlFor="userType" className="text-gray-700">
+      Account type
+      </Label>
+      <Select
+      value="GENERAL_USER"
+      disabled={true}
+      >
+      <SelectTrigger className="w-full border-gray-300 bg-white">
+      <SelectValue placeholder="General User" />
+      </SelectTrigger>
+      <SelectContent>
+      <SelectItem value="GENERAL_USER">General User</SelectItem>
+      </SelectContent>
+      </Select>
+      <p className="text-xs text-gray-500 mt-1">Your account type determines which features you can access</p>
       </div>
 
       <div className="flex justify-between pt-4">
@@ -576,9 +580,7 @@ export const RegisterForm = () => {
           )}
           <div className="grid grid-cols-3 gap-2">
             <span className="text-gray-500">Account Type:</span>
-            <span className="col-span-2 font-medium text-gray-800">
-              {formData.userType.replace(/_/g, ' ')}
-            </span>
+            <span className="col-span-2 font-medium text-gray-800">General User</span>
           </div>
         </div>
       </div>
