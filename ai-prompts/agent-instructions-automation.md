@@ -19,13 +19,114 @@ We are trying to develop features based on feature-based architechure and you ca
   By following this structured approach, we ensure an efficient, systematic feature development.
 
 
-### Requirement
-- We need to focus on Signup flow.
-- When user signup successfully, then verify email should be sent to the user.
-- Email sending part must be done by the backend as we already doing this bit
-- On UI side, we need some kind of engaging content that needs to displayed and user will get to know that email has been sent to the user.
-- I am getting this email as of now. but verify email needs to be double checked. You have to think about this as well and fix it in my codebase, and try to split the components into multiple as much as you can, so that it will be easier to manage and maintain
+I see the issue with the forgot-password request taking too long. Let me explain what might be happening and how to fix it:
 
+### Why the forgot-password request is pending:
+
+1. **Email Service Delay**: The backend is likely taking too long to connect to the email service, causing the request to appear as "pending" in the network tab.
+
+2. **Missing Request Timeout**: Our implementation might not have a proper timeout configured, so when the email service is slow, the request just hangs.
+
+3. **No Response Caching**: The API might not be returning a response until the email is actually sent, which is not optimal.
+
+### Solution:
+
+Let's optimize the forgot-password functionality:
+
+1. **Implement Asynchronous Email Sending**:
+   - Modify the backend to acknowledge the request immediately
+   - Process the email sending in a background thread
+   - Return a success response to the user right away
+
+2. **Add Proper Timeouts**:
+   - Update the frontend API call to include a reasonable timeout (10-15 seconds)
+   - Add a timeout configuration in the backend email service
+
+3. **Improve Error Handling**:
+   - Ensure the frontend shows a loading state but doesn't wait indefinitely
+   - Add retry logic in case of failure
+
+Here's a quick fix for the frontend:
+
+```typescript
+// In authService.ts - update the useRequestPasswordReset hook
+export const useRequestPasswordReset = () => {
+  return useApiMutation<void, { requestData: any }>(
+    AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET, 
+    {
+      requiresAuth: false,
+      timeout: 10000, // 10 second timeout
+      onMutate: (requestData) => {
+        console.debug('[Auth] Password reset request sent:', { email: requestData.emailAddress });
+        return { emailAddress: requestData.emailAddress };
+      },
+      // Show a toast message even if we haven't received a response yet
+      onSuccess: () => {
+        toast.success("Reset link sent. Please check your email.");
+      },
+      onError: (error) => {
+        // Improved error handling
+        toast.error("Something went wrong sending the reset link. Please try again.");
+        console.error('[Auth] Reset request error:', error);
+      }
+    }
+  );
+};
+```
+
+For the backend, we should modify the AuthService to make the email sending asynchronous:
+
+```java
+// In AuthService.java
+@Async
+public CompletableFuture<Boolean> requestPasswordResetAsync(String email, String ipAddress, String userAgent) {
+    return CompletableFuture.supplyAsync(() -> {
+        try {
+            // Check if user exists
+            User user = userService.findByEmail(email);
+            if (user == null) {
+                // Return true for security reasons (don't reveal if email exists)
+                return true;
+            }
+            
+            // Generate a password reset token
+            String token = tokenService.generateToken(user.getId(), "reset-password");
+            
+            // Send password reset email with device tracking information
+            emailService.sendPasswordResetEmail(user.getEmailAddress(), token, ipAddress, userAgent);
+            
+            return true;
+        } catch (Exception e) {
+            logger.error("Failed to send password reset email", e);
+            return false;
+        }
+    });
+}
+```
+
+In your controller, you would update the endpoint to:
+
+```java
+@PostMapping("/forgot-password")
+public ResponseEntity<ApiResponse<String>> forgotPassword(
+        @Valid @RequestBody PasswordResetRequestDTO request,
+        HttpServletRequest httpRequest) {
+
+    // Get device information 
+    String ipAddress = getClientIpAddress(httpRequest);
+    String userAgent = request.getUserAgent();
+    
+    // Start async process - don't wait for it to complete
+    authService.requestPasswordResetAsync(request.getEmailAddress(), ipAddress, userAgent);
+    
+    // Return success immediately
+    return successResponse("If an account exists with that email, a password reset link will be sent.");
+}
+```
+
+These changes should ensure the forgot-password request responds quickly, even if the actual email sending takes longer.
+
+Would you like me to implement these fixes in your codebase?
 ### 💼 General Agent Instructions
 
 - 🧱 A new principle to **focus on feature-based architecture** for scalability.

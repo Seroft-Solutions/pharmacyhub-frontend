@@ -1,0 +1,207 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { authService } from '../../api/services/authService';
+import { ROUTES } from '../../config/auth';
+
+// Import shadcn components
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+
+// Import icons
+import { 
+  CheckCircle, 
+  XCircle, 
+  Loader2, 
+  ShieldCheck, 
+  Mail, 
+  AlertTriangle, 
+  HelpCircle,
+  Home,
+  LogIn
+} from 'lucide-react';
+
+interface EmailVerificationViewProps {
+  token: string;
+}
+
+export const EmailVerificationView: React.FC<EmailVerificationViewProps> = ({ token }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const verifyEmail = async () => {
+      if (!token) {
+        setError('No verification token provided');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        await authService.verifyEmail(token);
+        setIsVerified(true);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to verify email');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    verifyEmail();
+  }, [token]);
+
+  const handleRedirect = () => {
+    router.push(ROUTES.LOGIN);
+  };
+
+  const renderLoading = () => (
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <div className="size-16 rounded-full bg-blue-100 p-3 mb-4 flex items-center justify-center">
+        <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
+      </div>
+      <h2 className="text-xl font-semibold text-gray-800 mb-2">Verifying Your Email</h2>
+      <p className="text-gray-600 mb-6">Please wait while we validate your email verification...</p>
+      <div className="space-y-2 w-full max-w-sm">
+        <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-full bg-blue-500 rounded-full w-2/3 animate-pulse"></div>
+        </div>
+        <p className="text-sm text-gray-500">This should only take a few seconds</p>
+      </div>
+    </div>
+  );
+
+  const renderError = () => (
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <div className="size-16 rounded-full bg-red-100 p-3 mb-4 flex items-center justify-center">
+        <XCircle className="h-10 w-10 text-red-600" />
+      </div>
+      <h2 className="text-xl font-semibold text-gray-800 mb-2">Verification Failed</h2>
+      
+      <Alert className="mb-6 bg-red-50 border-red-200 text-left">
+        <AlertTriangle className="h-4 w-4 text-red-600" />
+        <AlertTitle className="text-red-800">Unable to verify your email</AlertTitle>
+        <AlertDescription className="text-red-700">
+          {error || 'The email verification link may have expired or is invalid.'}
+        </AlertDescription>
+      </Alert>
+      
+      <div className="flex flex-col space-y-3 w-full max-w-xs">
+        <Button 
+          onClick={() => router.push(ROUTES.FORGOT_PASSWORD)}
+          className="w-full"
+        >
+          <Mail className="mr-2 h-4 w-4" />
+          Request New Verification
+        </Button>
+        
+        <Button 
+          variant="outline"
+          onClick={() => router.push(ROUTES.LOGIN)}
+          className="w-full"
+        >
+          <LogIn className="mr-2 h-4 w-4" />
+          Return to Login
+        </Button>
+        
+        <Button 
+          variant="ghost"
+          onClick={() => router.push('/')}
+          className="w-full"
+        >
+          <Home className="mr-2 h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
+      
+      <div className="mt-8 p-4 border border-gray-200 rounded-lg bg-gray-50 max-w-xs">
+        <div className="flex items-start">
+          <HelpCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="ml-3 text-left">
+            <h3 className="text-sm font-medium text-gray-800">Need Help?</h3>
+            <p className="mt-1 text-xs text-gray-600">
+              If you're having trouble verifying your email, please contact our support team for assistance.
+            </p>
+            <Link href="/support" className="mt-2 inline-block text-xs font-medium text-blue-600 hover:text-blue-800">
+              Contact Support →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSuccess = () => (
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <div className="size-16 rounded-full bg-green-100 p-3 mb-4 flex items-center justify-center animate-fade-in-scale">
+        <CheckCircle className="h-10 w-10 text-green-600" />
+      </div>
+      <h2 className="text-xl font-semibold text-gray-800 mb-2">Email Verified Successfully!</h2>
+      <p className="text-gray-600 mb-6">
+        Your email has been verified and your account is now active. You can now log in and start using PharmacyHub.
+      </p>
+      
+      <div className="mb-8 w-full max-w-md bg-green-50 border border-green-200 rounded-lg p-4 flex items-start text-left">
+        <ShieldCheck className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+        <div className="ml-3">
+          <h3 className="text-sm font-medium text-green-800">Account Security Activated</h3>
+          <p className="mt-1 text-sm text-green-700">
+            Your account is now secure and ready to use. We've enabled basic security features for your account.
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex flex-col space-y-3 w-full max-w-xs">
+        <Button 
+          onClick={handleRedirect}
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+        >
+          <LogIn className="mr-2 h-4 w-4" />
+          Proceed to Login
+        </Button>
+        
+        <Button 
+          variant="outline"
+          onClick={() => router.push('/')}
+          className="w-full"
+        >
+          <Home className="mr-2 h-4 w-4" />
+          Go to Dashboard
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <Card className="w-full max-w-2xl mx-auto shadow-xl border-none">
+      <CardHeader className="pb-4">
+        <div className="flex justify-center mb-2">
+          <div className="size-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center p-3 shadow-lg">
+            <Mail className="text-white h-6 w-6" />
+          </div>
+        </div>
+        <CardTitle className="text-center text-2xl">Email Verification</CardTitle>
+        <CardDescription className="text-center">
+          {isLoading ? 'Verifying your email address...' : 
+           isVerified ? 'Your email has been successfully verified!' : 
+           'There was an issue verifying your email'}
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent>
+        {isLoading ? renderLoading() : isVerified ? renderSuccess() : renderError()}
+      </CardContent>
+      
+      <CardFooter className="flex justify-center border-t p-6 bg-gray-50 text-center text-gray-500 text-sm">
+        &copy; {new Date().getFullYear()} PharmacyHub. All rights reserved.
+      </CardFooter>
+    </Card>
+  );
+};
+
+export default EmailVerificationView;

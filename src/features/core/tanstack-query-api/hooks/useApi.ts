@@ -31,6 +31,7 @@ export interface UseApiQueryOptions<TData, TError = Error, TQueryFnData = TData>
 export interface UseApiMutationOptions<TData, TError = Error, TVariables = void, TContext = unknown> 
   extends Omit<UseMutationOptions<TData, TError, TVariables, TContext>, 'mutationFn'> {
   requiresAuth?: boolean;
+  timeout?: number;
 }
 
 /**
@@ -112,19 +113,24 @@ export function useApiMutation<TData, TVariables = unknown, TError = Error, TCon
       
       // Make the API request based on the method
       let response;
+      const requestConfig = { 
+        requiresAuth,
+        timeout: options.timeout // Pass timeout to the request if provided
+      };
+
       switch (method) {
         case 'PUT':
-          response = await apiClient.put<TData>(actualEndpoint, variables, { requiresAuth });
+          response = await apiClient.put<TData>(actualEndpoint, variables, requestConfig);
           break;
         case 'PATCH':
-          response = await apiClient.patch<TData>(actualEndpoint, variables, { requiresAuth });
+          response = await apiClient.patch<TData>(actualEndpoint, variables, requestConfig);
           break;
         case 'DELETE':
-          response = await apiClient.delete<TData>(actualEndpoint, { requiresAuth });
+          response = await apiClient.delete<TData>(actualEndpoint, requestConfig);
           break;
         case 'POST':
         default:
-          response = await apiClient.post<TData>(actualEndpoint, variables, { requiresAuth });
+          response = await apiClient.post<TData>(actualEndpoint, variables, requestConfig);
           break;
       }
       

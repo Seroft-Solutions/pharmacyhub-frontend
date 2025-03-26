@@ -1,0 +1,128 @@
+"use client";
+
+import React, { useEffect } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/shared/auth';
+
+// Import steps
+import AccountStep from './steps/AccountStep';
+import PersonalStep from './steps/PersonalStep';
+import ConfirmationStep from './steps/ConfirmationStep';
+import { RegistrationSuccess } from './RegistrationSuccess';
+
+// Import context
+import { RegisterFormProvider, useRegisterForm } from './context/RegisterFormContext';
+
+// Import components
+import { StepIndicator } from './components/StepIndicator';
+
+// Import shadcn UI components
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, UserPlus } from 'lucide-react';
+
+// Register form content component that uses context
+const RegisterFormContent: React.FC = () => {
+  const { currentStep, formData } = useRegisterForm();
+  const { connectivityStatus = { hasIssues: false } } = useAuth();
+
+  // Clear any expired tokens when starting registration
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Clear any tokens that might be causing authentication issues
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('tokenExpiry');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('token_expiry');
+    }
+  }, []);
+
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 'account':
+        return <AccountStep />;
+      case 'personal':
+        return <PersonalStep />;
+      case 'confirmation':
+        return <ConfirmationStep />;
+      case 'success':
+        return <RegistrationSuccess email={formData.email} />;
+      default:
+        return <AccountStep />;
+    }
+  };
+
+  return (
+    <Card className="border-none shadow-2xl backdrop-blur-sm bg-white/90">
+      {connectivityStatus?.hasIssues && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-4">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-amber-700">
+                Connection issues detected. Registration may not work correctly. 
+                {connectivityStatus.message && (
+                  <span className="block mt-1 text-xs">{connectivityStatus.message}</span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <CardHeader className="space-y-1 pb-6">
+        <div className="flex justify-center mb-2">
+          <div className="size-16 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center p-4 shadow-lg">
+            <UserPlus className="text-white h-8 w-8" />
+          </div>
+        </div>
+        <CardTitle className="text-2xl font-bold text-center text-gray-800">
+          Create your account
+        </CardTitle>
+        <CardDescription className="text-center text-gray-600">
+          Join PharmacyHub to manage your pharmacy efficiently
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <StepIndicator />
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (currentStep === 'confirmation') {
+            const { handleSubmit } = useRegisterForm();
+            handleSubmit(e);
+          }
+        }}>
+          {renderCurrentStep()}
+        </form>
+      </CardContent>
+
+      {currentStep !== 'success' && (
+        <CardFooter className="flex flex-col items-center justify-center p-6 border-t bg-gray-50 rounded-b-lg">
+          <p className="text-sm text-gray-600">
+            Already have an account?{' '}
+            <Link
+              href="/login"
+              className="font-medium text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              Sign in
+            </Link>
+          </p>
+        </CardFooter>
+      )}
+    </Card>
+  );
+};
+
+// Main export component that provides context
+export const RegisterForm: React.FC = () => {
+  return (
+    <RegisterFormProvider>
+      <RegisterFormContent />
+    </RegisterFormProvider>
+  );
+};
+
+export default RegisterForm;

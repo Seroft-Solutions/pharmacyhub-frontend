@@ -12,6 +12,7 @@ import {
   unwrapAuthResponse,
   extractUserProfile
 } from '@/features/core/tanstack-query-api';
+import { toast } from '@/components/ui/use-toast';
 
 import { AUTH_ENDPOINTS, USER_ENDPOINTS_MAP } from '../constants';
 import { tokenManager } from '../../core/tokenManager';
@@ -212,16 +213,33 @@ export const useUpdateProfile = () => {
  * Hook for requesting a password reset
  */
 export const useRequestPasswordReset = () => {
-  return useApiMutation<void, { requestData: any }>(AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET, {
-
-    requiresAuth: false,
-    // Transform the payload to match backend expectations
-    onMutate: (requestData) => {
-      console.debug('[Auth] Password reset request variables:', { email: requestData.emailAddress });
-      // Transform to what the backend expects
-      return { emailAddress: requestData.emailAddress };
+  return useApiMutation<void, { requestData: any }>(
+    AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET, 
+    {
+      requiresAuth: false,
+      timeout: 10000, // 10 second timeout
+      // Transform the payload to match backend expectations
+      onMutate: (requestData) => {
+        console.debug('[Auth] Password reset request sent:', { email: requestData.emailAddress });
+        return { emailAddress: requestData.emailAddress };
+      },
+      // Show a toast message even if we haven't received a response yet
+      onSuccess: () => {
+        toast.success("Reset link sent. Please check your email.");
+      },
+      onError: (error) => {
+        // Check if this is a timeout error
+        if (error.message?.includes('timeout') || error.status === 408) {
+          // Handle timeout - still show success since the request might be processing
+          toast.info("Request was sent, but took longer than expected. Please check your email in a few minutes.");
+        } else {
+          // Other errors
+          toast.error("Something went wrong sending the reset link. Please try again.");
+          console.error('[Auth] Reset request error:', error);
+        }
+      }
     }
-  });
+  );
 };
 
 /**
