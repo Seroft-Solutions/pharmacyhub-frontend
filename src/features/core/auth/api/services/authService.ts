@@ -12,7 +12,8 @@ import {
   unwrapAuthResponse,
   extractUserProfile
 } from '@/features/core/tanstack-query-api';
-import { toast } from '@/components/ui/use-toast';
+// Import our safe toast wrapper
+import { safeToast as toast } from '@/components/ui/toast-utils';
 
 import { AUTH_ENDPOINTS, USER_ENDPOINTS_MAP } from '../constants';
 import { tokenManager } from '../../core/tokenManager';
@@ -245,15 +246,16 @@ export const useRequestPasswordReset = () => {
 /**
  * Hook for validating a password reset token
  */
-export const useValidateResetToken = (token: string) => {
-  return useApiQuery<{ valid: boolean }>(
-    [...userApiHooks.queryKeys.all(), 'resetToken', token],
-    `${AUTH_ENDPOINTS.VALIDATE_RESET_TOKEN}/${token}`,
+export const useValidateResetToken = () => {
+  return useApiMutation<{ valid: boolean }, string>(
+    (token) => `${AUTH_ENDPOINTS.VALIDATE_RESET_TOKEN}/${encodeURIComponent(token)}`,
     {
       requiresAuth: false,
-      enabled: !!token,
-      staleTime: 0, // Always revalidate
-      retry: false
+      timeout: 8000, // 8 second timeout
+      method: 'GET',
+      onError: (error) => {
+        console.error('[Auth] Token validation error:', error);
+      }
     }
   );
 };
@@ -265,7 +267,19 @@ export const useCompletePasswordReset = () => {
   return useApiMutation<void, PasswordResetCompletion>(
     AUTH_ENDPOINTS.RESET_PASSWORD,
     {
-      requiresAuth: false
+      requiresAuth: false,
+      timeout: 10000, // 10 second timeout
+      onSuccess: () => {
+        toast.success("Password has been successfully reset");
+      },
+      onError: (error) => {
+        console.error('[Auth] Password reset error:', error);
+        if (error.message?.includes('timeout') || error.status === 408) {
+          toast.info("Your request is being processed. Please try logging in with your new password.");
+        } else {
+          toast.error("Failed to reset password. Please try again.");
+        }
+      }
     }
   );
 };

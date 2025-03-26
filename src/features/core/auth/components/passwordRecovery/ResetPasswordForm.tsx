@@ -1,6 +1,7 @@
-"use client";
+"use client";  // This marks this component as a client component
 
 import { useState, useEffect } from 'react';
+import { safeToast } from '@/components/ui/toast-utils';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/features/core/auth/api/services/authService';
@@ -53,6 +54,10 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
       if (!token) {
         setStatus('invalid');
         setError('No reset token provided');
+        // Automatically redirect to forgot-password page after a short delay
+        setTimeout(() => {
+          router.push('/forgot-password');
+        }, 1500);
         return;
       }
 
@@ -85,11 +90,16 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
         if (process.env.NODE_ENV === 'development') {
           setDebugMode(true);
         }
+        
+        // Automatically redirect to forgot-password page after a short delay
+        setTimeout(() => {
+          router.push('/forgot-password?error=token_expired&from=reset_token');
+        }, 3000); // Give user 3 seconds to see the error before redirecting
       }
     };
     
     checkToken();
-  }, [token, validateToken]);
+  }, [token, validateToken, router]);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
@@ -126,6 +136,7 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
         confirmPassword
       });
       setStatus('success');
+      safeToast.success("Password reset successful!");
       console.log("Password reset successful");
     } catch (err) {
       setStatus('valid');

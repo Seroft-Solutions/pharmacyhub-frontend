@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AUTH_ENDPOINTS } from '@/features/core/auth/api/constants';
 import { authService } from '@/features/core/auth/api/services/authService';
@@ -28,6 +29,7 @@ export const ForgotPasswordForm = () => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState<ResetStep>('request');
+  const searchParams = useSearchParams();
   
   // Use the auth service hook directly
   const { mutateAsync: requestPasswordReset, isPending } = authService.useRequestPasswordReset();
@@ -35,6 +37,16 @@ export const ForgotPasswordForm = () => {
   // Debug mode for development
   const [debugMode, setDebugMode] = useState(false);
   const [lastRequestData, setLastRequestData] = useState<any>(null);
+
+  // Check for query parameters that might indicate a redirect from invalid token
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    const fromParam = searchParams.get('from');
+    
+    if (errorParam === 'token_expired' || fromParam === 'reset_token') {
+      setError('Your password reset link has expired. Please request a new one.');
+    }
+  }, [searchParams]);
 
   // Get user's browser/device info to help with debugging
   const getUserAgent = () => {
