@@ -20,10 +20,11 @@ We are trying to develop features based on feature-based architechure and you ca
 
 
 ### Requirement
--
-I have Login with google button as well, we need to handle this as well.
-
-Can you please make sure our application handle this requiest and gets registered into our application. You might need to handle it on the backend properly. Can you please do it as well
+- We need to focus on Signup flow.
+- When user signup successfully, then verify email should be sent to the user.
+- Email sending part must be done by the backend as we already doing this bit
+- On UI side, we need some kind of engaging content that needs to displayed and user will get to know that email has been sent to the user.
+- I am getting this email as of now. but verify email needs to be double checked. You have to think about this as well and fix it in my codebase, and try to split the components into multiple as much as you can, so that it will be easier to manage and maintain
 
 ### 💼 General Agent Instructions
 
