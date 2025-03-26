@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePasswordResetRequestMutation as useRequestPasswordReset } from '@/features/core/auth/api/mutations';
+import { authService } from '@/features/core/auth/api/services/authService';
 import { ResetStep } from '../../model/types';
 
 // Import shadcn UI components
@@ -19,18 +19,16 @@ import {
   Loader2,
   ArrowRight,
   CheckCircle,
-  Lock
+  MailOpen
 } from 'lucide-react';
 
 export const ForgotPasswordForm = () => {
   const [email, setEmail] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState<ResetStep>('request');
   
-  const requestResetMutation = useRequestPasswordReset();
+  // Use the auth service hook directly
+  const { mutateAsync: requestPasswordReset, isPending } = authService.useRequestPasswordReset();
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,38 +40,22 @@ export const ForgotPasswordForm = () => {
     }
 
     try {
-      await requestResetMutation.mutateAsync({ email });
-      setCurrentStep('verification');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send reset email');
-    }
-  };
-
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!verificationCode) {
-      setError('Please enter the verification code');
-      return;
-    }
-
-    if (!newPassword || !confirmPassword) {
-      setError('Please enter and confirm your new password');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    try {
-      // In a real implementation, we would call an API endpoint here
-      // For now, we'll just simulate a successful verification
+      await requestPasswordReset({ email });
       setCurrentStep('success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reset password');
+      // User-friendly error message
+      if (err instanceof Error) {
+        const errorMessage = err.message.toLowerCase();
+        if (errorMessage.includes('not found')) {
+          setError('Account with this email not found');
+        } else if (errorMessage.includes('rate limit') || errorMessage.includes('too many requests')) {
+          setError('Too many reset attempts. Please try again later.');
+        } else {
+          setError(err.message || 'Failed to send reset email');
+        }
+      } else {
+        setError('An unexpected error occurred. Please try again later.');
+      }
     }
   };
 
@@ -102,10 +84,10 @@ export const ForgotPasswordForm = () => {
 
       <Button
         type="submit"
-        disabled={requestResetMutation.isPending}
+        disabled={isPending}
         className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
       >
-        {requestResetMutation.isPending ? (
+        {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Sending reset link...
@@ -120,92 +102,6 @@ export const ForgotPasswordForm = () => {
     </form>
   );
 
-  const renderVerificationStep = () => (
-    <form onSubmit={handleVerifyCode} className="space-y-6">
-      <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4">
-        <p className="text-sm text-blue-800">
-          We&apos;ve sent a verification code to <strong>{email}</strong>. 
-          Please check your inbox and enter the code below.
-        </p>
-      </div>
-      
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="verification-code" className="text-gray-700">
-            Verification code
-          </Label>
-          <div className="relative">
-            <KeyRound className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-            <Input
-              id="verification-code"
-              type="text"
-              placeholder="Enter verification code"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              className="pl-10 border-gray-300 bg-white"
-              required
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="new-password" className="text-gray-700">
-            New password
-          </Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-            <Input
-              id="new-password"
-              type="password"
-              placeholder="Enter new password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="pl-10 border-gray-300 bg-white"
-              required
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="confirm-password" className="text-gray-700">
-            Confirm new password
-          </Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-            <Input
-              id="confirm-password"
-              type="password"
-              placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pl-10 border-gray-300 bg-white"
-              required
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="pt-2">
-        <Button
-          type="submit"
-          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-        >
-          Reset password
-        </Button>
-        
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={() => setCurrentStep('request')}
-            className="text-sm text-blue-600 hover:text-blue-700"
-          >
-            Different email? Go back
-          </button>
-        </div>
-      </div>
-    </form>
-  );
-
   const renderSuccessStep = () => (
     <div className="space-y-6 text-center">
       <div className="flex justify-center">
@@ -215,18 +111,44 @@ export const ForgotPasswordForm = () => {
       </div>
       
       <div className="space-y-2">
-        <h3 className="text-xl font-medium text-gray-900">Password reset successful</h3>
+        <h3 className="text-xl font-medium text-gray-900">Check your email</h3>
         <p className="text-sm text-gray-600">
-          Your password has been reset successfully. You can now log in with your new password.
+          We've sent a password reset link to <strong>{email}</strong>
         </p>
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100 text-left">
+          <div className="flex items-start">
+            <MailOpen className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
+            <div>
+              <p className="text-sm text-blue-800 font-medium">Next steps:</p>
+              <ol className="list-decimal text-sm text-blue-700 ml-5 mt-1 space-y-1">
+                <li>Check your email inbox (and spam folder)</li>
+                <li>Click the reset link in the email</li>
+                <li>Create a new secure password</li>
+              </ol>
+            </div>
+          </div>
+        </div>
       </div>
       
-      <Button
-        onClick={() => window.location.href = '/login'}
-        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-      >
-        Return to login
-      </Button>
+      <div className="pt-4 space-y-3">
+        <Button
+          onClick={() => window.location.href = '/login'}
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+        >
+          Return to login
+        </Button>
+        
+        <p className="text-sm text-gray-500">
+          Didn't receive the email?{' '}
+          <button
+            type="button"
+            onClick={() => setCurrentStep('request')}
+            className="text-blue-600 hover:text-blue-800 font-medium"
+          >
+            Try again
+          </button>
+        </p>
+      </div>
     </div>
   );
 
@@ -234,8 +156,6 @@ export const ForgotPasswordForm = () => {
     switch (currentStep) {
       case 'request':
         return renderRequestStep();
-      case 'verification':
-        return renderVerificationStep();
       case 'success':
         return renderSuccessStep();
       default:
@@ -252,12 +172,11 @@ export const ForgotPasswordForm = () => {
           </div>
         </div>
         <CardTitle className="text-2xl font-bold text-center text-gray-800">
-          {currentStep === 'success' ? 'Password Reset Complete' : 'Reset your password'}
+          Reset your password
         </CardTitle>
         <CardDescription className="text-center text-gray-600">
           {currentStep === 'request' && "Enter your email to receive a password reset link"}
-          {currentStep === 'verification' && "Enter the verification code and set a new password"}
-          {currentStep === 'success' && "You&apos;ve successfully reset your password"}
+          {currentStep === 'success' && "Check your email for password reset instructions"}
         </CardDescription>
       </CardHeader>
 
@@ -272,21 +191,19 @@ export const ForgotPasswordForm = () => {
         {renderCurrentStep()}
       </CardContent>
 
-      <CardFooter className="flex flex-col items-center justify-center p-6 border-t bg-gray-50 rounded-b-lg">
-        <p className="text-sm text-gray-600">
-          {currentStep !== 'success' && (
-            <>
-              Remember your password?{' '}
-              <Link
-                href="/login"
-                className="font-medium text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                Back to login
-              </Link>
-            </>
-          )}
-        </p>
-      </CardFooter>
+      {currentStep === 'request' && (
+        <CardFooter className="flex flex-col items-center justify-center p-6 border-t bg-gray-50 rounded-b-lg">
+          <p className="text-sm text-gray-600">
+            Remember your password?{' '}
+            <Link
+              href="/login"
+              className="font-medium text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              Back to login
+            </Link>
+          </p>
+        </CardFooter>
+      )}
     </Card>
   );
 };

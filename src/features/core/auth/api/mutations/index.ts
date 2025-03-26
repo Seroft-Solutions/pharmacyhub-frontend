@@ -69,7 +69,19 @@ export const useLogoutMutation = () => {
 export const usePasswordResetRequestMutation = () => {
   return useMutation({
     mutationFn: ({ email }: { email: string }) => {
-      return authService.requestPasswordReset(email);
+      const { useRequestPasswordReset } = authService;
+      return useRequestPasswordReset().mutateAsync({ email });
+    }
+  });
+};
+
+/**
+ * Hook for handling password reset token validation
+ */
+export const useValidateResetTokenMutation = () => {
+  return useMutation({
+    mutationFn: (token: string) => {
+      return authService.validateResetToken(token);
     }
   });
 };
@@ -79,8 +91,13 @@ export const usePasswordResetRequestMutation = () => {
  */
 export const usePasswordResetCompleteMutation = () => {
   return useMutation({
-    mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) => {
-      return authService.resetPassword(token, newPassword, newPassword);
+    mutationFn: ({ token, password, confirmPassword }: { token: string; password: string; confirmPassword: string }) => {
+      const { useCompletePasswordReset } = authService;
+      return useCompletePasswordReset().mutateAsync({
+        token, 
+        newPassword: password,
+        confirmPassword: confirmPassword || password
+      });
     }
   });
 };
@@ -91,7 +108,8 @@ export const usePasswordResetCompleteMutation = () => {
 export const useVerifyEmailMutation = () => {
   return useMutation({
     mutationFn: (token: string) => {
-      return authService.verifyEmail(token);
+      const { useVerifyEmail } = authService;
+      return useVerifyEmail().mutateAsync({ token });
     }
   });
 };
@@ -104,6 +122,7 @@ export default {
   useRegisterMutation,
   useLogoutMutation,
   usePasswordResetRequestMutation,
+  useValidateResetTokenMutation,
   usePasswordResetCompleteMutation,
   useVerifyEmailMutation
 };

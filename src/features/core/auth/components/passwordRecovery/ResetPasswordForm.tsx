@@ -3,22 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  usePasswordResetCompleteMutation as useResetPassword 
-} from '@/features/core/auth/api/mutations';
+import { authService } from '@/features/core/auth/api/services/authService';
 import { ResetStatus } from '../../model/types';
 import { calculatePasswordStrength, validatePasswordReset } from '../../lib/validation';
-
-// Mock validate token function since it doesn't exist in our mutations
-const useValidateResetToken = () => {
-  return {
-    mutateAsync: async (token: string) => {
-      // Simulate API call to validate token
-      return { valid: true };
-    },
-    isPending: false
-  };
-};
 
 // Import shadcn UI components
 import { Button } from '@/components/ui/button';
@@ -33,7 +20,9 @@ import {
   CheckCircle,
   Lock,
   ShieldCheck,
-  XCircle
+  XCircle,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 interface ResetPasswordFormProps {
@@ -46,24 +35,36 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
   const [error, setError] = useState('');
   const [status, setStatus] = useState<ResetStatus>('validating');
   const [passwordStrength, setPasswordStrength] = useState(calculatePasswordStrength(''));
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const router = useRouter();
-  const validateTokenMutation = useValidateResetToken();
-  const resetPasswordMutation = useResetPassword();
+
+  // Use actual API hooks from authService
+  const { mutateAsync: validateToken, isPending: isValidating } = authService.useValidateResetToken();
+  const { mutateAsync: resetPassword, isPending: isResetting } = authService.useCompletePasswordReset();
 
   useEffect(() => {
-    const validateToken = async () => {
+    const checkToken = async () => {
+      if (!token) {
+        setStatus('invalid');
+        setError('No reset token provided');
+        return;
+      }
+
       try {
-        const result = await validateTokenMutation.mutateAsync(token);
-        setStatus(result.valid ? 'valid' : 'invalid');
+        // Call the actual token validation API
+        await validateToken(token);
+        setStatus('valid');
       } catch (err) {
         setStatus('invalid');
-        setError('Invalid or expired reset link');
+        setError('This password reset link is invalid or has expired');
+        console.error("Token validation error:", err);
       }
     };
     
-    validateToken();
-  }, [token, validateTokenMutation]);
+    checkToken();
+  }, [token, validateToken]);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
@@ -75,20 +76,39 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
     e.preventDefault();
     setError('');
 
-    // Password validation
-    const validationErrors = validatePasswordReset(password, confirmPassword);
-    if (Object.keys(validationErrors).length > 0) {
-      setError(Object.values(validationErrors)[0]);
+    // Validate passwords
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    if (passwordStrength.score < 2) {
+      setError('Password is too weak. Please choose a stronger password.');
       return;
     }
 
     try {
       setStatus('resetting');
-      await resetPasswordMutation.mutateAsync({ token, password });
+      // Call the actual password reset API
+      await resetPassword({
+        token,
+        newPassword: password,
+        confirmPassword
+      });
       setStatus('success');
     } catch (err) {
       setStatus('valid');
-      setError(err instanceof Error ? err.message : 'Failed to reset password');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to reset password. Please try again.');
+      }
+      console.error("Password reset error:", err);
     }
   };
 
@@ -149,13 +169,21 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter new password"
                     value={password}
                     onChange={handlePasswordChange}
-                    className="pl-10 border-gray-300 bg-white"
+                    className="pl-10 pr-10 border-gray-300 bg-white"
                     required
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
                 
                 {/* Password strength indicator */}
@@ -191,23 +219,31 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
                   <Input
                     id="confirm-password"
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 border-gray-300 bg-white"
+                    className="pl-10 pr-10 border-gray-300 bg-white"
                     required
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
             </div>
 
             <Button
               type="submit"
-              disabled={resetPasswordMutation.isPending}
+              disabled={isResetting}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
             >
-              {resetPasswordMutation.isPending ? (
+              {isResetting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Updating password...
@@ -219,11 +255,19 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
           </form>
         );
         
+      case 'resetting':
+        return (
+          <div className="text-center py-8">
+            <Loader2 className="h-12 w-12 text-blue-600 mx-auto animate-spin" />
+            <p className="mt-4 text-gray-600">Updating your password...</p>
+          </div>
+        );
+        
       case 'success':
         return (
           <div className="text-center py-8 space-y-6">
             <div className="flex justify-center">
-              <div className="rounded-full bg-green-100 p-3">
+              <div className="rounded-full bg-green-100 p-3 animate-fade-in-scale">
                 <CheckCircle className="h-12 w-12 text-green-600" />
               </div>
             </div>
@@ -251,8 +295,11 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
     <Card className="border-none shadow-2xl backdrop-blur-sm bg-white/90">
       <CardHeader className="space-y-1 pb-6">
         <div className="flex justify-center mb-4">
-          <div className="size-16 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center p-4 shadow-lg">
-            <ShieldCheck className="text-white h-8 w-8" />
+          <div className={`size-16 rounded-full ${status === 'success' ? 'bg-green-100' : 'bg-gradient-to-br from-blue-600 to-indigo-600'} flex items-center justify-center p-4 shadow-lg`}>
+            {status === 'success' ? 
+              <CheckCircle className="text-green-600 h-8 w-8" /> : 
+              <ShieldCheck className="text-white h-8 w-8" />
+            }
           </div>
         </div>
         <CardTitle className="text-2xl font-bold text-center text-gray-800">
