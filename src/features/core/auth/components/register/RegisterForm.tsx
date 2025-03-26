@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { RegistrationSuccess } from './RegistrationSuccess';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth, RegistrationData, USER_TYPE_PERMISSIONS } from '@/shared/auth';
@@ -32,7 +33,7 @@ import {
   EyeOff
 } from 'lucide-react';
 
-type FormStep = 'account' | 'personal' | 'confirmation';
+type FormStep = 'account' | 'personal' | 'confirmation' | 'success';
 
 const initialFormData = {
   username: '',
@@ -184,6 +185,7 @@ export const RegisterForm = () => {
     }
   };
 
+  // Modify the handleSubmit function to transition to the success step
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -210,18 +212,9 @@ export const RegisterForm = () => {
       // Show success animation
       setShowSuccessAnimation(true);
       
-      // Delay login to show success animation
-      setTimeout(async () => {
-        try {
-          // Automatically log in after successful registration
-          await login(formData.email, formData.password);
-          router.push('/dashboard');
-        } catch (loginErr) {
-          console.error("Auto-login failed", loginErr);
-          // If auto-login fails, redirect to login page
-          router.push('/login');
-        }
-      }, 1500);
+      // Move to success step instead of automatic login
+      setCurrentStep('success');
+      
     } catch (err) {
       console.error("Registration failed", err);
       
@@ -266,44 +259,50 @@ export const RegisterForm = () => {
     }
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex justify-between items-center w-full mb-8 relative">
-      <div className="absolute h-1 bg-gray-200 left-0 top-1/2 transform -translate-y-1/2 w-full z-0" />
-      
-      {['account', 'personal', 'confirmation'].map((step, index) => {
-        const isActive = currentStep === step;
-        const isCompleted = 
-          (step === 'account' && ['personal', 'confirmation'].includes(currentStep)) ||
-          (step === 'personal' && currentStep === 'confirmation');
+  const renderStepIndicator = () => {
+    // Don't show step indicator on success screen
+    if (currentStep === 'success') return null;
+    
+    return (
+      <div className="flex justify-between items-center w-full mb-8 relative">
+        <div className="absolute h-1 bg-gray-200 left-0 top-1/2 transform -translate-y-1/2 w-full z-0" />
         
-        return (
-          <div key={step} className="z-10 flex flex-col items-center">
-            <div 
-              className={`flex items-center justify-center size-10 rounded-full border-2 transition-all ${
-                isActive 
-                  ? 'border-blue-600 bg-blue-100 text-blue-700'
-                  : isCompleted
-                    ? 'border-green-500 bg-green-500 text-white' 
-                    : 'border-gray-300 bg-white text-gray-400'
-              }`}
-            >
-              {isCompleted ? (
-                <CheckCircle2 className="h-5 w-5" />
-              ) : (
-                <span className="text-sm font-medium">{index + 1}</span>
-              )}
+        {['account', 'personal', 'confirmation'].map((step, index) => {
+          const isActive = currentStep === step;
+          const isCompleted = 
+            (step === 'account' && ['personal', 'confirmation', 'success'].includes(currentStep)) ||
+            (step === 'personal' && ['confirmation', 'success'].includes(currentStep)) ||
+            (step === 'confirmation' && currentStep === 'success');
+          
+          return (
+            <div key={step} className="z-10 flex flex-col items-center">
+              <div 
+                className={`flex items-center justify-center size-10 rounded-full border-2 transition-all ${
+                  isActive 
+                    ? 'border-blue-600 bg-blue-100 text-blue-700'
+                    : isCompleted
+                      ? 'border-green-500 bg-green-500 text-white' 
+                      : 'border-gray-300 bg-white text-gray-400'
+                }`}
+              >
+                {isCompleted ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : (
+                  <span className="text-sm font-medium">{index + 1}</span>
+                )}
+              </div>
+              <span className={`text-xs mt-2 font-medium ${
+                isActive ? 'text-blue-700' :
+                isCompleted ? 'text-green-600' : 'text-gray-500'
+              }`}>
+                {step.charAt(0).toUpperCase() + step.slice(1)}
+              </span>
             </div>
-            <span className={`text-xs mt-2 font-medium ${
-              isActive ? 'text-blue-700' :
-              isCompleted ? 'text-green-600' : 'text-gray-500'
-            }`}>
-              {step.charAt(0).toUpperCase() + step.slice(1)}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderAccountStep = () => (
     <div className="space-y-6">
@@ -654,9 +653,16 @@ export const RegisterForm = () => {
         return renderPersonalStep();
       case 'confirmation':
         return renderConfirmationStep();
+      case 'success':
+        return renderSuccessStep();
       default:
         return renderAccountStep();
     }
+  };
+
+  const renderSuccessStep = () => {
+    const userEmail = formData.email;
+    return <RegistrationSuccess email={userEmail} />;
   };
 
   return (
