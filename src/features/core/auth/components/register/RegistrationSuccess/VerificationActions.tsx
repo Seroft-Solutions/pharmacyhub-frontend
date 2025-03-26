@@ -7,7 +7,6 @@ import {
 } from '@/components/ui/button';
 import { 
   Send, 
-  MailOpen, 
   Loader2, 
   AlertCircle, 
   CheckCircle,
@@ -99,11 +98,6 @@ export const VerificationActions: React.FC<VerificationActionsProps> = ({
     }
   };
   
-  // Function to open default email client
-  const openEmailClient = () => {
-    window.location.href = `mailto:${email}`;
-  };
-  
   // Function to go to login page
   const goToLogin = () => {
     router.push(ROUTES.LOGIN);
@@ -115,16 +109,16 @@ export const VerificationActions: React.FC<VerificationActionsProps> = ({
   };
   
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full">
       {/* Status alerts */}
       {resendStatus === 'success' && (
         <Alert className="mb-4 bg-green-50 border-green-200 text-green-800">
           <CheckCircle className="h-4 w-4 mr-2" />
           <AlertTitle className="text-green-800 font-medium">
-            Email Sent Successfully!
+            Email Sent Successfully
           </AlertTitle>
           <AlertDescription className="text-green-700">
-            Verification email has been sent to {email}. Please check your inbox and spam folder.
+            Verification email has been sent to {email}.
           </AlertDescription>
         </Alert>
       )}
@@ -142,37 +136,27 @@ export const VerificationActions: React.FC<VerificationActionsProps> = ({
       )}
 
       {/* Action buttons */}
-      <div className="flex flex-col space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            variant="outline"
-            onClick={goToLogin}
-            className="flex-1"
-          >
-            <LogIn className="mr-2 h-4 w-4" />
-            Go to Login
-          </Button>
-          
-          <Button
-            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-            onClick={openEmailClient}
-          >
-            <MailOpen className="mr-2 h-4 w-4" />
-            Open Email App
-          </Button>
-        </div>
-
+      <div className="grid grid-cols-2 gap-4 mb-4">
         <Button
-          variant="secondary"
+          variant="outline"
           onClick={goToHome}
+          className="w-full"
         >
           <Home className="mr-2 h-4 w-4" />
-          Return to Home Page
+          Back to Home
+        </Button>
+        
+        <Button
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+          onClick={goToLogin}
+        >
+          <LogIn className="mr-2 h-4 w-4" />
+          Go to Login
         </Button>
       </div>
       
       {/* Resend verification button */}
-      <div className="mt-4 flex items-center justify-center">
+      <div className="flex justify-center mt-6">
         <Button
           variant="ghost"
           size="sm"
