@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/features/core/auth/api/services/authService';
+import { AUTH_ENDPOINTS } from '@/features/core/auth/api/constants';
 import { ResetStatus } from '../../model/types';
 import { calculatePasswordStrength, validatePasswordReset } from '../../lib/validation';
 
@@ -43,6 +44,9 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
   // Use actual API hooks from authService
   const { mutateAsync: validateToken, isPending: isValidating } = authService.useValidateResetToken();
   const { mutateAsync: resetPassword, isPending: isResetting } = authService.useCompletePasswordReset();
+  
+  // Debug mode for development
+  const [debugMode, setDebugMode] = useState(false);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -58,8 +62,29 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
         setStatus('valid');
       } catch (err) {
         setStatus('invalid');
-        setError('This password reset link is invalid or has expired');
-        console.error("Token validation error:", err);
+        
+        // Log full error for debugging
+        const fullError = err instanceof Error ? err.message : String(err);
+        console.error("Token validation error:", fullError);
+        
+        // User-friendly error messages based on error type
+        if (err instanceof Error) {
+          const errorMessage = err.message.toLowerCase();
+          if (errorMessage.includes('expired')) {
+            setError('This password reset link has expired');
+          } else if (errorMessage.includes('no endpoint') || errorMessage.includes('404')) {
+            setError('Service temporarily unavailable. Please try again later.');
+          } else {
+            setError('This password reset link is invalid or has expired');
+          }
+        } else {
+          setError('This password reset link is invalid or has expired');
+        }
+        
+        // Show debug info automatically in development
+        if (process.env.NODE_ENV === 'development') {
+          setDebugMode(true);
+        }
       }
     };
     
@@ -101,14 +126,32 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
         confirmPassword
       });
       setStatus('success');
+      console.log("Password reset successful");
     } catch (err) {
       setStatus('valid');
+      
+      // Log full error for debugging
+      const fullError = err instanceof Error ? err.message : String(err);
+      console.error("Password reset error:", fullError);
+      
+      // User-friendly error messages based on error type
       if (err instanceof Error) {
-        setError(err.message);
+        const errorMessage = err.message.toLowerCase();
+        if (errorMessage.includes('no endpoint') || errorMessage.includes('404')) {
+          setError('Service temporarily unavailable. Please try again later.');
+        } else if (errorMessage.includes('expired')) {
+          setError('The reset token has expired. Please request a new link.');
+        } else {
+          setError(err.message);
+        }
       } else {
         setError('Failed to reset password. Please try again.');
       }
-      console.error("Password reset error:", err);
+      
+      // Show debug info automatically in development
+      if (process.env.NODE_ENV === 'development') {
+        setDebugMode(true);
+      }
     }
   };
 
@@ -323,6 +366,31 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
         )}
 
         {renderContent()}
+        
+        {/* Debug information in development mode */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-4 pt-2 border-t border-gray-100">
+            <button 
+              type="button" 
+              onClick={() => setDebugMode(!debugMode)}
+              className="text-xs text-gray-400 hover:text-gray-600"
+            >
+              {debugMode ? 'Hide Debug Info' : 'Show Debug Info'}
+            </button>
+            
+            {debugMode && (
+              <div className="mt-2 p-2 bg-gray-50 text-left rounded text-xs font-mono overflow-auto max-h-60">
+                <p>Token: {token ? token.substring(0, 8) + '...' : 'None'}</p>
+                <p>Validation Endpoint: {AUTH_ENDPOINTS.VALIDATE_RESET_TOKEN}</p>
+                <p>Reset Endpoint: {AUTH_ENDPOINTS.RESET_PASSWORD}</p>
+                <p>Current Status: {status}</p>
+                <p>isValidating: {isValidating ? 'true' : 'false'}</p>
+                <p>isResetting: {isResetting ? 'true' : 'false'}</p>
+                <p>Error: {error || 'None'}</p>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
 
       {(status !== 'success' && status !== 'invalid') && (

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { AUTH_ENDPOINTS } from '@/features/core/auth/api/constants';
 import { authService } from '@/features/core/auth/api/services/authService';
 import { ResetStep } from '../../model/types';
 
@@ -28,7 +29,11 @@ export const ForgotPasswordForm = () => {
   const [currentStep, setCurrentStep] = useState<ResetStep>('request');
   
   // Use the auth service hook directly
+  // Use the auth service hook directly
   const { mutateAsync: requestPasswordReset, isPending } = authService.useRequestPasswordReset();
+  
+  // Debug mode for development
+  const [debugMode, setDebugMode] = useState(false);
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +48,10 @@ export const ForgotPasswordForm = () => {
       await requestPasswordReset({ email });
       setCurrentStep('success');
     } catch (err) {
+      // Store full error for debug display
+      const fullError = err instanceof Error ? err.message : String(err);
+      console.error("Password reset request error:", fullError);
+      
       // User-friendly error message
       if (err instanceof Error) {
         const errorMessage = err.message.toLowerCase();
@@ -50,11 +59,18 @@ export const ForgotPasswordForm = () => {
           setError('Account with this email not found');
         } else if (errorMessage.includes('rate limit') || errorMessage.includes('too many requests')) {
           setError('Too many reset attempts. Please try again later.');
+        } else if (errorMessage.includes('no endpoint') || errorMessage.includes('404')) {
+          setError('Service temporarily unavailable. Please try again later.');
         } else {
           setError(err.message || 'Failed to send reset email');
         }
       } else {
         setError('An unexpected error occurred. Please try again later.');
+      }
+      
+      // Set debug info
+      if (process.env.NODE_ENV === 'development') {
+        setDebugMode(true); // Automatically show debug info on error
       }
     }
   };
@@ -189,6 +205,29 @@ export const ForgotPasswordForm = () => {
         )}
 
         {renderCurrentStep()}
+        
+        {/* Debug information in development mode */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-4 pt-2 border-t border-gray-100">
+            <button 
+              type="button" 
+              onClick={() => setDebugMode(!debugMode)}
+              className="text-xs text-gray-400 hover:text-gray-600"
+            >
+              {debugMode ? 'Hide Debug Info' : 'Show Debug Info'}
+            </button>
+            
+            {debugMode && (
+              <div className="mt-2 p-2 bg-gray-50 text-left rounded text-xs font-mono overflow-auto max-h-60">
+                <p>Endpoint: {AUTH_ENDPOINTS.REQUEST_PASSWORD_RESET}</p>
+                <p>isPending: {isPending ? 'true' : 'false'}</p>
+                <p>Error: {error || 'None'}</p>
+                <p>Email: {email || 'Not entered'}</p>
+                <p>Current Step: {currentStep}</p>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
 
       {currentStep === 'request' && (

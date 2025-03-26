@@ -41,8 +41,8 @@ export const AUTH_ENDPOINTS = {
   VERIFY_EMAIL: `${API_BASE_URLS.AUTH}/verify`,
   VERIFY_EMAIL_STATUS: `${API_BASE_URLS.AUTH}/verify-email/status`,
   RESEND_VERIFICATION: `${API_BASE_URLS.AUTH}/resend-verification`,
-  REQUEST_PASSWORD_RESET: `${API_BASE_URLS.AUTH}/password/reset-request`,
-  RESET_PASSWORD: `${API_BASE_URLS.AUTH}/password/reset`,
+  REQUEST_PASSWORD_RESET: `${API_BASE_URLS.AUTH}/forgot-password`,
+  RESET_PASSWORD: `${API_BASE_URLS.AUTH}/reset-password`,
   VALIDATE_RESET_TOKEN: `${API_BASE_URLS.AUTH}/password/validate-token`,
   VERIFY_OTP: `${API_BASE_URLS.AUTH}/verify-otp`,
   

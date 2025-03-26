@@ -12,7 +12,7 @@ export const AUTH_ROUTES = {
   LOGOUT: '/auth/logout',
   REFRESH_TOKEN: '/auth/token/refresh',
   VERIFY_EMAIL: '/auth/verify-email',
-  REQUEST_PASSWORD_RESET: '/auth/request-password-reset',
+  REQUEST_PASSWORD_RESET: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
   
   // User profile endpoints
