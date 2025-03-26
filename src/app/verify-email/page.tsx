@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { authService } from '@/features/core/auth/api/services/authService';
-import { ROUTES } from '@/features/core/auth/config/auth';
 
 /**
  * Email Verification Page
@@ -20,37 +18,49 @@ export default function VerifyEmailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isVerified, setIsVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Use the verifyEmail mutation
-  const { mutateAsync: verifyEmail } = authService.useVerifyEmail();
 
   useEffect(() => {
-    const verifyEmailToken = async () => {
-      if (!token) {
-        setError('No verification token provided');
-        setIsLoading(false);
-        return;
-      }
+    // Don't do anything if there's no token
+    if (!token) {
+      setError('No verification token provided');
+      setIsLoading(false);
+      return;
+    }
 
+    // Function to verify the email
+    const verifyEmail = async () => {
       try {
-        setIsLoading(true);
-        await verifyEmail({ token });
-        setIsVerified(true);
+        // Make a direct GET request to the backend
+        const response = await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        // Handle response
+        if (response.ok) {
+          setIsVerified(true);
+        } else {
+          // Try to parse error from response
+          try {
+            const errorData = await response.json();
+            setError(errorData.message || 'Failed to verify email');
+          } catch (parseError) {
+            setError(`Verification failed with status: ${response.status}`);
+          }
+        }
       } catch (err) {
         console.error('Email verification error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to verify email');
+        setError('Failed to connect to the verification service');
       } finally {
         setIsLoading(false);
       }
     };
 
-    verifyEmailToken();
-  }, [token, verifyEmail]);
-
-  // Handle redirect to login
-  const handleRedirect = () => {
-    router.push(ROUTES.LOGIN);
-  };
+    // Call the verification function
+    verifyEmail();
+  }, [token]);
 
   // Loading state
   if (isLoading) {
@@ -85,7 +95,7 @@ export default function VerifyEmailPage() {
               <Button variant="outline" className="w-full" onClick={() => router.push('/')}>
                 Back to Home
               </Button>
-              <Button className="w-full" onClick={() => router.push(ROUTES.LOGIN)}>
+              <Button className="w-full" onClick={() => router.push('/login')}>
                 Go to Login
               </Button>
             </div>
@@ -108,7 +118,7 @@ export default function VerifyEmailPage() {
             <p className="text-gray-700 mb-6 text-center">
               Your email has been verified. You can now log in to your account.
             </p>
-            <Button onClick={handleRedirect} className="w-full">
+            <Button onClick={() => router.push('/login')} className="w-full">
               Proceed to Login
             </Button>
           </div>
