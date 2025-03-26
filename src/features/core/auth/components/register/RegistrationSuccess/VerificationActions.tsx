@@ -12,18 +12,11 @@ import {
   AlertCircle, 
   CheckCircle,
   LogIn,
-  HelpCircle,
   Home
 } from 'lucide-react';
 import { authService } from '@/features/core/auth/api/services/authService';
 import { ROUTES } from '@/features/core/auth/config/auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface VerificationActionsProps {
   email: string;
@@ -203,23 +196,6 @@ export const VerificationActions: React.FC<VerificationActionsProps> = ({
             </>
           )}
         </Button>
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 ml-1">
-                <HelpCircle className="h-3 w-3 text-gray-500" />
-                <span className="sr-only">Verification Help</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs">
-              <p className="text-xs">
-                Didn't receive the email? Check your spam folder or click "Resend verification email" button to try again. 
-                You can resend up to 3 times.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
 
       {/* Attempts counter */}

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Inbox, Mail, Shield, AlertCircle } from 'lucide-react';
+import { Inbox, Mail, AlertCircle } from 'lucide-react';
 
 interface EmailVerificationStatusProps {
   email: string;
@@ -11,7 +11,7 @@ export const EmailVerificationStatus: React.FC<EmailVerificationStatusProps> = (
   email 
 }) => {
   return (
-    <div className="w-full max-w-md bg-blue-50 rounded-xl p-6 mb-8 relative overflow-hidden">
+    <div className="w-full max-w-md bg-blue-50 rounded-xl p-6 mb-6 relative overflow-hidden shadow-sm">
       {/* Decorative background element */}
       <div className="absolute top-0 right-0 w-24 h-24 transform translate-x-8 -translate-y-8">
         <div className="absolute transform rotate-45 bg-blue-100 w-24 h-24"></div>
@@ -62,11 +62,10 @@ export const EmailVerificationStatus: React.FC<EmailVerificationStatusProps> = (
             </div>
           </div>
           
-          <div className="mt-3 flex items-center justify-between">
+          <div className="mt-3">
             <p className="text-xs text-blue-700/80 italic">
               Please check your spam folder if you don't see it in your inbox
             </p>
-            <Shield className="h-4 w-4 text-blue-600" />
           </div>
         </div>
       </div>

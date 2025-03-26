@@ -2,9 +2,8 @@
 
 import React from 'react';
 import { EmailVerificationStatus } from './EmailVerificationStatus';
-import { VerificationSteps } from './VerificationSteps';
 import { VerificationActions } from './VerificationActions';
-import { CheckCheck, Sparkles, ShieldCheck } from 'lucide-react';
+import { CheckCircle, Sparkles } from 'lucide-react';
 
 interface RegistrationSuccessProps {
   email: string;
@@ -17,10 +16,10 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
     <div className="flex flex-col items-center py-6 text-center">
       {/* Success Icon with Animation */}
       <div 
-        className="mb-6 p-4 rounded-full bg-green-100 text-green-600 animate-fade-in-scale relative"
+        className="mb-6 p-4 rounded-full bg-green-100 text-green-600 relative"
         aria-hidden="true"
       >
-        <CheckCheck className="h-16 w-16" />
+        <CheckCircle className="h-16 w-16" />
         <div className="absolute -top-1 -right-1">
           <Sparkles className="h-5 w-5 text-yellow-400" />
         </div>
@@ -29,9 +28,8 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center justify-center">
+      <h2 className="text-2xl font-bold text-gray-800 mb-2">
         Registration Successful!
-        <ShieldCheck className="ml-2 h-5 w-5 text-blue-600" />
       </h2>
       
       <p className="text-gray-600 mb-6 max-w-md">
@@ -40,9 +38,6 @@ export const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({
 
       {/* Email verification status component */}
       <EmailVerificationStatus email={email} />
-
-      {/* Verification steps component */}
-      <VerificationSteps />
 
       {/* Action buttons component */}
       <VerificationActions email={email} />
