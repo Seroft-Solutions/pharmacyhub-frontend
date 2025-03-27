@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarCloseButton } from "./SidebarCloseButton";
+import { SidebarContactSection } from "./SidebarContactSection";
+import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
 import { 
   Sidebar,
   SidebarContent,
@@ -72,7 +74,21 @@ export function AppSidebar({
   const { expandedItems, toggleItem } = useSidebarStore();
   const { user } = useAuth();
   const isMobile = useMobileStore(selectIsMobile);
-  const { setOpenMobile } = useSidebar();
+  const { collapsed, setCollapsed, setOpenMobile } = useSidebar();
+  
+  // Logo animation state
+  const [logoTransition, setLogoTransition] = useState(false);
+  
+  // Add transition effect for logo
+  useEffect(() => {
+    // Add a short delay to make the transition visible
+    setLogoTransition(true);
+    const timer = setTimeout(() => {
+      setLogoTransition(false);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [collapsed]);
   
   // Auto-adjust sidebar variant for mobile
   const responsiveVariant = isMobile ? "floating" : variant;
@@ -197,25 +213,35 @@ export function AppSidebar({
   
   return (
     <Sidebar 
-      className={cn("border-r", className)}
+      className={cn("border-r flex flex-col", className)}
       variant={responsiveVariant}
       collapsible={responsiveCollapsible}
     >
-      <SidebarHeader className="flex flex-col relative"> {/* Added relative positioning for absolute positioned children */}
+      <SidebarHeader className="flex flex-col relative"> 
         {/* Add back button for mobile */}
         {isMobile && <SidebarCloseButton className="text-muted-foreground" />}
         
-        <div className="flex items-center p-3 border-b">
+        <div className="flex items-center p-3 border-b overflow-hidden">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="bg-primary h-7 w-7 rounded-md flex items-center justify-center text-primary-foreground">
+            <div className={cn(
+              "bg-primary h-7 w-7 rounded-md flex items-center justify-center text-primary-foreground",
+              logoTransition && "transform scale-105 transition-transform duration-300"
+            )}>
               <Pill className="h-4 w-4" />
             </div>
-            <span className="font-semibold text-sm">Pharmacy Hub</span>
+            {!collapsed && (
+              <span className={cn(
+                "font-semibold text-sm transition-opacity duration-300",
+                logoTransition ? "opacity-0" : "opacity-100"
+              )}>
+                Pharmacy Hub
+              </span>
+            )}
           </Link>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="py-2 px-2">
+      <SidebarContent className="py-2 px-2 flex-1 flex flex-col">
         {/* Dashboard Section */}
         <SidebarMenu>
           {dashboardItems.map(item => (
@@ -335,12 +361,16 @@ export function AppSidebar({
           </div>
         )}
         
+        {/* Contact Section - Added at the bottom with margin-top auto */}
+        <SidebarContactSection />
       </SidebarContent>
       
       <SidebarFooter className="p-3 text-xs text-muted-foreground border-t">
-        <div className="flex items-center justify-between">
-          <span className="text-xs">© {new Date().getFullYear()} Pharmacy Hub</span>
-        </div>
+        {!collapsed && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs">© {new Date().getFullYear()} Pharmacy Hub</span>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );

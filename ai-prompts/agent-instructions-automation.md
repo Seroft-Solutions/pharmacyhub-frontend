@@ -19,11 +19,8 @@ We are trying to develop features based on feature-based architechure and you ca
   By following this structured approach, we ensure an efficient, systematic feature development.
 
 ### Requirements
-Now we need to enhance the admin dashboard.
-
-Payment Approval Sections needs to be enhanced more, in which I can see the details .  As of now you can see User ifnromation is not popping up.  email is not showing up here as well.  SO I need this thing to be completed. So we need to maintain the other usecases as well. like approval history, total amount collected, total users, Paid Users etc on the admin dashboard.
-
-I am hoping you are getting my point.
+Can you please update questions Navigator component? 
+I want to have 20 questions per page, so when I click on next page it should open page 2 not go to the next mcq. please fix this properly
 
 > **Agent Philosophy:**  
 > **Plans → Acts → Persists → Learns**  

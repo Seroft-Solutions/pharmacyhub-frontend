@@ -103,6 +103,14 @@ export const ExamStartScreen = ({
             <ul className="space-y-2">
               <li className="flex items-start">
                 <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                <span className="text-sm text-blue-700">We always recommend you to consider books if you have doubts.</span>
+              </li>
+              <li className="flex items-start">
+                <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                <span className="text-sm text-blue-700">These MCQs are for the sake of helping materials</span>
+              </li>
+              <li className="flex items-start">
+                <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
                 <span className="text-sm text-blue-700">Read each question carefully before answering.</span>
               </li>
               <li className="flex items-start">

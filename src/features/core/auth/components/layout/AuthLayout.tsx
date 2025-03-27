@@ -1,17 +1,31 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 interface AuthLayoutProps {
   children: ReactNode;
+  title?: string;
 }
 
-export const AuthLayout = ({ children }: AuthLayoutProps) => {
+export const AuthLayout = ({ children, title }: AuthLayoutProps) => {
   const isMobile = useMobileStore(selectIsMobile);
   
   return (
     <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 ${isMobile ? 'px-2 py-6' : 'px-4 py-12'} relative overflow-hidden`}>
+      {/* Back to home button - more prominent */}
+      <div className="absolute top-4 left-4 z-20">
+        <Link href="/">
+          <Button size="default" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md">
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium">Back to Home</span>
+          </Button>
+        </Link>
+      </div>
+
       {/* Animated background elements - reduced size and opacity on mobile */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute -top-40 -left-40 ${isMobile ? 'w-60 h-60 opacity-40' : 'w-80 h-80 opacity-70'} bg-blue-200 rounded-full mix-blend-multiply animate-blob`}></div>

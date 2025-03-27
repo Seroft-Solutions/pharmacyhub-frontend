@@ -47,7 +47,7 @@ const QuestionStatusLegend = ({ isMobile }) => {
 
 const QuestionButton = ({ index, status, onNavigate, getQuestionNumber, getStatusIcon, isMobile }) => {
   return (
-    <div className="relative">
+    <div className="relative mx-auto flex items-center justify-center">
       <button
         className={getButtonClasses(status, isMobile)}
         onClick={() => onNavigate(index)}
@@ -58,7 +58,7 @@ const QuestionButton = ({ index, status, onNavigate, getQuestionNumber, getStatu
       
       {/* Status Indicator */}
       {status !== 'current' && status !== 'unanswered' && (
-        <span className={`absolute ${isMobile ? '-top-0.5 -right-0.5' : '-top-1 -right-1'}`}>
+        <span className="absolute -top-0.5 -right-0.5">
           {getStatusIcon(status, isMobile ? 10 : 14)}
         </span>
       )}
@@ -68,11 +68,11 @@ const QuestionButton = ({ index, status, onNavigate, getQuestionNumber, getStatu
 
 // Get color classes for question buttons
 const getButtonClasses = (status: string, isMobile: boolean) => {
-  const baseClasses = `flex items-center justify-center ${isMobile ? 'h-7 w-7 text-xs' : 'h-9 w-9 text-sm'} font-medium rounded-lg transition-all duration-200`;
+  const baseClasses = `flex items-center justify-center ${isMobile ? 'h-7 w-7 text-[10px]' : 'h-8 w-8 text-xs'} font-medium rounded-lg transition-all duration-200`;
   
   switch (status) {
     case 'current':
-      return cn(baseClasses, "bg-blue-600 text-white shadow-md ring-2 ring-blue-300 transform scale-110");
+      return cn(baseClasses, "bg-blue-600 text-white shadow-md ring-2 ring-blue-300 transform scale-105");
     case 'answered':
       return cn(baseClasses, "bg-green-100 text-green-700 border border-green-300 hover:bg-green-200");
     case 'flagged':
@@ -168,27 +168,31 @@ export function QuestionNavigation({
   const getStatusIcon = (status: string, size = 14) => {
     switch (status) {
       case 'answered':
-        return <CheckCircleIcon className={`h-${size/4} w-${size/4} text-green-500`} />;
+        return <CheckCircleIcon className="h-2.5 w-2.5 text-green-500" />;
       case 'flagged':
-        return <FlagIcon className={`h-${size/4} w-${size/4} text-amber-500`} />;
+        return <FlagIcon className="h-2.5 w-2.5 text-amber-500" />;
       case 'answered-flagged':
-        return <FlagIcon className={`h-${size/4} w-${size/4} text-amber-500`} />;
+        return <FlagIcon className="h-2.5 w-2.5 text-amber-500" />;
       case 'current':
-        return <HelpCircleIcon className={`h-${size/4} w-${size/4} text-blue-100`} />;
+        return <HelpCircleIcon className="h-2.5 w-2.5 text-blue-100" />;
       default:
         return null;
     }
   };
 
-  // Generate compact grid view (1-2 rows of numbers with paging)
+  /**
+   * Generate compact grid view with pagination
+   * Shows 20 questions per page with navigation controls
+   * Page navigation buttons will navigate to the first question of each page
+   */
   const renderCompactGrid = () => {
-    const itemsPerPage = isMobile ? 5 : 10;
+    const itemsPerPage = 20; // Show 20 questions per page as requested
     const currentPage = Math.floor(currentIndex / itemsPerPage);
     const startIndex = currentPage * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage - 1, totalQuestions - 1);
     
     return (
-      <div className={`space-y-${isMobile ? '3' : '4'}`}>
+      <div className={`space-y-${isMobile ? '3' : '4'} px-${isMobile ? '1' : '2'}`}>
         {/* Progress Summary */}
         <div className={`flex justify-between items-center bg-gray-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg`}>
           <div className="flex items-center gap-2">
@@ -210,48 +214,63 @@ export function QuestionNavigation({
           <Button 
             variant="outline" 
             size={isMobile ? "xs" : "icon"} 
-            className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} rounded-full`} 
-            onClick={() => onNavigate(0)}
-            disabled={currentIndex === 0}
+            className="h-6 w-6 rounded-full" 
+            onClick={() => {
+              // Navigate to the first question of the first page
+              onNavigate(0);
+            }}
+            disabled={currentPage === 0}
           >
             <ChevronsLeftIcon className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
           </Button>
           <Button 
             variant="outline" 
             size={isMobile ? "xs" : "icon"} 
-            className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} rounded-full`} 
-            onClick={() => onNavigate(Math.max(0, currentIndex - 1))}
-            disabled={currentIndex === 0}
+            className="h-6 w-6 rounded-full" 
+            onClick={() => {
+              // Navigate to the first question of the previous page
+              const prevPage = Math.max(0, currentPage - 1);
+              onNavigate(prevPage * itemsPerPage);
+            }}
+            disabled={currentPage === 0}
           >
             <ChevronLeftIcon className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
           </Button>
           
-          <div className={`mx-1 ${isMobile ? 'text-xs' : 'text-sm'} font-medium bg-gray-50 ${isMobile ? 'px-2 py-0.5' : 'px-3 py-1'} rounded-md border border-gray-200`}>
+          <div className="mx-1 text-xs font-medium bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
             Page {currentPage + 1}
           </div>
           
           <Button 
             variant="outline" 
             size={isMobile ? "xs" : "icon"} 
-            className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} rounded-full`} 
-            onClick={() => onNavigate(Math.min(totalQuestions - 1, currentIndex + 1))}
-            disabled={currentIndex === totalQuestions - 1}
+            className="h-6 w-6 rounded-full" 
+            onClick={() => {
+              // Navigate to the first question of the next page
+              const nextPage = Math.min(Math.ceil(totalQuestions / itemsPerPage) - 1, currentPage + 1);
+              onNavigate(nextPage * itemsPerPage);
+            }}
+            disabled={currentPage >= Math.ceil(totalQuestions / itemsPerPage) - 1}
           >
             <ChevronRightIcon className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
           </Button>
           <Button 
             variant="outline" 
             size={isMobile ? "xs" : "icon"} 
-            className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} rounded-full`} 
-            onClick={() => onNavigate(totalQuestions - 1)}
-            disabled={currentIndex === totalQuestions - 1}
+            className="h-6 w-6 rounded-full" 
+            onClick={() => {
+              // Navigate to the first question of the last page
+              const lastPage = Math.ceil(totalQuestions / itemsPerPage) - 1;
+              onNavigate(lastPage * itemsPerPage);
+            }}
+            disabled={currentPage >= Math.ceil(totalQuestions / itemsPerPage) - 1}
           >
             <ChevronsRightIcon className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
           </Button>
         </div>
         
         {/* Current Page Numbers */}
-        <div className={`grid ${isMobile ? 'grid-cols-5 gap-1.5' : 'grid-cols-5 gap-2'}`}>
+        <div className="grid grid-cols-5 gap-1.5 p-1">
           {Array.from({ length: endIndex - startIndex + 1 }).map((_, i) => {
             const index = startIndex + i;
             const status = getQuestionStatus(index);
@@ -275,10 +294,10 @@ export function QuestionNavigation({
   
   // Generate full grid for all questions
   const renderFullGrid = () => {
-    const columns = isMobile ? 4 : 5; // Reduce columns on mobile
+    const columns = 5; // Use consistent 5 columns for better spacing
     
     return (
-      <div className={`space-y-${isMobile ? '3' : '4'}`}>
+      <div className={`space-y-${isMobile ? '3' : '4'} px-${isMobile ? '1' : '2'}`}>
         {/* Progress Summary */}
         <div className={`flex justify-between items-center bg-gray-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg`}>
           <div className="flex items-center gap-2">
@@ -295,8 +314,8 @@ export function QuestionNavigation({
           </div>
         </div>
 
-        <ScrollArea className={`${isMobile ? 'h-[180px]' : 'h-[250px]'} pr-2`}>
-          <div className={`grid grid-cols-${columns} ${isMobile ? 'gap-1.5' : 'gap-2'}`}>
+        <ScrollArea className={`${isMobile ? 'h-[260px]' : 'h-[400px]'} pr-2`}>
+          <div className="grid grid-cols-5 gap-1.5 p-1 mb-2">
             {Array.from({ length: totalQuestions }).map((_, index) => {
               const status = getQuestionStatus(index);
               
@@ -319,7 +338,7 @@ export function QuestionNavigation({
   };
 
   return (
-    <div className={`space-y-${isMobile ? '3' : '4'}`}>
+    <div className={`space-y-${isMobile ? '3' : '4'} w-full max-w-md mx-auto`}>
       {/* Tab Navigation */}
       <div className={`bg-gray-50 ${isMobile ? 'p-0.5' : 'p-1'} rounded-lg`}>
         <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>

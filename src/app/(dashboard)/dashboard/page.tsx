@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRoleStore } from "@/features/shell/store/roleStore";
-import { DashboardOverview } from "@/features/dashboard";
+// Custom Dashboard Implementation
+import { Card, CardContent } from "@/components/ui/card";
+import { FileText, Medal, BookOpen } from "lucide-react";
 import { logger } from "@/shared/lib/logger";
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 import { authService } from '@/features/core/auth/api/services/authService';
@@ -180,8 +182,61 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Dashboard Overview */}
-      <DashboardOverview />
+      {/* Custom Dashboard with Paper Type Cards */}
+      <div className="max-w-5xl mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+        <p className="text-lg text-gray-600 mb-8">Welcome back! Select a paper type to get started with your exam preparation.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Past Papers Card */}
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-blue-500 overflow-hidden group relative"
+            onClick={() => router.push('/exam/past-papers')}
+          >
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+            <CardContent className="p-8 flex flex-col items-center text-center">
+              <div className="bg-blue-100 rounded-full p-5 mb-6 group-hover:bg-blue-200 transition-all duration-300">
+                <FileText className="h-10 w-10 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-3">Past Papers</h3>
+              <p className="text-gray-600">Practice with previous exam papers to test your knowledge and improve your skills.</p>
+              <div className="mt-4 text-blue-600 font-medium group-hover:underline">Browse Papers →</div>
+            </CardContent>
+          </Card>
+
+          {/* Model Papers Card */}
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-amber-500 overflow-hidden group relative"
+            onClick={() => router.push('/exam/model-papers')}
+          >
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500"></div>
+            <CardContent className="p-8 flex flex-col items-center text-center">
+              <div className="bg-amber-100 rounded-full p-5 mb-6 group-hover:bg-amber-200 transition-all duration-300">
+                <Medal className="h-10 w-10 text-amber-600" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-3">Model Papers</h3>
+              <p className="text-gray-600">Study with model exam papers created by expert instructors for optimal preparation.</p>
+              <div className="mt-4 text-amber-600 font-medium group-hover:underline">Browse Papers →</div>
+            </CardContent>
+          </Card>
+
+          {/* Subject Papers Card */}
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-emerald-500 overflow-hidden group relative"
+            onClick={() => router.push('/exam/subject-papers')}
+          >
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
+            <CardContent className="p-8 flex flex-col items-center text-center">
+              <div className="bg-emerald-100 rounded-full p-5 mb-6 group-hover:bg-emerald-200 transition-all duration-300">
+                <BookOpen className="h-10 w-10 text-emerald-600" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-3">Subject Papers</h3>
+              <p className="text-gray-600">Focus on specific subjects with specialized exam papers to master key topics.</p>
+              <div className="mt-4 text-emerald-600 font-medium group-hover:underline">Browse Papers →</div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

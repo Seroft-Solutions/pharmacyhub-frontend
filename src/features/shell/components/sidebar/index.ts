@@ -1,2 +1,4 @@
 export * from './AppSidebar';
-export * from './SidebarMenu';
+export * from './SidebarCloseButton';
+export * from './SidebarContactSection';
+export * from './SheetNoClose';
