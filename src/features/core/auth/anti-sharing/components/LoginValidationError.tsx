@@ -50,6 +50,7 @@ export const LoginValidationError: React.FC<LoginValidationErrorProps> = ({
   };
 
   const getDescription = () => {
+    // Use provided message first if available
     return message || LOGIN_VALIDATION_MESSAGES[status] || 'There was a problem with your login.';
   };
 

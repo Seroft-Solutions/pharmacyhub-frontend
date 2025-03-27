@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useLoginForm } from '@/features/core/auth/hooks/useLoginForm';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 import { authService } from '@/features/core/auth/api/services/authService';
+import { LoginStatus } from '@/features/core/auth/anti-sharing/types';
+import { useAntiSharingStore } from '@/features/core/auth/anti-sharing/store';
 
 // Import shadcn UI components
 import { Button } from '@/components/ui/button';
@@ -43,7 +45,8 @@ export const LoginForm = () => {
     handleOtpVerification,
     handleValidationContinue,
     handleCancel,
-    handleTerminationResultClose
+    handleTerminationResultClose,
+    setShowValidationError
   } = useLoginForm();
   
   const [showPassword, setShowPassword] = useState(false);
@@ -54,6 +57,23 @@ export const LoginForm = () => {
   
   // Get resend verification mutation
   const { mutateAsync: resendVerification } = authService.useResendVerification();
+  
+  // Add additional effect to detect anti-sharing errors in the error message and show dialog
+  useEffect(() => {
+    if (error && (
+      error.includes('already logged in') ||
+      error.includes('another device') ||
+      error.includes('too many devices') ||
+      error.includes('TOO_MANY_DEVICES')
+    )) {
+      // This is a session conflict - explicitly show the dialog
+      const { setLoginStatus } = useAntiSharingStore.getState();
+      setLoginStatus(LoginStatus.TOO_MANY_DEVICES);
+      setShowValidationError(true);
+      
+      console.log('[Auth] Showing anti-sharing dialog due to error:', error);
+    }
+  }, [error, setShowValidationError]);
   
   // Function to handle resending verification email
   const handleResendVerification = useCallback(async () => {
@@ -272,6 +292,7 @@ export const LoginForm = () => {
         onContinue={handleValidationContinue}
         onCancel={handleCancel}
         isTerminating={isTerminating}
+        message="You are already logged in from another device. For security reasons, we only allow one active session at a time."
       />
       
       <OTPChallenge 
