@@ -12,10 +12,18 @@ import { logger } from '@/shared/lib/logger';
 // Loading component for suspense fallback
 function AuthCallbackLoading() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-        <p className="mt-4 text-lg">Loading authentication details...</p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md w-full">
+        <div className="animate-pulse space-y-4">
+          <div className="rounded-full bg-blue-100 h-16 w-16 mx-auto"></div>
+          <div className="h-5 bg-gray-200 rounded w-3/4 mx-auto"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded"></div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -142,10 +150,33 @@ function AuthCallbackContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-lg">Processing your login...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md w-full">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+          <h2 className="mt-6 text-xl font-bold text-gray-800">Authenticating...</h2>
+          <p className="mt-2 text-gray-600">We're processing your Google login credentials.</p>
+          <div className="mt-6 space-y-2">
+            <div className="flex items-center space-x-3">
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+              <p className="text-sm text-left text-gray-600">Validating credentials</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="h-2 w-2 bg-yellow-500 rounded-full animate-pulse"></div>
+              <p className="text-sm text-left text-gray-600">Setting up secure session</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
+              <p className="text-sm text-left text-gray-600">Preparing dashboard</p>
+            </div>
+          </div>
+          <p className="mt-6 text-sm text-gray-500">This may take a few moments...</p>
         </div>
       </div>
     );
@@ -153,13 +184,26 @@ function AuthCallbackContent() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-md">
-          <p className="font-bold">Login Error</p>
-          <p>{error}</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-red-100">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </div>
+          <h2 className="mb-2 text-xl font-bold text-center text-gray-800">Login Error</h2>
+          <p className="mb-6 text-center text-gray-600">{error}</p>
+          <div className="space-y-3 text-sm text-gray-600">
+            <p>Some common causes for authentication errors:</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Your security token may have expired</li>
+              <li>There might be a network connectivity issue</li>
+              <li>The authentication server might be temporarily unavailable</li>
+            </ul>
+          </div>
           <button
             onClick={() => router.push('/login')}
-            className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="w-full mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
           >
             Return to Login
           </button>
@@ -169,9 +213,18 @@ function AuthCallbackContent() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <p>Redirecting...</p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md w-full">
+        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-green-100">
+          <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h2 className="mb-2 text-xl font-bold text-center text-gray-800">Authentication Successful!</h2>
+        <p className="mb-6 text-center text-gray-600">You've been successfully authenticated. Redirecting you to the dashboard...</p>
+        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 overflow-hidden">
+          <div className="bg-blue-600 h-2.5 rounded-full w-full animate-pulse"></div>
+        </div>
       </div>
     </div>
   );
