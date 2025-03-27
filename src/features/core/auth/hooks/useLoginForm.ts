@@ -66,6 +66,11 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
         endpoint: AUTH_ENDPOINTS.LOGIN,
         fullEndpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL}${AUTH_ENDPOINTS.LOGIN}`
       });
+
+      // NO MORE USING DIRECT BROWSER ALERTS
+      // Previously had test code here that showed a direct browser alert
+      // This has now been replaced with our SessionExceptionHandler component
+      // The implementation is in useSessionAlert.tsx and integrated through the LoginForm component
       
       // Now use the Auth context login with device info
       const loginResponse = await login(email, password, deviceInfo);
@@ -179,10 +184,30 @@ if (validationResult.sessionId) {
         // Try to extract detailed error info based on different error structures
         if ((err as any).response?.data) {
           errorData = (err as any).response.data;
-          errorMessage = errorData.message || errorData.error || errorMessage;
+          // Check for nested error object with message
+          if (errorData.error && typeof errorData.error === 'object' && errorData.error.message) {
+            // The message is nested inside an error object
+            errorMessage = errorData.error.message;
+            logger.debug('[Auth] Found nested error message', { nestedMessage: errorMessage });
+          } else {
+            errorMessage = errorData.message || errorData.error || errorMessage;
+          }
         } else if ((err as any).data) {
           errorData = (err as any).data;
-          errorMessage = errorData.message || errorData.error || errorMessage;
+          // Check for nested error object with message
+          if (errorData.error && typeof errorData.error === 'object' && errorData.error.message) {
+            // The message is nested inside an error object
+            errorMessage = errorData.error.message;
+            logger.debug('[Auth] Found nested error message', { nestedMessage: errorMessage });
+          } else {
+            errorMessage = errorData.message || errorData.error || errorMessage;
+          }
+        }
+        
+        // Make sure errorMessage is a string to prevent issues with string methods
+        if (typeof errorMessage !== 'string') {
+          logger.warn('[Auth] Error message is not a string, converting', { type: typeof errorMessage });
+          errorMessage = String(errorMessage || 'Unknown error');
         }
         
         logger.debug('[Auth] Processing login error details', { 
@@ -190,27 +215,48 @@ if (validationResult.sessionId) {
           errorData,
           statusCode: (err as any).status || (err as any).statusCode || ((err as any).response?.status),
           hasAntiSharingText: (
-            errorMessage.includes('already logged in') || 
-            errorMessage.includes('another device') || 
-            errorMessage.includes('TOO_MANY_DEVICES') ||
-            errorMessage.includes('too many devices') ||
-            errorMessage.includes('You are already logged in')
+            typeof errorMessage === 'string' && (
+              errorMessage.toLowerCase().includes('already logged in') || 
+              errorMessage.toLowerCase().includes('another device') || 
+              errorMessage.toLowerCase().includes('too many devices') ||
+              errorMessage.toLowerCase().includes('single session')
+            )
           )
         });
         
         // Check for anti-sharing specific error message or 401 Unauthorized with specific text
         const statusCode = (err as any).status || (err as any).statusCode || ((err as any).response?.status);
+        
+        // More robust detection of anti-sharing errors
         const isAntiSharingError = 
-          errorMessage.includes('already logged in') || 
-          errorMessage.includes('another device') || 
-          errorMessage.includes('TOO_MANY_DEVICES') ||
-          errorMessage.includes('too many devices') ||
-          errorMessage.includes('You are already logged in') ||
-          errorMessage === 'You are already logged in from another device. Please log out from that device first.' ||
+          // Check for common phrases in error message text
+          (typeof errorMessage === 'string' && (
+            errorMessage.toLowerCase().includes('already logged in') || 
+            errorMessage.toLowerCase().includes('another device') || 
+            errorMessage.toLowerCase().includes('too many devices') ||
+            errorMessage.toLowerCase().includes('single session')
+          )) ||
+          // Check for error status constants
           (errorData && errorData.status === 'TOO_MANY_DEVICES') ||
-          (statusCode === 401 && errorMessage.includes('already logged in')) ||
-          (statusCode === 401 && errorMessage.includes('another device'));
+          (errorData && errorData.error && errorData.error.status === 'TOO_MANY_DEVICES') ||
+          // Check response data for anti-sharing indicators
+          (errorData && errorData.error && typeof errorData.error.message === 'string' && 
+            errorData.error.message.toLowerCase().includes('already logged in')) ||
+          // Check HTTP status with message content
+          (statusCode === 401 && typeof errorMessage === 'string' && (
+            errorMessage.toLowerCase().includes('already logged in') ||
+            errorMessage.toLowerCase().includes('another device') ||
+            errorMessage.toLowerCase().includes('too many devices')
+          ));
+          
         if (isAntiSharingError) {
+          // Log detailed debug info
+          logger.debug('[Auth] Anti-sharing error details', {
+            statusCode,
+            errorMessage,
+            responseData: errorData
+          });
+          
           // This is an anti-sharing violation
           logger.warn('[Auth] Detected anti-sharing violation', { 
             errorMessage, 
@@ -218,19 +264,24 @@ if (validationResult.sessionId) {
             deviceId 
           });
           
-          // Set the proper login status from useSessionValidation hook
+          // Set the proper login status in store
           const { setLoginStatus } = useAntiSharingStore.getState();
           setLoginStatus(LoginStatus.TOO_MANY_DEVICES);
           
-          // Show user-friendly message
+          // Use a standardized user-friendly message
           const tooManyDevicesMessage = 'You are already logged in from another device. ' +
-            'For security reasons, we only allow one active session at a time. ' +
+            'For security reasons, PharmacyHub only allows one active session at a time. ' +
             'Please log out from that device or click "Log Out Other Devices" to continue with this session.';
           
+          // Store the error message
           setError(tooManyDevicesMessage);
           
-          // Show the validation error dialog
+          // IMPORTANT: Force show the validation error dialog (INLINE VERSION)
+          logger.info('[Auth] Showing anti-sharing error dialog (INLINE VERSION)');
           setShowValidationError(true);
+          
+          // Stop loading state
+          setIsLoading(false);
           return;
         }
         if (errorMessage.includes('unverified') || errorMessage.includes('not verified') || errorMessage.includes('verification')) {

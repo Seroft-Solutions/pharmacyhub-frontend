@@ -12,6 +12,8 @@ import {
   validateLogin 
 } from './sessionApi';
 import { SessionFilterOptions } from '../types';
+import { parseSessionError } from './sessionUtils';
+import { logger } from '@/shared/lib/logger';
 
 // Query keys
 export const sessionKeys = {
@@ -54,6 +56,15 @@ export const useLoginValidation = () => {
       userAgent: string;
       ipAddress?: string;
     }) => validateLogin(userId, deviceId, userAgent, ipAddress),
+    onError: (error) => {
+      // Enhanced error handling with error parsing
+      const { loginStatus, message, errorDetails } = parseSessionError(error);
+      logger.warn('[SessionApiHooks] Login validation error', {
+        loginStatus,
+        message,
+        hasErrorDetails: !!errorDetails
+      });
+    }
   });
 };
 
@@ -85,6 +96,14 @@ export const useTerminateOtherSessions = () => {
       // Invalidate user session queries to refresh the data
       queryClient.invalidateQueries({ queryKey: sessionKeys.user(variables.userId) });
     },
+    onError: (error) => {
+      // Enhanced error handling with error parsing
+      const { message } = parseSessionError(error);
+      logger.error('[SessionApiHooks] Failed to terminate other sessions', {
+        error,
+        message
+      });
+    }
   });
 };
 

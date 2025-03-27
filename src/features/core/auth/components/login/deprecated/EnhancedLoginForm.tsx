@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useLoginForm } from '@/features/core/auth/hooks/useLoginForm';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
-import { authService } from '@/features/core/auth/api/services/authService';
-import { LoginStatus } from '@/features/core/auth/anti-sharing/types';
-import { useAntiSharingStore } from '@/features/core/auth/anti-sharing/store';
-import { logger } from '@/shared/lib/logger';
+import { ForceLogoutModal } from '../modals/ForceLogoutModal';
+import { useForceLogout } from '../../hooks/useForceLogout';
 
 // Import shadcn UI components
 import { Button } from '@/components/ui/button';
@@ -21,17 +19,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertCircle, Loader2, LockKeyhole, LogIn, Mail, Eye, EyeOff } from 'lucide-react';
 
 // Import anti-sharing components
-import { 
-  OTPChallenge, 
-  SessionTerminationResult, 
-  SessionExceptionHandler 
-} from '@/features/core/auth/anti-sharing/components';
-import { 
-  ErrorCategory, 
-  SESSION_ERRORS 
-} from '@/features/core/auth/anti-sharing/constants/exceptions';
+import { LoginValidationError } from '@/features/core/auth/anti-sharing/components/LoginValidationError';
+import { OTPChallenge } from '@/features/core/auth/anti-sharing/components/OTPChallenge';
 
-export const LoginForm = () => {
+/**
+ * Enhanced login form that handles:
+ * - Regular login
+ * - Account verification errors
+ * - Session conflicts with force logout option
+ */
+export const EnhancedLoginForm = () => {
   const {
     email,
     setEmail,
@@ -46,78 +43,44 @@ export const LoginForm = () => {
     // Anti-sharing properties
     showOtpChallenge,
     showValidationError,
-    setShowValidationError,
-    showTerminationResult,
-    terminationSuccess,
-    terminationError,
-    isTerminating,
     loginStatus,
     handleOtpVerification,
     handleValidationContinue,
-    handleCancel,
-    handleTerminationResultClose
+    handleCancel
   } = useLoginForm();
   
   const [showPassword, setShowPassword] = useState(false);
+  const [showForceLogoutModal, setShowForceLogoutModal] = useState(false);
   const isMobile = useMobileStore(selectIsMobile);
   
-  // Check if we should force show the dialog based on the error message
-  const [forceShowDialog, setForceShowDialog] = useState(false);
+  // Force logout functionality
+  const { forceLogout, isLoading: isForceLoggingOut } = useForceLogout();
   
-  // State to track if we're resending a verification email
-  const [isResendingVerification, setIsResendingVerification] = useState(false);
-  
-  // Get resend verification mutation
-  const { mutateAsync: resendVerification } = authService.useResendVerification();
-  
-  // Add additional effect to detect anti-sharing errors in the error message and show dialog
-  useEffect(() => {
-    if (error && typeof error === 'string' && (
-      error.includes('already logged in') ||
-      error.includes('another device') ||
-      error.includes('too many devices') ||
-      error.includes('You are already logged in') ||
-      error.includes('TOO_MANY_DEVICES')
-    )) {
-      // This is a session conflict - explicitly show the dialog
-      const { setLoginStatus } = useAntiSharingStore.getState();
-      setLoginStatus(LoginStatus.TOO_MANY_DEVICES);
-      // Force show the dialog unconditionally
-      setForceShowDialog(true);
-      setShowValidationError(true);
-      
-      logger.info('[Auth] Showing anti-sharing dialog due to error:', { error });
+  // Handle TOO_MANY_DEVICES error specially
+  const handleContinueWithConflict = () => {
+    if (loginStatus === 'TOO_MANY_DEVICES') {
+      // Show force logout modal instead of standard flow
+      setShowValidationError(false);
+      setShowForceLogoutModal(true);
+    } else {
+      // Proceed with standard validation flow
+      handleValidationContinue();
     }
-  }, [error, setShowValidationError]);
+  };
   
-  // Function to handle resending verification email
-  const handleResendVerification = useCallback(async () => {
-    if (!email) return;
-    
-    try {
-      setIsResendingVerification(true);
-      
-      // Get device info
-      const deviceInfo = {
-        deviceId: window.navigator.userAgent + Date.now(),
-        userAgent: window.navigator.userAgent,
-        ipAddress: 'client-side'
-      };
-      
-      // Call the resend verification API
-      await resendVerification({
-        emailAddress: email,
-        ...deviceInfo
-      });
-      
-      alert('Verification email sent! Please check your inbox.');
-    } catch (error) {
-      console.error('Failed to resend verification email:', error);
-      alert('Failed to resend verification email. Please try again later.');
-    } finally {
-      setIsResendingVerification(false);
+  // Handle force logout confirmation
+  const handleForceLogoutConfirm = async () => {
+    const success = await forceLogout();
+    if (!success) {
+      setShowForceLogoutModal(false);
     }
-  }, [email, resendVerification]);
+    // On success, forceLogout will redirect automatically
+  };
+  
+  // Handle force logout cancellation
+  const handleForceLogoutCancel = () => {
+    setShowForceLogoutModal(false);
+  };
 
   return (
     <>
@@ -141,18 +104,7 @@ export const LoginForm = () => {
           {error && (
             <div className={`mb-${isMobile ? '4' : '6'} p-3 rounded flex items-center space-x-2 bg-red-50 border border-red-200 text-red-700`}>
               <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0"/>
-              <div className="flex-1">
-                <p className="text-sm">{error}</p>
-                {error.includes('not verified') && (
-                  <button 
-                    onClick={handleResendVerification}
-                    disabled={isResendingVerification}
-                    className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none"
-                  >
-                    {isResendingVerification ? 'Sending...' : 'Resend verification email'}
-                  </button>
-                )}
-              </div>
+              <p className="text-sm">{error}</p>
             </div>
           )}
 
@@ -249,17 +201,17 @@ export const LoginForm = () => {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="px-2 bg-white text-gray-500">
-                  Or use Google
+                  Or continue with
                 </span>
               </div>
             </div>
 
-            <div className={`mt-${isMobile ? '4' : '6'} flex justify-center`}>
+            <div className={`mt-${isMobile ? '4' : '6'} grid grid-cols-2 gap-3`}>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleSocialLogin('google')}
-                className={`bg-white font-normal hover:bg-gray-50 transition-colors w-full max-w-xs ${isMobile ? 'text-xs h-9' : ''}`}
+                className={`bg-white font-normal hover:bg-gray-50 transition-colors ${isMobile ? 'text-xs h-9' : ''}`}
               >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
@@ -280,9 +232,20 @@ export const LoginForm = () => {
                   />
                   <path d="M1 1h22v22H1z" fill="none"/>
                 </svg>
-                Continue with Google
+                Google
               </Button>
-              
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleSocialLogin('facebook')}
+                className={`bg-white font-normal hover:bg-gray-50 transition-colors ${isMobile ? 'text-xs h-9' : ''}`}
+              >
+                <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <path fill="#1877F2"
+                        d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Facebook
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -300,39 +263,29 @@ export const LoginForm = () => {
         </CardFooter>
       </Card>
       
-      {/* Use our SessionExceptionHandler for better exception handling */}
-      {forceShowDialog && (
-        <SessionExceptionHandler 
-          isOpen={forceShowDialog}
-          loginStatus={LoginStatus.TOO_MANY_DEVICES}
-          customMessage="You are already logged in from another device. For security reasons, PharmacyHub only allows one active session at a time."
-          onAction={handleValidationContinue}
-          onCancel={() => {
-            setForceShowDialog(false);
-            handleCancel();
-            // Reset error state
-            setError(null);
-          }}
-          isProcessing={isTerminating}
-          actionButtonText="Log Out Other Devices"
-        />
-      )}
+      {/* Force logout modal */}
+      <ForceLogoutModal 
+        isOpen={showForceLogoutModal}
+        isLoading={isForceLoggingOut}
+        onConfirm={handleForceLogoutConfirm}
+        onCancel={handleForceLogoutCancel}
+      />
       
-      {/* Other anti-sharing modals */}
+      {/* Anti-sharing protection modals */}
+      <LoginValidationError 
+        isOpen={showValidationError}
+        status={loginStatus}
+        onContinue={handleContinueWithConflict}
+        onCancel={handleCancel}
+      />
+      
       <OTPChallenge 
         isOpen={showOtpChallenge}
         onVerify={handleOtpVerification}
         onCancel={handleCancel}
       />
-      
-      {/* Session termination result dialog */}
-      <SessionTerminationResult
-        isOpen={showTerminationResult}
-        success={terminationSuccess}
-        error={terminationError || undefined}
-        message={terminationSuccess ? 'All other devices have been successfully logged out. You can now continue.' : undefined}
-        onClose={handleTerminationResultClose}
-      />
     </>
   );
 };
+
+export default EnhancedLoginForm;
