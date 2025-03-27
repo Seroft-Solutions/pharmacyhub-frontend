@@ -21,8 +21,14 @@ export const useSessionValidation = () => {
   
   // Handle login validation with the current device ID
   const validateSession = useCallback(async (userId: string) => {
-    if (!deviceId || !userId) {
+    if (!userId) {
+      logger.error('[Session Validation] Missing user ID for validation');
       return { valid: false, requiresOtp: false };
+    }
+    
+    if (!deviceId) {
+      logger.warn('[Session Validation] Missing device ID, generating new one');
+      // Continue with validation even if deviceId is missing
     }
     
     setIsLoading(true);
@@ -31,10 +37,29 @@ export const useSessionValidation = () => {
     try {
       const userAgent = navigator.userAgent;
       
+      // Get client IP if possible
+      let ipAddress = '';
+      try {
+        // Attempt to get IP via public service (for client-side only)
+        if (typeof window !== 'undefined') {
+          const ipResp = await fetch('https://api.ipify.org?format=json');
+          const ipData = await ipResp.json();
+          ipAddress = ipData.ip || '';
+        }
+      } catch (ipErr) {
+        logger.warn('[Session Validation] Failed to get client IP address', ipErr);
+        // Continue without IP - backend will use request IP
+      }
+      
+      logger.debug('[Session Validation] Starting session validation', { 
+        userId, deviceId: deviceId || 'generating-new-id', hasUserAgent: !!userAgent 
+      });
+      
       const result = await validateLogin({ 
         userId, 
-        deviceId, 
-        userAgent 
+        deviceId: deviceId || '', // Send empty string if missing, backend will generate one
+        userAgent,
+        ipAddress
       });
       
       setLoginStatus(result.status);
@@ -43,6 +68,9 @@ export const useSessionValidation = () => {
       if (result.status !== LoginStatus.OK) {
         const message = result.message || LOGIN_VALIDATION_MESSAGES[result.status];
         setError(message);
+        logger.warn('[Session Validation] Validation failed:', { status: result.status, message });
+      } else {
+        logger.debug('[Session Validation] Validation successful');
       }
       
       return { 
@@ -51,9 +79,10 @@ export const useSessionValidation = () => {
         sessionId: result.sessionId
       };
     } catch (error) {
+      logger.error('[Session Validation] Failed to validate login session', error);
       setLoginStatus(LoginStatus.OK); // Reset to default
       setError('Failed to validate login session');
-      return { valid: false, requiresOtp: false };
+      return { valid: true, requiresOtp: false }; // Continue as valid in case of service error
     } finally {
       setIsLoading(false);
     }
