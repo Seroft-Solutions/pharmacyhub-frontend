@@ -185,36 +185,18 @@ if (validationResult.sessionId) {
           errorMessage = errorData.message || errorData.error || errorMessage;
         }
         
-        logger.debug('[Auth] Processing login error details', { 
-          errorMessage,
-          errorData,
-          statusCode: (err as any).status || (err as any).statusCode || ((err as any).response?.status),
-          hasAntiSharingText: (
-            errorMessage.includes('already logged in') || 
+        logger.debug('[Auth] Extracted error message', { errorMessage, errorData });
+        
+        // Check for anti-sharing specific error message
+        if (errorMessage.includes('already logged in') || 
             errorMessage.includes('another device') || 
             errorMessage.includes('TOO_MANY_DEVICES') ||
             errorMessage.includes('too many devices') ||
-            errorMessage.includes('You are already logged in')
-          )
-        });
-        
-        // Check for anti-sharing specific error message or 401 Unauthorized with specific text
-        const statusCode = (err as any).status || (err as any).statusCode || ((err as any).response?.status);
-        const isAntiSharingError = 
-          errorMessage.includes('already logged in') || 
-          errorMessage.includes('another device') || 
-          errorMessage.includes('TOO_MANY_DEVICES') ||
-          errorMessage.includes('too many devices') ||
-          errorMessage.includes('You are already logged in') ||
-          errorMessage === 'You are already logged in from another device. Please log out from that device first.' ||
-          (errorData && errorData.status === 'TOO_MANY_DEVICES') ||
-          (statusCode === 401 && errorMessage.includes('already logged in')) ||
-          (statusCode === 401 && errorMessage.includes('another device'));
-        if (isAntiSharingError) {
+            errorMessage.includes('You are already logged in') ||
+            (errorData && errorData.status === 'TOO_MANY_DEVICES')) {
           // This is an anti-sharing violation
           logger.warn('[Auth] Detected anti-sharing violation', { 
             errorMessage, 
-            statusCode,
             deviceId 
           });
           
@@ -232,8 +214,7 @@ if (validationResult.sessionId) {
           // Show the validation error dialog
           setShowValidationError(true);
           return;
-        }
-        if (errorMessage.includes('unverified') || errorMessage.includes('not verified') || errorMessage.includes('verification')) {
+        } else if (errorMessage.includes('unverified') || errorMessage.includes('not verified') || errorMessage.includes('verification')) {
           setError('Your account has not been verified. Please check your email for verification instructions.');
           // Offer option to resend verification
           console.debug('Account verification required for:', email);
@@ -474,7 +455,6 @@ if (validationResult.sessionId) {
     // Anti-sharing properties
     showOtpChallenge,
     showValidationError,
-    setShowValidationError, // Expose this for direct control
     showTerminationResult,
     terminationSuccess,
     terminationError,
