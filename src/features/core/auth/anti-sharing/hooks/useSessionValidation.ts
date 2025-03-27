@@ -7,7 +7,6 @@ import { useAntiSharingStore } from '../store';
 import { useLoginValidation } from '../api/sessionApiHooks';
 import { LoginStatus } from '../types';
 import { LOGIN_VALIDATION_MESSAGES } from '../constants';
-import { ErrorCategory, getErrorDetailsForLoginStatus } from '../constants/exceptions';
 
 export const useSessionValidation = () => {
   const { 
@@ -42,9 +41,7 @@ export const useSessionValidation = () => {
       
       // Set appropriate error message based on status
       if (result.status !== LoginStatus.OK) {
-        // Get detailed error info from the exception constants
-        const errorDetails = getErrorDetailsForLoginStatus(result.status);
-        const message = result.message || errorDetails?.message || LOGIN_VALIDATION_MESSAGES[result.status];
+        const message = result.message || LOGIN_VALIDATION_MESSAGES[result.status];
         setError(message);
       }
       

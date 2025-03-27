@@ -8,7 +8,6 @@ This feature prevents multiple people from abusing a single PharmacyHub account 
 - Device ID generation and management (`deviceManager.ts`)
 - Session state management (`antiSharingStore.ts`)
 - Login validation logic (`useSessionValidation.ts`)
-- Exception handling and error messages (`constants/exceptions/*.ts`)
 
 ### API Integration
 - Session API services (`sessionApi.ts`)
@@ -17,18 +16,11 @@ This feature prevents multiple people from abusing a single PharmacyHub account 
 ### UI Components
 - OTP challenge dialog (`OTPChallenge.tsx`)
 - Login validation error dialog (`LoginValidationError.tsx`)
-- Centralized session exception handler (`SessionExceptionHandler.tsx`)
 - Admin monitoring interfaces (`admin/SessionMonitoring.tsx`)
 
 ## How It Works
 
-1. **Exception Handling**:
-   - Comprehensive error categorization (authentication, session, network, etc.)
-   - Standardized error messages and action items for users
-   - Severity-based styling and user guidance
-   - Centralized error display through the `SessionExceptionHandler` component
-
-2. **Device Identification**:
+1. **Device Identification**:
    - A unique device ID is generated on first login and stored in localStorage
    - This device ID is included with each login request
 
@@ -50,7 +42,6 @@ This feature prevents multiple people from abusing a single PharmacyHub account 
 - OTP verification flow
 - Admin monitoring interface at `/admin/session-monitoring`
 - Integration with existing authentication flow
-- Standardized exception handling across the auth flow
 
 ## Backend Requirements
 

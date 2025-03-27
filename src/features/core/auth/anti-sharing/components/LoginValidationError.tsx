@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,8 +12,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { LoginStatus } from '../types';
-import { LOGIN_VALIDATION_MESSAGES, LOGIN_VALIDATION_EXPLANATIONS } from '../constants';
-import { getErrorDetailsForLoginStatus, ErrorCategory } from '../constants/exceptions';
+import { LOGIN_VALIDATION_MESSAGES } from '../constants';
 import { Button } from '@/components/ui/button';
 import { Shield, ShieldAlert, LogOut } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
@@ -35,25 +34,11 @@ export const LoginValidationError: React.FC<LoginValidationErrorProps> = ({
   onCancel,
   isTerminating = false,
 }) => {
-  // Create a local state that mirrors isOpen prop
-  const [open, setOpen] = useState(isOpen);
-  
-  // Add debugging logs
+  // Force logging for debugging
   useEffect(() => {
-    console.log('[LoginValidationError] Component mounted with props:', {
-      isOpen,
-      status,
-      message,
-      open
-    });
-  }, [isOpen, status, message, open]);
+    console.log('[Anti-Sharing] LoginValidationError Component:', { isOpen, status, message });
+  }, [isOpen, status, message]);
   
-  // Update local state whenever the isOpen prop changes
-  useEffect(() => {
-    console.log('[LoginValidationError] isOpen prop changed:', isOpen);
-    setOpen(isOpen);
-  }, [isOpen]);
-
   const getTitle = () => {
     switch (status) {
       case LoginStatus.NEW_DEVICE:
@@ -70,10 +55,8 @@ export const LoginValidationError: React.FC<LoginValidationErrorProps> = ({
   };
 
   const getDescription = () => {
-    // Get detailed error info from exception constants
-    const errorDetails = getErrorDetailsForLoginStatus(status);
-    // Use provided message first if available, then error details, then fallback
-    return message || errorDetails?.message || LOGIN_VALIDATION_MESSAGES[status] || 'There was a problem with your login.';
+    // Use provided message first if available
+    return message || LOGIN_VALIDATION_MESSAGES[status] || 'There was a problem with your login.';
   };
 
   const getIcon = () => {
@@ -105,51 +88,26 @@ export const LoginValidationError: React.FC<LoginValidationErrorProps> = ({
   };
 
   const getExplanation = () => {
-    // Get action from error details if available
-    const errorDetails = getErrorDetailsForLoginStatus(status);
-    const explanation = errorDetails?.action || LOGIN_VALIDATION_EXPLANATIONS[status];
-    
-    if (!explanation) {
-      return null;
-    }
-    
-    let bgColor = 'bg-amber-50';
-    let borderColor = 'border-amber-200';
-    let textColor = 'text-amber-800';
-    
-    // Use different colors for different status types
     if (status === LoginStatus.TOO_MANY_DEVICES) {
-      bgColor = 'bg-amber-50';
-      borderColor = 'border-amber-200';
-      textColor = 'text-amber-800';
-    } else if (status === LoginStatus.SUSPICIOUS_LOCATION) {
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-      textColor = 'text-red-800';
-    } else {
-      bgColor = 'bg-blue-50';
-      borderColor = 'border-blue-200';
-      textColor = 'text-blue-800';
+      return (
+        <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+          <p className="text-sm text-amber-800">
+            <strong>Security Notice:</strong> For your account security, we only allow one active session at a time.
+          </p>
+          <p className="text-sm text-amber-800 mt-1">
+            Choosing "Log Out Other Devices" will immediately terminate all your other active sessions and allow you to continue with this session.
+          </p>
+          <p className="text-sm text-amber-800 mt-1">
+            If you did not attempt to log in from another device, please consider changing your password for added security.
+          </p>
+        </div>
+      );
     }
-    
-    return (
-      <div className={`mt-2 p-3 ${bgColor} border ${borderColor} rounded-md`}>
-        <p className={`text-sm ${textColor}`}>
-          <strong>Security Notice:</strong> {explanation}
-        </p>
-        {status === LoginStatus.TOO_MANY_DEVICES && (
-          <div className="mt-2 p-2 bg-amber-100 rounded">
-            <p className="text-xs text-amber-800 flex items-center">
-              <Shield className="h-3 w-3 mr-1" /> This security feature protects your account from unauthorized access.
-            </p>
-          </div>
-        )}
-      </div>
-    );
+    return null;
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={isOpen}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader className="flex flex-col items-center text-center">
           <div className="mb-4">{getIcon()}</div>
