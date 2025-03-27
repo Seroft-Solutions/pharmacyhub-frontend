@@ -194,6 +194,6 @@ function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
     purchased: exam.purchased || false, // Use purchased status from API
     universalAccess: exam.universalAccess || false, // Use universal access status from API
     source: 'model',
-    paymentStatus: exam.paymentStatus || 'pending',
+    paymentStatus: exam.paymentStatus || 'PAID', // Default to PAID if no status is provided
   };
 }

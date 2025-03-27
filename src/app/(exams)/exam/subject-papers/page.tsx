@@ -191,6 +191,7 @@ function convertExamToMetadata(exam: ExamPaper): ExamPaperMetadata {
     price: exam.price || 0,
     purchased: exam.purchased || false, // Include purchased status
     universalAccess: exam.universalAccess || false, // Include universal access status
-    source: 'subject'
+    source: 'subject',
+    paymentStatus: exam.paymentStatus || 'PAID' // Default to PAID for subject papers
   };
 }
