@@ -139,7 +139,7 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
 
   const handleSocialLogin = useCallback((provider: 'google') => {
     // Get Google configuration value
-    const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '387701996335-oq98hgapilg9kf0ddljvh4omikf8b3qi.apps.googleusercontent.com';
+    const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '919555990168-5ncdcjifms0qoepfs0pnuo66d3d0ad1u.apps.googleusercontent.com';
     
     // Set up callback URL
     const callbackUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
