@@ -13,6 +13,8 @@ import { useExamStats } from '@/features/exams/api/hooks/useExamApiHooks';
 // Use our new dashboard API hooks instead of direct progress hooks
 import { useDashboardProgress, useDashboardAnalytics, useDashboardRecommendations } from './useDashboardApi';
 import usePremiumStatus from '@/features/payments/premium/hooks/usePremiumStatus';
+import { usePaymentHistory } from '@/features/payments/api/hooks/usePaymentApiHooks';
+import { useUserManualRequests } from '@/features/payments/manual/api/hooks/useManualPaymentApiHooks';
 import { useAuth } from '@/features/core/auth';
 import { useModelPapers, usePastPapers, useSubjectPapers } from '@/features/exams/api/hooks/useExamPaperHooks';
 
@@ -25,6 +27,10 @@ export function useDashboardData() {
 
   // Fetch all required data
   const { isPremium, isLoading: isPremiumLoading } = usePremiumStatus({ forceCheck: false });
+  
+  // Get payment status information
+  const { data: paymentHistory, isLoading: isPaymentHistoryLoading } = usePaymentHistory();
+  const { data: manualRequests, isLoading: isManualRequestsLoading } = useUserManualRequests();
   const { data: examStats, isLoading: isExamStatsLoading } = useExamStats();
   
   // Get time filter dates
@@ -60,6 +66,10 @@ export function useDashboardData() {
     pastPapers: isPastPapersLoading,
     subjectPapers: isSubjectPapersLoading
   };
+  
+  // Add payment loading states
+  loadingStates.paymentHistory = isPaymentHistoryLoading;
+  loadingStates.manualRequests = isManualRequestsLoading;
   
   // Combined loading state for backward compatibility
   const isLoading = Object.values(loadingStates).some(state => state === true);
@@ -136,12 +146,65 @@ export function useDashboardData() {
     return analytics?.paperCompletionTimeline || [];
   }, [analytics]);
 
+  // Helper to determine payment status
+  const determinePaymentStatus = useMemo(() => {
+    if (!isPremium) return 'NOT_REQUIRED'; // Not premium
+    
+    // Check most recent payment/request status
+    const latestPayment = paymentHistory && paymentHistory.length > 0 ? 
+      paymentHistory.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] : null;
+      
+    const latestManualRequest = manualRequests && manualRequests.length > 0 ? 
+      manualRequests.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] : null;
+    
+    // Determine which is more recent
+    let mostRecent: any = null;
+    let source = '';
+    
+    if (latestPayment && latestManualRequest) {
+      if (new Date(latestPayment.createdAt).getTime() > new Date(latestManualRequest.createdAt).getTime()) {
+        mostRecent = latestPayment;
+        source = 'payment';
+      } else {
+        mostRecent = latestManualRequest;
+        source = 'manual';
+      }
+    } else if (latestPayment) {
+      mostRecent = latestPayment;
+      source = 'payment';
+    } else if (latestManualRequest) {
+      mostRecent = latestManualRequest;
+      source = 'manual';
+    }
+    
+    if (!mostRecent) return 'PAID'; // Default to PAID if premium but no payment records
+    
+    // Map status based on source and status
+    if (source === 'payment') {
+      switch (mostRecent.status) {
+        case 'COMPLETED': return 'PAID';
+        case 'PENDING': return 'PENDING';
+        case 'FAILED': return 'FAILED';
+        default: return 'PAID';
+      }
+    } else {
+      // Manual payment
+      switch (mostRecent.status) {
+        case 'APPROVED': return 'PAID';
+        case 'PENDING': return 'PENDING';
+        case 'REJECTED': return 'FAILED';
+        default: return 'PAID';
+      }
+    }
+  }, [isPremium, paymentHistory, manualRequests]);
+  
   // Combined data object with better error handling
   const dashboardData = useMemo(() => {
     try {
       return {
         premium: {
           isPremium: isPremium || false,
+          paymentStatus: determinePaymentStatus,
           expiryDate: analytics?.premiumInfo?.expiryDate || '',
           planName: analytics?.premiumInfo?.planName || 'Premium Subscription',
           paymentMethod: analytics?.premiumInfo?.paymentMethod || '',
@@ -195,7 +258,7 @@ export function useDashboardData() {
       logger.error('Error creating dashboard data object:', error);
       // Return a safe fallback object with empty data
       return {
-        premium: { isPremium: false, expiryDate: '', planName: '', paymentMethod: '', remainingPercentage: 0, nextPaymentDate: '', paymentHistory: [], loading: false, error: true },
+        premium: { isPremium: false, paymentStatus: 'NOT_REQUIRED', expiryDate: '', planName: '', paymentMethod: '', remainingPercentage: 0, nextPaymentDate: '', paymentHistory: [], loading: false, error: true },
         examStats: { totalPapers: 0, avgDuration: 0, completionRate: 0, activeUsers: 0, loading: false, error: true },
         progress: { completedExams: 0, inProgressExams: 0, averageScore: 0, totalTimeSpent: 0, loading: false, error: true },
         analytics: {
@@ -211,9 +274,10 @@ export function useDashboardData() {
   }, [analytics, examStats, isPremium, progress, recommendations, timeFilter, 
       studyHours, examScores, scoreDistribution, subjectPerformance, 
       recentExams, recentActivities, paperCounts, paperCompletionTimeline,
-      modelPapers, pastPapers, subjectPapers,
+      modelPapers, pastPapers, subjectPapers, determinePaymentStatus,
       isPremiumLoading, isExamStatsLoading, isProgressLoading, isAnalyticsLoading,
-      isModelPapersLoading, isPastPapersLoading, isSubjectPapersLoading]);
+      isModelPapersLoading, isPastPapersLoading, isSubjectPapersLoading,
+      isPaymentHistoryLoading, isManualRequestsLoading]);
 
   return {
     dashboardData,

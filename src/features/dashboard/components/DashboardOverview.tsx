@@ -20,15 +20,18 @@ import {
   AlertCircle,
   ChevronRight,
   CheckCircle2,
-  Crown
+  Crown,
+  Clock3,
+  Lock,
+  ArrowRight
 } from 'lucide-react';
 
 // Custom Components
 import TimeFilter from './filters/TimeFilter';
-import StatsOverviewGrid from './cards/StatsOverviewGrid';
-import ExamPerformanceChart from './charts/ExamPerformanceChart';
+// StatsOverviewGrid and ExamPerformanceChart removed as they're redundant
+// import ExamPerformanceChart from './charts/ExamPerformanceChart';
 import ScoreDistributionChart from './charts/ScoreDistributionChart';
-import StudyTimeChart from './charts/StudyTimeChart';
+// StudyTimeChart removed as it's not used
 import RecentExamsTable from './tables/RecentExamsTable';
 import SubjectPerformanceRadar from './charts/SubjectPerformanceRadar';
 import RecentActivityTimeline from './cards/RecentActivityTimeline';
@@ -70,6 +73,131 @@ export function DashboardOverview() {
     timeFilter, 
     setTimeFilter 
   } = useDashboardData();
+
+  // Helper functions for handling premium status and payment status
+  const getCardBackgroundByStatus = (paymentStatus?: string, isPremium?: boolean) => {
+    if (!isPremium) return "bg-gray-50 border-gray-100";
+    
+    switch (paymentStatus) {
+      case 'PAID':
+        return "bg-yellow-50 border-yellow-100";
+      case 'PENDING':
+        return "bg-blue-50 border-blue-100";
+      case 'FAILED':
+        return "bg-red-50 border-red-100";
+      default:
+        return "bg-yellow-50 border-yellow-100";
+    }
+  };
+
+  const getIconBackgroundByStatus = (paymentStatus?: string, isPremium?: boolean) => {
+    if (!isPremium) return 'bg-gray-100';
+    
+    switch (paymentStatus) {
+      case 'PAID':
+        return 'bg-yellow-100';
+      case 'PENDING':
+        return 'bg-blue-100';
+      case 'FAILED':
+        return 'bg-red-100';
+      default:
+        return 'bg-yellow-100';
+    }
+  };
+
+  const getTextColorByStatus = (paymentStatus?: string, isPremium?: boolean) => {
+    if (!isPremium) return 'text-gray-500';
+    
+    switch (paymentStatus) {
+      case 'PAID':
+        return 'text-yellow-600';
+      case 'PENDING':
+        return 'text-blue-600';
+      case 'FAILED':
+        return 'text-red-600';
+      default:
+        return 'text-yellow-600';
+    }
+  };
+
+  const getStatusIcon = (paymentStatus?: string, isPremium?: boolean) => {
+    if (!isPremium) {
+      return <Crown className="h-5 w-5 text-gray-400" />;
+    }
+    
+    switch (paymentStatus) {
+      case 'PAID':
+        return <Crown className="h-5 w-5 text-yellow-600" />;
+      case 'PENDING':
+        return <Clock3 className="h-5 w-5 text-blue-600" />;
+      case 'FAILED':
+        return <AlertCircle className="h-5 w-5 text-red-600" />;
+      default:
+        return <Crown className="h-5 w-5 text-yellow-600" />;
+    }
+  };
+
+  const getAccountStatusText = (paymentStatus?: string, isPremium?: boolean) => {
+    if (!isPremium) return 'Free Account';
+    
+    switch (paymentStatus) {
+      case 'PAID':
+        return 'Premium';
+      case 'PENDING':
+        return 'Premium (Pending)';
+      case 'FAILED':
+        return 'Premium (Failed)';
+      default:
+        return 'Premium';
+    }
+  };
+
+  const renderAccountStatusContent = (premium?: any) => {
+    if (!premium?.isPremium) {
+      return (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => router.push('/premium')} 
+          className="mt-1 text-xs py-1 h-7"
+        >
+          Upgrade
+        </Button>
+      );
+    }
+    
+    switch (premium?.paymentStatus) {
+      case 'PAID':
+        return (
+          <p className="text-yellow-700">
+            Until {new Date(premium?.expiryDate).toLocaleDateString()}
+          </p>
+        );
+      case 'PENDING':
+        return (
+          <p className="text-blue-700 text-xs">
+            Your payment is being processed
+          </p>
+        );
+      case 'FAILED':
+        return (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => router.push('/premium/payment')} 
+            className="mt-1 text-xs py-1 h-7 text-red-600 border-red-300"
+          >
+            Retry Payment
+          </Button>
+        );
+      default:
+        return (
+          <p className="text-yellow-700">
+            Until {new Date(premium?.expiryDate).toLocaleDateString()}
+          </p>
+        );
+    }
+  };
 
   // Navigation functions using useCallback for better performance
   const handleViewResult = useCallback((attemptId) => {
@@ -143,26 +271,37 @@ export function DashboardOverview() {
             </CardContent>
           </Card>
           
-          <Card className={dashboardData?.premium?.isPremium ? "bg-yellow-50 border-yellow-100" : "bg-gray-50 border-gray-100"}>
+          <Card className={getCardBackgroundByStatus(dashboardData?.premium?.paymentStatus, dashboardData?.premium?.isPremium)}>
             <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-              <div className={`w-10 h-10 rounded-full ${dashboardData?.premium?.isPremium ? 'bg-yellow-100' : 'bg-gray-100'} flex items-center justify-center mb-2`}>
-                <Crown className={`h-5 w-5 ${dashboardData?.premium?.isPremium ? 'text-yellow-600' : 'text-gray-400'}`} />
+              <div className={`w-10 h-10 rounded-full ${getIconBackgroundByStatus(dashboardData?.premium?.paymentStatus, dashboardData?.premium?.isPremium)} flex items-center justify-center mb-2`}>
+                {getStatusIcon(dashboardData?.premium?.paymentStatus, dashboardData?.premium?.isPremium)}
               </div>
               <div className="space-y-1">
-                <p className={`text-sm font-medium ${dashboardData?.premium?.isPremium ? 'text-yellow-600' : 'text-gray-500'}`}>
-                  {dashboardData?.premium?.isPremium ? 'Premium' : 'Free Account'}
+                {/* Status Badge */}
+                {dashboardData?.premium?.paymentStatus === 'PENDING' && (
+                  <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 flex items-center gap-1 text-xs mb-1">
+                    <Clock3 className="h-3 w-3 text-blue-600" />
+                    Waiting for approval
+                  </Badge>
+                )}
+                {dashboardData?.premium?.paymentStatus === 'FAILED' && (
+                  <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300 flex items-center gap-1 text-xs mb-1">
+                    <AlertCircle className="h-3 w-3 text-red-600" />
+                    Payment failed
+                  </Badge>
+                )}
+                
+                {/* Account Status */}
+                <p className={`text-sm font-medium ${getTextColorByStatus(dashboardData?.premium?.paymentStatus, dashboardData?.premium?.isPremium)}`}>
+                  {getAccountStatusText(dashboardData?.premium?.paymentStatus, dashboardData?.premium?.isPremium)}
                 </p>
+                
                 {isLoading ? (
                   <div className="h-6 w-16 bg-yellow-100 animate-pulse rounded mx-auto"></div>
                 ) : (
-                  <p className={`text-sm font-bold ${dashboardData?.premium?.isPremium ? 'text-yellow-700' : 'text-gray-500'}`}>
-                    {dashboardData?.premium?.isPremium ? 
-                      `Until ${new Date(dashboardData?.premium?.expiryDate).toLocaleDateString()}` : 
-                      <Button variant="outline" size="sm" onClick={() => router.push('/premium')} className="mt-1 text-xs py-1 h-7">
-                        Upgrade
-                      </Button>
-                    }
-                  </p>
+                  <div className="text-sm font-bold">
+                    {renderAccountStatusContent(dashboardData?.premium)}
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -181,36 +320,11 @@ export function DashboardOverview() {
 
         {/* Overview Tab Content */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Stats Overview Grid */}
-          <StatsOverviewGrid 
-            loading={isLoading}
-            totalPapers={dashboardData?.examStats?.totalPapers || 0}
-            completedExams={dashboardData?.progress?.completedExams || 0}
-            inProgressExams={dashboardData?.progress?.inProgressExams || 0}
-            averageScore={dashboardData?.progress?.averageScore || 0}
-            totalTimeSpent={dashboardData?.progress?.totalTimeSpent || 0}
-            isPremium={dashboardData?.premium?.isPremium || false}
-          />
+          {/* Stats Overview Grid removed as it duplicates information already in top cards */}
+          {/* This removes duplication of fields between the top cards and overview section */}
 
-          <Separator className="my-6" />
-
-          {/* Top Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {dashboardData?.analytics?.examScores && dashboardData.analytics.examScores.length > 0 ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Exam Performance</CardTitle>
-                  <CardDescription>Your scores compared to average</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ExamPerformanceChart
-                    data={dashboardData.analytics.examScores}
-                    loading={isLoading}
-                  />
-                </CardContent>
-              </Card>
-            ) : null}
-            
+          {/* Top Charts - Exam Performance chart removed as requested */}
+          <div className="grid grid-cols-1 gap-6">
             {dashboardData?.analytics?.recentActivities && dashboardData.analytics.recentActivities.length > 0 ? (
               <RecentActivityTimeline 
                 loading={isLoading}

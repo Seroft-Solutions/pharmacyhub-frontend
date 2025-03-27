@@ -160,13 +160,6 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 lg:px-8">
-      <div className="mb-4 md:mb-8">
-        <h1 className="text-xl md:text-2xl font-bold">Welcome, {session?.user?.name || session?.user?.email}</h1>
-        <p className="text-gray-600 mt-1 text-sm md:text-base">
-          User Dashboard
-        </p>
-      </div>
-
       {/* Verification Status Alert */}
       {!userIsVerified && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-md">
