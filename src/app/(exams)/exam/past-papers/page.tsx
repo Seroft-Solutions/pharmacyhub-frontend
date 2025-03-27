@@ -23,7 +23,7 @@ function PastPapersContent() {
   const router = useRouter();
 
   const handleStartPaper = (paper: ExamPaperMetadata) => {
-    router.push(`/exam/${paper.id}`);
+    router.push(`/exam/${paper.id}?type=past`);
   };
 
   if (isLoading) {

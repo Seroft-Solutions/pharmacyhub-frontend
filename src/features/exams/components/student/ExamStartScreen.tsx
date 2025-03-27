@@ -17,6 +17,7 @@ import {
   LockIcon
 } from 'lucide-react';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
+import { InfoIcon, AlertCircleIcon } from 'lucide-react';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 import { usePremiumExamInfo } from '@/features/payments/premium/components/PremiumExamInfoProvider';
 
@@ -29,7 +30,8 @@ export const ExamStartScreen = ({
   isStarting,
   isOnline,
   startError,
-  handleStartExam
+  handleStartExam,
+  examType
 }) => {
   const isMobile = useMobileStore(selectIsMobile);
   
@@ -103,14 +105,6 @@ export const ExamStartScreen = ({
             <ul className="space-y-2">
               <li className="flex items-start">
                 <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
-                <span className="text-sm text-blue-700">We always recommend you to consider books if you have doubts.</span>
-              </li>
-              <li className="flex items-start">
-                <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
-                <span className="text-sm text-blue-700">These MCQs are for the sake of helping materials</span>
-              </li>
-              <li className="flex items-start">
-                <div className="h-2.5 w-2.5 bg-blue-400 opacity-80 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
                 <span className="text-sm text-blue-700">Read each question carefully before answering.</span>
               </li>
               <li className="flex items-start">
@@ -133,6 +127,40 @@ export const ExamStartScreen = ({
           </div>
         </div>
       </div>
+
+      {/* Disclaimer Section - Conditional based on exam type */}
+      {examType && (
+        <div className="px-2 my-3">
+          <div className={`rounded-md p-3 ${examType === 'past' ? 'bg-amber-50' : 'bg-gray-50'}`}>
+            <div className="flex items-start">
+              <AlertCircleIcon className={`h-5 w-5 mt-0.5 mr-2 flex-shrink-0 ${examType === 'past' ? 'text-amber-500' : 'text-gray-500'}`} />
+              <div>
+                <h3 className={`text-sm font-medium mb-1 ${examType === 'past' ? 'text-amber-800' : 'text-gray-800'}`}>
+                  Disclaimer:
+                </h3>
+                <div className={`text-sm ${examType === 'past' ? 'text-amber-700' : 'text-gray-600'}`}>
+                  {examType === 'past' ? (
+                    <p>
+                      Past papers have been compiled from various sources. Some questions were incomplete or only partially available, 
+                      so we formulated answer choices to create meaningful MCQs while ensuring the original question remained unchanged. 
+                      This collection is intended to provide insight into the types of questions that appeared in previous exams. 
+                      You will understand the approach as you solve them. These papers serve as a reference to help you familiarize 
+                      yourself with past exam patterns.
+                    </p>
+                  ) : (
+                    <ul className="space-y-1">
+                      <li>While we strive for accuracy (99%+), errors may still occur.</li>
+                      <li>Readers are encouraged to verify information from standard references.</li>
+                      <li>Use at your own discretion; feedback for corrections is welcome.</li>
+                      <li>No legal claims shall arise from reliance on this content.</li>
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Start Button */}
       <div className="px-2 my-3">

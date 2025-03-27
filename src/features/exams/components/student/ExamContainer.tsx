@@ -68,6 +68,7 @@ interface ExamContainerProps {
   userId: string;
   onExit?: () => void;
   showTimer?: boolean;
+  examType?: 'past' | 'model' | 'subject';
 }
 
 /**
@@ -84,7 +85,8 @@ function ExamContainerInternal({
   examId, 
   userId,
   onExit,
-  showTimer = true
+  showTimer = true,
+  examType
 }: ExamContainerProps) {
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [showResults, setShowResults] = useState(false);
@@ -775,6 +777,7 @@ function ExamContainerInternal({
         isOnline={isOnline}
         startError={startError}
         handleStartExam={handleStartExam}
+        examType={examType}
       />
     );
   }

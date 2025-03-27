@@ -17,19 +17,23 @@ interface ExamPageProps {
   params: {
     id: string;
   };
+  searchParams: {
+    type?: string;
+  };
 }
 
-export default function ExamPage({ params }: ExamPageProps) {
+export default function ExamPage({ params, searchParams }: ExamPageProps) {
   // Unwrap params using React.use() before accessing properties
   const resolvedParams = React.use(params);
+  const resolvedSearchParams = React.use(searchParams);
   return (
     <QueryProvider>
-      <ExamPageContent id={resolvedParams.id} />
+      <ExamPageContent id={resolvedParams.id} examType={resolvedSearchParams.type} />
     </QueryProvider>
   );
 }
 
-function ExamPageContent({ id }: { id: string }) {
+function ExamPageContent({ id, examType }: { id: string, examType?: string }) {
   const router = useRouter();
   const examId = parseInt(id, 10);
   
@@ -68,6 +72,7 @@ function ExamPageContent({ id }: { id: string }) {
           userId={userId}
           onExit={handleExit}
           showTimer={true}
+          examType={examType as 'past' | 'model' | 'subject'}
         />
         {/* Remove DevTools - not needed */}
       </div>

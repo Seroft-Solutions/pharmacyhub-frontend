@@ -27,7 +27,7 @@ function SubjectPapersContent() {
   const router = useRouter();
 
   const handleStartPaper = (paper: ExamPaperMetadata) => {
-    router.push(`/exam/${paper.id}`);
+    router.push(`/exam/${paper.id}?type=subject`);
   };
 
   const handleSubjectClick = (subject: string) => {
