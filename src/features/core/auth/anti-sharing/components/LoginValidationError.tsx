@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,11 +34,6 @@ export const LoginValidationError: React.FC<LoginValidationErrorProps> = ({
   onCancel,
   isTerminating = false,
 }) => {
-  // Force logging for debugging
-  useEffect(() => {
-    console.log('[Anti-Sharing] LoginValidationError Component:', { isOpen, status, message });
-  }, [isOpen, status, message]);
-  
   const getTitle = () => {
     switch (status) {
       case LoginStatus.NEW_DEVICE:
