@@ -3,6 +3,8 @@
  */
 
 import { LoginValidationResult, SessionActionResult, SessionData, SessionFilterOptions } from '../types';
+import { tokenManager } from '@/features/core/auth/core/tokenManager';
+import { logger } from '@/shared/lib/logger';
 
 // Base API path for session endpoints
 const API_PATH = '/api/v1/sessions';
@@ -22,10 +24,27 @@ export const validateLogin = async (
   ipAddress?: string,
 ): Promise<LoginValidationResult> => {
   try {
+    console.log('[Anti-Sharing] Validating login attempt:', {
+      userId, 
+      deviceId,
+      hasIpAddress: !!ipAddress
+    });
+    
+    // Get auth token and session ID
+    const accessToken = localStorage.getItem('accessToken');
+    const sessionId = tokenManager.getSessionId();
+    
+    logger.debug('[Anti-Sharing] Preparing API request headers', {
+      hasAccessToken: !!accessToken,
+      hasSessionId: !!sessionId
+    });
+    
     const response = await fetch(`${API_PATH}/validate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+        ...(sessionId ? { 'X-Session-ID': sessionId } : {})
       },
       body: JSON.stringify({
         userId,
@@ -36,12 +55,16 @@ export const validateLogin = async (
     });
 
     if (!response.ok) {
-      throw new Error('Login validation failed');
+      const errorText = await response.text();
+      console.error(`[Anti-Sharing] Validation failed with status ${response.status}:`, errorText);
+      throw new Error(`Login validation failed: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('[Anti-Sharing] Validation result:', result);
+    return result;
   } catch (error) {
-    console.error('Error validating login:', error);
+    console.error('[Anti-Sharing] Error validating login:', error);
     throw error;
   }
 };
@@ -74,7 +97,16 @@ export const getUserSessions = async (
       }
     }
 
-    const response = await fetch(`${API_PATH}/users/${userId}?${queryParams.toString()}`);
+    // Get auth token and session ID
+    const accessToken = localStorage.getItem('accessToken');
+    const sessionId = tokenManager.getSessionId();
+    
+    const response = await fetch(`${API_PATH}/users/${userId}?${queryParams.toString()}`, {
+      headers: {
+        'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+        ...(sessionId ? { 'X-Session-ID': sessionId } : {})
+      }
+    });
 
     if (!response.ok) {
       throw new Error('Failed to fetch user sessions');
@@ -114,7 +146,16 @@ export const getAllSessions = async (options?: SessionFilterOptions): Promise<Se
       }
     }
 
-    const response = await fetch(`${API_PATH}?${queryParams.toString()}`);
+    // Get auth token and session ID
+    const accessToken = localStorage.getItem('accessToken');
+    const sessionId = tokenManager.getSessionId();
+    
+    const response = await fetch(`${API_PATH}?${queryParams.toString()}`, {
+      headers: {
+        'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+        ...(sessionId ? { 'X-Session-ID': sessionId } : {})
+      }
+    });
 
     if (!response.ok) {
       throw new Error('Failed to fetch sessions');
@@ -134,8 +175,16 @@ export const getAllSessions = async (options?: SessionFilterOptions): Promise<Se
  */
 export const terminateSession = async (sessionId: string): Promise<SessionActionResult> => {
   try {
+    // Get auth token and session ID
+    const accessToken = localStorage.getItem('accessToken');
+    const currentSessionId = tokenManager.getSessionId();
+    
     const response = await fetch(`${API_PATH}/${sessionId}`, {
       method: 'DELETE',
+      headers: {
+        'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+        ...(currentSessionId ? { 'X-Session-ID': currentSessionId } : {})
+      }
     });
 
     if (!response.ok) {
@@ -160,10 +209,15 @@ export const terminateOtherSessions = async (
   currentSessionId: string,
 ): Promise<SessionActionResult> => {
   try {
+    // Get auth token and session ID
+    const accessToken = localStorage.getItem('accessToken');
+    
     const response = await fetch(`${API_PATH}/users/${userId}/terminate-others`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+        'X-Session-ID': currentSessionId // Always include the current session ID here
       },
       body: JSON.stringify({
         currentSessionId,
@@ -188,8 +242,16 @@ export const terminateOtherSessions = async (
  */
 export const requireOtpVerification = async (userId: string): Promise<SessionActionResult> => {
   try {
+    // Get auth token and session ID
+    const accessToken = localStorage.getItem('accessToken');
+    const sessionId = tokenManager.getSessionId();
+    
     const response = await fetch(`${API_PATH}/users/${userId}/require-otp`, {
       method: 'POST',
+      headers: {
+        'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+        ...(sessionId ? { 'X-Session-ID': sessionId } : {})
+      }
     });
 
     if (!response.ok) {

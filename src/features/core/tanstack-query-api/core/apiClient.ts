@@ -122,14 +122,24 @@ apiClient.interceptors.request.use(
       });
     }
     
-    // Add auth token if available
-    const token = tokenManager.getToken();
-    if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`
-      };
-    }
+    // Add auth token and session ID if available
+const token = tokenManager.getToken();
+const sessionId = tokenManager.getSessionId();
+
+if (token) {
+    config.headers = {
+      ...config.headers,
+    Authorization: `Bearer ${token}`
+  };
+  
+  // Add session ID if available
+  if (sessionId) {
+    config.headers = {
+      ...config.headers,
+      'X-Session-ID': sessionId
+    };
+  }
+}
     
     return config;
   },
