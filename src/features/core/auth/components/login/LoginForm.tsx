@@ -18,8 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertCircle, Loader2, LockKeyhole, LogIn, Mail, Eye, EyeOff } from 'lucide-react';
 
 // Import anti-sharing components
-import { LoginValidationError } from '@/features/core/auth/anti-sharing/components/LoginValidationError';
-import { OTPChallenge } from '@/features/core/auth/anti-sharing/components/OTPChallenge';
+import { LoginValidationError, OTPChallenge, SessionTerminationResult } from '@/features/core/auth/anti-sharing/components';
 
 export const LoginForm = () => {
   const {
@@ -36,10 +35,15 @@ export const LoginForm = () => {
     // Anti-sharing properties
     showOtpChallenge,
     showValidationError,
+    showTerminationResult,
+    terminationSuccess,
+    terminationError,
+    isTerminating,
     loginStatus,
     handleOtpVerification,
     handleValidationContinue,
-    handleCancel
+    handleCancel,
+    handleTerminationResultClose
   } = useLoginForm();
   
   const [showPassword, setShowPassword] = useState(false);
@@ -267,12 +271,22 @@ export const LoginForm = () => {
         status={loginStatus}
         onContinue={handleValidationContinue}
         onCancel={handleCancel}
+        isTerminating={isTerminating}
       />
       
       <OTPChallenge 
         isOpen={showOtpChallenge}
         onVerify={handleOtpVerification}
         onCancel={handleCancel}
+      />
+      
+      {/* Session termination result dialog */}
+      <SessionTerminationResult
+        isOpen={showTerminationResult}
+        success={terminationSuccess}
+        error={terminationError || undefined}
+        message={terminationSuccess ? 'All other devices have been successfully logged out. You can now continue.' : undefined}
+        onClose={handleTerminationResultClose}
       />
     </>
   );

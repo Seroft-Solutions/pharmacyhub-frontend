@@ -3,10 +3,10 @@
  */
 
 export const LOGIN_VALIDATION_MESSAGES = {
-  NEW_DEVICE: 'You are logging in from a new device. Please verify your identity.',
-  SUSPICIOUS_LOCATION: 'Suspicious login detected from an unusual location. Please verify your identity.',
-  TOO_MANY_DEVICES: 'You are already logged in on another device. Only one active session is allowed per account. Would you like to log out from other devices and continue?',
-  OTP_REQUIRED: 'Please enter the verification code sent to your registered email or phone.',
+  NEW_DEVICE: 'You are logging in from a new device. Please verify your identity to continue.',
+  SUSPICIOUS_LOCATION: 'We detected a login from a location that differs from your usual activity. This is a security measure to protect your account.',
+  TOO_MANY_DEVICES: 'Your account is currently active on another device or browser. For security reasons, we only allow one active session at a time. You can either log out from that device or click "Log Out Other Devices" to continue here.',
+  OTP_REQUIRED: 'For additional security, please enter the verification code we sent to your registered email address.',
 };
 
 export const SESSION_LIMITS = {

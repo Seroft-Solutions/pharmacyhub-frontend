@@ -5,6 +5,7 @@
 import { LoginValidationResult, SessionActionResult, SessionData, SessionFilterOptions } from '../types';
 import { tokenManager } from '@/features/core/auth/core/tokenManager';
 import { logger } from '@/shared/lib/logger';
+import { apiClient } from '@/features/core/tanstack-query-api';
 
 // Base API path for session endpoints
 const API_PATH = '/api/v1/sessions';
@@ -209,8 +210,16 @@ export const terminateOtherSessions = async (
   currentSessionId: string,
 ): Promise<SessionActionResult> => {
   try {
-    // Get auth token and session ID
-    const accessToken = localStorage.getItem('accessToken');
+    // Get auth token
+    const accessToken = tokenManager.getToken();
+    
+    // Log the request details for debugging
+    logger.debug('[Anti-Sharing] Terminating other sessions', {
+      userId,
+      currentSessionId,
+      hasAccessToken: !!accessToken,
+      endpoint: `${API_PATH}/users/${userId}/terminate-others`
+    });
     
     const response = await fetch(`${API_PATH}/users/${userId}/terminate-others`, {
       method: 'POST',
@@ -224,13 +233,30 @@ export const terminateOtherSessions = async (
       }),
     });
 
+    // Log response status for debugging
+    logger.debug('[Anti-Sharing] Terminate sessions response', {
+      status: response.status,
+      ok: response.ok
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to terminate other sessions');
+      // Get error details if available
+      let errorMessage = 'Failed to terminate other sessions';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        // Ignore JSON parsing errors
+      }
+      
+      throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const result = await response.json();
+    logger.debug('[Anti-Sharing] Terminate sessions result', result);
+    return result;
   } catch (error) {
-    console.error('Error terminating other sessions:', error);
+    logger.error('[Anti-Sharing] Error terminating other sessions:', error);
     throw error;
   }
 };
