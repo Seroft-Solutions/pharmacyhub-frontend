@@ -219,22 +219,22 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
             <div className="flex items-center p-2 bg-white rounded-lg border border-blue-100 shadow-sm hover:bg-blue-50 transition-colors">
               <Clock className="h-4 w-4 text-blue-500 mr-2" />
               <span className="text-sm text-gray-600">Time:</span>
-              <span className="ml-auto text-sm font-medium">1 second</span>
+              <span className="ml-auto text-sm font-medium">{formatTimeVerbose(result.timeSpent)}</span>
             </div>
             <div className="flex items-center p-2 bg-white rounded-lg border border-green-100 shadow-sm hover:bg-green-50 transition-colors">
               <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
               <span className="text-sm text-gray-600">Correct:</span>
-              <span className="ml-auto text-sm font-medium text-green-600">+1</span>
+              <span className="ml-auto text-sm font-medium text-green-600">+{stats.correctAnswers}</span>
             </div>
             <div className="flex items-center p-2 bg-white rounded-lg border border-blue-100 shadow-sm hover:bg-blue-50 transition-colors">
               <CheckSquare className="h-4 w-4 text-blue-500 mr-2" />
               <span className="text-sm text-gray-600">Attempted:</span>
-              <span className="ml-auto text-sm font-medium">3</span>
+              <span className="ml-auto text-sm font-medium">{Object.keys(userAnswers || {}).length}</span>
             </div>
             <div className="flex items-center p-2 bg-white rounded-lg border border-red-100 shadow-sm hover:bg-red-50 transition-colors">
               <XCircle className="h-4 w-4 text-red-500 mr-2" />
               <span className="text-sm text-gray-600">Penalty:</span>
-              <span className="ml-auto text-sm font-medium text-red-600">-0.5</span>
+              <span className="ml-auto text-sm font-medium text-red-600">-{(stats.incorrectAnswers * 0.25).toFixed(1)}</span>
             </div>
           </div>
           
