@@ -10,13 +10,14 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+// Import custom sheet with hideCloseButton prop
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
+} from "@/features/shell/components/sidebar/custom-sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -28,11 +29,11 @@ import {
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
+const SIDEBAR_WIDTH_MOBILE = "var(--sidebar-width-mobile, 18rem)"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-type SidebarContextProps = {
+type SidebarContext = {
   state: "expanded" | "collapsed"
   open: boolean
   setOpen: (open: boolean) => void
@@ -42,7 +43,7 @@ type SidebarContextProps = {
   toggleSidebar: () => void
 }
 
-const SidebarContext = React.createContext<SidebarContextProps | null>(null)
+const SidebarContext = React.createContext<SidebarContext | null>(null)
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
@@ -56,10 +57,10 @@ function useSidebar() {
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-    defaultOpen?: boolean
-    open?: boolean
-    onOpenChange?: (open: boolean) => void
-  }
+  defaultOpen?: boolean
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
 >(
   (
     {
@@ -122,7 +123,7 @@ const SidebarProvider = React.forwardRef<
     // This makes it easier to style the sidebar with Tailwind classes.
     const state = open ? "expanded" : "collapsed"
 
-    const contextValue = React.useMemo<SidebarContextProps>(
+    const contextValue = React.useMemo<SidebarContext>(
       () => ({
         state,
         open,
@@ -165,10 +166,10 @@ SidebarProvider.displayName = "SidebarProvider"
 const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-    side?: "left" | "right"
-    variant?: "sidebar" | "floating" | "inset"
-    collapsible?: "offcanvas" | "icon" | "none"
-  }
+  side?: "left" | "right"
+  variant?: "sidebar" | "floating" | "inset"
+  collapsible?: "offcanvas" | "icon" | "none"
+}
 >(
   (
     {
@@ -200,17 +201,32 @@ const Sidebar = React.forwardRef<
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        <Sheet
+          open={openMobile}
+          onOpenChange={setOpenMobile}
+          {...props}
+          className="sidebar-sheet"
+          onCloseAutoFocus={(event) => {
+            // Prevent the focus from returning to the trigger
+            event.preventDefault();
+          }}
+          // Force empty element for the Sheet's close button
+          close={<></>}
+        >
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
+            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground max-w-[var(--sidebar-width-mobile,85vw)] no-close-button"
+            style={{
+              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+            } as React.CSSProperties}
             side={side}
+            closeThreshold={0.6} // Higher threshold means it's easier to close
+            onInteractOutside={(e) => {
+              // Allow explicit close via clicking outside
+              setOpenMobile(false);
+            }}
+            hideCloseButton={true} // Use our custom prop to hide the close button
           >
             <SheetHeader className="sr-only">
               <SheetTitle>Sidebar</SheetTitle>
@@ -546,10 +562,10 @@ const sidebarMenuButtonVariants = cva(
 const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<"button"> & {
-    asChild?: boolean
-    isActive?: boolean
-    tooltip?: string | React.ComponentProps<typeof TooltipContent>
-  } & VariantProps<typeof sidebarMenuButtonVariants>
+  asChild?: boolean
+  isActive?: boolean
+  tooltip?: string | React.ComponentProps<typeof TooltipContent>
+} & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
     {
@@ -603,20 +619,30 @@ const SidebarMenuButton = React.forwardRef<
 SidebarMenuButton.displayName = "SidebarMenuButton"
 
 const SidebarMenuAction = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<"button"> & {
-    asChild?: boolean
-    showOnHover?: boolean
-  }
->(({ className, asChild = false, showOnHover = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "button"
+  HTMLDivElement,
+  React.ComponentProps<"div"> & {
+  asChild?: boolean
+  showOnHover?: boolean
+  onClick?: React.MouseEventHandler<HTMLElement>
+}
+>(({ className, asChild = false, showOnHover = false, onClick, ...props }, ref) => {
+  const Comp = asChild ? Slot : "div"
 
   return (
     <Comp
       ref={ref}
       data-sidebar="menu-action"
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.(e as unknown as React.MouseEvent<HTMLElement>);
+        }
+      }}
       className={cn(
-        "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
+        "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0 cursor-pointer",
         // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "peer-data-[size=sm]/menu-button:top-1",
@@ -624,7 +650,7 @@ const SidebarMenuAction = React.forwardRef<
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
         className
       )}
       {...props}
@@ -657,8 +683,8 @@ SidebarMenuBadge.displayName = "SidebarMenuBadge"
 const SidebarMenuSkeleton = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-    showIcon?: boolean
-  }
+  showIcon?: boolean
+}
 >(({ className, showIcon = false, ...props }, ref) => {
   // Random width between 50 to 90%.
   const width = React.useMemo(() => {
@@ -718,10 +744,10 @@ SidebarMenuSubItem.displayName = "SidebarMenuSubItem"
 const SidebarMenuSubButton = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentProps<"a"> & {
-    asChild?: boolean
-    size?: "sm" | "md"
-    isActive?: boolean
-  }
+  asChild?: boolean
+  size?: "sm" | "md"
+  isActive?: boolean
+}
 >(({ asChild = false, size = "md", isActive, className, ...props }, ref) => {
   const Comp = asChild ? Slot : "a"
 

@@ -36,6 +36,7 @@ import SubjectPerformanceRadar from './charts/SubjectPerformanceRadar';
 import PaymentStatusCard from './cards/PaymentStatusCard';
 import RecentActivityTimeline from './cards/RecentActivityTimeline';
 import PaperCompletionTimeline from './charts/PaperCompletionTimeline';
+import { Badge } from '@/components/ui/badge';
 
 /**
  * DashboardOverview - The main dashboard page component with enhanced UI/UX
