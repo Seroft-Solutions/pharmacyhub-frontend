@@ -1,7 +1,8 @@
 'use client';
 
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
-import { Medal, BookOpen, Award } from "lucide-react";
+import { Medal, BookOpen, Award, ArrowLeft, Sparkles } from 'lucide-react';
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { QueryProvider } from "@/features/core/tanstack-query-api/components/Que
 import { useSubjectPapers } from "@/features/exams/api";
 import { ExamPaperCard } from "@/features/exams/components/ExamPaperCard";
 import { ExamPaper, ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
+import { SubjectCard } from "@/features/exams/components/common/SubjectCard";
+import { extractSubjectFromTags, getSubjects, groupPapersBySubject } from "@/features/exams/utils/subject";
 
 export default function SubjectPapersPage() {
   return (
@@ -20,10 +23,19 @@ export default function SubjectPapersPage() {
 
 function SubjectPapersContent() {
   const { data: subjectPapers, isLoading, error } = useSubjectPapers();
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const router = useRouter();
 
   const handleStartPaper = (paper: ExamPaperMetadata) => {
     router.push(`/exam/${paper.id}`);
+  };
+
+  const handleSubjectClick = (subject: string) => {
+    setSelectedSubject(subject);
+  };
+
+  const handleBackToSubjects = () => {
+    setSelectedSubject(null);
   };
 
   if (isLoading) {
@@ -35,7 +47,9 @@ function SubjectPapersContent() {
               Subject Papers
             </h1>
             <p className="text-gray-500 mt-1">
-              Practice with subject-specific papers to strengthen your knowledge
+              {selectedSubject 
+                ? `Practice with ${selectedSubject}-specific papers to strengthen your knowledge`
+                : 'Select a subject to explore topic-specific practice papers'}
             </p>
           </div>
           <div className="mt-4 md:mt-0">
@@ -124,33 +138,51 @@ function SubjectPapersContent() {
     ? subjectPapers.map(exam => convertExamToMetadata(exam))
     : [];
 
-  // Add debugging to check what data we're getting
-  console.log('Original subjectPapers data:', subjectPapers);
-  console.log('Converted papers data:', papers);
+  // Group papers by subject
+  const papersBySubject = groupPapersBySubject(subjectPapers || []);
+  
+  // Get unique subjects with counts
+  const subjects = getSubjects(subjectPapers || []);
 
   return (
     <main className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-4 border-b border-gray-200">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">
-            Subject Papers
+            {selectedSubject ? `${selectedSubject} Papers` : 'Subject Papers'}
           </h1>
           <p className="text-gray-500 mt-1">
-            Practice with subject-specific papers to strengthen your knowledge
+            {selectedSubject
+              ? `Practice with ${selectedSubject}-specific papers to strengthen your knowledge`
+              : 'Select a subject to explore topic-specific practice papers'}
           </p>
         </div>
         <div className="flex items-center mt-4 md:mt-0 space-x-2">
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-medium py-1.5">
-            <BookOpen className="h-4 w-4 mr-1" />
-            Subject Papers
-          </Badge>
-          <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 font-medium py-1.5">
-            <BookOpen className="h-4 w-4 mr-1" />
-            {papers.length} Available
-          </Badge>
+          {selectedSubject ? (
+            <Button 
+              variant="outline" 
+              onClick={handleBackToSubjects}
+              className="bg-white hover:bg-slate-50 flex items-center gap-1"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Subjects
+            </Button>
+          ) : (
+            <>
+              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-medium py-1.5">
+                <BookOpen className="h-4 w-4 mr-1" />
+                Subject Papers
+              </Badge>
+              <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 font-medium py-1.5">
+                <Sparkles className="h-4 w-4 mr-1" />
+                {subjects.length} {subjects.length === 1 ? 'Subject' : 'Subjects'}
+              </Badge>
+            </>
+          )}
         </div>
       </div>
 
+      {/* No papers or no subjects case */}
       {papers.length === 0 ? (
         <Card className="w-full p-6 text-center bg-slate-50 border-dashed">
           <div className="flex flex-col items-center justify-center py-12">
@@ -161,13 +193,49 @@ function SubjectPapersContent() {
             <p className="text-slate-500 mt-2 max-w-md">Check back later for subject papers. We're working on adding more study resources.</p>
           </div>
         </Card>
+      ) : selectedSubject ? (
+        // Show papers for selected subject
+        <div>
+          {papersBySubject[selectedSubject]?.length ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {papersBySubject[selectedSubject].map(paper => (
+                <ExamPaperCard
+                  key={paper.id}
+                  paper={convertExamToMetadata(paper)}
+                  onStart={handleStartPaper}
+                />
+              ))}
+            </div>
+          ) : (
+            // No papers for this subject
+            <Card className="w-full p-6 text-center bg-slate-50 border-dashed">
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="bg-slate-100 p-4 rounded-full mb-4">
+                  <BookOpen className="h-16 w-16 text-slate-400" />
+                </div>
+                <h2 className="text-2xl font-semibold text-slate-700">No Papers Available for {selectedSubject}</h2>
+                <p className="text-slate-500 mt-2 max-w-md">Check back later for {selectedSubject} papers. We're working on adding more study resources.</p>
+                <Button 
+                  variant="outline" 
+                  onClick={handleBackToSubjects}
+                  className="mt-6 bg-white hover:bg-slate-50"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  Back to Subjects
+                </Button>
+              </div>
+            </Card>
+          )}
+        </div>
       ) : (
+        // Show subject cards
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {papers.map((paper) => (
-            <ExamPaperCard
-              key={paper.id}
-              paper={paper}
-              onStart={handleStartPaper}
+          {subjects.map(subject => (
+            <SubjectCard
+              key={subject.name}
+              subject={subject.name}
+              count={subject.count}
+              onClick={() => handleSubjectClick(subject.name)}
             />
           ))}
         </div>
