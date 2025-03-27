@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/features/core/auth/hooks/useAuth';
 import { useDeviceId } from '@/features/core/auth/anti-sharing/hooks/useDeviceId';
@@ -9,7 +9,20 @@ import { useAntiSharingStore } from '@/features/core/auth/anti-sharing/store';
 import { LoginStatus } from '@/features/core/auth/anti-sharing/types';
 import { logger } from '@/shared/lib/logger';
 
-export default function AuthCallbackPage() {
+// Loading component for suspense fallback
+function AuthCallbackLoading() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+        <p className="mt-4 text-lg">Loading authentication details...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main component with search params
+function AuthCallbackContent() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -147,12 +160,20 @@ export default function AuthCallbackPage() {
     );
   }
 
-  // This should not be reached normally as we redirect the user
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
         <p>Redirecting...</p>
       </div>
     </div>
+  );
+}
+
+// Export the wrapped component
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={<AuthCallbackLoading />}>
+      <AuthCallbackContent />
+    </Suspense>
   );
 }
