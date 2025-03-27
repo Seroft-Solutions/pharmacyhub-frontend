@@ -8,8 +8,10 @@
  */
 
 import { useCallback, useMemo, useState, useEffect } from 'react';
+import { logger } from '@/shared/lib/logger';
 import { useExamStats } from '@/features/exams/api/hooks/useExamApiHooks';
-import { useUserProgress, useUserAnalytics, useUserRecommendations } from '@/features/exams/progress/hooks/useProgressQueries';
+// Use our new dashboard API hooks instead of direct progress hooks
+import { useDashboardProgress, useDashboardAnalytics, useDashboardRecommendations } from './useDashboardApi';
 import usePremiumStatus from '@/features/payments/premium/hooks/usePremiumStatus';
 import { useAuth } from '@/features/core/auth';
 import { useModelPapers, usePastPapers, useSubjectPapers } from '@/features/exams/api/hooks/useExamPaperHooks';
@@ -24,211 +26,203 @@ export function useDashboardData() {
   // Fetch all required data
   const { isPremium, isLoading: isPremiumLoading } = usePremiumStatus({ forceCheck: false });
   const { data: examStats, isLoading: isExamStatsLoading } = useExamStats();
-  const { data: progress, isLoading: isProgressLoading } = useUserProgress(userId);
-  const { data: analytics, isLoading: isAnalyticsLoading } = useUserAnalytics(
+  
+  // Get time filter dates
+  const { startDate, endDate } = getTimeFilterDates(timeFilter);
+  
+  // Use dashboard API hooks instead of direct progress hooks
+  const { data: progress, isLoading: isProgressLoading } = useDashboardProgress(userId);
+  const { data: analytics, isLoading: isAnalyticsLoading } = useDashboardAnalytics(
     userId, 
-    getTimeFilterDates(timeFilter).startDate, 
-    getTimeFilterDates(timeFilter).endDate
+    startDate, 
+    endDate
   );
-  const { data: recommendations, isLoading: isRecommendationsLoading } = useUserRecommendations(userId);
+  const { data: recommendations, isLoading: isRecommendationsLoading } = useDashboardRecommendations(userId);
 
   // Filter change handler
   const handleTimeFilterChange = useCallback((filter: TimeFilter) => {
     setTimeFilter(filter);
   }, []);
 
-  // Combined loading state
-  const isLoading = 
-    isPremiumLoading || 
-    isExamStatsLoading || 
-    isProgressLoading || 
-    isAnalyticsLoading || 
-    isRecommendationsLoading ||
-    isModelPapersLoading ||
-    isPastPapersLoading ||
-    isSubjectPapersLoading;
-
   // Fetch paper data
   const { data: modelPapers, isLoading: isModelPapersLoading } = useModelPapers();
   const { data: pastPapers, isLoading: isPastPapersLoading } = usePastPapers();
   const { data: subjectPapers, isLoading: isSubjectPapersLoading } = useSubjectPapers();
 
-  // Create and format the data for charts
+  // Individual loading states for better granularity
+  const loadingStates = {
+    premium: isPremiumLoading,
+    examStats: isExamStatsLoading,
+    progress: isProgressLoading,
+    analytics: isAnalyticsLoading,
+    recommendations: isRecommendationsLoading,
+    modelPapers: isModelPapersLoading,
+    pastPapers: isPastPapersLoading,
+    subjectPapers: isSubjectPapersLoading
+  };
+  
+  // Combined loading state for backward compatibility
+  const isLoading = Object.values(loadingStates).some(state => state === true);
+  
+  // Specific section loading states for component-level loading indicators
+  const isOverviewLoading = isPremiumLoading || isExamStatsLoading || isProgressLoading;
+  const isPerformanceLoading = isAnalyticsLoading;
+  const isPapersLoading = isModelPapersLoading || isPastPapersLoading || isSubjectPapersLoading;
+  const isPremiumSectionLoading = isPremiumLoading;
+
+  // Create and format the data for charts with better error handling
   const examScores = useMemo(() => {
-    if (!analytics?.examScores) {
-      return Array(5).fill(0).map((_, i) => ({
-        name: `Exam ${i + 1}`,
-        score: Math.floor(Math.random() * 30) + 60, // Random scores between 60-90
-        average: Math.floor(Math.random() * 20) + 60 // Random averages between 60-80
+    try {
+      if (!analytics?.examScores || analytics.examScores.length === 0) {
+        return [];
+      }
+      // Process and return the actual data
+      return analytics.examScores.map(score => ({
+        ...score,
+        // Add fallbacks for essential properties
+        name: score.name || `Exam ${score.id || 'Unknown'}`,
+        score: typeof score.score === 'number' ? score.score : 0,
+        average: typeof score.average === 'number' ? score.average : 0
       }));
+    } catch (error) {
+      logger.error('Error formatting exam scores:', error);
+      return [];
     }
-    return analytics.examScores;
   }, [analytics]);
 
   const scoreDistribution = useMemo(() => {
-    return [
-      { name: '90-100%', value: 3, color: '#4caf50' },
-      { name: '80-89%', value: 5, color: '#8bc34a' },
-      { name: '70-79%', value: 7, color: '#ffeb3b' },
-      { name: '60-69%', value: 4, color: '#ff9800' },
-      { name: 'Below 60%', value: 2, color: '#f44336' }
-    ];
-  }, []);
+    return analytics?.scoreDistribution || [];
+  }, [analytics]);
 
   const studyHours = useMemo(() => {
-    if (!analytics?.studyHours) {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      return days.map(day => ({
-        date: day,
-        hours: parseFloat((Math.random() * 3 + 1).toFixed(1)) // Random hours between 1-4
-      }));
-    }
-    return analytics.studyHours;
+    return analytics?.studyHours || [];
   }, [analytics]);
 
   const subjectPerformance = useMemo(() => {
-    return [
-      { subject: 'Pharmacology', score: 85 },
-      { subject: 'Chemistry', score: 72 },
-      { subject: 'Biology', score: 90 },
-      { subject: 'Physiology', score: 68 },
-      { subject: 'Pathology', score: 75 },
-      { subject: 'Pharmacy Practice', score: 80 }
-    ];
-  }, []);
+    return analytics?.subjectPerformance || [];
+  }, [analytics]);
 
   const recentExams = useMemo(() => {
-    return [
-      {
-        id: 1,
-        examId: 101,
-        examTitle: 'Pharmacology Basics',
-        score: 85,
-        totalMarks: 100,
-        isPassed: true,
-        completedAt: '2025-03-20T15:30:00Z',
-        timeSpent: 45, // minutes
-      },
-      {
-        id: 2,
-        examId: 102,
-        examTitle: 'Pharmaceutical Chemistry',
-        score: 72,
-        totalMarks: 100,
-        isPassed: true,
-        completedAt: '2025-03-15T10:15:00Z',
-        timeSpent: 60, // minutes
-      },
-      {
-        id: 3,
-        examId: 103,
-        examTitle: 'Clinical Pharmacy',
-        score: 65,
-        totalMarks: 100,
-        isPassed: false,
-        completedAt: '2025-03-10T14:45:00Z',
-        timeSpent: 55, // minutes
-      },
-    ];
-  }, []);
+    return analytics?.recentExams || [];
+  }, [analytics]);
 
   const recentActivities = useMemo(() => {
-    return [
-      {
-        id: '1',
-        type: 'exam_completed',
-        title: 'Completed Pharmacology Exam',
-        timestamp: '2025-03-20T15:30:00Z',
-        details: { score: 85, totalMarks: 100 }
-      },
-      {
-        id: '2',
-        type: 'paper_purchased',
-        title: 'Purchased Premium Paper',
-        timestamp: '2025-03-18T12:20:00Z',
-        details: { paperName: 'Advanced Pharmaceutical Analysis' }
-      },
-      {
-        id: '3',
-        type: 'exam_started',
-        title: 'Started Chemistry Exam',
-        timestamp: '2025-03-15T09:45:00Z',
-        details: { paperName: 'Pharmaceutical Chemistry' }
-      },
-      {
-        id: '4',
-        type: 'premium_subscription',
-        title: 'Activated Premium Subscription',
-        timestamp: '2025-03-10T11:30:00Z',
-        details: { validity: '3 months' }
-      }
-    ];
-  }, []);
+    return analytics?.recentActivities || [];
+  }, [analytics]);
 
   const paperCounts = useMemo(() => {
+    // Use actual values from analytics if available
+    if (analytics?.paperCounts) {
+      return analytics.paperCounts;
+    }
+    // Otherwise calculate based on real data without multipliers
     return {
-      model: { total: modelPapers?.length || 0, completed: Math.floor((modelPapers?.length || 0) * 0.6) },
-      past: { total: pastPapers?.length || 0, completed: Math.floor((pastPapers?.length || 0) * 0.4) },
-      subject: { total: subjectPapers?.length || 0, completed: Math.floor((subjectPapers?.length || 0) * 0.3) }
-    };
-  }, [modelPapers, pastPapers, subjectPapers]);
-
-  const paperCompletionTimeline = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    return months.map(month => ({
-      month,
-      model: Math.floor(Math.random() * 3) + 1,
-      past: Math.floor(Math.random() * 2) + 1,
-      subject: Math.floor(Math.random() * 2)
-    }));
-  }, []);
-
-  // Combined data object
-  const dashboardData = useMemo(() => {
-    return {
-      premium: {
-        isPremium,
-        expiryDate: '2025-06-15' // Mock data for expiry date
+      model: { 
+        total: modelPapers?.length || 0, 
+        completed: modelPapers?.filter(p => p.completed)?.length || 0 
       },
-      examStats: examStats || {
-        totalPapers: 0,
-        avgDuration: 0,
-        completionRate: 0,
-        activeUsers: 0,
+      past: { 
+        total: pastPapers?.length || 0, 
+        completed: pastPapers?.filter(p => p.completed)?.length || 0 
       },
-      progress: progress || {
-        completedExams: 0,
-        inProgressExams: 0,
-        averageScore: 0,
-        totalTimeSpent: 0,
-      },
-      analytics: {
-        studyHours,
-        examScores,
-        scoreDistribution,
-        subjectPerformance,
-        recentExams,
-        recentActivities,
-        paperCounts,
-        paperCompletionTimeline,
-        timeSpent: analytics?.timeSpent || {}
-      },
-      recommendations: recommendations || [],
-      timeFilter,
-      papers: {
-        model: modelPapers || [],
-        past: pastPapers || [],
-        subject: subjectPapers || []
+      subject: { 
+        total: subjectPapers?.length || 0, 
+        completed: subjectPapers?.filter(p => p.completed)?.length || 0 
       }
     };
+  }, [analytics, modelPapers, pastPapers, subjectPapers]);
+
+  const paperCompletionTimeline = useMemo(() => {
+    return analytics?.paperCompletionTimeline || [];
+  }, [analytics]);
+
+  // Combined data object with better error handling
+  const dashboardData = useMemo(() => {
+    try {
+      return {
+        premium: {
+          isPremium: isPremium || false,
+          expiryDate: analytics?.premiumInfo?.expiryDate || '',
+          planName: analytics?.premiumInfo?.planName || 'Premium Subscription',
+          paymentMethod: analytics?.premiumInfo?.paymentMethod || '',
+          remainingPercentage: analytics?.premiumInfo?.remainingPercentage || 0,
+          nextPaymentDate: analytics?.premiumInfo?.nextPaymentDate || '',
+          paymentHistory: analytics?.premiumInfo?.paymentHistory || [],
+          loading: isPremiumLoading,
+          error: false
+        },
+        examStats: examStats || {
+          totalPapers: 0,
+          avgDuration: 0,
+          completionRate: 0,
+          activeUsers: 0,
+          loading: isExamStatsLoading,
+          error: false
+        },
+        progress: progress || {
+          completedExams: 0,
+          inProgressExams: 0,
+          averageScore: 0,
+          totalTimeSpent: 0,
+          loading: isProgressLoading,
+          error: false
+        },
+        analytics: {
+          studyHours: studyHours || [],
+          examScores: examScores || [],
+          scoreDistribution: scoreDistribution || [],
+          subjectPerformance: subjectPerformance || [],
+          recentExams: recentExams || [],
+          recentActivities: recentActivities || [],
+          paperCounts: paperCounts || {},
+          paperCompletionTimeline: paperCompletionTimeline || [],
+          activityData: analytics?.activityData || [],
+          timeSpent: analytics?.timeSpent || {},
+          loading: isAnalyticsLoading,
+          error: false
+        },
+        recommendations: recommendations || [],
+        timeFilter,
+        papers: {
+          model: Array.isArray(modelPapers) ? modelPapers : [],
+          past: Array.isArray(pastPapers) ? pastPapers : [],
+          subject: Array.isArray(subjectPapers) ? subjectPapers : [],
+          loading: isModelPapersLoading || isPastPapersLoading || isSubjectPapersLoading,
+          error: false
+        }
+      };
+    } catch (error) {
+      logger.error('Error creating dashboard data object:', error);
+      // Return a safe fallback object with empty data
+      return {
+        premium: { isPremium: false, expiryDate: '', planName: '', paymentMethod: '', remainingPercentage: 0, nextPaymentDate: '', paymentHistory: [], loading: false, error: true },
+        examStats: { totalPapers: 0, avgDuration: 0, completionRate: 0, activeUsers: 0, loading: false, error: true },
+        progress: { completedExams: 0, inProgressExams: 0, averageScore: 0, totalTimeSpent: 0, loading: false, error: true },
+        analytics: {
+          studyHours: [], examScores: [], scoreDistribution: [], subjectPerformance: [],
+          recentExams: [], recentActivities: [], paperCounts: {}, paperCompletionTimeline: [],
+          activityData: [], timeSpent: {}, loading: false, error: true
+        },
+        recommendations: [],
+        timeFilter,
+        papers: { model: [], past: [], subject: [], loading: false, error: true }
+      };
+    }
   }, [analytics, examStats, isPremium, progress, recommendations, timeFilter, 
       studyHours, examScores, scoreDistribution, subjectPerformance, 
       recentExams, recentActivities, paperCounts, paperCompletionTimeline,
-      modelPapers, pastPapers, subjectPapers]);
+      modelPapers, pastPapers, subjectPapers,
+      isPremiumLoading, isExamStatsLoading, isProgressLoading, isAnalyticsLoading,
+      isModelPapersLoading, isPastPapersLoading, isSubjectPapersLoading]);
 
   return {
     dashboardData,
     isLoading,
+    loadingStates,
+    isOverviewLoading,
+    isPerformanceLoading,
+    isPapersLoading,
+    isPremiumSectionLoading,
     timeFilter,
     setTimeFilter: handleTimeFilterChange,
   };

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useDashboardData, TimeFilter as TimeFilterType } from '../api/hooks/useDashboardData';
+import React, { useState, useCallback } from 'react';
+import { useDashboardData } from '../api/hooks/useDashboardData';
 import { useRouter } from 'next/navigation';
 
 // UI Components
@@ -9,19 +9,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 // Icons
 import { 
   LayoutDashboard, 
   Award, 
   TrendingUp, 
-  FileText, 
-  Clock, 
-  BookOpen,
-  CheckCircle2,
-  Crown,
+  Clock,
   AlertCircle,
-  ChevronRight 
+  ChevronRight,
+  CheckCircle2,
+  Crown
 } from 'lucide-react';
 
 // Custom Components
@@ -31,82 +30,152 @@ import ExamPerformanceChart from './charts/ExamPerformanceChart';
 import ScoreDistributionChart from './charts/ScoreDistributionChart';
 import StudyTimeChart from './charts/StudyTimeChart';
 import RecentExamsTable from './tables/RecentExamsTable';
-import PaperStatusCard from './cards/PaperStatusCard';
 import SubjectPerformanceRadar from './charts/SubjectPerformanceRadar';
-import PaymentStatusCard from './cards/PaymentStatusCard';
 import RecentActivityTimeline from './cards/RecentActivityTimeline';
-import PaperCompletionTimeline from './charts/PaperCompletionTimeline';
-import { Badge } from '@/components/ui/badge';
 
-/**
- * DashboardOverview - The main dashboard page component with enhanced UI/UX
- */
+// Loading fallback for charts
+const ChartSkeleton = () => (
+  <div className="w-full h-[300px] animate-pulse bg-gray-100 rounded-lg"></div>
+);
+
+// Error boundary component for charts
+const ChartErrorBoundary = ({ children }) => {
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError) {
+    return (
+      <div className="w-full h-[300px] flex items-center justify-center border border-red-200 bg-red-50 rounded-lg">
+        <div className="text-center p-4">
+          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+          <p className="text-red-600 font-medium">Failed to load chart</p>
+          <button 
+            onClick={() => setHasError(false)}
+            className="mt-2 px-3 py-1 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-100"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return <>{children}</>;
+};
+
 export function DashboardOverview() {
   const router = useRouter();
-  const { dashboardData, isLoading, timeFilter, setTimeFilter } = useDashboardData();
-  const [activeTab, setActiveTab] = useState<string>('overview');
+  const { 
+    dashboardData, 
+    isLoading, 
+    timeFilter, 
+    setTimeFilter 
+  } = useDashboardData();
 
-  // Function to navigate to exam result page
-  const handleViewResult = (attemptId: number) => {
+  // Navigation functions using useCallback for better performance
+  const handleViewResult = useCallback((attemptId) => {
     router.push(`/exams/results/${attemptId}`);
-  };
-
-  // Function to navigate to premium upgrade page
-  const handleUpgrade = () => {
-    router.push('/payments/premium');
-  };
-
-  // Function to navigate to papers page
-  const handleViewAllPapers = (paperType: string) => {
-    switch (paperType) {
-      case 'model':
-        router.push('/exam/model-papers');
-        break;
-      case 'past':
-        router.push('/exam/past-papers');
-        break;
-      case 'subject':
-        router.push('/exam/subject-papers');
-        break;
-      default:
-        router.push('/exams');
-    }
-  };
+  }, [router]);
 
   return (
     <div className="container mx-auto px-4 py-6">
-      {/* Dashboard Header */}
-      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back! Here's an overview of your progress.
-          </p>
+      {/* Dashboard Header with Key Stats */}
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Welcome back! Here&apos;s an overview of your progress.
+            </p>
+          </div>
+          <TimeFilter
+            value={timeFilter}
+            onChange={setTimeFilter}
+          />
         </div>
-        <TimeFilter
-          value={timeFilter}
-          onChange={setTimeFilter}
-        />
+        
+        {/* Key Stats Cards - Always Visible */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <Card className="bg-blue-50 border-blue-100">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                <Award className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-blue-600">Total Papers</p>
+                {isLoading ? (
+                  <div className="h-6 w-16 bg-blue-100 animate-pulse rounded mx-auto"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-blue-700">{dashboardData?.examStats?.totalPapers || 0}</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-green-50 border-green-100">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-green-600">Completed</p>
+                {isLoading ? (
+                  <div className="h-6 w-16 bg-green-100 animate-pulse rounded mx-auto"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-green-700">{dashboardData?.progress?.completedExams || 0}</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-purple-50 border-purple-100">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+                <TrendingUp className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-purple-600">Avg. Score</p>
+                {isLoading ? (
+                  <div className="h-6 w-16 bg-purple-100 animate-pulse rounded mx-auto"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-purple-700">{dashboardData?.progress?.averageScore || 0}%</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className={dashboardData?.premium?.isPremium ? "bg-yellow-50 border-yellow-100" : "bg-gray-50 border-gray-100"}>
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+              <div className={`w-10 h-10 rounded-full ${dashboardData?.premium?.isPremium ? 'bg-yellow-100' : 'bg-gray-100'} flex items-center justify-center mb-2`}>
+                <Crown className={`h-5 w-5 ${dashboardData?.premium?.isPremium ? 'text-yellow-600' : 'text-gray-400'}`} />
+              </div>
+              <div className="space-y-1">
+                <p className={`text-sm font-medium ${dashboardData?.premium?.isPremium ? 'text-yellow-600' : 'text-gray-500'}`}>
+                  {dashboardData?.premium?.isPremium ? 'Premium' : 'Free Account'}
+                </p>
+                {isLoading ? (
+                  <div className="h-6 w-16 bg-yellow-100 animate-pulse rounded mx-auto"></div>
+                ) : (
+                  <p className={`text-sm font-bold ${dashboardData?.premium?.isPremium ? 'text-yellow-700' : 'text-gray-500'}`}>
+                    {dashboardData?.premium?.isPremium ? 
+                      `Until ${new Date(dashboardData?.premium?.expiryDate).toLocaleDateString()}` : 
+                      <Button variant="outline" size="sm" onClick={() => router.push('/premium')} className="mt-1 text-xs py-1 h-7">
+                        Upgrade
+                      </Button>
+                    }
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Main Dashboard Tabs */}
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="mb-4 grid grid-cols-4 md:inline-flex">
+      {/* Single Overview Tab only */}
+      <Tabs defaultValue="overview" value="overview" className="space-y-6">
+        <TabsList className="mb-4 grid grid-cols-1 md:inline-flex">
           <TabsTrigger value="overview" className="flex items-center gap-1">
             <LayoutDashboard className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="performance" className="flex items-center gap-1">
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Performance</span>
-          </TabsTrigger>
-          <TabsTrigger value="papers" className="flex items-center gap-1">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Papers</span>
-          </TabsTrigger>
-          <TabsTrigger value="premium" className="flex items-center gap-1">
-            <Crown className="h-4 w-4" />
-            <span className="hidden sm:inline">Premium</span>
           </TabsTrigger>
         </TabsList>
 
@@ -115,418 +184,102 @@ export function DashboardOverview() {
           {/* Stats Overview Grid */}
           <StatsOverviewGrid 
             loading={isLoading}
-            totalPapers={dashboardData.examStats.totalPapers}
-            completedExams={dashboardData.progress.completedExams}
-            inProgressExams={dashboardData.progress.inProgressExams}
-            averageScore={dashboardData.progress.averageScore}
-            totalTimeSpent={dashboardData.progress.totalTimeSpent}
-            isPremium={dashboardData.premium.isPremium}
+            totalPapers={dashboardData?.examStats?.totalPapers || 0}
+            completedExams={dashboardData?.progress?.completedExams || 0}
+            inProgressExams={dashboardData?.progress?.inProgressExams || 0}
+            averageScore={dashboardData?.progress?.averageScore || 0}
+            totalTimeSpent={dashboardData?.progress?.totalTimeSpent || 0}
+            isPremium={dashboardData?.premium?.isPremium || false}
           />
 
           <Separator className="my-6" />
 
           {/* Top Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Exam Performance</CardTitle>
-                <CardDescription>Your scores compared to average</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ExamPerformanceChart
-                  data={dashboardData.analytics.examScores}
-                  loading={isLoading}
-                />
-              </CardContent>
-            </Card>
+            {dashboardData?.analytics?.examScores && dashboardData.analytics.examScores.length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Exam Performance</CardTitle>
+                  <CardDescription>Your scores compared to average</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ExamPerformanceChart
+                    data={dashboardData.analytics.examScores}
+                    loading={isLoading}
+                  />
+                </CardContent>
+              </Card>
+            ) : null}
             
-            <RecentActivityTimeline 
-              loading={isLoading}
-              activities={dashboardData.analytics.recentActivities || []}
-            />
+            {dashboardData?.analytics?.recentActivities && dashboardData.analytics.recentActivities.length > 0 ? (
+              <RecentActivityTimeline 
+                loading={isLoading}
+                activities={dashboardData.analytics.recentActivities}
+              />
+            ) : null}
+          </div>
+          
+          {/* Charts moved from Performance tab */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {dashboardData?.analytics?.scoreDistribution && dashboardData.analytics.scoreDistribution.length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Score Distribution</CardTitle>
+                  <CardDescription>Breakdown of your scores</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScoreDistributionChart
+                    data={dashboardData.analytics.scoreDistribution}
+                    loading={isLoading}
+                    height={300}
+                  />
+                </CardContent>
+              </Card>
+            ) : null}
+            
+            {dashboardData?.analytics?.subjectPerformance && dashboardData.analytics.subjectPerformance.length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Subject Performance</CardTitle>
+                  <CardDescription>Your strengths by subject area</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SubjectPerformanceRadar
+                    data={dashboardData.analytics.subjectPerformance}
+                    loading={isLoading}
+                    height={300}
+                  />
+                </CardContent>
+              </Card>
+            ) : null}
           </div>
 
           <Separator className="my-6" />
 
           {/* Recent Exams */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xl">Recent Exam Attempts</CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => router.push('/exams')}
-                className="text-muted-foreground flex items-center"
-              >
-                <span>View All</span>
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <RecentExamsTable
-                attempts={dashboardData.analytics.recentExams || []}
-                loading={isLoading}
-                onViewResult={handleViewResult}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Performance Tab Content */}
-        <TabsContent value="performance" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Performance Trend</CardTitle>
-                <CardDescription>Your exam scores over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ExamPerformanceChart
-                  data={dashboardData.analytics.examScores}
-                  loading={isLoading}
-                  height={300}
-                />
-              </CardContent>
-            </Card>
-            
+          {dashboardData?.analytics?.recentExams && dashboardData.analytics.recentExams.length > 0 ? (
             <Card>
-              <CardHeader>
-                <CardTitle>Score Distribution</CardTitle>
-                <CardDescription>Breakdown of your scores</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xl">Recent Exam Attempts</CardTitle>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => router.push('/exams')}
+                  className="text-muted-foreground flex items-center"
+                >
+                  <span>View All</span>
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
               </CardHeader>
               <CardContent>
-                <ScoreDistributionChart
-                  data={dashboardData.analytics.scoreDistribution || []}
+                <RecentExamsTable
+                  attempts={dashboardData.analytics.recentExams}
                   loading={isLoading}
-                  height={300}
+                  onViewResult={handleViewResult}
                 />
               </CardContent>
             </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Study Time</CardTitle>
-                <CardDescription>Hours spent studying by day</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <StudyTimeChart
-                  data={dashboardData.analytics.studyHours || []}
-                  loading={isLoading}
-                  height={300}
-                />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Subject Performance</CardTitle>
-                <CardDescription>Your strengths by subject area</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SubjectPerformanceRadar
-                  data={dashboardData.analytics.subjectPerformance || []}
-                  loading={isLoading}
-                  height={300}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Papers Tab Content */}
-        <TabsContent value="papers" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <PaperStatusCard
-              modelPapers={{
-                total: dashboardData.analytics.paperCounts?.model?.total || 0,
-                completed: dashboardData.analytics.paperCounts?.model?.completed || 0
-              }}
-              pastPapers={{
-                total: dashboardData.analytics.paperCounts?.past?.total || 0,
-                completed: dashboardData.analytics.paperCounts?.past?.completed || 0
-              }}
-              subjectPapers={{
-                total: dashboardData.analytics.paperCounts?.subject?.total || 0,
-                completed: dashboardData.analytics.paperCounts?.subject?.completed || 0
-              }}
-              loading={isLoading}
-              onViewAll={handleViewAllPapers}
-            />
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Paper Completion Timeline</CardTitle>
-                <CardDescription>Your progress over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PaperCompletionTimeline
-                  data={dashboardData.analytics.paperCompletionTimeline || []}
-                  loading={isLoading}
-                  height={300}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xl">Recent Papers</CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => router.push('/exams')}
-                className="text-muted-foreground flex items-center"
-              >
-                <span>View All</span>
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm mb-6">
-                Your recently attempted papers across all categories
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[...dashboardData.papers.model.slice(0, 1), 
-                   ...dashboardData.papers.past.slice(0, 1), 
-                   ...dashboardData.papers.subject.slice(0, 1)].map((paper, idx) => (
-                  <Card key={idx} className="shadow-sm hover:shadow transition-shadow">
-                    <CardHeader className="p-4 pb-2">
-                      <div className="flex justify-between items-start gap-2">
-                        <div>
-                          <CardTitle className="text-sm font-medium line-clamp-1">{paper.title || 'Paper Title'}</CardTitle>
-                          <CardDescription className="text-xs line-clamp-1">
-                            {paper.source?.toUpperCase() || 'MODEL'} PAPER
-                          </CardDescription>
-                        </div>
-                        <div className={`h-6 w-6 rounded-full flex items-center justify-center text-white
-                          ${paper.source === 'model' ? 'bg-blue-500' : 
-                            paper.source === 'past' ? 'bg-purple-500' : 'bg-emerald-500'}`}>
-                          {paper.source === 'model' ? 
-                            <Award className="h-3 w-3" /> : 
-                            paper.source === 'past' ? 
-                            <FileText className="h-3 w-3" /> : 
-                            <BookOpen className="h-3 w-3" />}
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-4 pt-1 space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1">
-                          <FileText className="h-3 w-3 text-muted-foreground" />
-                          <span>{paper.total_questions || paper.questionCount || 0} Questions</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span>{paper.time_limit || paper.durationMinutes || 0} Minutes</span>
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        className="w-full mt-1 text-xs"
-                        onClick={() => router.push(`/exam/${paper.id}`)}
-                      >
-                        Start Paper
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Premium Tab Content */}
-        <TabsContent value="premium" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Premium Status</CardTitle>
-                <CardDescription>Your current membership details</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-6 px-4 space-y-4">
-                  {dashboardData.premium.isPremium ? (
-                    <>
-                      <div className="w-20 h-20 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
-                        <Crown className="h-10 w-10 text-yellow-600" />
-                      </div>
-                      <h3 className="text-2xl font-bold">Premium Member</h3>
-                      <div className="text-muted-foreground">
-                        Your premium membership is active until{' '}
-                        <span className="font-medium text-foreground">
-                          {dashboardData.premium.expiryDate}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-3 justify-center mt-4">
-                        <div className="bg-green-50 text-green-700 px-3 py-1.5 rounded-md flex items-center">
-                          <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                          All Premium Papers
-                        </div>
-                        <div className="bg-green-50 text-green-700 px-3 py-1.5 rounded-md flex items-center">
-                          <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                          Advanced Analytics
-                        </div>
-                        <div className="bg-green-50 text-green-700 px-3 py-1.5 rounded-md flex items-center">
-                          <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                          Personalized Study Plan
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                        <Crown className="h-10 w-10 text-gray-400" />
-                      </div>
-                      <h3 className="text-2xl font-bold">Free Account</h3>
-                      <div className="text-muted-foreground">
-                        Upgrade to Premium for full access to all features
-                      </div>
-                      <div className="flex flex-wrap gap-3 justify-center mt-4">
-                        <div className="bg-gray-50 text-gray-500 px-3 py-1.5 rounded-md flex items-center">
-                          <AlertCircle className="h-4 w-4 mr-1.5" />
-                          Limited Paper Access
-                        </div>
-                        <div className="bg-gray-50 text-gray-500 px-3 py-1.5 rounded-md flex items-center">
-                          <AlertCircle className="h-4 w-4 mr-1.5" />
-                          Basic Analytics
-                        </div>
-                      </div>
-                      <Button 
-                        onClick={handleUpgrade}
-                        className="mt-6 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                      >
-                        Upgrade to Premium
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Premium Papers</CardTitle>
-                <CardDescription>Available premium content</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-md">
-                    <div className="flex items-center gap-2">
-                      <Award className="h-5 w-5 text-blue-600" />
-                      <span className="font-medium">Model Papers</span>
-                    </div>
-                    <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-                      {dashboardData.papers.model.filter(p => p.premium).length} Available
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex justify-between items-center p-3 bg-purple-50 rounded-md">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-purple-600" />
-                      <span className="font-medium">Past Papers</span>
-                    </div>
-                    <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
-                      {dashboardData.papers.past.filter(p => p.premium).length} Available
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-md">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5 text-emerald-600" />
-                      <span className="font-medium">Subject Papers</span>
-                    </div>
-                    <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                      {dashboardData.papers.subject.filter(p => p.premium).length} Available
-                    </Badge>
-                  </div>
-
-                  {!dashboardData.premium.isPremium && (
-                    <Button
-                      variant="outline"
-                      className="w-full mt-4"
-                      onClick={handleUpgrade}
-                    >
-                      <Crown className="h-4 w-4 mr-2" />
-                      Unlock Premium Papers
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Benefits Comparison</CardTitle>
-              <CardDescription>Free vs Premium membership</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="text-left p-2 border-b">Feature</th>
-                      <th className="text-center p-2 border-b">Free</th>
-                      <th className="text-center p-2 border-b">Premium</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="p-2 border-b">Model Papers</td>
-                      <td className="text-center p-2 border-b">Limited</td>
-                      <td className="text-center p-2 border-b text-green-600">Unlimited</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 border-b">Past Papers</td>
-                      <td className="text-center p-2 border-b">Limited</td>
-                      <td className="text-center p-2 border-b text-green-600">Unlimited</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 border-b">Subject Papers</td>
-                      <td className="text-center p-2 border-b">Limited</td>
-                      <td className="text-center p-2 border-b text-green-600">Unlimited</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 border-b">Analytics</td>
-                      <td className="text-center p-2 border-b">Basic</td>
-                      <td className="text-center p-2 border-b text-green-600">Advanced</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 border-b">Performance Tracking</td>
-                      <td className="text-center p-2 border-b">Basic</td>
-                      <td className="text-center p-2 border-b text-green-600">Detailed</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 border-b">Study Plan</td>
-                      <td className="text-center p-2 border-b">✗</td>
-                      <td className="text-center p-2 border-b text-green-600">✓</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 border-b">Progress Reports</td>
-                      <td className="text-center p-2 border-b">✗</td>
-                      <td className="text-center p-2 border-b text-green-600">✓</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              
-              {!dashboardData.premium.isPremium && (
-                <div className="mt-6 flex justify-center">
-                  <Button
-                    size="lg"
-                    onClick={handleUpgrade}
-                    className="px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                  >
-                    <Crown className="h-5 w-5 mr-2" />
-                    Upgrade Now
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          ) : null}
         </TabsContent>
       </Tabs>
     </div>

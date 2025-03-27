@@ -9,7 +9,7 @@ We are trying to develop features based on feature-based architechure and you ca
 - Key Features:
    - Auth: Handles authentication and role management.
    - rbac feature for centertalized role based access control.
-   - TanStack Query API: Manages API calls.
+   - I have feature TanStack Query API: Manages API calls.
 
 
 #### Codebase Directories
@@ -25,6 +25,7 @@ We are trying to develop features based on feature-based architechure and you ca
 - exam attempts etc etc. and you have to first deep analysis of my project and then see what we can show related to the exams based on our features.
 - I want Charts, bars etc creative stuff, payment status etc etc.
 - You can suggest me as well what we can show in the dashboard.
+- We have implemented couple of thing sin our last implementation and now you have to solve and resolve everything.
 
 > **Agent Philosophy:**  
 > **Plans → Acts → Persists → Learns**  

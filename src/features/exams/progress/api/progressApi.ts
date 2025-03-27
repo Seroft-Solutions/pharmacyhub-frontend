@@ -11,8 +11,8 @@ export interface Progress {
 
 // Define interface for analytics data
 export interface Analytics {
-  studyHours: number[];
-  examScores: number[];
+  studyHours: Array<{date: string; hours: number}>;
+  examScores: Array<{id: number; name: string; score: number; average: number; date: string}>;
   timeSpent: Record<string, number>;
   // Add other fields as needed
 }
