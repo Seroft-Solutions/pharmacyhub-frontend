@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { PaymentResultPage } from '@/features/payments/components/PaymentResultPage';
 import { examApiService } from '@/features/exams/api/services/examApiService';
@@ -8,7 +8,18 @@ import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 
-export default function PaymentResultPageContainer() {
+// Loading component for suspense fallback
+function PaymentResultLoading() {
+  return (
+    <div className="flex justify-center items-center min-h-screen">
+      <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      <span className="ml-2 text-lg">Loading payment result...</span>
+    </div>
+  );
+}
+
+// Main component with search params
+function PaymentResultContent() {
   const searchParams = useSearchParams();
   const transactionId = searchParams.get('pp_TxnRefNo');
   const responseCode = searchParams.get('pp_ResponseCode');
@@ -76,5 +87,14 @@ export default function PaymentResultPageContainer() {
       examId={parseInt(examId)}
       examName={examData.title}
     />
+  );
+}
+
+// Export the wrapped component
+export default function PaymentResultPageContainer() {
+  return (
+    <Suspense fallback={<PaymentResultLoading />}>
+      <PaymentResultContent />
+    </Suspense>
   );
 }
