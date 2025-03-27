@@ -19,12 +19,17 @@ We are trying to develop features based on feature-based architechure and you ca
   By following this structured approach, we ensure an efficient, systematic feature development.
 
 ### Requirements
-- We have model papers section and it is working perfectly fine with all the scenarios like premimum etc
-- We have to use the same layouts etc for the Past paper and Subject papaers as well.
-- As of now both are behaving differently, so we need to sort that out.
-- We have to use the same layout for both the sections.
-- You can walk through from my code and fix this behaviour
-- You can also check the model papers section and see how it is working and you can use the same layout for the other sections as well.
+We were working on the anti-share feature and single session and we have acchieved that as well, but now we need to handle the exceptions gracefully and on the frontend side, we need to display proper message and action so that user is aware of what happend.
+
+We need to handle these exceptions gracefully and display proper message to the user and the action item as well.
+
+We can introduce  exception constants, with the relevant messages and actions, and then use them in the frontend to display the message and action item.
+THis is the most easiest and safe approach to handle the exceptions.
+
+I am hoping you are getting my point. and on the frontend side, if you think old files are not useful, you can move to deprecated folder.
+All I want a smoother way to handle the exceptions and display proper message and action item to the user.
+
+
 
 > **Agent Philosophy:**  
 > **Plans → Acts → Persists → Learns**  
@@ -73,3 +78,6 @@ We are trying to develop features based on feature-based architechure and you ca
 - git add . command is used to add all the files to the staging area.
 - git commit -m "commit message" command is used to commit the changes.
 - git push origin main command is used to push the changes to the remote repository.
+
+
+Use all mcp tools to write code in my directory instead of giving me claude artifact or code snippets.

@@ -16,7 +16,7 @@ interface SessionTerminationResultProps {
   isOpen: boolean;
   success: boolean;
   message?: string;
-  error?: string;
+  errorMessage?: string;
   onClose: () => void;
 }
 
@@ -24,7 +24,7 @@ export const SessionTerminationResult: React.FC<SessionTerminationResultProps> =
   isOpen,
   success,
   message,
-  error,
+  errorMessage,
   onClose,
 }) => {
   return (
@@ -44,7 +44,7 @@ export const SessionTerminationResult: React.FC<SessionTerminationResultProps> =
           <AlertDialogDescription className="text-center pt-2">
             {success 
               ? (message || 'All other devices have been successfully logged out. You can now continue.')
-              : (error || 'Failed to log out other devices. Please try again or contact support.')}
+              : (errorMessage || 'Failed to log out other devices. Please try again or contact support.')}
           </AlertDialogDescription>
           
           {success && (
