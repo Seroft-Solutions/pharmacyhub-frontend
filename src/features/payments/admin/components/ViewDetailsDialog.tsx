@@ -112,8 +112,8 @@ export const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                   <UserCircle className="h-5 w-5 text-primary mt-0.5" />
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">User Information</Label>
-                    <p className="font-medium">{getUserDisplayName(paymentRequest.user)}</p>
-                    <p className="text-sm text-muted-foreground">{paymentRequest.user?.email || 'No email'}</p>
+                    <p className="font-medium">{getUserDisplayName(paymentRequest)}</p>
+                    <p className="text-sm text-muted-foreground">{getUserEmail(paymentRequest)}</p>
                     
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-sm">{paymentRequest.user?.phoneNumber || paymentRequest.senderNumber || 'No phone number'}</p>
@@ -141,7 +141,7 @@ export const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                   <BookOpen className="h-5 w-5 text-primary mt-0.5" />
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Exam Details</Label>
-                    <p className="font-medium">{paymentRequest.exam?.title || 'Unknown exam'}</p>
+                    <p className="font-medium">{paymentRequest.exam?.title || paymentRequest.examTitle || 'Unknown exam'}</p>
                     <p className="text-sm text-muted-foreground">{paymentRequest.exam?.paperType || 'Standard Exam'}</p>
                   </div>
                 </div>
@@ -185,7 +185,7 @@ export const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                 attachmentUrl={paymentRequest.attachmentUrl}
                 className="w-full max-w-md mx-auto"
                 title={`Payment Evidence - Transaction #${paymentRequest.id}`}
-                description={`Submitted by ${getUserDisplayName(paymentRequest.user)} on ${formatDate(paymentRequest.createdAt)}`}
+                description={`Submitted by ${getUserDisplayName(paymentRequest)} on ${formatDate(paymentRequest.createdAt)}`}
               />
             </div>
           </TabsContent>

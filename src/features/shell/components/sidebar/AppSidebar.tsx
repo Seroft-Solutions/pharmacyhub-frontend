@@ -16,7 +16,10 @@ import {
   Settings,
   CreditCard,
   BoxIcon,
-  HelpCircle
+  HelpCircle,
+  Shield,
+  DollarSign,
+  History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarCloseButton } from "./SidebarCloseButton";
@@ -148,10 +151,33 @@ export function AppSidebar({
     },
     {
       id: "admin-payments",
-      label: "Payment Approvals",
-      href: "/admin/payments/approvals",
+      label: "Payments Management",
+      href: "/admin/payments",
       icon: CreditCard,
-      isActive: pathname === "/admin/payments/approvals" || pathname?.startsWith("/admin/payments/approvals/")
+      isActive: pathname?.startsWith("/admin/payments"),
+      subItems: [
+        {
+          id: "admin-payments-approvals",
+          label: "Approvals",
+          href: "/admin/payments/approvals",
+          icon: DollarSign,
+          isActive: pathname === "/admin/payments/approvals" || pathname?.startsWith("/admin/payments/approvals/")
+        },
+        {
+          id: "admin-payments-pending",
+          label: "Pending",
+          href: "/admin/payments/pending",
+          icon: History,
+          isActive: pathname === "/admin/payments/pending" || pathname?.startsWith("/admin/payments/pending/")
+        }
+      ]
+    },
+    {
+      id: "admin-session-monitoring",
+      label: "Session Monitoring",
+      href: "/admin/session-monitoring",
+      icon: Shield,
+      isActive: pathname === "/admin/session-monitoring" || pathname?.startsWith("/admin/session-monitoring/")
     }
   ] : [];
   
@@ -251,18 +277,60 @@ export function AppSidebar({
         {isAdmin && adminItems.length > 0 && (
           <div className="mt-4">
             <SidebarMenu>
-              {adminItems.map(item => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    onClick={() => handleItemClick(item.href)}
-                    isActive={item.isActive}
-                    tooltip={item.label}
-                  >
-                    <item.icon className="mr-2 h-4 w-4" />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {adminItems.map(item => {
+                const hasSubItems = item.subItems && item.subItems.length > 0;
+                const isExpanded = hasSubItems && expandedItems[item.id];
+                
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      onClick={() => {
+                        if (hasSubItems) {
+                          toggleItem(item.id);
+                        } else {
+                          handleItemClick(item.href);
+                        }
+                      }}
+                      isActive={item.isActive}
+                      tooltip={item.label}
+                    >
+                      <item.icon className="mr-2 h-4 w-4" />
+                      <span>{item.label}</span>
+                      
+                      {hasSubItems && (
+                        <SidebarMenuAction className="ml-auto">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </SidebarMenuAction>
+                      )}
+                    </SidebarMenuButton>
+                    
+                    {hasSubItems && isExpanded && (
+                      <SidebarMenuSub>
+                        {item.subItems!.map(subItem => (
+                          <SidebarMenuSubItem key={subItem.id}>
+                            <SidebarMenuSubButton
+                              onClick={() => handleItemClick(subItem.href)}
+                              isActive={subItem.isActive}
+                            >
+                              <subItem.icon className="mr-2 h-4 w-4" />
+                              <span>{subItem.label}</span>
+                              {subItem.badge && (
+                                <span className="ml-auto bg-primary text-primary-foreground text-xs rounded px-1 py-0.5">
+                                  {subItem.badge}
+                                </span>
+                              )}
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </div>
         )}

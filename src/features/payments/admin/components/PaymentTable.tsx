@@ -24,6 +24,7 @@ import {
   formatDate, 
   formatTransactionReference, 
   getUserDisplayName,
+  getUserEmail,
   getDataState
 } from '../utils';
 import EmptyState from './EmptyState';
@@ -146,9 +147,9 @@ export const PaymentTable: React.FC<PaymentTableProps> = ({
               <TableCell className="font-medium">#{request.id}</TableCell>
               <TableCell>
                 <div className="flex flex-col">
-                  <span className="font-medium truncate max-w-[150px]">{getUserDisplayName(request.user)}</span>
+                  <span className="font-medium truncate max-w-[150px]">{getUserDisplayName(request)}</span>
                   <span className="text-xs text-muted-foreground truncate max-w-[150px]">
-                    {request.user?.email || 'No email'}
+                    {getUserEmail(request)}
                   </span>
                 </div>
               </TableCell>

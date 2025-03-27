@@ -7,14 +7,22 @@ interface User {
   lastName?: string;
   email?: string;
   phoneNumber?: string;
+  username?: string;
 }
 
 interface ManualPaymentRequest {
   id: number;
   user: User;
+  userId?: string;
+  userEmail?: string; // Some responses might include this instead of user.email
+  userFirstName?: string;
+  userLastName?: string;
+  userPhoneNumber?: string;
   exam?: {
     title: string;
+    paperType?: string;
   };
+  examTitle?: string; // Fallback if exam object is not present
   amount?: number;
   senderNumber?: string;
 }
@@ -29,7 +37,7 @@ interface ArrayLike {
 export const formatCurrency = (amount: number | null | undefined) => {
   // Handle null, undefined, or NaN cases
   if (amount === null || amount === undefined || isNaN(amount)) {
-    return 'N/A';
+    return '0';
   }
   
   return new Intl.NumberFormat('en-US', {
@@ -78,17 +86,77 @@ export const formatTransactionReference = (reference: string | null | undefined)
 };
 
 /**
- * Get user display name with fallbacks
+ * Enhanced function to get user display name with multiple fallbacks
  */
-export const getUserDisplayName = (user: User | null | undefined) => {
-  if (!user) return 'Unknown user';
+export const getUserDisplayName = (request: ManualPaymentRequest | null | undefined) => {
+  if (!request) return 'Unknown user';
   
-  const firstName = user.firstName || '';
-  const lastName = user.lastName || '';
+  // Try the user object first
+  if (request.user) {
+    const firstName = request.user.firstName || '';
+    const lastName = request.user.lastName || '';
+    
+    // Try first name + last name
+    if (firstName || lastName) {
+      return `${firstName} ${lastName}`.trim();
+    }
+    
+    // Try username
+    if (request.user.username) {
+      return request.user.username;
+    }
+    
+    // Try email from user object
+    if (request.user.email) {
+      return request.user.email.split('@')[0]; // Just the username part of email
+    }
+  }
   
-  if (!firstName && !lastName) return user.email || 'Unknown user';
+  // Try enhanced backend properties
+  if (request.userFirstName || request.userLastName) {
+    return `${request.userFirstName || ''} ${request.userLastName || ''}`.trim();
+  }
   
-  return `${firstName} ${lastName}`.trim();
+  // Try direct userEmail if it exists
+  if (request.userEmail) {
+    return request.userEmail.split('@')[0]; // Just the username part of email
+  }
+  
+  // Try direct userId if it looks like an email
+  if (request.userId && request.userId.includes('@')) {
+    return request.userId.split('@')[0]; // Just the username part of email
+  }
+  
+  // Try direct userId as fallback
+  if (request.userId) {
+    return `User ${request.userId}`;
+  }
+  
+  return 'Unknown user';
+};
+
+/**
+ * Enhanced function to get user email with fallbacks
+ */
+export const getUserEmail = (request: ManualPaymentRequest | null | undefined) => {
+  if (!request) return 'No email';
+  
+  // Try email from user object
+  if (request.user && request.user.email) {
+    return request.user.email;
+  }
+  
+  // Try direct userEmail property (from enhanced backend)
+  if (request.userEmail) {
+    return request.userEmail;
+  }
+  
+  // Try to construct email from userId if it looks like an email
+  if (request.userId && request.userId.includes('@')) {
+    return request.userId;
+  }
+  
+  return 'No email';
 };
 
 /**
@@ -97,8 +165,8 @@ export const getUserDisplayName = (user: User | null | undefined) => {
 export const generateWhatsAppLink = (request: ManualPaymentRequest | null | undefined) => {
   if (!request) return '#';
   
-  const userName = getUserDisplayName(request.user);
-  const examTitle = request.exam?.title || 'the exam';
+  const userName = getUserDisplayName(request);
+  const examTitle = request.exam?.title || request.examTitle || 'the exam';
   const amount = request.amount ? formatCurrency(request.amount) : 'the required amount';
   
   const message = encodeURIComponent(

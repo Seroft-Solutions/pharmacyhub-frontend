@@ -2,7 +2,10 @@ import {
   FileText,
   DollarSign,
   LayoutDashboard,
-  CreditCard
+  CreditCard,
+  History,
+  Shield,
+  Users
 } from "lucide-react";
 import type { FeatureNavigation } from "../types/navigationTypes";
 
@@ -47,20 +50,58 @@ export const ADMIN_FEATURES: FeatureNavigation[] = [
   },
   {
     id: "admin-payments",
-    name: "Payment Approvals",
+    name: "Payments Management",
     rootPath: "/admin/payments",
     roles: ["ADMIN", "SUPER_ADMIN"],
     order: 20,
     items: [
       {
         id: "admin-payments",
-        label: "Payment Approvals",
-        href: "/admin/payments/approvals",
+        label: "Payments Management",
+        href: "/admin/payments",
         icon: CreditCard,
         roles: ["ADMIN", "SUPER_ADMIN"],
         permissions: ["MANAGE_PAYMENTS"],
         order: 0,
-        badge: "New"
+        subItems: [
+          {
+            id: "admin-payments-approvals",
+            label: "Approvals",
+            href: "/admin/payments/approvals",
+            icon: DollarSign,
+            roles: ["ADMIN", "SUPER_ADMIN"],
+            permissions: ["MANAGE_PAYMENTS"],
+            order: 0,
+            badge: "New"
+          },
+          {
+            id: "admin-payments-pending",
+            label: "Pending",
+            href: "/admin/payments/pending",
+            icon: History,
+            roles: ["ADMIN", "SUPER_ADMIN"],
+            permissions: ["MANAGE_PAYMENTS"],
+            order: 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: "admin-session-monitoring",
+    name: "Session Monitoring",
+    rootPath: "/admin/session-monitoring",
+    roles: ["ADMIN", "SUPER_ADMIN"],
+    order: 30,
+    items: [
+      {
+        id: "admin-session-monitoring",
+        label: "Session Monitoring",
+        href: "/admin/session-monitoring",
+        icon: Shield,
+        roles: ["ADMIN", "SUPER_ADMIN"],
+        permissions: ["MANAGE_SESSIONS"],
+        order: 0
       }
     ]
   }

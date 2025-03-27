@@ -21,6 +21,12 @@ export const MANUAL_PAYMENT_ENDPOINTS = {
   getRequestsByStatus: `${BASE_URL}/admin/requests/status/:status`,
   approveRequest: `${BASE_URL}/admin/requests/:requestId/approve`,
   rejectRequest: `${BASE_URL}/admin/requests/:requestId/reject`,
+  
+  // Statistics and history endpoints
+  getStatistics: `${BASE_URL}/admin/statistics`,
+  getHistorySummary: `${BASE_URL}/admin/history/summary`,
+  getPaymentHistory: `${BASE_URL}/admin/history`,
+  getPaymentHistoryByStatus: `${BASE_URL}/admin/history/status/:status`,
 };
 
 export default MANUAL_PAYMENT_ENDPOINTS;

@@ -93,7 +93,11 @@ export const useCheckPendingManualRequest = (examId: number, options = {}): UseQ
 export const useAllManualRequests = (): UseQueryResult<ManualPaymentResponseDTO[], Error> => {
   return useApiQuery<ManualPaymentResponseDTO[]>(
     ['payment', 'manual', 'admin', 'all'],
-    MANUAL_PAYMENT_ENDPOINTS.getAllRequests
+    MANUAL_PAYMENT_ENDPOINTS.getAllRequests,
+    {
+      staleTime: 60000, // 1 minute
+      refetchOnWindowFocus: true
+    }
   );
 };
 

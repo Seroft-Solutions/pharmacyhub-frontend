@@ -16,68 +16,26 @@ import {
   Settings,
   ClockIcon,
 } from "lucide-react";
-import { useManualRequestsByStatus } from "@/features/payments/manual/api/hooks/useManualPaymentApiHooks";
+import { useManualRequestsByStatus, useAllManualRequests } from "@/features/payments/manual/api/hooks/useManualPaymentApiHooks";
+import { PaymentStatistics, PaymentHistory, ViewDetailsDialog, PaymentDashboard } from "@/features/payments/admin";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { forceAdminMode } from "@/features/shell/store/roleStore";
 import { useAuth } from "@/features/core/auth/hooks";
 import { logger } from '@/shared/lib/logger';
 
-// Payment Approvals Card Component
-function PaymentApprovalsCard() {
-  const { data: pendingRequests, isLoading } = useManualRequestsByStatus('PENDING');
-  const router = useRouter();
-  
-  const pendingCount = pendingRequests?.length || 0;
-  
-  return (
-    <Card className={pendingCount > 0 ? 'border-orange-300 shadow-orange-100/50' : ''}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Payment Approvals</CardTitle>
-        <ClockIcon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex items-center gap-2">
-            <Spinner size="sm" />
-            <span className="text-sm">Loading...</span>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold">{pendingCount}</div>
-              {pendingCount > 0 && (
-                <Badge variant="outline" className="text-orange-500 border-orange-200 bg-orange-50">
-                  Pending
-                </Badge>
-              )}
-            </div>
-            <div className="flex justify-between items-center mt-2">
-              <p className="text-xs text-muted-foreground">
-                {pendingCount === 0 ? 'No pending approvals' : 'Needs your attention'}
-              </p>
-              {pendingCount > 0 && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-xs"
-                  onClick={() => router.push('/admin/payments/approvals')}
-                >
-                  Review
-                </Button>
-              )}
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { hasRole, isAuthenticated, isLoading, user } = useAuth();
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // State for the selected payment request and dialog visibility
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  
+  // Fetch payment data
+  const { data: pendingRequests, isLoading: isLoadingPending } = useManualRequestsByStatus('PENDING');
+  const { data: allRequests, isLoading: isLoadingAll, refetch: refetchAll } = useAllManualRequests();
   
   // Force admin mode when this page is accessed directly
   useEffect(() => {
@@ -159,63 +117,8 @@ export default function AdminDashboardPage() {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          {/* Quick Stats */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">567</div>
-                <p className="text-xs text-muted-foreground">
-                  +12 from last month
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">1,234</div>
-                <p className="text-xs text-muted-foreground">
-                  +43% from last month
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">$45,678</div>
-                <p className="text-xs text-muted-foreground">
-                  +18% from last month
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-                <Activity className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">24</div>
-                <p className="text-xs text-muted-foreground">
-                  Current active users
-                </p>
-              </CardContent>
-            </Card>
-            
-            {/* Payment Approvals Card */}
-            <PaymentApprovalsCard />
-          </div>
+          {/* Payment Dashboard */}
+          <PaymentDashboard />
           
           {/* Admin Quick Links */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -285,17 +188,31 @@ export default function AdminDashboardPage() {
         </TabsContent>
         
         <TabsContent value="analytics" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Analytics Dashboard</CardTitle>
-              <CardDescription>
-                Detailed analytics and statistics will be displayed here.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Analytics content will be implemented in a future update.</p>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold">Payment History</h3>
+              <p className="text-sm text-muted-foreground">Recent payment history and transaction details</p>
+            </div>
+            
+            <PaymentHistory
+              requests={allRequests?.slice(0, 5) || []}
+              isLoading={isLoadingAll}
+              onViewDetails={(request) => {
+                setSelectedRequest(request);
+                setIsViewOpen(true);
+              }}
+              onRefresh={() => refetchAll()}
+            />
+            
+            <div className="flex justify-end">
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/admin/payments/history')}
+              >
+                View Full History
+              </Button>
+            </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="reports" className="space-y-4">
@@ -326,6 +243,17 @@ export default function AdminDashboardPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* View Details Dialog */}
+      {selectedRequest && (
+        <ViewDetailsDialog
+          open={isViewOpen}
+          onOpenChange={setIsViewOpen}
+          paymentRequest={selectedRequest}
+          onApprove={() => {}}
+          onReject={() => {}}
+        />
+      )}
     </div>
   );
 }
