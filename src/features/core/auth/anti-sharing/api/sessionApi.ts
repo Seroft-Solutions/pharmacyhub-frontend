@@ -6,7 +6,6 @@ import { LoginValidationResult, SessionActionResult, SessionData, SessionFilterO
 import { tokenManager } from '@/features/core/auth/core/tokenManager';
 import { logger } from '@/shared/lib/logger';
 import { apiClient } from '@/features/core/tanstack-query-api';
-import { parseSessionError } from './sessionUtils';
 
 // Base API path for session endpoints
 const API_PATH = '/api/v1/sessions';
@@ -59,19 +58,7 @@ export const validateLogin = async (
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`[Anti-Sharing] Validation failed with status ${response.status}:`, errorText);
-      
-      // Try to parse as JSON first
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch (e) {
-        // Not JSON, use as text
-      }
-      
-      const error = new Error(`Login validation failed: ${response.status} ${response.statusText}`);
-      // @ts-ignore - add response data for error parsing
-      error.response = { status: response.status, data: errorData || errorText };
-      throw error;
+      throw new Error(`Login validation failed: ${response.status} ${response.statusText}`);
     }
 
     const result = await response.json();
@@ -79,18 +66,6 @@ export const validateLogin = async (
     return result;
   } catch (error) {
     console.error('[Anti-Sharing] Error validating login:', error);
-    
-    // Enhanced error handling with session utils
-    const { loginStatus, message } = parseSessionError(error);
-    
-    // Attach login status to the error if detected
-    if (loginStatus) {
-      // @ts-ignore - add status for better error handling
-      error.loginStatus = loginStatus;
-      // @ts-ignore - add user-friendly message
-      error.userMessage = message;
-    }
-    
     throw error;
   }
 };
@@ -267,18 +242,14 @@ export const terminateOtherSessions = async (
     if (!response.ok) {
       // Get error details if available
       let errorMessage = 'Failed to terminate other sessions';
-      let errorObj;
       try {
-        errorObj = await response.json();
-        errorMessage = errorObj.message || errorObj.error || errorMessage;
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
       } catch (e) {
         // Ignore JSON parsing errors
       }
       
-      const error = new Error(errorMessage);
-      // @ts-ignore - add response data for error parsing
-      error.response = { status: response.status, data: errorObj };
-      throw error;
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();

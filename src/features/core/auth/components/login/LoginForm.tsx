@@ -7,7 +7,6 @@ import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 import { authService } from '@/features/core/auth/api/services/authService';
 import { LoginStatus } from '@/features/core/auth/anti-sharing/types';
 import { useAntiSharingStore } from '@/features/core/auth/anti-sharing/store';
-import { logger } from '@/shared/lib/logger';
 
 // Import shadcn UI components
 import { Button } from '@/components/ui/button';
@@ -21,15 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertCircle, Loader2, LockKeyhole, LogIn, Mail, Eye, EyeOff } from 'lucide-react';
 
 // Import anti-sharing components
-import { 
-  OTPChallenge, 
-  SessionTerminationResult, 
-  SessionExceptionHandler 
-} from '@/features/core/auth/anti-sharing/components';
-import { 
-  ErrorCategory, 
-  SESSION_ERRORS 
-} from '@/features/core/auth/anti-sharing/constants/exceptions';
+import { LoginValidationError, OTPChallenge, SessionTerminationResult } from '@/features/core/auth/anti-sharing/components';
 
 export const LoginForm = () => {
   const {
@@ -46,7 +37,6 @@ export const LoginForm = () => {
     // Anti-sharing properties
     showOtpChallenge,
     showValidationError,
-    setShowValidationError,
     showTerminationResult,
     terminationSuccess,
     terminationError,
@@ -55,14 +45,12 @@ export const LoginForm = () => {
     handleOtpVerification,
     handleValidationContinue,
     handleCancel,
-    handleTerminationResultClose
+    handleTerminationResultClose,
+    setShowValidationError
   } = useLoginForm();
   
   const [showPassword, setShowPassword] = useState(false);
   const isMobile = useMobileStore(selectIsMobile);
-  
-  // Check if we should force show the dialog based on the error message
-  const [forceShowDialog, setForceShowDialog] = useState(false);
   
   // State to track if we're resending a verification email
   const [isResendingVerification, setIsResendingVerification] = useState(false);
@@ -70,13 +58,15 @@ export const LoginForm = () => {
   // Get resend verification mutation
   const { mutateAsync: resendVerification } = authService.useResendVerification();
   
+  // Check if we should force show the dialog based on the error message
+  const [forceShowDialog, setForceShowDialog] = useState(false);
+  
   // Add additional effect to detect anti-sharing errors in the error message and show dialog
   useEffect(() => {
-    if (error && typeof error === 'string' && (
+    if (error && (
       error.includes('already logged in') ||
       error.includes('another device') ||
       error.includes('too many devices') ||
-      error.includes('You are already logged in') ||
       error.includes('TOO_MANY_DEVICES')
     )) {
       // This is a session conflict - explicitly show the dialog
@@ -86,7 +76,7 @@ export const LoginForm = () => {
       setForceShowDialog(true);
       setShowValidationError(true);
       
-      logger.info('[Auth] Showing anti-sharing dialog due to error:', { error });
+      console.log('[Auth] Showing anti-sharing dialog due to error:', error);
     }
   }, [error, setShowValidationError]);
   
@@ -300,25 +290,19 @@ export const LoginForm = () => {
         </CardFooter>
       </Card>
       
-      {/* Use our SessionExceptionHandler for better exception handling */}
-      {forceShowDialog && (
-        <SessionExceptionHandler 
-          isOpen={forceShowDialog}
-          loginStatus={LoginStatus.TOO_MANY_DEVICES}
-          customMessage="You are already logged in from another device. For security reasons, PharmacyHub only allows one active session at a time."
-          onAction={handleValidationContinue}
-          onCancel={() => {
-            setForceShowDialog(false);
-            handleCancel();
-            // Reset error state
-            setError(null);
-          }}
-          isProcessing={isTerminating}
-          actionButtonText="Log Out Other Devices"
-        />
-      )}
+      {/* Anti-sharing protection modals */}
+      <LoginValidationError 
+        isOpen={showValidationError || forceShowDialog}
+        status={loginStatus}
+        onContinue={handleValidationContinue}
+        onCancel={() => {
+          handleCancel();
+          setForceShowDialog(false);
+        }}
+        isTerminating={isTerminating}
+        message="You are already logged in from another device. For security reasons, we only allow one active session at a time."
+      />
       
-      {/* Other anti-sharing modals */}
       <OTPChallenge 
         isOpen={showOtpChallenge}
         onVerify={handleOtpVerification}
