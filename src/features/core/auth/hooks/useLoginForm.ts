@@ -10,7 +10,6 @@ import { useDeviceId } from '../anti-sharing/hooks/useDeviceId';
 import { useSessionValidation } from '../anti-sharing/hooks/useSessionValidation';
 import { useAntiSharingStore } from '../anti-sharing/store';
 import { LoginStatus } from '../anti-sharing/types';
-import { logger } from '@/shared/lib/logger';
 
 export const useLoginForm = (redirectPath = '/dashboard') => {
   const [email, setEmail] = useState('');
@@ -22,10 +21,6 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
   // Anti-sharing states
   const [showOtpChallenge, setShowOtpChallenge] = useState(false);
   const [showValidationError, setShowValidationError] = useState(false);
-  const [showTerminationResult, setShowTerminationResult] = useState(false);
-  const [terminationSuccess, setTerminationSuccess] = useState(false);
-  const [terminationError, setTerminationError] = useState<string | null>(null);
-  const [isTerminating, setIsTerminating] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   const router = useRouter();
@@ -277,29 +272,19 @@ if (validationResult.sessionId) {
 
   // Handle validation error continuation
   const handleValidationContinue = async () => {
-    if (loginStatus === LoginStatus.TOO_MANY_DEVICES) {
-      // Set UI state for termination in progress
-      setIsTerminating(true);
-      
-      try {
+    setShowValidationError(false);
+    setIsLoading(true);
+    
+    try {
+      if (loginStatus === LoginStatus.TOO_MANY_DEVICES) {
         // Force logout from other devices
         logger.info('[Auth] Forcing logout from other devices');
         
         // Get current session ID if available
         const sessionId = tokenManager.getSessionId();
         
-        if (!sessionId) {
-          logger.warn('[Auth] Session ID not available, generating temporary ID');
-          // Generate a temporary session ID if needed
-          const tempSessionId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-          tokenManager.setSessionId(tempSessionId);
-        }
-        
-        // Get the session ID again (might be the original or newly generated)
-        const currentSessionId = tokenManager.getSessionId();
-        
         // Call API to terminate other sessions
-        if (currentSessionId) {
+        if (sessionId) {
           try {
             // Import the terminateOtherSessions function
             const { terminateOtherSessions } = await import('../anti-sharing/api/sessionApi');
@@ -309,25 +294,19 @@ if (validationResult.sessionId) {
             if (currentUserId) {
               logger.debug('[Auth] Terminating other sessions for user', {
                 userId: currentUserId,
-                sessionId: currentSessionId
+                sessionId: sessionId
               });
               
-              const result = await terminateOtherSessions(currentUserId, currentSessionId);
+              const result = await terminateOtherSessions(currentUserId, sessionId);
               
               if (result && result.success) {
                 logger.debug('[Auth] Successfully terminated other sessions', result);
-                
-                // Show success result
-                setTerminationSuccess(true);
-                setTerminationError(null);
-                setShowValidationError(false);
-                setShowTerminationResult(true);
-                
-                // Redirect after showing success message
+                // Show confirmation to user
+                setError('Other sessions have been terminated. You can now proceed with login.');
                 setTimeout(() => {
-                  setShowTerminationResult(false);
+                  // Try logging in again after a short delay to allow the user to see the message
                   router.push(redirectPath);
-                }, 3000);
+                }, 2000);
               } else {
                 throw new Error('Failed to terminate other sessions: ' + (result?.message || 'Unknown error'));
               }
@@ -336,39 +315,22 @@ if (validationResult.sessionId) {
             }
           } catch (terminateError) {
             logger.error('[Auth] Failed to terminate other sessions', terminateError);
-            
-            // Show error result
-            setTerminationSuccess(false);
-            setTerminationError(terminateError instanceof Error ? 
-              terminateError.message : 
-              'Failed to terminate other sessions. Please try again or contact support.');
-            setShowValidationError(false);
-            setShowTerminationResult(true);
+            setError('Failed to terminate other sessions. Please try again or contact support.');
+            // Don't continue with login if termination fails - user should try again
           }
         } else {
           logger.error('[Auth] No session ID available for terminating other sessions');
-          
-          // Show error result
-          setTerminationSuccess(false);
-          setTerminationError('Session information not available. Please try logging in again.');
-          setShowValidationError(false);
-          setShowTerminationResult(true);
+          setError('Session information not available. Please try logging in again.');
         }
-      } catch (error) {
-        logger.error('[Auth] Error in validation continuation', error);
-        
-        // Show error result
-        setTerminationSuccess(false);
-        setTerminationError('Failed to continue login process. Please try again.');
-        setShowValidationError(false);
-        setShowTerminationResult(true);
-      } finally {
-        setIsTerminating(false);
+      } else {
+        // Show OTP challenge for other validation errors
+        setShowOtpChallenge(true);
       }
-    } else {
-      // For other validation statuses, just show OTP challenge
-      setShowValidationError(false);
-      setShowOtpChallenge(true);
+    } catch (error) {
+      logger.error('[Auth] Error in validation continuation', error);
+      setError('Failed to continue login process. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -376,21 +338,6 @@ if (validationResult.sessionId) {
   const handleCancel = () => {
     setShowValidationError(false);
     setShowOtpChallenge(false);
-    setShowTerminationResult(false);
-  };
-  
-  // Handle termination result close
-  const handleTerminationResultClose = () => {
-    setShowTerminationResult(false);
-    
-    // If termination was successful, redirect to dashboard
-    if (terminationSuccess) {
-      router.push(redirectPath);
-    }
-    // If termination failed, allow user to try again
-    else {
-      setShowValidationError(true);
-    }
   };
 
   return {
@@ -407,14 +354,9 @@ if (validationResult.sessionId) {
     // Anti-sharing properties
     showOtpChallenge,
     showValidationError,
-    showTerminationResult,
-    terminationSuccess,
-    terminationError,
-    isTerminating,
     loginStatus,
     handleOtpVerification,
     handleValidationContinue,
-    handleCancel,
-    handleTerminationResultClose
+    handleCancel
   };
 };
