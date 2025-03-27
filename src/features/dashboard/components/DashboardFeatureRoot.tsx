@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useNavigation, NavigationProvider } from "@/features/shell";
+import { useNavigationStore } from "@/features/shell";
 import { DASHBOARD_NAVIGATION } from "../navigation";
 
 interface DashboardFeatureRootProps {
@@ -9,10 +9,12 @@ interface DashboardFeatureRootProps {
 }
 
 /**
- * Inner component that uses the navigation context
+ * Inner component that uses the navigation store
  */
 function DashboardNavRegistration({ children }: { children: React.ReactNode }) {
-  const { registerFeature, unregisterFeature } = useNavigation();
+  // Get actions from navigation store
+  const registerFeature = useNavigationStore(state => state.registerFeature);
+  const unregisterFeature = useNavigationStore(state => state.unregisterFeature);
   
   // Register dashboard navigation when component mounts
   useEffect(() => {
@@ -34,7 +36,6 @@ function DashboardNavRegistration({ children }: { children: React.ReactNode }) {
  * navigation system when mounted and unregisters it when unmounted.
  */
 export function DashboardFeatureRoot({ children }: DashboardFeatureRootProps) {
-  // Directly pass the children without wrapping in NavigationProvider
-  // The AppLayout component will provide the NavigationProvider
-  return <>{children}</>;
+  // Register dashboard navigation using the inner component
+  return <DashboardNavRegistration>{children}</DashboardNavRegistration>;
 }

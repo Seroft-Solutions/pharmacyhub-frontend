@@ -19,12 +19,12 @@ We are trying to develop features based on feature-based architechure and you ca
   By following this structured approach, we ensure an efficient, systematic feature development.
 
 ### Requirements
-- We have model papers section and it is working perfectly fine with all the scenarios like premimum etc
-- We have to use the same layouts etc for the Past paper and Subject papaers as well.
-- As of now both are behaving differently, so we need to sort that out.
-- We have to use the same layout for both the sections.
-- You can walk through from my code and fix this behaviour
-- You can also check the model papers section and see how it is working and you can use the same layout for the other sections as well.
+- We need to implement a very creative and best UI UX design dashbboard for the user, in which they can see everything in a single view.
+- Papers 
+- Real progress
+- exam attempts etc etc. and you have to first deep analysis of my project and then see what we can show related to the exams based on our features.
+- I want Charts, bars etc creative stuff, payment status etc etc.
+- You can suggest me as well what we can show in the dashboard.
 
 > **Agent Philosophy:**  
 > **Plans → Acts → Persists → Learns**  
@@ -55,7 +55,7 @@ We are trying to develop features based on feature-based architechure and you ca
 5. **Avoid all of the following:**
     - Temporary fixes or placeholders.
     - Dont include any Mock code.
-    - Suffixes like `_updated`, `_v2`, etc.
+    - Suffixes like `_updated`, `_v2`,enhanced, optimized etc.
     - Creating new files without checking for existing ones (`search_files` first).
 6. **Never duplicate logic or components:**
     - Always `search_in_files_content` before implementing something similar.
@@ -65,11 +65,3 @@ We are trying to develop features based on feature-based architechure and you ca
 8. **Recall thought context when needed:**
     - Use `read_graph` or `search_nodes` to explore past reasoning.
     - Use `open_nodes` to access specific stored ideas for reuse.
-
-10. **For terminal-level tasks like builds, tests, or Git:**
-- Use `execute_command` within the terminal.
-- You have to go to relevant project directory first.
-- git status command is used to check the status of the project.
-- git add . command is used to add all the files to the staging area.
-- git commit -m "commit message" command is used to commit the changes.
-- git push origin main command is used to push the changes to the remote repository.

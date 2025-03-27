@@ -1,4 +1,4 @@
-import { apiClient } from '@/shared/api/apiClient';
+import { apiClient } from '@/features/core/tanstack-query-api/core/apiClient';
 
 // Define interface for the progress data
 export interface Progress {

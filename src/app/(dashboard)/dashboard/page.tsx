@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRoleStore } from "@/features/shell/store/roleStore";
-import {ExamDashboard} from "@/features/exams";
-import ExamDashboardPage from "@/app/(exams)/exam/dashboard/page";
+import { DashboardOverview } from "@/features/dashboard";
 import { logger } from "@/shared/lib/logger";
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 import { authService } from '@/features/core/auth/api/services/authService';
@@ -188,13 +187,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Metrics Section */}
-      <ExamDashboardPage />
-
-      {/* Main Content */}
-      <div className="grid md:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
-        <AdminSection />
-      </div>
+      {/* Dashboard Overview */}
+      <DashboardOverview />
     </div>
   );
 }
