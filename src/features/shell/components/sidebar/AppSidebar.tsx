@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  FileText, 
-  Medal, 
-  BookOpen, 
+import {
+  FileText,
+  Medal,
+  BookOpen,
   LayoutDashboard,
   Pill,
   ChevronDown,
@@ -24,8 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SidebarCloseButton } from "./SidebarCloseButton";
 import { SidebarContactSection } from "./SidebarContactSection";
-import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
-import { 
+import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
@@ -60,11 +59,11 @@ interface AppSidebarProps {
 
 /**
  * AppSidebar - New implementation using shadcn/ui sidebar components
- * 
+ *
  * Properly integrates with the navigation system and authentication
  * Supports admin and user views
  */
-export function AppSidebar({ 
+export function AppSidebar({
   className,
   variant = "sidebar",
   collapsible = "icon"
@@ -75,10 +74,10 @@ export function AppSidebar({
   const { user } = useAuth();
   const isMobile = useMobileStore(selectIsMobile);
   const { collapsed, setCollapsed, setOpenMobile } = useSidebar();
-  
+
   // Logo animation state
   const [logoTransition, setLogoTransition] = useState(false);
-  
+
   // Add transition effect for logo
   useEffect(() => {
     // Add a short delay to make the transition visible
@@ -86,14 +85,14 @@ export function AppSidebar({
     const timer = setTimeout(() => {
       setLogoTransition(false);
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, [collapsed]);
-  
+
   // Auto-adjust sidebar variant for mobile
   const responsiveVariant = isMobile ? "floating" : variant;
   const responsiveCollapsible = isMobile ? "offcanvas" : collapsible;
-  
+
   // Ensure mobile sidebar is properly sized
   useEffect(() => {
     if (isMobile) {
@@ -103,15 +102,15 @@ export function AppSidebar({
       // Reset to default value when not in mobile
       document.documentElement.style.removeProperty('--sidebar-width-mobile');
     }
-    
+
     return () => {
       // Clean up when component unmounts
       document.documentElement.style.removeProperty('--sidebar-width-mobile');
     };
   }, [isMobile]);
-  
+
   const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('SUPER_ADMIN');
-  
+
   // Track the state of the expanded exam section
   useEffect(() => {
     // Ensure the exams section is expanded by default
@@ -130,7 +129,7 @@ export function AppSidebar({
       isActive: pathname === "/dashboard" || pathname === "/admin/dashboard"
     }
   ];
-  
+
   // Exam items for user navigation
   const examItems = [
     {
@@ -155,7 +154,7 @@ export function AppSidebar({
       isActive: pathname === "/exam/subject-papers" || pathname?.startsWith("/exam/subject-papers/")
     }
   ];
-  
+
   // Admin specific items
   const adminItems = isAdmin ? [
     {
@@ -196,7 +195,7 @@ export function AppSidebar({
       isActive: pathname === "/admin/session-monitoring" || pathname?.startsWith("/admin/session-monitoring/")
     }
   ] : [];
-  
+
   // Mobile specific click handler to close sidebar after navigation
   const handleItemClick = (href: string) => {
     router.push(href);
@@ -210,37 +209,27 @@ export function AppSidebar({
       }, 50); // Reduced timing for better response
     }
   };
-  
+
   return (
-    <Sidebar 
+    <Sidebar
       className={cn("border-r flex flex-col", className)}
       variant={responsiveVariant}
       collapsible={responsiveCollapsible}
     >
-      <SidebarHeader className="flex flex-col relative"> 
+      <SidebarHeader className="flex flex-col relative"> {/* Added relative positioning for absolute positioned children */}
         {/* Add back button for mobile */}
         {isMobile && <SidebarCloseButton className="text-muted-foreground" />}
-        
-        <div className="flex items-center p-3 border-b overflow-hidden">
+
+        <div className="flex items-center p-3 border-b">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className={cn(
-              "bg-primary h-7 w-7 rounded-md flex items-center justify-center text-primary-foreground",
-              logoTransition && "transform scale-105 transition-transform duration-300"
-            )}>
+            <div className="bg-primary h-7 w-7 rounded-md flex items-center justify-center text-primary-foreground">
               <Pill className="h-4 w-4" />
             </div>
-            {!collapsed && (
-              <span className={cn(
-                "font-semibold text-sm transition-opacity duration-300",
-                logoTransition ? "opacity-0" : "opacity-100"
-              )}>
-                Pharmacy Hub
-              </span>
-            )}
+            <span className="font-semibold text-sm">Pharmacy Hub</span>
           </Link>
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent className="py-2 px-2 flex-1 flex flex-col">
         {/* Dashboard Section */}
         <SidebarMenu>
@@ -257,7 +246,7 @@ export function AppSidebar({
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-        
+
         {/* Exams Section (Collapsible) */}
         {!isAdmin && (
           <div className="mt-4">
@@ -269,7 +258,7 @@ export function AppSidebar({
                 >
                   <BookOpen className="mr-2 h-4 w-4" />
                   <span>Exam Preparation</span>
-                  
+
                   <SidebarMenuAction className="ml-auto">
                     {expandedItems.exams ? (
                       <ChevronDown className="h-4 w-4" />
@@ -278,7 +267,7 @@ export function AppSidebar({
                     )}
                   </SidebarMenuAction>
                 </SidebarMenuButton>
-                
+
                 {expandedItems.exams && (
                   <SidebarMenuSub>
                     {examItems.map(item => (
@@ -298,7 +287,7 @@ export function AppSidebar({
             </SidebarMenu>
           </div>
         )}
-        
+
         {/* Admin Items - Only for admin users */}
         {isAdmin && adminItems.length > 0 && (
           <div className="mt-4">
@@ -306,7 +295,7 @@ export function AppSidebar({
               {adminItems.map(item => {
                 const hasSubItems = item.subItems && item.subItems.length > 0;
                 const isExpanded = hasSubItems && expandedItems[item.id];
-                
+
                 return (
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton
@@ -322,7 +311,7 @@ export function AppSidebar({
                     >
                       <item.icon className="mr-2 h-4 w-4" />
                       <span>{item.label}</span>
-                      
+
                       {hasSubItems && (
                         <SidebarMenuAction className="ml-auto">
                           {isExpanded ? (
@@ -333,7 +322,7 @@ export function AppSidebar({
                         </SidebarMenuAction>
                       )}
                     </SidebarMenuButton>
-                    
+
                     {hasSubItems && isExpanded && (
                       <SidebarMenuSub>
                         {item.subItems!.map(subItem => (
@@ -360,11 +349,10 @@ export function AppSidebar({
             </SidebarMenu>
           </div>
         )}
-        
-        {/* Contact Section - Added at the bottom with margin-top auto */}
+
         <SidebarContactSection />
       </SidebarContent>
-      
+
       <SidebarFooter className="p-3 text-xs text-muted-foreground border-t">
         {!collapsed && (
           <div className="flex items-center justify-between">
