@@ -165,79 +165,31 @@ if (validationResult.sessionId) {
       console.error('Login error:', err);
       
       if (err instanceof Error) {
-        // Enhanced error handling with specific focus on anti-sharing violations
-        logger.debug('[Auth] Processing login error', { 
-          errorMessage: err.message,
-          hasResponseData: !!(err as any).response?.data,
-          hasErrorData: !!(err as any).data
-        });
-
-        // Get the detailed error message from response if available
-        let errorMessage = err.message;
-        let errorData: any = null;
-        
-        // Try to extract detailed error info based on different error structures
-        if ((err as any).response?.data) {
-          errorData = (err as any).response.data;
-          errorMessage = errorData.message || errorData.error || errorMessage;
-        } else if ((err as any).data) {
-          errorData = (err as any).data;
-          errorMessage = errorData.message || errorData.error || errorMessage;
-        }
-        
-        logger.debug('[Auth] Extracted error message', { errorMessage, errorData });
-        
-        // Check for anti-sharing specific error message
-        if (errorMessage.includes('already logged in') || 
-            errorMessage.includes('another device') || 
-            errorMessage.includes('TOO_MANY_DEVICES') ||
-            errorMessage.includes('too many devices') ||
-            errorMessage.includes('You are already logged in') ||
-            (errorData && errorData.status === 'TOO_MANY_DEVICES')) {
-          // This is an anti-sharing violation
-          logger.warn('[Auth] Detected anti-sharing violation', { 
-            errorMessage, 
-            deviceId 
-          });
-          
-          // Set the proper login status from useSessionValidation hook
-          const { setLoginStatus } = useAntiSharingStore.getState();
-          setLoginStatus(LoginStatus.TOO_MANY_DEVICES);
-          
-          // Show user-friendly message
-          const tooManyDevicesMessage = 'You are already logged in from another device. ' +
-            'For security reasons, we only allow one active session at a time. ' +
-            'Please log out from that device or click "Log Out Other Devices" to continue with this session.';
-          
-          setError(tooManyDevicesMessage);
-          
-          // Show the validation error dialog
-          setShowValidationError(true);
-          return;
-        } else if (errorMessage.includes('unverified') || errorMessage.includes('not verified') || errorMessage.includes('verification')) {
+        // More detailed error handling
+        if (err.message.includes('unverified') || err.message.includes('not verified') || err.message.includes('verification')) {
           setError('Your account has not been verified. Please check your email for verification instructions.');
           // Offer option to resend verification
           console.debug('Account verification required for:', email);
-        } else if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+        } else if (err.message.includes('403') || err.message.includes('Forbidden')) {
           setError('Access forbidden - check API permissions and CORS settings');
-        } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
           setError('Invalid email or password');
-        } else if (errorMessage.includes('Network Error')) {
+        } else if (err.message.includes('Network Error')) {
           setError(`Network error - check if the backend server is running at ${process.env.NEXT_PUBLIC_API_BASE_URL}`);
-        } else if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
+        } else if (err.message.includes('404') || err.message.includes('Not Found')) {
           setError(`API endpoint not found - check if /api/auth/login is the correct path`);
-        } else if (errorMessage.includes('timeout')) {
+        } else if (err.message.includes('timeout')) {
           setError('Request timed out - server may be overloaded or unreachable');
-        } else if (errorMessage.includes('Invalid login response')) {
+        } else if (err.message.includes('Invalid login response')) {
           setError('API response format mismatch - The server returned data in a different format than expected');
           console.error('Response format mismatch - API may be returning a nested structure:', { 
-            message: errorMessage,
+            message: err.message,
             apiUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
             endpoint: AUTH_ENDPOINTS.LOGIN
           });
         } else {
           // Show more detailed error message
-          setError(`Login error: ${errorMessage}`);
+          setError(`Login error: ${err.message}`);
         }
         
         // Log additional details for debugging
