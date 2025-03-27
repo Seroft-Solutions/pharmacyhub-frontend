@@ -21,7 +21,6 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
   // Anti-sharing states
   const [showOtpChallenge, setShowOtpChallenge] = useState(false);
   const [showValidationError, setShowValidationError] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   const router = useRouter();
   const { login } = useAuth();
@@ -66,95 +65,31 @@ export const useLoginForm = (redirectPath = '/dashboard') => {
       const loginResponse = await login(email, password, deviceInfo);
       
       // Validate session for anti-sharing protection
-      // Store validation result for later reference
-      let validationResult = { valid: false, requiresOtp: false, sessionId: null };
-      
       if (loginResponse?.user?.id) {
-        const userId = loginResponse.user.id.toString();
-        // Store the user ID for later use (e.g., in handleValidationContinue)
-        setCurrentUserId(userId);
+        const validationResult = await validateSession(loginResponse.user.id.toString());
         
-        logger.debug('[Auth] Validating session for user', {
-          userId: userId,
-          loginStatus: loginStatus
-        });
-        
-        validationResult = await validateSession(userId);
-        
-        // Enhanced handling of validation result
+        // Handle validation result
         if (!validationResult.valid) {
           setIsLoading(false);
-          logger.info('[Auth] Session validation failed', {
-            status: loginStatus,
-            requiresOtp: validationResult.requiresOtp
-          });
           
-          if (loginStatus === LoginStatus.TOO_MANY_DEVICES) {
-            // User is already logged in from another device
-            // Show validation error dialog with specific message about device limit
-            const tooManyDevicesMessage = 'You are already logged in from another device. '
-              + 'For security reasons, we only allow one active session at a time. '
-              + 'Please log out from that device or click Continue to force logout other sessions.';
-            
-            logger.warn('[Auth] Login blocked due to too many devices', {
-              userId: currentUserId,
-              deviceId: deviceId,
-              loginStatus: loginStatus
-            });
-            
-            setError(tooManyDevicesMessage);
-            setShowValidationError(true);
-            return;
-          } else if (validationResult.requiresOtp) {
-            // Show OTP challenge modal for verification
+          if (validationResult.requiresOtp) {
+            // Show OTP challenge modal
             setShowOtpChallenge(true);
             return;
           } else {
-            // Show general validation error dialog
+            // Show validation error dialog
             setShowValidationError(true);
             return;
           }
         }
         
         // Store session ID if provided
-if (validationResult.sessionId) {
-        logger.debug('[Auth] Storing session ID', { 
-        sessionId: validationResult.sessionId
-        });
-        // First store it in global state
-        setSessionId(validationResult.sessionId);
-  // Then store it in tokenManager for inclusion in API requests
-  tokenManager.setSessionId(validationResult.sessionId);
-  
-  // Verify that the session ID was properly stored
-  const storedSessionId = tokenManager.getSessionId();
-  if (storedSessionId !== validationResult.sessionId) {
-    logger.error('[Auth] Session ID storage failure', { 
-      expected: validationResult.sessionId,
-      actual: storedSessionId
-    });
-  } else {
-    logger.debug('[Auth] Session ID successfully stored and will be used for all API requests');
-  }
-}
+        if (validationResult.sessionId) {
+          setSessionId(validationResult.sessionId);
+        }
       }
       
       // If we reach here, login and validation were successful
-      
-      // Ensure session ID is stored before redirecting
-      const sessionId = tokenManager.getSessionId();
-      if (sessionId) {
-        logger.debug('[Auth] Using existing session ID for login:', { sessionId });
-      } else if (validationResult?.sessionId) {
-        // If tokenManager doesn't have sessionId but validation provided one, store it again
-        logger.debug('[Auth] Setting session ID from validation result', { 
-          sessionId: validationResult.sessionId 
-        });
-        tokenManager.setSessionId(validationResult.sessionId);
-      } else {
-        logger.warn('[Auth] No session ID available after successful login');
-      }
-      
       router.push(redirectPath);
     } catch (err) {
       console.error('Login error:', err);
@@ -271,66 +206,15 @@ if (validationResult.sessionId) {
   };
 
   // Handle validation error continuation
-  const handleValidationContinue = async () => {
+  const handleValidationContinue = () => {
     setShowValidationError(false);
-    setIsLoading(true);
     
-    try {
-      if (loginStatus === LoginStatus.TOO_MANY_DEVICES) {
-        // Force logout from other devices
-        logger.info('[Auth] Forcing logout from other devices');
-        
-        // Get current session ID if available
-        const sessionId = tokenManager.getSessionId();
-        
-        // Call API to terminate other sessions
-        if (sessionId) {
-          try {
-            // Import the terminateOtherSessions function
-            const { terminateOtherSessions } = await import('../anti-sharing/api/sessionApi');
-            
-            // Call the API to terminate other sessions
-            // Use the stored userId from state
-            if (currentUserId) {
-              logger.debug('[Auth] Terminating other sessions for user', {
-                userId: currentUserId,
-                sessionId: sessionId
-              });
-              
-              const result = await terminateOtherSessions(currentUserId, sessionId);
-              
-              if (result && result.success) {
-                logger.debug('[Auth] Successfully terminated other sessions', result);
-                // Show confirmation to user
-                setError('Other sessions have been terminated. You can now proceed with login.');
-                setTimeout(() => {
-                  // Try logging in again after a short delay to allow the user to see the message
-                  router.push(redirectPath);
-                }, 2000);
-              } else {
-                throw new Error('Failed to terminate other sessions: ' + (result?.message || 'Unknown error'));
-              }
-            } else {
-              throw new Error('User ID not available for terminating sessions');
-            }
-          } catch (terminateError) {
-            logger.error('[Auth] Failed to terminate other sessions', terminateError);
-            setError('Failed to terminate other sessions. Please try again or contact support.');
-            // Don't continue with login if termination fails - user should try again
-          }
-        } else {
-          logger.error('[Auth] No session ID available for terminating other sessions');
-          setError('Session information not available. Please try logging in again.');
-        }
-      } else {
-        // Show OTP challenge for other validation errors
-        setShowOtpChallenge(true);
-      }
-    } catch (error) {
-      logger.error('[Auth] Error in validation continuation', error);
-      setError('Failed to continue login process. Please try again.');
-    } finally {
-      setIsLoading(false);
+    if (loginStatus === LoginStatus.TOO_MANY_DEVICES) {
+      // Redirect to device management page
+      router.push('/account/devices');
+    } else {
+      // Show OTP challenge for other validation errors
+      setShowOtpChallenge(true);
     }
   };
 
