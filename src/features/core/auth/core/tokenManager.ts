@@ -16,12 +16,14 @@ export const TOKEN_CONFIG = {
   REFRESH_TOKEN_KEY: 'refreshToken',
   TOKEN_EXPIRY_KEY: 'tokenExpiry',
   DEVICE_ID_KEY: DEVICE_STORAGE_KEY,
+  SESSION_ID_KEY: 'sessionId',
   
   // Legacy keys for backward compatibility
   LEGACY: {
     ACCESS_TOKEN: ['auth_token', 'access_token'],
     REFRESH_TOKEN: ['refresh_token'],
-    TOKEN_EXPIRY: ['token_expiry']
+    TOKEN_EXPIRY: ['token_expiry'],
+    SESSION_ID: ['session_id']
   }
 };
 
@@ -224,6 +226,73 @@ export const tokenManager = {
   },
   
   /**
+   * Set the session ID
+   */
+  setSessionId: (sessionId: string): void => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      // Store in primary location
+      localStorage.setItem(TOKEN_CONFIG.SESSION_ID_KEY, sessionId);
+      
+      // Store in legacy locations
+      TOKEN_CONFIG.LEGACY.SESSION_ID.forEach(key => {
+        localStorage.setItem(key, sessionId);
+      });
+      
+      logger.debug('[Auth] Session ID set successfully:', { sessionId: sessionId.substring(0, 8) + '...' });
+    } catch (error) {
+      logger.error('[Auth] Error setting session ID', error);
+    }
+  },
+  
+  /**
+   * Get the current session ID
+   */
+  getSessionId: (): string | null => {
+    if (typeof window === 'undefined') return null;
+    
+    try {
+      // Try primary storage location first
+      const sessionId = localStorage.getItem(TOKEN_CONFIG.SESSION_ID_KEY);
+      if (sessionId) return sessionId;
+      
+      // Fall back to legacy locations
+      for (const key of TOKEN_CONFIG.LEGACY.SESSION_ID) {
+        const legacySessionId = localStorage.getItem(key);
+        if (legacySessionId) return legacySessionId;
+      }
+      
+      logger.debug('[Auth] No session ID found in storage');
+      return null;
+    } catch (error) {
+      logger.error('[Auth] Error retrieving session ID', error);
+      return null;
+    }
+  },
+  
+  /**
+   * Remove the session ID from all storage locations
+   */
+  removeSessionId: (): void => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      // Remove from primary location
+      localStorage.removeItem(TOKEN_CONFIG.SESSION_ID_KEY);
+      
+      // Remove from legacy locations
+      TOKEN_CONFIG.LEGACY.SESSION_ID.forEach(key => {
+        localStorage.removeItem(key);
+      });
+      
+      logger.debug('[Auth] Session ID removed from storage');
+    } catch (error) {
+      logger.error('[Auth] Error removing session ID', error);
+    }
+  },
+  
+  /**
    * Check if a valid token exists
    */
   hasToken: (): boolean => {
@@ -284,6 +353,12 @@ export const tokenManager = {
         tokenManager.setRefreshToken(tokens.refreshToken);
       }
       
+      // Store session ID if provided
+      if (tokens.sessionId) {
+        logger.debug('[Auth] Setting session ID from auth response');
+        tokenManager.setSessionId(tokens.sessionId);
+      }
+      
       // Ensure device ID is set
       tokenManager.getDeviceId();
     }
@@ -305,6 +380,9 @@ export const tokenManager = {
       TOKEN_CONFIG.LEGACY.TOKEN_EXPIRY.forEach(key => {
         localStorage.removeItem(key);
       });
+      
+      // Clear session ID
+      tokenManager.removeSessionId();
       
       // Clear any other auth-related data
       localStorage.removeItem('auth_user');
