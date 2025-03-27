@@ -67,6 +67,8 @@ const validateRegistrationForm = (data: typeof initialFormData) => {
   // Password validation
   if (!data.password) {
     errors.password = 'Password is required';
+  } else if (data.password.length !== 8) {
+    errors.password = 'Password must be exactly 8 characters';
   }
   
   // Confirm password validation

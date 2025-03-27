@@ -19,15 +19,13 @@ export function calculatePasswordStrength(password: string) {
     };
   }
   
-  // Add length points (up to 4)
-  if (password.length >= 8) score += 1;
-  if (password.length >= 10) score += 1;
-  if (password.length >= 12) score += 1;
-  if (password.length >= 14) score += 1;
+  // Add length points
+  if (password.length === 8) score += 4; // Full points for exactly 8 characters
+  else score = 0; // No points for incorrect length
   
-  // Too short
-  if (password.length < 8) {
-    suggestions.push('Add more characters (at least 8)');
+  // Incorrect length
+  if (password.length !== 8) {
+    suggestions.push('Password must be exactly 8 characters');
   }
   
   // Add character variety points
@@ -74,8 +72,8 @@ export function validatePasswordReset(data: { password: string, confirmPassword:
     return false;
   }
   
-  if (data.password.length < 8) {
-    safeToast.error('Password must be at least 8 characters long');
+  if (data.password.length !== 8) {
+    safeToast.error('Password must be exactly 8 characters');
     return false;
   }
   
