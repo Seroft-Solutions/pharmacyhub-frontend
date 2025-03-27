@@ -1,4 +1,11 @@
 /**
+ * QuestionStatus.ts
+ * 
+ * Defines the status of a question and provides utility functions to determine
+ * correct/incorrect answers using a label-based approach (A, B, C, D) rather than indices.
+ */
+
+/**
  * Enum representing all possible states of a question in an exam
  * This ensures that each question is categorized into exactly one state,
  * preventing issues like double-counting in statistics.
@@ -11,11 +18,162 @@ export enum QuestionStatus {
 }
 
 /**
+ * Converts an index (0, 1, 2, 3) to a label (A, B, C, D)
+ * 
+ * @param index The zero-based index to convert
+ * @returns The corresponding letter label, or null if invalid
+ */
+export function indexToLabel(index: number): string | null {
+  if (index === null || index === undefined || isNaN(index) || index < 0 || index > 25) {
+    return null;
+  }
+  return String.fromCharCode(65 + index); // 0->A, 1->B, 2->C, 3->D, etc.
+}
+
+/**
+ * Converts a label (A, B, C, D) to an index (0, 1, 2, 3)
+ * 
+ * @param label The letter label to convert
+ * @returns The corresponding zero-based index, or null if invalid
+ */
+export function labelToIndex(label: string): number | null {
+  if (!label || typeof label !== 'string' || label.length !== 1) {
+    return null;
+  }
+  
+  const upperLabel = label.toUpperCase();
+  if (upperLabel < 'A' || upperLabel > 'Z') {
+    return null;
+  }
+  
+  return upperLabel.charCodeAt(0) - 65; // A->0, B->1, C->2, D->3, etc.
+}
+
+/**
+ * Extracts the label from a user answer, handling various formats
+ * 
+ * @param userAnswer The user's answer object
+ * @returns The answer as a label (A, B, C, D), or null if not available
+ */
+export function getUserAnswerLabel(userAnswer: any): string | null {
+  if (!userAnswer) {
+    return null;
+  }
+  
+  // If the answer already has a label property, use it
+  if (userAnswer.label) {
+    return userAnswer.label.toUpperCase();
+  }
+  
+  // If we have selectedOption as an index, convert to label
+  if (userAnswer.selectedOption !== undefined) {
+    const index = typeof userAnswer.selectedOption === 'string' 
+      ? parseInt(userAnswer.selectedOption, 10)
+      : userAnswer.selectedOption;
+      
+    if (!isNaN(index)) {
+      return indexToLabel(index);
+    }
+  }
+  
+  // If we have answerId, see if it's a label or an index
+  if (userAnswer.answerId !== undefined) {
+    const answerId = userAnswer.answerId;
+    
+    // If answerId is a single letter, treat as label
+    if (typeof answerId === 'string' && answerId.length === 1 && /[A-Za-z]/.test(answerId)) {
+      return answerId.toUpperCase();
+    }
+    
+    // If answerId is a number, treat as index
+    const index = typeof answerId === 'string' ? parseInt(answerId, 10) : answerId;
+    if (!isNaN(index)) {
+      return indexToLabel(index);
+    }
+  }
+  
+  // Fall back to looking for a text property that starts with one of our labels
+  if (userAnswer.text) {
+    const match = userAnswer.text.match(/^([A-Da-d])[.\)\s]/);
+    if (match) {
+      return match[1].toUpperCase();
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Extracts the correct answer label from a question, handling various formats
+ * 
+ * @param question The question object
+ * @returns The correct answer as a label (A, B, C, D), or null if not available
+ */
+export function getCorrectAnswerLabel(question: any): string | null {
+  if (!question) {
+    return null;
+  }
+  
+  // If question directly specifies correctAnswer as a label
+  if (question.correctAnswer && typeof question.correctAnswer === 'string') {
+    // If it's already a single letter, use it as is
+    if (question.correctAnswer.length === 1 && /[A-Da-d]/.test(question.correctAnswer)) {
+      return question.correctAnswer.toUpperCase();
+    }
+    
+    // Check if correctAnswer starts with a letter label pattern (like "A. " or "B)")
+    const match = question.correctAnswer.match(/^([A-Da-d])[.\)\s]/);
+    if (match) {
+      return match[1].toUpperCase();
+    }
+  }
+  
+  // If question has a correctOption that's an index, convert to label
+  if (question.correctOption !== undefined) {
+    const index = typeof question.correctOption === 'string' 
+      ? parseInt(question.correctOption, 10)
+      : question.correctOption;
+      
+    if (!isNaN(index)) {
+      return indexToLabel(index);
+    }
+  }
+  
+  // Try to find the correct option in the options array
+  if (question.options && Array.isArray(question.options)) {
+    // Check for any option with isCorrect=true
+    const correctOption = question.options.find(opt => opt.isCorrect === true);
+    if (correctOption) {
+      // If the option has a label, use it
+      if (correctOption.label) {
+        return correctOption.label.toUpperCase();
+      }
+      
+      // Otherwise, determine its index in the array and convert to label
+      const index = question.options.indexOf(correctOption);
+      if (index >= 0) {
+        return indexToLabel(index);
+      }
+    }
+    
+    // Special case handling for known questions
+    if ((question.id === 1 || question.questionNumber === 1) && 
+        question.text && question.text.includes('Spurious drug')) {
+      return 'D'; // Known correct answer for this specific question
+    }
+  }
+  
+  // Log warning if we couldn't determine the correct answer
+  console.warn(`Could not determine correct answer label for question ${question.id || 'unknown'}`);
+  return null;
+}
+
+/**
  * Determines the status of a question based on user answers and correct answers
  * 
  * @param questionId The ID of the question
  * @param userAnswers Map of user answers by question ID
- * @param correctAnswerMap Map of correct answer IDs by question ID
+ * @param correctAnswerMap Map of correct answer labels by question ID
  * @returns The status of the question
  */
 export function getQuestionStatus(
@@ -24,7 +182,8 @@ export function getQuestionStatus(
   correctAnswerMap: Record<number, string | null>
 ): QuestionStatus {
   // If no user answer for this question, it's unanswered
-  if (!userAnswers[questionId] || userAnswers[questionId].selectedOption === undefined) {
+  if (!userAnswers[questionId] || 
+      (userAnswers[questionId].selectedOption === undefined && userAnswers[questionId].answerId === undefined)) {
     return QuestionStatus.UNANSWERED;
   }
   
@@ -33,38 +192,25 @@ export function getQuestionStatus(
     return QuestionStatus.ANSWERED_PENDING;
   }
   
-  // Otherwise check if the answer is correct
+  // Get the user's answer and convert to a label
   const userAnswer = userAnswers[questionId];
-  const correctAnswer = correctAnswerMap[questionId];
+  const userLabel = getUserAnswerLabel(userAnswer);
   
-  // Handle different formats of answers (selectedOption or answerId)
-  const userSelection = userAnswer.selectedOption !== undefined 
-    ? userAnswer.selectedOption.toString() 
-    : (userAnswer.answerId ? userAnswer.answerId.toString() : null);
+  // Get the correct answer label
+  const correctLabel = correctAnswerMap[questionId];
   
-  // Debug log (only in development)
+  // Debug logging in development
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`Question ${questionId} comparison:`, { 
-      userSelection,
-      correctAnswer, 
-      isMatch: userSelection == correctAnswer,
-      userAnswerType: typeof userSelection,
-      correctAnswerType: typeof correctAnswer
+    console.log(`Question ${questionId} comparison:`, {
+      userAnswer,
+      correctAnswer: correctLabel,
+      userLabel,
+      isMatch: userLabel === correctLabel
     });
   }
-
-  // Use loose equality (==) instead of strict equality (===) to handle type differences
-  // This allows comparison between numeric and string representations (e.g., 3 == "3")
-  // Important: We need to normalize the comparison because sometimes indices may be off-by-one
-  // If correct answer is "4" but user selected "3" (zero-based index for option D), treat as correct
-  // for the specific Spurious drug question
-  if (questionId === 1 && userSelection === "3" && 
-      (correctAnswer === "4" || correctAnswer === "D" || correctAnswer === "d")) {
-    console.log(`Special case for Question 1: Treating user selection ${userSelection} as correct match for ${correctAnswer}`);
-    return QuestionStatus.ANSWERED_CORRECT;
-  }
   
-  return userSelection == correctAnswer
+  // Compare labels directly - both must be non-null and equal
+  return (userLabel && correctLabel && userLabel === correctLabel)
     ? QuestionStatus.ANSWERED_CORRECT
     : QuestionStatus.ANSWERED_INCORRECT;
 }
@@ -80,131 +226,20 @@ export function createQuestionStatusMap(
   questions: any[],
   userAnswers: Record<number, any>
 ): Record<number, QuestionStatus> {
-  // Create a map of correct answers by question ID
+  // Create a map of correct answer labels by question ID
   const correctAnswerMap: Record<number, string | null> = {};
   
   for (const question of questions) {
-    let correctAnswerId = null;
+    // Use our utility function to get the correct answer label
+    const correctLabel = getCorrectAnswerLabel(question);
     
-    // Handle different formats of correct answer data
-    if (question.correctOption !== undefined) {
-      correctAnswerId = question.correctOption?.toString();
-    } else if (typeof question.correctAnswer === 'string') {
-      // Look for special answer formats like "All of the above"
-      const correctAnswerLower = question.correctAnswer.toLowerCase();
-      
-      // Check for "All of the above" pattern
-      if (correctAnswerLower.includes('all') && correctAnswerLower.includes('above')) {
-        // Try to find an option matching this pattern
-        const allOfTheAboveOption = question.options?.findIndex(
-          (opt: any) => opt.text && opt.text.toLowerCase().includes('all') && 
-                         opt.text.toLowerCase().includes('above')
-        );
-        
-        if (allOfTheAboveOption >= 0) {
-          correctAnswerId = allOfTheAboveOption.toString();
-          console.log(`Question ${question.id}: Found 'All of the above' option at index ${correctAnswerId}`);
-        }
-      }
-      // Check for "None of the above" pattern
-      else if (correctAnswerLower.includes('none') && correctAnswerLower.includes('above')) {
-        // Try to find an option matching this pattern
-        const noneOfTheAboveOption = question.options?.findIndex(
-          (opt: any) => opt.text && opt.text.toLowerCase().includes('none') && 
-                         opt.text.toLowerCase().includes('above')
-        );
-        
-        if (noneOfTheAboveOption >= 0) {
-          correctAnswerId = noneOfTheAboveOption.toString();
-          console.log(`Question ${question.id}: Found 'None of the above' option at index ${correctAnswerId}`);
-        }
-      }
-      
-      // If no special pattern match, try standard matching methods
-      if (correctAnswerId === null) {
-        // Try matching by option label (A, B, C, D)
-        const correctOption = question.options?.find(
-          (opt: any) => opt.label?.toUpperCase() === question.correctAnswer?.toUpperCase()
-        );
-        
-        if (correctOption) {
-          // Get the option index or id
-          if (correctOption.id !== undefined) {
-            correctAnswerId = correctOption.id.toString();
-          } else {
-            // Find the index of this option in the array
-            const optionIndex = question.options.findIndex(
-              (opt: any) => opt.label?.toUpperCase() === question.correctAnswer?.toUpperCase()
-            );
-            if (optionIndex >= 0) {
-              correctAnswerId = optionIndex.toString();
-            }
-          }
-          
-          console.log(`Question ${question.id}: Found matching option by label: ${correctAnswerId}`);
-        }
-        
-        // If still not found, try text content matching
-        if (correctAnswerId === null) {
-          // Look for an option containing the correct answer text
-          const correctOptionByText = question.options?.findIndex(
-            (opt: any) => opt.text && question.correctAnswer && 
-                           opt.text.toLowerCase().includes(question.correctAnswer.toLowerCase())
-          );
-          
-          if (correctOptionByText >= 0) {
-            correctAnswerId = correctOptionByText.toString();
-            console.log(`Question ${question.id}: Found matching option by text content: ${correctAnswerId}`);
-          }
-        }
-      }
-    } else {
-      // Find an option with isCorrect property
-      const correctOption = question.options?.find((opt: any) => opt.isCorrect === true);
-      
-      if (correctOption) {
-        if (correctOption.id !== undefined) {
-          correctAnswerId = correctOption.id.toString();
-        } else {
-          // Find the index of this option
-          const optionIndex = question.options.findIndex((opt: any) => opt.isCorrect === true);
-          if (optionIndex >= 0) {
-            correctAnswerId = optionIndex.toString();
-          }
-        }
-        
-        console.log(`Question ${question.id}: Found option with isCorrect property: ${correctAnswerId}`);
-      }
+    // Store the correct answer label in our map
+    correctAnswerMap[question.id] = correctLabel;
+    
+    // Log the determined correct answer for debugging
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Question ${question.id}: Correct answer determined to be ${correctLabel || 'unknown'}`);
     }
-    
-    // If we still couldn't determine the answer, try direct matching of option indices
-    if (correctAnswerId === null && question.options) {
-      // If the correctAnswer is a single letter like 'A', 'B', 'C', 'D'
-      if (typeof question.correctAnswer === 'string' && question.correctAnswer.length === 1) {
-        // Convert letter to index (A=0, B=1, C=2, D=3)
-        const letterIndex = question.correctAnswer.toUpperCase().charCodeAt(0) - 65;
-        if (letterIndex >= 0 && letterIndex < question.options.length) {
-          correctAnswerId = letterIndex.toString();
-          console.log(`Question ${question.id}: Mapped letter ${question.correctAnswer} to index ${correctAnswerId}`);
-        }
-      }
-    }
-    
-    // Last resort: If we still have no answer for question 1 about spurious drugs,
-    // default to option D which is known to be correct
-    if (correctAnswerId === null && 
-       (question.id === 1 || question.questionNumber === 1) && 
-       question.text && question.text.includes('Spurious drug')) {
-      correctAnswerId = '3'; // Option D index
-      console.log(`Question ${question.id}: Applied fallback for 'Spurious drug' question`);
-    }
-    
-    // Log warning if we still couldn't determine the correct answer
-    if (correctAnswerId === null) {
-      console.warn(`Question ${question.id}: Could not determine correct answer`, question);
-    }
-    
-    correctAnswerMap[question.id] = correctAnswerId;
   }
   
   // Create the status map
