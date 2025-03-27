@@ -89,7 +89,10 @@ export const LoginValidationError: React.FC<LoginValidationErrorProps> = ({
             <strong>Security Notice:</strong> For your account security, we only allow one active session at a time.
           </p>
           <p className="text-sm text-amber-800 mt-1">
-            Choosing "Log Out Other Devices" will immediately terminate all your other active sessions.
+            Choosing "Log Out Other Devices" will immediately terminate all your other active sessions and allow you to continue with this session.
+          </p>
+          <p className="text-sm text-amber-800 mt-1">
+            If you did not attempt to log in from another device, please consider changing your password for added security.
           </p>
         </div>
       );

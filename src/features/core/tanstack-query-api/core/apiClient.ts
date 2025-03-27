@@ -126,19 +126,20 @@ apiClient.interceptors.request.use(
 const token = tokenManager.getToken();
 const sessionId = tokenManager.getSessionId();
 
+// Always add headers object if it doesn't exist
+config.headers = config.headers || {};
+
+// Add authorization header if token exists
 if (token) {
-    config.headers = {
-      ...config.headers,
-    Authorization: `Bearer ${token}`
-  };
-  
-  // Add session ID if available
-  if (sessionId) {
-    config.headers = {
-      ...config.headers,
-      'X-Session-ID': sessionId
-    };
-  }
+  config.headers.Authorization = `Bearer ${token}`;
+  logger.debug('[API] Added auth token to request');
+}
+
+// Always include session ID if available (even if no token)
+// This is critical for anti-sharing features to work correctly
+if (sessionId) {
+  config.headers['X-Session-ID'] = sessionId;
+  logger.debug('[API] Added session ID to request headers');
 }
     
     return config;
