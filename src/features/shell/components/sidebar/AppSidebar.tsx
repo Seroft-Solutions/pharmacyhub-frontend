@@ -155,24 +155,6 @@ export function AppSidebar({
     }
   ] : [];
   
-  // Other menu sections (only for non-admin view)
-  const otherItems = !isAdmin ? [
-    {
-      id: "settings",
-      label: "Settings",
-      href: "/settings",
-      icon: Settings,
-      isActive: pathname === "/settings" || pathname?.startsWith("/settings/")
-    },
-    {
-      id: "help",
-      label: "Help & Support",
-      href: "/help",
-      icon: HelpCircle,
-      isActive: pathname === "/help" || pathname?.startsWith("/help/")
-    }
-  ] : [];
-  
   // Mobile specific click handler to close sidebar after navigation
   const handleItemClick = (href: string) => {
     router.push(href);
@@ -285,25 +267,6 @@ export function AppSidebar({
           </div>
         )}
         
-        {/* Other sections - Only for non-admin users */}
-        {!isAdmin && otherItems.length > 0 && (
-          <div className="mt-4">
-            <SidebarMenu>
-              {otherItems.map(item => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    onClick={() => handleItemClick(item.href)}
-                    isActive={item.isActive}
-                    tooltip={item.label}
-                  >
-                    <item.icon className="mr-2 h-4 w-4" />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </div>
-        )}
       </SidebarContent>
       
       <SidebarFooter className="p-3 text-xs text-muted-foreground border-t">
