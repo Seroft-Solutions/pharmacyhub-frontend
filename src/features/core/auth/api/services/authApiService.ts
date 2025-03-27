@@ -23,6 +23,12 @@ import type {
   PasswordChangeRequest,
   UserUpdatePayload
 } from '../types';
+
+// Extended AuthResponse type with session information
+interface ExtendedAuthResponse extends AuthResponse {
+  sessionId?: string;
+  validationStatus?: string;
+}
 import { logger } from '@/shared/lib/logger';
 
 /**
@@ -229,7 +235,7 @@ export const authApiService = createExtendedApiService<User, {
       });
       
       try {
-        const response = await apiClient.post<AuthResponse>(socialAuthEndpoint, payload);
+        const response = await apiClient.post<ExtendedAuthResponse>(socialAuthEndpoint, payload);
         
         // Store tokens if available
         if (response.data?.tokens) {
@@ -237,6 +243,19 @@ export const authApiService = createExtendedApiService<User, {
           logger.debug('[Auth] Successfully stored tokens from Google login');
         } else {
           logger.warn('[Auth] No tokens received from Google login response');
+        }
+        
+        // Store session ID if available
+        if (response.data?.sessionId) {
+          logger.debug('[Auth] Storing session ID from social login response:', response.data.sessionId);
+          sessionStorage.setItem('sessionId', response.data.sessionId);
+        } else {
+          logger.debug('[Auth] No session ID in social login response');
+        }
+        
+        // Log validation status if available
+        if (response.data?.validationStatus) {
+          logger.debug('[Auth] Session validation status:', response.data.validationStatus);
         }
         
         return response;

@@ -22,11 +22,22 @@ export const validateLogin = async (
   ipAddress?: string,
 ): Promise<LoginValidationResult> => {
   try {
+    // Get the existing session ID from storage if available
+    const sessionId = sessionStorage.getItem('sessionId');
+    
+    // Set up headers with session ID if available
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Add session ID to headers if available
+    if (sessionId) {
+      headers['X-Session-ID'] = sessionId;
+    }
+    
     const response = await fetch(`${API_PATH}/validate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         userId,
         deviceId,

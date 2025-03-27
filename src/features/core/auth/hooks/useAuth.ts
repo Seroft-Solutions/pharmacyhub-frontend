@@ -67,7 +67,7 @@ export const useAuth = () => {
   }, [resetPasswordMutation]);
 
   // Social login callback function to process code from OAuth provider
-  const processSocialLogin = useCallback(async (code: string, deviceInfo?: Record<string, string>): Promise<UserProfile> => {
+  const processSocialLogin = useCallback(async (code: string, deviceInfo?: Record<string, string>): Promise<any> => {
     try {
       // Get device info if not provided
       const deviceData = deviceInfo || tokenManager.getAuthDataForLogin();
@@ -86,7 +86,8 @@ export const useAuth = () => {
       // Initialize token manager with the response
       tokenManager.initializeFromAuthResponse(unwrappedResponse);
       
-      return unwrappedResponse.user;
+      // Return the complete unwrapped response including user, tokens, sessionId, etc.
+      return unwrappedResponse;
     } catch (error) {
       console.error('Social login processing error:', error);
       throw error;

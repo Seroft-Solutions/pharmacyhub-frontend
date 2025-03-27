@@ -131,6 +131,16 @@ apiClient.interceptors.request.use(
       };
     }
     
+    // Add session ID if available
+    const sessionId = sessionStorage.getItem('sessionId');
+    if (sessionId) {
+      logger.debug('Adding session ID to request:', sessionId);
+      config.headers = {
+        ...config.headers,
+        'X-Session-ID': sessionId
+      };
+    }
+    
     return config;
   },
   (error: AxiosError) => {

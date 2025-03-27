@@ -89,9 +89,16 @@ function AuthCallbackContent() {
           hasTokens: !!loginResponse?.tokens
         });
         
-        // Validate session for anti-sharing protection
-        if (loginResponse?.user?.id) {
-          logger.debug('[Social Auth] Validating session for user:', loginResponse.user.id);
+        // Store session ID if provided in the response
+        if (loginResponse?.sessionId) {
+          logger.info('[Social Auth] Session ID received directly from login response:', loginResponse.sessionId);
+          sessionStorage.setItem('sessionId', loginResponse.sessionId);
+          setSessionId(loginResponse.sessionId);
+        }
+        
+        // Validate session for anti-sharing protection if no session ID yet
+        if (!loginResponse?.sessionId && loginResponse?.user?.id) {
+          logger.debug('[Social Auth] No session ID in response, validating session for user:', loginResponse.user.id);
           const validationResult = await validateSession(loginResponse.user.id.toString());
           
           // Handle session validation
@@ -113,7 +120,8 @@ function AuthCallbackContent() {
           
           // Store session ID if provided
           if (validationResult.sessionId) {
-            logger.debug('[Social Auth] Storing session ID:', validationResult.sessionId);
+            logger.debug('[Social Auth] Storing session ID from validation result:', validationResult.sessionId);
+            sessionStorage.setItem('sessionId', validationResult.sessionId);
             setSessionId(validationResult.sessionId);
           }
         }
