@@ -58,6 +58,9 @@ export const LoginForm = () => {
   // Get resend verification mutation
   const { mutateAsync: resendVerification } = authService.useResendVerification();
   
+  // Check if we should force show the dialog based on the error message
+  const [forceShowDialog, setForceShowDialog] = useState(false);
+  
   // Add additional effect to detect anti-sharing errors in the error message and show dialog
   useEffect(() => {
     if (error && (
@@ -69,6 +72,8 @@ export const LoginForm = () => {
       // This is a session conflict - explicitly show the dialog
       const { setLoginStatus } = useAntiSharingStore.getState();
       setLoginStatus(LoginStatus.TOO_MANY_DEVICES);
+      // Force show the dialog unconditionally
+      setForceShowDialog(true);
       setShowValidationError(true);
       
       console.log('[Auth] Showing anti-sharing dialog due to error:', error);
@@ -287,10 +292,13 @@ export const LoginForm = () => {
       
       {/* Anti-sharing protection modals */}
       <LoginValidationError 
-        isOpen={showValidationError}
+        isOpen={showValidationError || forceShowDialog}
         status={loginStatus}
         onContinue={handleValidationContinue}
-        onCancel={handleCancel}
+        onCancel={() => {
+          handleCancel();
+          setForceShowDialog(false);
+        }}
         isTerminating={isTerminating}
         message="You are already logged in from another device. For security reasons, we only allow one active session at a time."
       />
