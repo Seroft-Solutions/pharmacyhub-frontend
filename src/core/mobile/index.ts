@@ -7,6 +7,9 @@
  * - Mobile-specific behaviors
  */
 
+// Import mobile styles to ensure they're loaded
+import './utils/mobile-styles.css';
+
 // Re-export from components
 export * from './components';
 
@@ -18,6 +21,9 @@ export * from './services';
 
 // Re-export from state
 export * from './state';
+
+// Re-export from store
+export * from './store';
 
 // Re-export from types
 export * from './types';

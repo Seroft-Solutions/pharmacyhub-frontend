@@ -1,8 +1,13 @@
 /**
- * @fileoverview Mobile components public API
- * This file exports all mobile-specific components
+ * Mobile Components
+ * 
+ * This module exports all mobile-specific UI components
  */
 
-// Export mobile-specific components here
-
-export {};
+export { 
+  MobileWrapper,
+  MobileOnly,
+  DesktopOnly,
+  TabletAndDesktop,
+  ResponsiveContainer
+} from './MobileWrapper';

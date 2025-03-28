@@ -1,0 +1,30 @@
+/**
+ * Mobile-specific styles
+ */
+
+/* Mobile-specific CSS variables */
+:root {
+  --mobile-max-width: 480px;
+  --tablet-max-width: 768px;
+  --desktop-min-width: 769px;
+}
+
+/* Mobile helper classes */
+.mobile-only {
+  display: block;
+}
+
+.desktop-only {
+  display: none;
+}
+
+/* Media queries for responsive design */
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none;
+  }
+  
+  .desktop-only {
+    display: block;
+  }
+}

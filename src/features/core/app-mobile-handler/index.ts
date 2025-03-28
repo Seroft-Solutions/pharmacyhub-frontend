@@ -1,6 +1,8 @@
 /**
  * Mobile Support Feature
  * 
+ * @deprecated This module has been migrated to `@/core/mobile`. Please update your imports.
+ * 
  * A centralized feature for mobile viewport detection and responsive components.
  * Provides utilities, components, and state management for handling different device sizes.
  */

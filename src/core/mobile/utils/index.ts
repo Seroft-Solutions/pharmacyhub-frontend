@@ -1,8 +1,14 @@
 /**
- * @fileoverview Mobile utilities public API
- * This file exports all mobile-specific utilities
+ * Mobile Utilities
+ * 
+ * This module exports all mobile-specific utility functions
  */
 
-// Export mobile-specific utilities here
-
-export {};
+export {
+  isMobile,
+  isTablet,
+  isDesktop,
+  isPortrait,
+  isLandscape,
+  getDeviceType
+} from './isMobile';
