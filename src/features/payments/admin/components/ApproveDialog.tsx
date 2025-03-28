@@ -65,7 +65,10 @@ export const ApproveDialog: React.FC<ApproveDialogProps> = ({
               <PaymentScreenshot 
                 screenshotData={paymentRequest.screenshotData}
                 attachmentUrl={paymentRequest.attachmentUrl}
+                paymentId={paymentRequest.id}
                 className="h-full w-full"
+                title={`Payment evidence #${paymentRequest.id}`}
+                description="Evidence of payment for approval"
               />
             </div>
             

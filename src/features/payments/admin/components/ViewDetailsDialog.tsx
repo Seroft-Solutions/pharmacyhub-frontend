@@ -184,6 +184,7 @@ export const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
               <PaymentScreenshot 
                 screenshotData={paymentRequest.screenshotData}
                 attachmentUrl={paymentRequest.attachmentUrl}
+                paymentId={paymentRequest.id}
                 className="w-full max-w-md mx-auto"
                 title={`Payment Evidence - Transaction #${paymentRequest.id}`}
                 description={`Submitted by ${getUserDisplayName(paymentRequest)} on ${formatDate(paymentRequest.createdAt)}`}

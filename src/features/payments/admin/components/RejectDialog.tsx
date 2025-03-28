@@ -86,8 +86,11 @@ export const RejectDialog: React.FC<RejectDialogProps> = ({
                 <PaymentScreenshot 
                   screenshotData={paymentRequest.screenshotData}
                   attachmentUrl={paymentRequest.attachmentUrl}
+                  paymentId={paymentRequest.id}
                   className="h-full w-full rounded"
                   isViewable={false}
+                  title={`Payment evidence #${paymentRequest.id}`}
+                  description="Evidence of payment for rejection"
                 />
               </div>
               <Button
