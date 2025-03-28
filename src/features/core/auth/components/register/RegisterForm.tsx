@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RegistrationSuccess } from './RegistrationSuccess';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -67,9 +67,8 @@ const validateRegistrationForm = (data: typeof initialFormData) => {
   // Password validation
   if (!data.password) {
     errors.password = 'Password is required';
-  } else if (data.password.length !== 8) {
-    errors.password = 'Password must be exactly 8 characters';
   }
+  // No other password requirements
   
   // Confirm password validation
   if (data.password !== data.confirmPassword) {
@@ -86,8 +85,17 @@ const validateRegistrationForm = (data: typeof initialFormData) => {
   }
   
   // Phone validation
-  if (data.phoneNumber && !/^\+?\d{10,15}$/.test(data.phoneNumber.replace(/[\s()-]/g, ''))) {
-    errors.phoneNumber = 'Invalid phone number';
+  if (data.phoneNumber) {
+    // Remove spaces, dashes, and parentheses for validation
+    const cleanNumber = data.phoneNumber.replace(/[\s()-]/g, '');
+    
+    // Pakistani number format validation: either +923XXXXXXXXX or 03XXXXXXXXX
+    const pakWithCodeRegex = /^\+92\d{10}$/; // +923119712470 format
+    const pakWithoutCodeRegex = /^03\d{9}$/;  // 03119712470 format
+    
+    if (!pakWithCodeRegex.test(cleanNumber) && !pakWithoutCodeRegex.test(cleanNumber)) {
+      errors.phoneNumber = 'Invalid phone number. Use format 03XXXXXXXXX or +923XXXXXXXXX';
+    }
   }
   
   // Terms validation
@@ -106,6 +114,9 @@ export const RegisterForm = () => {
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Debounce timer for phone validation
+  const phoneValidationTimer = useRef<NodeJS.Timeout | null>(null);
   
   const { register, login, connectivityStatus = { hasIssues: false } } = useAuth();
   const router = useRouter();
@@ -148,9 +159,39 @@ export const RegisterForm = () => {
     if (name === 'password') {
       setPasswordStrength(calculatePasswordStrength(value));
     }
+    
+    // Instant validation for phone number
+    if (name === 'phoneNumber') {
+      // Clear previous validation timer
+      if (phoneValidationTimer.current) {
+        clearTimeout(phoneValidationTimer.current);
+      }
+      
+      // Don't validate empty field
+      if (!value) {
+        setErrors(prev => ({ ...prev, phoneNumber: '' }));
+        return;
+      }
+      
+      // Set a timer for validation to avoid interrupting typing
+      phoneValidationTimer.current = setTimeout(() => {
+        const cleanNumber = value.replace(/[\s()-]/g, '');
+        const pakWithCodeRegex = /^\+92\d{10}$/;  // +923119712470 format
+        const pakWithoutCodeRegex = /^03\d{9}$/;   // 03119712470 format
+        
+        if (!pakWithCodeRegex.test(cleanNumber) && !pakWithoutCodeRegex.test(cleanNumber)) {
+          setErrors(prev => ({ 
+            ...prev, 
+            phoneNumber: 'Invalid phone number. Use format 03XXXXXXXXX or +923XXXXXXXXX'
+          }));
+        } else {
+          setErrors(prev => ({ ...prev, phoneNumber: '' }));
+        }
+      }, 300); // 300ms delay to let user type
+    }
 
-    // Clear error when field is modified
-    if (errors[name as keyof typeof initialFormData]) {
+    // Clear error when field is modified (except for phone since we handle it above)
+    if (errors[name as keyof typeof initialFormData] && name !== 'phoneNumber') {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
@@ -247,17 +288,6 @@ export const RegisterForm = () => {
         email: errorMessage
       });
       setCurrentStep('account'); // Return to first step on error
-    }
-  };
-  
-  const getPasswordStrengthColor = () => {
-    switch(passwordStrength.label) {
-      case 'very-weak': return 'bg-red-500';
-      case 'weak': return 'bg-orange-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'strong': return 'bg-green-500';
-      case 'very-strong': return 'bg-green-600';
-      default: return 'bg-gray-200';
     }
   };
 
@@ -383,29 +413,6 @@ export const RegisterForm = () => {
           )}
         </div>
         
-        {/* Password strength indicator */}
-        <div className="mt-2">
-          <div className="flex items-center">
-            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${getPasswordStrengthColor()} ${
-                  passwordStrength.label === 'very-weak' ? 'w-1/5' :
-                  passwordStrength.label === 'weak' ? 'w-2/5' :
-                  passwordStrength.label === 'medium' ? 'w-3/5' :
-                  passwordStrength.label === 'strong' ? 'w-4/5' : 'w-full'
-                }`}
-              />
-            </div>
-            <span className="ml-2 text-xs font-medium text-gray-500 min-w-20">
-              {passwordStrength.label.replace(/-/g, ' ')}
-            </span>
-          </div>
-          {passwordStrength.suggestions.length > 0 && (
-            <p className="mt-1 text-xs text-gray-500">
-              {passwordStrength.suggestions[0]}
-            </p>
-          )}
-        </div>
       </div>
 
       <div className="space-y-2">
@@ -505,7 +512,7 @@ export const RegisterForm = () => {
             id="phoneNumber"
             name="phoneNumber"
             type="tel"
-            placeholder="+1 (555) 123-4567"
+            placeholder="03XXXXXXXXX or +923XXXXXXXXX"
             autoComplete="tel"
             value={formData.phoneNumber}
             onChange={handleChange}
@@ -515,7 +522,7 @@ export const RegisterForm = () => {
             <p className="mt-1 text-sm text-red-500">{errors.phoneNumber}</p>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-1">We'll use this number for account verification and important notifications</p>
+        <p className="text-xs text-gray-500 mt-1">We'll use this number for verification. Must be in format 03XXXXXXXXX or +923XXXXXXXXX.</p>
       </div>
       
       <div className="space-y-2">
