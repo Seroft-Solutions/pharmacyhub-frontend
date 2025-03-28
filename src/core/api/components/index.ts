@@ -5,4 +5,4 @@
  */
 
 export { default as QueryProvider } from './QueryProvider';
-export { default as ApiDebugger } from './ApiDebugger';
+export { default as ApiDebugger } from './debugger/ApiDebugger';
