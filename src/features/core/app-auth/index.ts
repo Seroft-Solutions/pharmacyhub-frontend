@@ -1,6 +1,8 @@
 /**
  * Auth Feature
  * 
+ * @deprecated This module has been migrated to `@/core/auth`. Please update your imports.
+ * 
  * This module exports all components, hooks, and utilities
  * related to authentication for easy access from other parts
  * of the application.

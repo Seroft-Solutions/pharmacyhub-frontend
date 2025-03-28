@@ -18,3 +18,9 @@ export * from './components';
 
 // Export types
 export * from './types';
+
+// Export admin functionality
+export * from './admin';
+
+// Export anti-sharing functionality
+export * from './anti-sharing';
