@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Medal, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile } from '../../../features/core/app-mobile-handler';
 
 interface PaperCategory {
   name: string;

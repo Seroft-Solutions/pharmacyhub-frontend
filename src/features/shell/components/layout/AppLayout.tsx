@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { forceAdminMode } from "../../store/roleStore";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { useSession } from "@/features/core/auth/hooks";
+import { useSession } from "@/features/core/app-auth/hooks";
 import { useIsMobile } from "@/features/ui/hooks";
 import ModernMinimalistLogo from "@/shared/ui/logo/ModernMinimalistLogo";
-import { DEV_CONFIG } from "@/features/core/auth/constants/config";
+import { DEV_CONFIG } from "@/features/core/app-auth/constants/config";
 import { logger } from '@/shared/lib/logger';
 
 // Import Zustand stores

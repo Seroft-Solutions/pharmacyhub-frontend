@@ -13,7 +13,7 @@ import {
   SidebarMenuSubButton
 } from '@/components/ui/sidebar';
 import { useSidebarStore } from '../../store/sidebarStore';
-import { useAuth } from '@/features/core/auth/hooks';
+import { useAuth } from '@/features/core/app-auth/hooks';
 
 interface NavMenuItem {
   id: string;

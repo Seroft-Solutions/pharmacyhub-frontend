@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ExamTimer } from '../common/ExamTimer';
 import { ExamTimerCard } from '../common/ExamTimerCard';
 import { QuestionNavigation } from './QuestionNavigation';
-import { useMobileStore, selectIsMobile, MobileOnly, DesktopOnly } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile, MobileOnly, DesktopOnly } from '../../../core/app-mobile-handler';
 
 interface ExamNavigationBarProps {
   currentIndex: number;

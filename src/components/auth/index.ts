@@ -9,26 +9,26 @@ export {
   PermissionCheck as AuthPermissionCheck,
   TokenRefresh,
   ProfileLoading
-} from '@/features/core/auth/components/feedback';
+} from '@/features/core/app-auth/components/feedback';
 
 export {
   AuthLayout
-} from '@/features/core/auth/components/layout';
+} from '@/features/core/app-auth/components/layout';
 
 export {
   LoginForm
-} from '@/features/core/auth/components/login';
+} from '@/features/core/app-auth/components/login';
 
 export {
   ForgotPasswordForm,
   ResetPasswordForm
-} from '@/features/core/auth/ui/password-recovery';
+} from '@/features/core/app-auth/ui/password-recovery';
 
 export {
   RegisterForm
-} from '@/features/core/auth/ui/register';
+} from '@/features/core/app-auth/ui/register';
 
 export {
   AuthGuard,
   RequireAuth
-} from '@/features/core/auth/components/protection';
+} from '@/features/core/app-auth/components/protection';

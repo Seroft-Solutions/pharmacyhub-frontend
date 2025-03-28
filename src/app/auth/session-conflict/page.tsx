@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAntiSharingStore } from '@/features/core/auth/anti-sharing/store';
-import { API_BASE_URLS } from '@/features/core/auth/api/constants/endpoints';
+import { useAntiSharingStore } from '@/features/core/app-auth/anti-sharing/store';
+import { API_BASE_URLS } from '@/features/core/app-auth/api/constants/endpoints';
 
 export default function SessionConflictPage() {
   const [isLoading, setIsLoading] = useState(false);

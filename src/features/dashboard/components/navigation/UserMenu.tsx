@@ -1,8 +1,8 @@
 "use client";
 
-import { usePermissions } from "@/features/core/rbac/hooks";
-import { useSession } from "@/features/core/auth/hooks";
-import { authService } from "@/features/core/auth/api/services/authService";
+import { usePermissions } from "@/features/core/app-rbac/hooks";
+import { useSession } from "@/features/core/app-auth/hooks";
+import { authService } from "@/features/core/app-auth/api/services/authService";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {

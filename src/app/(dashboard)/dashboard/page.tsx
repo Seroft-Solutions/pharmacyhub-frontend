@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePermissions, useAccess } from "@/features/core/rbac/hooks";
-import { useSession, useAuth } from "@/features/core/auth/hooks";
+import { usePermissions, useAccess } from "@/features/core/app-rbac/hooks";
+import { useSession, useAuth } from "@/features/core/app-auth/hooks";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -11,8 +11,8 @@ import { useRoleStore } from "@/features/shell/store/roleStore";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText, Medal, BookOpen } from "lucide-react";
 import { logger } from "@/shared/lib/logger";
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
-import { authService } from '@/features/core/auth/api/services/authService';
+import { useMobileStore, selectIsMobile } from '../../../features/core/app-mobile-handler';
+import { authService } from '@/features/core/app-auth/api/services/authService';
 
 function DashboardMetrics() {
   // Using useAccess for feature-specific checks

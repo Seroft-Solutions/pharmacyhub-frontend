@@ -3,7 +3,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import { AlertCircleIcon, CheckIcon, FileTextIcon, UploadIcon, DollarSignIcon } from 'lucide-react';
 import { processJsonExam } from '../../utils/jsonExamProcessor';
-import { useApiMutation } from '@/features/core/tanstack-query-api';
+import { useApiMutation } from '../../../core/app-api-handler';
 import { useQueryClient } from '@tanstack/react-query';
 import { useJsonExamUploadMutation, useUpdateExam } from '@/features/exams/api/hooks';
 import { Difficulty, PaperType, Question, Exam } from '../../types/StandardTypes';

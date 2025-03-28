@@ -7,7 +7,7 @@
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { apiClient } from '@/features/core/tanstack-query-api';
+import { apiClient } from '../../../core/app-api-handler';
 import { MANUAL_PAYMENT_ENDPOINTS } from '../api/constants/endpoints';
 
 // Types

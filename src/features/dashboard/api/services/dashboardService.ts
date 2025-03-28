@@ -8,7 +8,7 @@
  */
 
 import { Progress, Analytics, Recommendation } from '@/features/exams/progress/api/progressApi';
-import { apiClient } from '@/features/core/tanstack-query-api/core/apiClient';
+import { apiClient } from '@/features/core/app-api-handler/core/apiClient';
 import { getMockUserProgress, getMockAnalytics, getMockRecommendations } from '../mockBackend';
 import { logger } from '@/shared/lib/logger';
 

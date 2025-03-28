@@ -1,4 +1,4 @@
-import { PASSWORD_CONFIG as PASSWORD } from '@/features/core/auth/config/auth';
+import { PASSWORD_CONFIG as PASSWORD } from '@/features/core/app-auth/config/auth';
 
 interface PasswordValidationResult {
   isValid: boolean;

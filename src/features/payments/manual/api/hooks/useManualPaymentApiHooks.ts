@@ -4,7 +4,7 @@
  * Custom React Query hooks for manual payment operations
  */
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useApiMutation, useApiQuery } from '@/features/core/tanstack-query-api';
+import { useApiMutation, useApiQuery } from '../../../../core/app-api-handler';
 import { MANUAL_PAYMENT_ENDPOINTS } from '../constants/endpoints';
 import { 
   ManualPaymentSubmitRequest, 

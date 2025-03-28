@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { isAuthorized, type AuthConfig } from "@/utils/auth-utils";
 import { LoadingSpinner, LoadingOverlay } from "@/components/ui/loading-spinner";
-import { useAuth } from "@/features/core/auth/hooks";
+import { useAuth } from "@/features/core/app-auth/hooks";
 
 interface PermissionGuardProps extends AuthConfig {
   children: ReactNode;

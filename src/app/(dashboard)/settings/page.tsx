@@ -1,8 +1,8 @@
 "use client";
 
-import { AdminGuard } from "@/features/core/rbac/components";
-import { FeatureGuard } from "../../../features/core/rbac";
-import { useAuth } from "@/features/core/auth/hooks";
+import { AdminGuard } from "@/features/core/app-rbac/components";
+import { FeatureGuard } from "../../../features/core/app-rbac";
+import { useAuth } from "@/features/core/app-auth/hooks";
 
 // Basic settings component that's protected by admin role
 function BasicSettings() {

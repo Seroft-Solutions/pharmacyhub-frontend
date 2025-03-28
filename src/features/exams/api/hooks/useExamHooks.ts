@@ -4,7 +4,7 @@
  * Custom React Query hooks for exam operations
  */
 import { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { useApiMutation, useApiQuery } from '@/features/core/tanstack-query-api';
+import { useApiMutation, useApiQuery } from '../../../core/app-api-handler';
 import { EXAM_ENDPOINTS } from '../constants/endpoints';
 import { ExamPaper } from '../../types/StandardTypes';
 

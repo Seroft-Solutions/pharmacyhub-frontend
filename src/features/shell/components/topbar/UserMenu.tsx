@@ -12,7 +12,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/features/core/auth/hooks";
+import { useAuth } from "@/features/core/app-auth/hooks";
 import { Settings, User, CreditCard, LogOut, HelpCircle, Moon, Sun, UserCog } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";

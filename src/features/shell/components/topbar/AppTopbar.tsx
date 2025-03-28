@@ -34,7 +34,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 // Import Zustand stores
 import { useNavigationStore } from "../../store/navigationStore";
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile } from '../../../core/app-mobile-handler';
 
 // Import components
 import { UserMenu } from "./UserMenu";

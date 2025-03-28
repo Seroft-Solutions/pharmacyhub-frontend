@@ -5,7 +5,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile } from '../../../core/app-mobile-handler';
 
 interface SidebarTriggerMobileProps {
   className?: string;

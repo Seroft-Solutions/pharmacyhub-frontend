@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
 import { InfoIcon, AlertCircleIcon } from 'lucide-react';
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile } from '../../../core/app-mobile-handler';
 import { usePremiumExamInfo } from '@/features/payments/premium/components/PremiumExamInfoProvider';
 
 /**

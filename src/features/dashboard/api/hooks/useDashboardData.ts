@@ -15,7 +15,7 @@ import { useDashboardProgress, useDashboardAnalytics, useDashboardRecommendation
 import usePremiumStatus from '@/features/payments/premium/hooks/usePremiumStatus';
 import { usePaymentHistory } from '@/features/payments/api/hooks/usePaymentApiHooks';
 import { useUserManualRequests } from '@/features/payments/manual/api/hooks/useManualPaymentApiHooks';
-import { useAuth } from '@/features/core/auth';
+import { useAuth } from '../../../core/app-auth';
 import { useModelPapers, usePastPapers, useSubjectPapers } from '@/features/exams/api/hooks/useExamPaperHooks';
 
 export type TimeFilter = 'week' | 'month' | 'year' | 'all';

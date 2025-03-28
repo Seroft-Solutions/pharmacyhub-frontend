@@ -2,11 +2,11 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/features/core/auth/hooks/useAuth';
-import { useDeviceId } from '@/features/core/auth/anti-sharing/hooks/useDeviceId';
-import { useSessionValidation } from '@/features/core/auth/anti-sharing/hooks/useSessionValidation';
-import { useAntiSharingStore } from '@/features/core/auth/anti-sharing/store';
-import { LoginStatus } from '@/features/core/auth/anti-sharing/types';
+import { useAuth } from '@/features/core/app-auth/hooks/useAuth';
+import { useDeviceId } from '@/features/core/app-auth/anti-sharing/hooks/useDeviceId';
+import { useSessionValidation } from '@/features/core/app-auth/anti-sharing/hooks/useSessionValidation';
+import { useAntiSharingStore } from '@/features/core/app-auth/anti-sharing/store';
+import { LoginStatus } from '@/features/core/app-auth/anti-sharing/types';
 import { logger } from '@/shared/lib/logger';
 
 // Loading component for suspense fallback

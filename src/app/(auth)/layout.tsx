@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useAuth } from '@/features/core/auth/hooks';
+import { useAuth } from '@/features/core/app-auth/hooks';
 
 // Define ROUTES directly to avoid the undefined issue
 const ROUTES = {

@@ -7,7 +7,7 @@ import {
   createExtendedApiService, 
   apiClient, 
   ApiResponse 
-} from '@/features/core/tanstack-query-api';
+} from '../../../core/app-api-handler';
 import { PAYMENT_ENDPOINTS } from '../constants/endpoints';
 import { 
   PaymentInitRequest, 

@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import "@/features/core/mobile-support/utils/mobile-styles.css";
+import "@/features/core/app-mobile-handler/utils/mobile-styles.css";
 import AuthProvider from "@/app/providers/AuthProvider";
 import QueryProvider from "@/app/providers/QueryProvider";
 import AppManagerProvider from "@/app/providers/AppManagerProvider";

@@ -8,7 +8,7 @@ import {
   createExtendedApiService, 
   apiClient, 
   ApiResponse 
-} from '@/features/core/tanstack-query-api';
+} from '../../../core/app-api-handler';
 import { EXAM_ENDPOINTS } from '../constants';
 import type {
   Exam,

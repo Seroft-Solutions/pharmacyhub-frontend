@@ -45,8 +45,8 @@ import { Sheet, SheetContentNoClose } from "./SheetNoClose";
 // Import navigation data
 import { useNavigationStore } from '../../store/navigationStore';
 import { useSidebarStore } from '../../store/sidebarStore';
-import { useAuth } from '@/features/core/auth/hooks';
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useAuth } from '@/features/core/app-auth/hooks';
+import { useMobileStore, selectIsMobile } from '../../../core/app-mobile-handler';
 
 // Import admin features
 import { ADMIN_FEATURES } from '../../navigation/adminFeatures';

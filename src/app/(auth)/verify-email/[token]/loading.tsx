@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthLayout } from '@/features/core/auth/components/layout/AuthLayout';
+import { AuthLayout } from '@/features/core/app-auth/components/layout/AuthLayout';
 
 export default function Loading() {
   return (

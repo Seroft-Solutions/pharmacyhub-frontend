@@ -3,11 +3,11 @@
 // Import Toaster component to ensure toasts work correctly
 import { Toaster } from '@/components/ui/toaster';
 
-import { ResetPasswordForm } from '@/features/core/auth/components/passwordRecovery/ResetPasswordForm';
-import { AuthLayout } from '@/features/core/auth/components/layout/AuthLayout';
+import { ResetPasswordForm } from '@/features/core/app-auth/components/passwordRecovery/ResetPasswordForm';
+import { AuthLayout } from '@/features/core/app-auth/components/layout/AuthLayout';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { authService } from '@/features/core/auth/api/services/authService';
+import { authService } from '@/features/core/app-auth/api/services/authService';
 
 interface ResetPasswordPageProps {
   params: {

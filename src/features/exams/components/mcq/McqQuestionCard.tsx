@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Flag, Bookmark, HelpCircle, AlertCircle } from 'lucide-react';
 import { Question, UserAnswer } from '../../model/standardTypes';
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile } from '../../../core/app-mobile-handler';
 import { useMcqExamStore } from '../../store/mcqExamStore';
 import logger from '@/shared/lib/logger';
 

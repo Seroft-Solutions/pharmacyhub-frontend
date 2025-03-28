@@ -19,7 +19,7 @@ import {
   HelpCircleIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile } from '../../../core/app-mobile-handler';
 
 // Break down into smaller components
 const QuestionStatusLegend = ({ isMobile }) => {

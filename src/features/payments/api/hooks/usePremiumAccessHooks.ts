@@ -3,7 +3,7 @@
  *
  * Hooks for checking premium access status, implementing the "pay once, access all" feature
  */
-import { useApiQuery } from '@/features/core/tanstack-query-api';
+import { useApiQuery } from '../../../core/app-api-handler';
 
 // API endpoints for premium access
 const PREMIUM_ACCESS_ENDPOINTS = {

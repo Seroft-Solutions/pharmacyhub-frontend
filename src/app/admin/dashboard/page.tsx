@@ -21,7 +21,7 @@ import { PaymentStatistics, PaymentHistory, ViewDetailsDialog, PaymentDashboard 
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { forceAdminMode } from "@/features/shell/store/roleStore";
-import { useAuth } from "@/features/core/auth/hooks";
+import { useAuth } from "@/features/core/app-auth/hooks";
 import { logger } from '@/shared/lib/logger';
 
 export default function AdminDashboardPage() {

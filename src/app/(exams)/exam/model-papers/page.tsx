@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useModelPapers } from "@/features/exams/api";
-import { QueryProvider } from "@/features/core/tanstack-query-api/components/QueryProvider";
+import { QueryProvider } from "@/features/core/app-api-handler/components/QueryProvider";
 import { ExamPaperCard } from "@/features/exams/components/ExamPaperCard";
 import { ExamPaper, ExamPaperMetadata } from "@/features/exams/types/StandardTypes";
 // Spinner import removed as it's not used

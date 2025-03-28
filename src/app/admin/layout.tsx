@@ -5,7 +5,7 @@ import { AppLayout } from "@/features/shell";
 import { ADMIN_NAVIGATION, ADMIN_FEATURES } from "@/features/shell/navigation/adminFeatures";
 import { forceAdminMode } from "@/features/shell/store/roleStore";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/features/core/auth/hooks";
+import { useAuth } from "@/features/core/app-auth/hooks";
 import { logger } from '@/shared/lib/logger';
 
 /**

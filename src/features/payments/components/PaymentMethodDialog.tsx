@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card';
 import { CreditCard, Smartphone, Building } from 'lucide-react';
 import { PaymentMethod } from '../types';
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile } from '../../core/app-mobile-handler';
 
 interface PaymentMethodDialogProps {
   examId: number;

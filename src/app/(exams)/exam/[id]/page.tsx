@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container } from '@/components/layout/container';
-import { QueryProvider } from '@/features/core/tanstack-query-api/components/QueryProvider';
+import { QueryProvider } from '@/features/core/app-api-handler/components/QueryProvider';
 import ExamContainer from '@/features/exams/components/ExamContainer';
 import { useExam } from '@/features/exams/api/UseExamApi';
 import { Spinner } from '@/components/ui/spinner';

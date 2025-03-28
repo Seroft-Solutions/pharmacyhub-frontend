@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useSession } from '@/features/core/auth/hooks';
+import { useSession } from '@/features/core/app-auth/hooks';
 import { useRoleStore } from '../store/roleStore';
 import { logger } from '@/shared/lib/logger';
 

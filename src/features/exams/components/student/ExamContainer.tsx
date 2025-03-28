@@ -58,7 +58,7 @@ import {
   MobileOnly, 
   DesktopOnly,
   ResponsiveContainer
-} from '@/features/core/mobile-support';
+} from '../../../core/app-mobile-handler';
 
 // Import the ExamStartScreen component
 import { ExamStartScreen } from './ExamStartScreen';

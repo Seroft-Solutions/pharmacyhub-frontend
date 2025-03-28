@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { SessionMonitoring } from '@/features/core/auth/anti-sharing/components/admin';
+import { SessionMonitoring } from '@/features/core/app-auth/anti-sharing/components/admin';
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 

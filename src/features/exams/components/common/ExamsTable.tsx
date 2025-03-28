@@ -46,7 +46,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useApiMutation } from '@/features/core/tanstack-query-api';
+import { useApiMutation } from '../../../core/app-api-handler';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface ExamsTableProps {

@@ -4,7 +4,7 @@
  * Custom React Query hooks for payment statistics and analytics
  */
 import { UseQueryResult } from '@tanstack/react-query';
-import { useApiQuery } from '@/features/core/tanstack-query-api';
+import { useApiQuery } from '../../../../core/app-api-handler';
 import { MANUAL_PAYMENT_ENDPOINTS } from '../constants/endpoints';
 
 export interface PaymentStatistics {

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { QueryProvider } from '@/features/core/tanstack-query-api/components/QueryProvider';
+import { QueryProvider } from '@/features/core/app-api-handler/components/QueryProvider';
 import { Container } from '@/components/layout/container';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';

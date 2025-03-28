@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { BookmarkIcon, ChevronLeftIcon, ChevronRightIcon, FlagIcon, CheckCircleIcon, XCircleIcon, InfoIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile } from '../../../core/app-mobile-handler';
 
 // Break into smaller components for better reusability
 const ExplanationBox = ({ explanation, isMobile }) => {

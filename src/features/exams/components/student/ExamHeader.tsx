@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DollarSignIcon } from 'lucide-react';
 import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
-import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
+import { useMobileStore, selectIsMobile } from '../../../core/app-mobile-handler';
 
 interface ExamHeaderProps {
   title: string;
