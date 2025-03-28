@@ -1,6 +1,8 @@
 /**
  * TanStack Query API Integration
  * 
+ * @deprecated This module has been migrated to `@/core/api`. Please update your imports.
+ * 
  * This module provides a complete solution for API communication in React applications
  * using TanStack Query (formerly React Query). It includes a custom API client,
  * query hooks, service factories, and standardized types.

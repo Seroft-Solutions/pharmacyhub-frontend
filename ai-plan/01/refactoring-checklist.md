@@ -5,33 +5,33 @@ This checklist provides a sequential step-by-step guide for implementing the cor
 ## Phase 1: Structure Creation and Migration
 
 ### Task 01: Create New Core Directory Structure
-- [ ] 1.1. Create main `/src/core` directory (if not already existing)
-- [ ] 1.2. Create core subdirectories:
-  - [ ] `/src/core/auth`
-  - [ ] `/src/core/rbac`
-  - [ ] `/src/core/api`
-  - [ ] `/src/core/ui`
-  - [ ] `/src/core/utils`
-- [ ] 1.3. Create standard structure within each core subdirectory (components, hooks, etc.)
-- [ ] 1.4. Create placeholder index.ts files in each directory
+- [x] 1.1. Create main `/src/core` directory (if not already existing)
+- [x] 1.2. Create core subdirectories:
+  - [x] `/src/core/auth`
+  - [x] `/src/core/rbac`
+  - [x] `/src/core/api`
+  - [x] `/src/core/ui`
+  - [x] `/src/core/utils`
+- [x] 1.3. Create standard structure within each core subdirectory (components, hooks, etc.)
+- [x] 1.4. Create placeholder index.ts files in each directory
 
 ### Task 02: Migrate app-api-handler to core/api
-- [ ] 2.1. Assess app-api-handler components and structure
-- [ ] 2.2. Move base API client setup to `/core/api/services`
-- [ ] 2.3. Move API-related hooks to `/core/api/hooks`
-- [ ] 2.4. Move API-related types to `/core/api/types`
-- [ ] 2.5. Move schema helpers to `/core/api/utils`
-- [ ] 2.6. Define clear public API in core/api/index.ts
+- [x] 2.1. Assess app-api-handler components and structure
+- [x] 2.2. Move base API client setup to `/core/api/services`
+- [x] 2.3. Move API-related hooks to `/core/api/hooks`
+- [x] 2.4. Move API-related types to `/core/api/types`
+- [x] 2.5. Move schema helpers to `/core/api/utils`
+- [x] 2.6. Define clear public API in core/api/index.ts
 
 ### Task 03: Migrate app-auth to core/auth
-- [ ] 3.1. Assess app-auth components and structure
-- [ ] 3.2. Move auth components to `/core/auth/components`
-- [ ] 3.3. Move auth hooks to `/core/auth/hooks`
-- [ ] 3.4. Move auth types to `/core/auth/types`
-- [ ] 3.5. Move auth state management to `/core/auth/state`
-- [ ] 3.6. Move auth API calls to `/core/auth/api`
-- [ ] 3.7. Move auth utilities to `/core/auth/utils`
-- [ ] 3.8. Define clear public API in core/auth/index.ts
+- [x] 3.1. Assess app-auth components and structure
+- [x] 3.2. Move auth components to `/core/auth/components`
+- [x] 3.3. Move auth hooks to `/core/auth/hooks`
+- [x] 3.4. Move auth types to `/core/auth/types`
+- [x] 3.5. Move auth state management to `/core/auth/state`
+- [x] 3.6. Move auth API calls to `/core/auth/api`
+- [x] 3.7. Move auth utilities to `/core/auth/utils`
+- [x] 3.8. Define clear public API in core/auth/index.ts
 
 ### Task 04: Migrate app-rbac to core/rbac
 - [ ] 4.1. Assess app-rbac components and structure
@@ -143,7 +143,7 @@ This checklist provides a sequential step-by-step guide for implementing the cor
 - [ ] 15.7. Run tests to verify functionality
 
 ### Task 16: Update documentation
-- [ ] 16.1. Create/update README.md for each core module
+- [x] 16.1. Create/update README.md for each core module
 - [ ] 16.2. Ensure component JSDoc comments
 - [ ] 16.3. Update architecture documentation
 - [ ] 16.4. Document best practices

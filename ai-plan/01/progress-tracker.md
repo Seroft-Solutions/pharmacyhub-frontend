@@ -6,7 +6,7 @@ This document helps track the progress of the core architecture refactoring proj
 
 | Phase | Status | Progress | Completion Date |
 |-------|--------|----------|-----------------|
-| Phase 1: Structure Creation and Migration | In Progress | 20% | |
+| Phase 1: Structure Creation and Migration | In Progress | 60% | |
 | Phase 2: Component Refactoring | Not Started | 0% | |
 | Phase 3: State Management Implementation | Not Started | 0% | |
 | Phase 4: Architecture Principle Application | Not Started | 0% | |
@@ -17,8 +17,8 @@ This document helps track the progress of the core architecture refactoring proj
 | Task ID | Task Description | Status | Assigned To | Progress | Completion Date |
 |---------|-----------------|--------|-------------|----------|-----------------|
 | 01      | Create new core directory structure | Completed | Claude | 100% | 03/29/2025 |
-| 02      | Migrate app-api-handler to core/api | Not Started | | 0% | |
-| 03      | Migrate app-auth to core/auth | Not Started | | 0% | |
+| 02      | Migrate app-api-handler to core/api | Completed | Claude | 100% | 03/29/2025 |
+| 03      | Migrate app-auth to core/auth | Completed | Claude | 100% | 03/29/2025 |
 | 04      | Migrate app-rbac to core/rbac | Not Started | | 0% | |
 | 05      | Migrate app-mobile-handler to core/mobile (if needed) | Not Started | | 0% | |
 | 06      | Refactor core/api components | Not Started | | 0% | |
@@ -55,10 +55,13 @@ This document helps track the progress of the core architecture refactoring proj
   - Created new core directory structure (Task 01)
   - Added placeholder index.ts files for all modules
   - Created README.md for core module documentation
+  - Migrated app-api-handler to core/api (Task 02)
+  - Migrated app-auth to core/auth (Task 03)
+  - Created marker for deprecated code
 - Issues encountered:
-  - None
+  - Some integration points between auth and API need to be revisited once both modules are fully migrated
 - Next steps:
-  - Proceed with Task 02: Migrating app-api-handler to core/api
+  - Proceed with Task 04: Migrating app-rbac to core/rbac
 
 ## Testing Status
 
@@ -74,3 +77,5 @@ This document helps track the progress of the core architecture refactoring proj
 
 - Decision 1: [03/29/2025] - Created directory structure following the architecture principles
 - Decision 2: [03/29/2025] - Used placeholder index.ts files for all modules to establish the pattern for proper public APIs
+- Decision 3: [03/29/2025] - Migrated app-api-handler and marked it as deprecated instead of deleting immediately to maintain compatibility during the transition
+- Decision 4: [03/29/2025] - Migrated app-auth with minimal changes to ensure backward compatibility while moving towards the new architecture
