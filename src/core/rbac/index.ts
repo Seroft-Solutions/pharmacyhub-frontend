@@ -21,3 +21,34 @@ export * from './types';
 
 // Re-export from services
 export * from './services';
+
+// Re-export from constants
+export * from './constants';
+
+// Re-export from contexts
+export * from './contexts';
+
+// Re-export from api
+export * from './api';
+
+// Re-export from registry
+export * from './registry';
+
+// Re-export permissions
+export * from './permissions';
+
+/**
+ * Initialize the RBAC feature
+ * This should be called at application startup
+ */
+export function initializeRbac() {
+  // Initialize all registered features
+  import('./registry').then(({ initializeFeatures }) => {
+    initializeFeatures();
+  });
+  
+  // Initialize the feature flag service
+  import('./services/featureFlagService').then(({ featureFlagService }) => {
+    featureFlagService.initialize();
+  });
+}

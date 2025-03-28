@@ -1,6 +1,8 @@
 /**
  * RBAC (Role-Based Access Control) Feature
  * 
+ * @deprecated This module has been migrated to `@/core/rbac`. Please update your imports.
+ * 
  * This feature provides a comprehensive solution for managing and enforcing
  * access control based on user roles and permissions.
  * 
