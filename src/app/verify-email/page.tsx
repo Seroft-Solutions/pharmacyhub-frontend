@@ -32,7 +32,8 @@ function VerifyEmailContent() {
     }
 
     // Redirect directly to backend verification endpoint
-    window.location.href = `/api/auth/verify?token=${encodeURIComponent(token)}`;
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+    window.location.href = `${backendUrl}/api/auth/verify?token=${encodeURIComponent(token)}`;
   }, [searchParams, router]);
 
   return (
