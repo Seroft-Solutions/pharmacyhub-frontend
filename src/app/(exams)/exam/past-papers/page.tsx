@@ -178,18 +178,27 @@ function PastPapersContent() {
 
 // Helper function to convert Exam to ExamPaperMetadata format
 function convertExamToMetadata(exam: Exam): ExamPaperMetadata {
+  // Debug the exam data structure to see what fields are available
+  console.log('Converting exam data:', exam);
+  
   return {
     id: exam.id,
     title: exam.title,
     description: exam.description || '',
-    difficulty: 'hard', // Default for past papers
+    // Check for difficulty property before defaulting to 'hard'
+    difficulty: exam.difficulty ? 
+      (typeof exam.difficulty === 'string' ? exam.difficulty.toLowerCase() : 'hard') : 
+      'hard',
     topics_covered: exam.tags || [],
-    total_questions: exam.questions?.length || 0,
-    time_limit: exam.duration || 0,
-    is_premium: exam.premium || false, // Use the actual premium status from backend
+    // Check for questionCount (from ExamPaper) or questions.length (from Exam)
+    total_questions: (exam as any).questionCount || exam.questions?.length || 0,
+    // Check for durationMinutes (from ExamPaper) or duration (from Exam)
+    time_limit: (exam as any).durationMinutes || exam.duration || 0,
+    is_premium: exam.premium || false,
     premium: exam.premium || false,
-    price: exam.premium ? 2000 : 0, // Fixed price of PKR 2,000 for premium papers
-    purchased: exam.purchased || false, // Track purchased status
+    price: exam.premium ? ((exam as any).price || 2000) : 0,
+    purchased: exam.purchased || false,
+    universalAccess: (exam as any).universalAccess || false,
     source: 'past',
     paymentStatus: exam.paymentStatus || 'PAID', // Default to PAID for past papers
   };

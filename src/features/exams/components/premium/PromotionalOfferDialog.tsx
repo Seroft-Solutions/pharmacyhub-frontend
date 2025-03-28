@@ -39,8 +39,8 @@ export const PromotionalOfferDialog: React.FC<PromotionalOfferDialogProps> = ({
   paper,
 }) => {
   const benefits = [
-    { text: "Access to all premium exams", icon: Award },
-    { text: "Unlimited attempts", icon: Infinity },
+    { text: "Access to ALL paper types (Past, Model, Subject)", icon: Award },
+    { text: "One-time payment, lifetime access", icon: Infinity },
     { text: "Detailed performance analytics", icon: BookOpen },
     { text: "24/7 access", icon: ShieldCheck },
   ];
@@ -70,11 +70,12 @@ export const PromotionalOfferDialog: React.FC<PromotionalOfferDialogProps> = ({
             </div>
             
             <DialogTitle className="text-2xl font-bold mb-2">
-              Limited Time Premium Deal!
+              Limited Time Premium Deal!<br />
+              <span className="text-xl">(Until PPSC Exam)</span>
             </DialogTitle>
             
             <DialogDescription className="text-white/90 text-base mb-4">
-              Unlock unlimited access to all premium exam papers at an incredible discount.
+            Unlock unlimited access to all premium exam papers (Past Papers, Model Papers, and Subject Papers) at an incredible discount. One payment gives you access to everything!
             </DialogDescription>
             
             <div className="flex items-center space-x-3">
@@ -97,25 +98,13 @@ export const PromotionalOfferDialog: React.FC<PromotionalOfferDialogProps> = ({
           <div className="absolute -left-8 -bottom-8 w-24 h-24 bg-white/10 rounded-full"></div>
         </div>
         
-        {/* Paper preview section */}
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
-          <h3 className="text-sm font-medium text-slate-500">Selected Paper</h3>
-          <p className="text-base font-bold text-slate-800">{paper.title}</p>
-          <div className="flex items-center mt-1">
-            <Badge className="mr-2 bg-blue-100 text-blue-800 border-blue-200">
-              {paper.source}
-            </Badge>
-            <span className="text-sm text-slate-500">
-              {paper.total_questions} questions • {paper.time_limit} minutes
-            </span>
-          </div>
-        </div>
+        {/* Paper preview section removed as requested */}
         
         {/* Benefits section */}
         <div className="px-6 py-4">
           <h3 className="flex items-center text-lg font-semibold text-slate-800 mb-4">
             <BadgePercent className="h-5 w-5 text-green-600 mr-2" />
-            Pay Once, Get Everything
+            One-Time Payment, Access to ALL Paper Types
           </h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -127,11 +116,20 @@ export const PromotionalOfferDialog: React.FC<PromotionalOfferDialogProps> = ({
             ))}
           </div>
           
+          <div className="bg-green-50 border border-green-100 rounded-lg p-3 mb-3">
+            <div className="flex items-center">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mr-2 flex-shrink-0" />
+              <span className="text-sm font-medium text-green-800">
+                This is a <strong>single payment of PKR 2,000</strong> for access to <strong>ALL paper types</strong> (Past, Model, Subject). After PPSC Exam, pricing will change to per-category basis!
+              </span>
+            </div>
+          </div>
+          
           <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 mb-4">
             <div className="flex items-center">
               <Clock className="h-5 w-5 text-amber-600 mr-2" />
               <span className="text-sm font-medium text-amber-800">
-                Limited time offer - Get instant access today!
+                Act now! After PPSC Exam, price will increase and change to per-category pricing. Save by purchasing now!
               </span>
             </div>
           </div>
@@ -153,7 +151,7 @@ export const PromotionalOfferDialog: React.FC<PromotionalOfferDialogProps> = ({
               size="lg"
             >
               <CreditCard className="h-4 w-4" />
-              Proceed to Payment
+              Make One-Time Payment
             </Button>
           </div>
           
