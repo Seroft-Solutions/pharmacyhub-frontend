@@ -30,7 +30,8 @@ import {
   formatDate, 
   getUserDisplayName, 
   generateWhatsAppLink,
-  getStatusColor
+  getStatusColor,
+  getUserEmail
 } from '../utils';
 
 interface ViewDetailsDialogProps {
