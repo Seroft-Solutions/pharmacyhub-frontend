@@ -4,5 +4,29 @@
  * This module exports the Zustand store for RBAC state and selectors.
  */
 
-// Export state as it is created
-// Example: export { useRbacStore, useUserRoles, usePermissions } from './rbacStore';
+// Export the RBAC store and selectors
+export { 
+  useRbacStore,
+  
+  // State selectors
+  useUserPermissions,
+  useIsRbacInitialized,
+  useIsRbacLoading,
+  useRbacError,
+  
+  // Permission selectors
+  usePermissionCheck,
+  
+  // Role selectors
+  useRoleCheck,
+  
+  // Authorization selectors
+  useAuthorization,
+  
+  // Action selectors
+  useRbacActions,
+  
+  // Helper functions
+  getUserPermissions,
+  getUserRoles
+} from './rbacStore';

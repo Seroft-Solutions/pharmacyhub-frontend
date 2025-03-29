@@ -13,3 +13,9 @@ export * from './feedback';
 
 // Re-export from layout
 export * from './layout';
+
+// Re-export from context
+export * from './context';
+
+// Re-export from examples
+export * as examples from './examples';
