@@ -1,0 +1,258 @@
+{
+  "meta": {
+    "createdAt": "2025-03-30T03:30:00Z",
+    "issueKey": "PHAR-357",
+    "title": "Prioritized Components for Refactoring"
+  },
+  "summary": {
+    "totalFilesAnalyzed": 725,
+    "oversizedFiles": 91,
+    "percentageOversized": 12.55
+  },
+  "priorityCategories": {
+    "criticalPriority": {
+      "description": "Components exceeding 500 lines - immediate refactoring required",
+      "components": [
+        {
+          "file": "src/features/exams/components/student/ExamContainer.tsx",
+          "lineCount": 1061,
+          "recommendedApproach": "Break into smaller components using functional decomposition and container/presentation pattern",
+          "suggestedComponents": [
+            "ExamHeader",
+            "ExamTimer",
+            "ExamContent",
+            "ExamNavigationBar",
+            "ExamActions"
+          ]
+        },
+        {
+          "file": "src/features/exams/components/admin/JsonExamUploader.tsx",
+          "lineCount": 882,
+          "recommendedApproach": "Split into multiple specialized components and extract business logic to custom hooks",
+          "suggestedComponents": [
+            "FileUploadForm",
+            "JsonValidator",
+            "ValidationFeedback",
+            "ImportPreview",
+            "ImportActions"
+          ]
+        },
+        {
+          "file": "src/app/(exams)/exam/progress/page.tsx",
+          "lineCount": 867,
+          "recommendedApproach": "Move logic to container components and create specialized page components",
+          "suggestedComponents": [
+            "ExamProgressContainer",
+            "ProgressHeader",
+            "ProgressChart",
+            "ProgressDetails",
+            "ProgressActions"
+          ]
+        },
+        {
+          "file": "src/components/ui/sidebar.tsx",
+          "lineCount": 800,
+          "recommendedApproach": "Decompose into multiple components by section and functionality",
+          "suggestedComponents": [
+            "SidebarHeader",
+            "SidebarNavigation",
+            "SidebarSection",
+            "SidebarFooter",
+            "SidebarItem"
+          ]
+        },
+        {
+          "file": "src/features/core/app-auth/components/register/RegisterForm.tsx",
+          "lineCount": 737,
+          "recommendedApproach": "Split form into multiple steps/sections and extract form validation logic",
+          "suggestedComponents": [
+            "RegisterFormContainer",
+            "RegisterPersonalInfo",
+            "RegisterCredentials",
+            "RegisterVerification",
+            "RegisterFormActions"
+          ]
+        },
+        {
+          "file": "src/features/payments/manual/components/admin/deprecated/ManualPaymentsAdminDashboard.tsx",
+          "lineCount": 704,
+          "recommendedApproach": "Split dashboard into multiple specialized components",
+          "suggestedComponents": [
+            "PaymentsDashboardContainer",
+            "PaymentsSummary",
+            "PaymentsTable",
+            "PaymentFilters",
+            "PaymentActions"
+          ]
+        },
+        {
+          "file": "src/features/exams/components/admin/ExamQuestions.tsx",
+          "lineCount": 687,
+          "recommendedApproach": "Break into question management components with specific responsibilities",
+          "suggestedComponents": [
+            "QuestionsContainer",
+            "QuestionList",
+            "QuestionEditor",
+            "QuestionPreview",
+            "QuestionActions"
+          ]
+        },
+        {
+          "file": "src/features/payments/manual/components/ManualPaymentForm.tsx",
+          "lineCount": 603,
+          "recommendedApproach": "Split form into logical sections and extract validation logic",
+          "suggestedComponents": [
+            "PaymentFormContainer",
+            "PaymentMethodSelection",
+            "PaymentDetails",
+            "PaymentConfirmation",
+            "PaymentFormActions"
+          ]
+        },
+        {
+          "file": "src/features/exams/store/mcqExamStore.ts",
+          "lineCount": 532,
+          "recommendedApproach": "Split store by domain/functionality, create smaller specialized stores",
+          "suggestedComponents": [
+            "examSessionStore",
+            "examQuestionsStore",
+            "examNavigationStore",
+            "examTimerStore",
+            "examResultsStore"
+          ]
+        },
+        {
+          "file": "src/app/(exams)/exam/practice/page.tsx",
+          "lineCount": 519,
+          "recommendedApproach": "Move logic to container components and create specialized subcomponents",
+          "suggestedComponents": [
+            "PracticeExamContainer",
+            "PracticeHeader",
+            "PracticeContent",
+            "PracticeNavigation",
+            "PracticeActions"
+          ]
+        }
+      ]
+    },
+    "highPriority": {
+      "description": "Components between 300-500 lines - refactor soon",
+      "components": [
+        {
+          "file": "src/features/exams/components/mcq/McqExamResults.tsx",
+          "lineCount": 460,
+          "recommendedApproach": "Extract results sections into separate components"
+        },
+        {
+          "file": "src/features/exams/components/results/ExamResults.tsx",
+          "lineCount": 445,
+          "recommendedApproach": "Split into results summary and detailed results components"
+        },
+        {
+          "file": "src/features/core/app-auth/components/passwordRecovery/ResetPasswordForm.tsx",
+          "lineCount": 423,
+          "recommendedApproach": "Extract form state management and validation logic"
+        },
+        {
+          "file": "src/features/exams/components/student/QuestionNavigation.tsx",
+          "lineCount": 408,
+          "recommendedApproach": "Break down into smaller navigation components"
+        },
+        {
+          "file": "src/features/core/app-auth/api/services/authService.ts",
+          "lineCount": 407,
+          "recommendedApproach": "Split by authentication domains (login, registration, etc.)"
+        },
+        {
+          "file": "src/features/dashboard/components/DashboardOverview.tsx",
+          "lineCount": 403,
+          "recommendedApproach": "Extract dashboard widgets into separate components"
+        },
+        {
+          "file": "src/features/core/app-auth/core/AuthContext.tsx",
+          "lineCount": 389,
+          "recommendedApproach": "Split authentication logic into smaller focused providers"
+        },
+        {
+          "file": "src/features/core/app-api-handler/factories/createApiHooks.ts",
+          "lineCount": 386,
+          "recommendedApproach": "Break down factory function into smaller utility functions"
+        },
+        {
+          "file": "src/core/api/services/factories/createApiHooks.ts",
+          "lineCount": 385,
+          "recommendedApproach": "Split into separate hook factories by operation type"
+        },
+        {
+          "file": "src/features/exams/components/student/ExamResults.tsx",
+          "lineCount": 384,
+          "recommendedApproach": "Extract results sections into specialized components"
+        }
+      ]
+    },
+    "mediumPriority": {
+      "description": "Components between 200-300 lines - schedule for refactoring",
+      "components": [
+        {
+          "file": "src/features/exams/hooks/useExamSession.ts",
+          "lineCount": 374,
+          "recommendedApproach": "Split into smaller, focused hooks by functionality"
+        },
+        {
+          "file": "src/core/auth/core/tokenManager.ts",
+          "lineCount": 372,
+          "recommendedApproach": "Split by token operations (validation, refresh, storage)"
+        },
+        {
+          "file": "src/features/core/app-auth/core/tokenManager.ts",
+          "lineCount": 372,
+          "recommendedApproach": "Split by token operations (validation, refresh, storage)"
+        },
+        {
+          "file": "src/features/exams/components/common/ExamsTable.tsx",
+          "lineCount": 371,
+          "recommendedApproach": "Extract table sections into smaller components"
+        },
+        {
+          "file": "src/features/exams/components/common/ExamPaperCard.tsx",
+          "lineCount": 369,
+          "recommendedApproach": "Extract card sections into smaller components"
+        }
+      ]
+    }
+  },
+  "refactoringApproaches": {
+    "functionalDecomposition": {
+      "description": "Break down component by functional responsibilities",
+      "applicableFiles": [
+        "src/features/exams/components/student/ExamContainer.tsx",
+        "src/features/exams/components/admin/JsonExamUploader.tsx",
+        "src/features/exams/components/admin/ExamQuestions.tsx"
+      ]
+    },
+    "containerPresentation": {
+      "description": "Separate data/state management from UI rendering",
+      "applicableFiles": [
+        "src/features/core/app-auth/components/register/RegisterForm.tsx",
+        "src/features/payments/manual/components/ManualPaymentForm.tsx",
+        "src/features/dashboard/components/DashboardOverview.tsx"
+      ]
+    },
+    "customHookExtraction": {
+      "description": "Extract complex logic into custom hooks",
+      "applicableFiles": [
+        "src/features/exams/hooks/useExamSession.ts",
+        "src/features/core/app-auth/hooks/useLoginForm.ts",
+        "src/features/exams/api/hooks/useExamApiHooks.ts"
+      ]
+    },
+    "stateManagementSplitting": {
+      "description": "Split large stores into domain-specific stores",
+      "applicableFiles": [
+        "src/features/exams/store/mcqExamStore.ts",
+        "src/features/exams/store/examStore.ts",
+        "src/features/payments/manual/store/manualPaymentStore.ts"
+      ]
+    }
+  }
+}

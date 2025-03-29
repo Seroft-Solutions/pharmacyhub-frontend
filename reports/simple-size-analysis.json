@@ -1,0 +1,373 @@
+{
+  "timestamp": "2025-03-29T22:16:36.730Z",
+  "summary": {
+    "totalFiles": 725,
+    "oversizedFiles": 91
+  },
+  "oversizedFiles": [
+    {
+      "file": "src\\features\\exams\\components\\student\\ExamContainer.tsx",
+      "lineCount": 1061
+    },
+    {
+      "file": "src\\features\\exams\\components\\admin\\JsonExamUploader.tsx",
+      "lineCount": 882
+    },
+    {
+      "file": "src\\app\\(exams)\\exam\\progress\\page.tsx",
+      "lineCount": 867
+    },
+    {
+      "file": "src\\components\\ui\\sidebar.tsx",
+      "lineCount": 800
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\components\\register\\RegisterForm.tsx",
+      "lineCount": 737
+    },
+    {
+      "file": "src\\features\\payments\\manual\\components\\admin\\deprecated\\ManualPaymentsAdminDashboard.tsx",
+      "lineCount": 704
+    },
+    {
+      "file": "src\\features\\exams\\components\\admin\\ExamQuestions.tsx",
+      "lineCount": 687
+    },
+    {
+      "file": "src\\features\\payments\\manual\\components\\ManualPaymentForm.tsx",
+      "lineCount": 603
+    },
+    {
+      "file": "src\\features\\exams\\store\\mcqExamStore.ts",
+      "lineCount": 532
+    },
+    {
+      "file": "src\\app\\(exams)\\exam\\practice\\page.tsx",
+      "lineCount": 519
+    },
+    {
+      "file": "src\\features\\exams\\components\\mcq\\McqExamResults.tsx",
+      "lineCount": 460
+    },
+    {
+      "file": "src\\features\\exams\\components\\results\\ExamResults.tsx",
+      "lineCount": 445
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\components\\passwordRecovery\\ResetPasswordForm.tsx",
+      "lineCount": 423
+    },
+    {
+      "file": "src\\features\\exams\\components\\student\\QuestionNavigation.tsx",
+      "lineCount": 408
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\api\\services\\authService.ts",
+      "lineCount": 407
+    },
+    {
+      "file": "src\\features\\dashboard\\components\\DashboardOverview.tsx",
+      "lineCount": 403
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\core\\AuthContext.tsx",
+      "lineCount": 389
+    },
+    {
+      "file": "src\\features\\core\\app-api-handler\\factories\\createApiHooks.ts",
+      "lineCount": 386
+    },
+    {
+      "file": "src\\core\\api\\services\\factories\\createApiHooks.ts",
+      "lineCount": 385
+    },
+    {
+      "file": "src\\features\\exams\\components\\student\\ExamResults.tsx",
+      "lineCount": 384
+    },
+    {
+      "file": "src\\features\\exams\\hooks\\useExamSession.ts",
+      "lineCount": 374
+    },
+    {
+      "file": "src\\core\\auth\\core\\tokenManager.ts",
+      "lineCount": 372
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\core\\tokenManager.ts",
+      "lineCount": 372
+    },
+    {
+      "file": "src\\features\\exams\\components\\common\\ExamsTable.tsx",
+      "lineCount": 371
+    },
+    {
+      "file": "src\\features\\exams\\components\\common\\ExamPaperCard.tsx",
+      "lineCount": 369
+    },
+    {
+      "file": "src\\features\\shell\\components\\sidebar\\AppSidebar.tsx",
+      "lineCount": 367
+    },
+    {
+      "file": "src\\components\\ui\\chart.tsx",
+      "lineCount": 366
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\api\\services\\authApiService.ts",
+      "lineCount": 364
+    },
+    {
+      "file": "src\\features\\payments\\manual\\store\\manualPaymentStore.ts",
+      "lineCount": 351
+    },
+    {
+      "file": "src\\features\\exams\\components\\student\\QuestionDisplay.tsx",
+      "lineCount": 350
+    },
+    {
+      "file": "src\\features\\exams\\api\\hooks\\useExamApiHooks.ts",
+      "lineCount": 348
+    },
+    {
+      "file": "src\\features\\shell\\store\\roleStore.ts",
+      "lineCount": 344
+    },
+    {
+      "file": "src\\features\\exams\\components\\mcq\\McqExamLayout.tsx",
+      "lineCount": 340
+    },
+    {
+      "file": "src\\core\\auth\\state\\authStore.ts",
+      "lineCount": 337
+    },
+    {
+      "file": "src\\features\\exams\\components\\premium\\ManualPaymentForm.tsx",
+      "lineCount": 333
+    },
+    {
+      "file": "src\\app\\(exams)\\summary\\page.tsx",
+      "lineCount": 332
+    },
+    {
+      "file": "src\\features\\exams\\store\\examStore.ts",
+      "lineCount": 329
+    },
+    {
+      "file": "src\\features\\dashboard\\components\\cards\\DetailedPaymentStatus.tsx",
+      "lineCount": 328
+    },
+    {
+      "file": "src\\features\\dashboard\\api\\hooks\\useDashboardData.ts",
+      "lineCount": 326
+    },
+    {
+      "file": "src\\features\\exams\\components\\mcq\\McqQuestionCard.tsx",
+      "lineCount": 326
+    },
+    {
+      "file": "src\\features\\exams\\components\\mcq\\McqExamList.tsx",
+      "lineCount": 320
+    },
+    {
+      "file": "src\\core\\api\\utils\\optimisticUpdates.ts",
+      "lineCount": 319
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\components\\register\\context\\RegisterFormContext.tsx",
+      "lineCount": 317
+    },
+    {
+      "file": "src\\features\\core\\app-api-handler\\core\\apiClient.ts",
+      "lineCount": 316
+    },
+    {
+      "file": "src\\core\\api\\examples\\UserManager.tsx",
+      "lineCount": 315
+    },
+    {
+      "file": "src\\features\\exams\\components\\premium\\PaymentFlow.tsx",
+      "lineCount": 301
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\components\\passwordRecovery\\ForgotPasswordForm.tsx",
+      "lineCount": 294
+    },
+    {
+      "file": "src\\features\\exams\\types\\deprecated\\QuestionStatus.ts",
+      "lineCount": 292
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\components\\login\\EnhancedLoginForm.tsx",
+      "lineCount": 291
+    },
+    {
+      "file": "src\\features\\exams\\components\\results\\ResultsView.tsx",
+      "lineCount": 289
+    },
+    {
+      "file": "src\\features\\core\\app-api-handler\\hooks\\useApi.ts",
+      "lineCount": 284
+    },
+    {
+      "file": "src\\features\\exams\\components\\admin\\McqEditor.tsx",
+      "lineCount": 283
+    },
+    {
+      "file": "src\\features\\shell\\components\\sidebar\\SidebarContactSection.tsx",
+      "lineCount": 280
+    },
+    {
+      "file": "src\\app\\admin\\payments\\pending\\page.tsx",
+      "lineCount": 274
+    },
+    {
+      "file": "src\\features\\exams\\components\\admin\\PaperMetadataFields.tsx",
+      "lineCount": 268
+    },
+    {
+      "file": "src\\features\\exams\\components\\student\\ExamLanding.tsx",
+      "lineCount": 267
+    },
+    {
+      "file": "src\\app\\admin\\payments\\approvals\\page.tsx",
+      "lineCount": 266
+    },
+    {
+      "file": "src\\features\\payments\\manual\\components\\ManualPaymentStatus.tsx",
+      "lineCount": 266
+    },
+    {
+      "file": "src\\app\\(exams)\\exam\\subject-papers\\page.tsx",
+      "lineCount": 265
+    },
+    {
+      "file": "src\\components\\ui\\carousel.tsx",
+      "lineCount": 263
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\anti-sharing\\components\\admin\\SessionMonitoring.tsx",
+      "lineCount": 260
+    },
+    {
+      "file": "src\\app\\admin\\dashboard\\page.tsx",
+      "lineCount": 259
+    },
+    {
+      "file": "src\\core\\api\\core\\error\\errorLogger.ts",
+      "lineCount": 258
+    },
+    {
+      "file": "src\\components\\ui\\menubar.tsx",
+      "lineCount": 257
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\hooks\\useLoginForm.ts",
+      "lineCount": 257
+    },
+    {
+      "file": "src\\features\\exams\\api\\hooks\\useExamAttemptHooks.ts",
+      "lineCount": 256
+    },
+    {
+      "file": "src\\app\\auth\\callback\\page.tsx",
+      "lineCount": 255
+    },
+    {
+      "file": "src\\features\\exams\\types\\QuestionStatus.ts",
+      "lineCount": 253
+    },
+    {
+      "file": "src\\app\\(exams)\\exam\\results\\page.tsx",
+      "lineCount": 250
+    },
+    {
+      "file": "src\\features\\exams\\types\\index.ts",
+      "lineCount": 249
+    },
+    {
+      "file": "src\\features\\dashboard\\components\\charts\\heatmap\\ActivityHeatmap.tsx",
+      "lineCount": 248
+    },
+    {
+      "file": "src\\core\\api\\core\\interceptors\\responseInterceptor.ts",
+      "lineCount": 244
+    },
+    {
+      "file": "src\\core\\auth\\admin\\components\\SessionMonitoring.tsx",
+      "lineCount": 244
+    },
+    {
+      "file": "src\\features\\core\\app-auth\\admin\\components\\SessionMonitoring.tsx",
+      "lineCount": 244
+    },
+    {
+      "file": "src\\features\\exams\\utils\\paperTypeUtils.ts",
+      "lineCount": 244
+    },
+    {
+      "file": "src\\app\\(dashboard)\\dashboard\\page.tsx",
+      "lineCount": 242
+    },
+    {
+      "file": "src\\features\\exams\\api\\services\\examApiService.ts",
+      "lineCount": 240
+    },
+    {
+      "file": "src\\features\\payments\\admin\\components\\PaymentTable.tsx",
+      "lineCount": 237
+    },
+    {
+      "file": "src\\features\\payments\\admin\\components\\ViewDetailsDialog.tsx",
+      "lineCount": 237
+    },
+    {
+      "file": "src\\features\\exams\\components\\quiz\\ExamLayout.tsx",
+      "lineCount": 235
+    },
+    {
+      "file": "src\\features\\exams\\components\\review\\ExamReview.tsx",
+      "lineCount": 225
+    },
+    {
+      "file": "src\\features\\exams\\components\\admin\\ExamDashboard.tsx",
+      "lineCount": 223
+    },
+    {
+      "file": "src\\features\\shell\\components\\topbar\\AppTopbar.tsx",
+      "lineCount": 214
+    },
+    {
+      "file": "src\\features\\payments\\admin\\utils\\index.ts",
+      "lineCount": 212
+    },
+    {
+      "file": "src\\features\\shell\\store\\sidebarStore.ts",
+      "lineCount": 211
+    },
+    {
+      "file": "src\\features\\exams\\utils\\AnswerUtils.ts",
+      "lineCount": 209
+    },
+    {
+      "file": "src\\features\\exams\\components\\review\\ReviewMode.tsx",
+      "lineCount": 208
+    },
+    {
+      "file": "src\\app\\(exams)\\exam\\past-papers\\page.tsx",
+      "lineCount": 205
+    },
+    {
+      "file": "src\\features\\payments\\admin\\components\\history\\PaymentHistory.tsx",
+      "lineCount": 205
+    },
+    {
+      "file": "src\\components\\ui\\context-menu.tsx",
+      "lineCount": 201
+    },
+    {
+      "file": "src\\components\\ui\\dropdown-menu.tsx",
+      "lineCount": 201
+    }
+  ]
+}

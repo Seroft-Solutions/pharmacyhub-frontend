@@ -1,0 +1,15 @@
+{
+  "name": "component-size-analyzer",
+  "version": "1.0.0",
+  "description": "Analyzes React component sizes for enforcing architecture principles",
+  "main": "analyze-component-sizes.js",
+  "scripts": {
+    "analyze": "node analyze-component-sizes.js",
+    "analyze:src": "node analyze-component-sizes.js ./src"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.23.6",
+    "@babel/traverse": "^7.23.6",
+    "glob": "^10.3.10"
+  }
+}
