@@ -254,12 +254,7 @@ export const resetAppStorage = (): void => {
 };
 
 // Initialize listeners for page unload to flush pending writes
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', flushStorage);
-  
-  // Add debug mode flag
-  (window as any).__ZUSTAND_DEBUG_MODE = false;
-}
+// DISABLED - No beforeunload handlers to prevent reload dialog
 
 // Export default
 export default throttledStorage;

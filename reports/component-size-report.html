@@ -1,0 +1,2464 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Component Size Analysis Report</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        h1, h2, h3 {
+          color: #0066cc;
+        }
+        .summary {
+          display: flex;
+          gap: 20px;
+          margin-bottom: 20px;
+        }
+        .summary-card {
+          flex: 1;
+          background-color: #f5f5f5;
+          border-radius: 5px;
+          padding: 20px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        }
+        th, td {
+          border: 1px solid #ddd;
+          padding: 8px 12px;
+          text-align: left;
+        }
+        th {
+          background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+        .module-section {
+          margin-bottom: 30px;
+          border: 1px solid #eee;
+          border-radius: 5px;
+          padding: 15px;
+        }
+        .chart-container {
+          display: flex;
+          gap: 20px;
+          margin-bottom: 30px;
+        }
+        .chart {
+          flex: 1;
+          height: 300px;
+          background-color: #f9f9f9;
+          border-radius: 5px;
+          padding: 20px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .badge {
+          display: inline-block;
+          padding: 3px 8px;
+          border-radius: 3px;
+          font-size: 0.8em;
+          font-weight: bold;
+          color: white;
+        }
+        .badge-high {
+          background-color: #dc3545;
+        }
+        .badge-medium {
+          background-color: #fd7e14;
+        }
+        .badge-low {
+          background-color: #28a745;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Component Size Analysis Report</h1>
+      <p>Report generated at: 3/29/2025, 6:22:06 PM</p>
+      
+      <div class="summary">
+        <div class="summary-card">
+          <h3>Components</h3>
+          <p>Total oversized components: <strong>100</strong></p>
+          <p>Component size limit: <strong>200 lines</strong></p>
+          <p>Max component size: <strong>1061 lines</strong></p>
+        </div>
+        <div class="summary-card">
+          <h3>Functions</h3>
+          <p>Total oversized functions: <strong>204</strong></p>
+          <p>Function size limit: <strong>30 lines</strong></p>
+          <p>Max function size: <strong>678 lines</strong></p>
+        </div>
+      </div>
+      
+      <h2>Overview by Module</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Oversized Components</th>
+            <th>Oversized Functions</th>
+            <th>Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr>
+              <td>exams</td>
+              <td>35</td>
+              <td>52</td>
+              <td><span class="badge badge-high">High</span></td>
+            </tr>
+            
+            <tr>
+              <td>core</td>
+              <td>29</td>
+              <td>65</td>
+              <td><span class="badge badge-high">High</span></td>
+            </tr>
+            
+            <tr>
+              <td>app-pages</td>
+              <td>11</td>
+              <td>51</td>
+              <td><span class="badge badge-high">High</span></td>
+            </tr>
+            
+            <tr>
+              <td>payments</td>
+              <td>9</td>
+              <td>12</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+            </tr>
+            
+            <tr>
+              <td>shared-components</td>
+              <td>6</td>
+              <td>3</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+            </tr>
+            
+            <tr>
+              <td>shell</td>
+              <td>6</td>
+              <td>9</td>
+              <td><span class="badge badge-medium">Medium</span></td>
+            </tr>
+            
+            <tr>
+              <td>dashboard</td>
+              <td>4</td>
+              <td>6</td>
+              <td><span class="badge badge-low">Low</span></td>
+            </tr>
+            
+        </tbody>
+      </table>
+      
+      <h2>Detailed Analysis by Module</h2>
+      
+      
+        <div class="module-section">
+          <h3>exams Module</h3>
+          
+          <h4>Oversized Components (35)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\exams\components\student\ExamContainer.tsx</td>
+                <td>1061</td>
+                <td>861</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\JsonExamUploader.tsx</td>
+                <td>882</td>
+                <td>682</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\ExamQuestions.tsx</td>
+                <td>687</td>
+                <td>487</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\store\mcqExamStore.ts</td>
+                <td>532</td>
+                <td>332</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\mcq\McqExamResults.tsx</td>
+                <td>460</td>
+                <td>260</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\results\ExamResults.tsx</td>
+                <td>445</td>
+                <td>245</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\QuestionNavigation.tsx</td>
+                <td>408</td>
+                <td>208</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\ExamResults.tsx</td>
+                <td>384</td>
+                <td>184</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\hooks\useExamSession.ts</td>
+                <td>374</td>
+                <td>174</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\common\ExamsTable.tsx</td>
+                <td>371</td>
+                <td>171</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\common\ExamPaperCard.tsx</td>
+                <td>369</td>
+                <td>169</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\QuestionDisplay.tsx</td>
+                <td>350</td>
+                <td>150</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\api\hooks\useExamApiHooks.ts</td>
+                <td>348</td>
+                <td>148</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\mcq\McqExamLayout.tsx</td>
+                <td>340</td>
+                <td>140</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\premium\ManualPaymentForm.tsx</td>
+                <td>333</td>
+                <td>133</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\store\examStore.ts</td>
+                <td>329</td>
+                <td>129</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\mcq\McqQuestionCard.tsx</td>
+                <td>326</td>
+                <td>126</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\mcq\McqExamList.tsx</td>
+                <td>320</td>
+                <td>120</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\premium\PaymentFlow.tsx</td>
+                <td>301</td>
+                <td>101</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\types\deprecated\QuestionStatus.ts</td>
+                <td>292</td>
+                <td>92</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\results\ResultsView.tsx</td>
+                <td>289</td>
+                <td>89</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\McqEditor.tsx</td>
+                <td>283</td>
+                <td>83</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\PaperMetadataFields.tsx</td>
+                <td>268</td>
+                <td>68</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\ExamLanding.tsx</td>
+                <td>267</td>
+                <td>67</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\utils\examUtils.ts</td>
+                <td>257</td>
+                <td>57</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\api\hooks\useExamAttemptHooks.ts</td>
+                <td>256</td>
+                <td>56</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\types\QuestionStatus.ts</td>
+                <td>253</td>
+                <td>53</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\types\index.ts</td>
+                <td>249</td>
+                <td>49</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\utils\paperTypeUtils.ts</td>
+                <td>244</td>
+                <td>44</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\api\services\examApiService.ts</td>
+                <td>240</td>
+                <td>40</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\quiz\ExamLayout.tsx</td>
+                <td>235</td>
+                <td>35</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\review\ExamReview.tsx</td>
+                <td>225</td>
+                <td>25</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\ExamDashboard.tsx</td>
+                <td>223</td>
+                <td>23</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\utils\AnswerUtils.ts</td>
+                <td>209</td>
+                <td>9</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\review\ReviewMode.tsx</td>
+                <td>208</td>
+                <td>8</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+          
+          <h4>Oversized Functions (52)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Function Name</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\exams\components\mcq\McqExamResults.tsx</td>
+                <td>FC</td>
+                <td>423</td>
+                <td>393</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\hooks\useExamSession.ts</td>
+                <td>useExamSession</td>
+                <td>345</td>
+                <td>315</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\mcq\McqExamList.tsx</td>
+                <td>FC</td>
+                <td>277</td>
+                <td>247</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\results\ResultsView.tsx</td>
+                <td>ResultsView</td>
+                <td>257</td>
+                <td>227</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\quiz\ExamLayout.tsx</td>
+                <td>ExamLayout</td>
+                <td>214</td>
+                <td>184</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\PaperMetadataFields.tsx</td>
+                <td>renderField</td>
+                <td>200</td>
+                <td>170</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\PaperMetadataFields.tsx</td>
+                <td>switch</td>
+                <td>193</td>
+                <td>163</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\premium\PaymentFlow.tsx</td>
+                <td>renderStep</td>
+                <td>191</td>
+                <td>161</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\premium\PaymentFlow.tsx</td>
+                <td>switch</td>
+                <td>189</td>
+                <td>159</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\review\ReviewMode.tsx</td>
+                <td>ReviewMode</td>
+                <td>179</td>
+                <td>149</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\ExamDashboard.tsx</td>
+                <td>FC</td>
+                <td>176</td>
+                <td>146</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\results\PerformanceCharts.tsx</td>
+                <td>PerformanceCharts</td>
+                <td>174</td>
+                <td>144</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\ExamsList.tsx</td>
+                <td>FC</td>
+                <td>133</td>
+                <td>103</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\types\deprecated\QuestionStatus.ts</td>
+                <td>for</td>
+                <td>129</td>
+                <td>99</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\JsonExamUploader.tsx</td>
+                <td>if</td>
+                <td>121</td>
+                <td>91</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\ExamContainer.tsx</td>
+                <td>if</td>
+                <td>111</td>
+                <td>81</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\QuestionNavigation.tsx</td>
+                <td>renderCompactGrid</td>
+                <td>105</td>
+                <td>75</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\api\hooks\useExamApiHooks.ts</td>
+                <td>useExamQuestions</td>
+                <td>94</td>
+                <td>64</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\ExamContainer.tsx</td>
+                <td>handleStartExam</td>
+                <td>91</td>
+                <td>61</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\ExamList.tsx</td>
+                <td>ExamList</td>
+                <td>90</td>
+                <td>60</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\hooks\useExamAnalytics.ts</td>
+                <td>useExamAnalytics</td>
+                <td>88</td>
+                <td>58</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\DevTools.tsx</td>
+                <td>DevTools</td>
+                <td>85</td>
+                <td>55</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\hooks\useExamFeatureAccess.ts</td>
+                <td>useExamFeatureAccess</td>
+                <td>83</td>
+                <td>53</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\common\ExamMetadata.tsx</td>
+                <td>switch</td>
+                <td>77</td>
+                <td>47</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\types\deprecated\QuestionStatus.ts</td>
+                <td>if</td>
+                <td>76</td>
+                <td>46</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\results\useExamScoreCalculation.tsx</td>
+                <td>useExamScoreCalculation</td>
+                <td>68</td>
+                <td>38</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\hooks\useExamPermissions.ts</td>
+                <td>useExamPermissions</td>
+                <td>68</td>
+                <td>38</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\common\ExamErrorBoundary.tsx</td>
+                <td>if</td>
+                <td>65</td>
+                <td>35</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\ExamContainer.tsx</td>
+                <td>handleSubmitExam</td>
+                <td>59</td>
+                <td>29</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\QuestionDisplay.tsx</td>
+                <td>QuestionOption</td>
+                <td>59</td>
+                <td>29</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\utils\examStatisticsCalculator.ts</td>
+                <td>calculateExamStatistics</td>
+                <td>58</td>
+                <td>28</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\sidebar\ExamSidebarMenu.tsx</td>
+                <td>ExamSidebarMenu</td>
+                <td>53</td>
+                <td>23</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\hooks\usePremiumExam.ts</td>
+                <td>usePremiumExam</td>
+                <td>52</td>
+                <td>22</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\JsonExamUploader.tsx</td>
+                <td>if</td>
+                <td>51</td>
+                <td>21</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\common\NetworkStatusIndicator.tsx</td>
+                <td>NetworkStatusIndicator</td>
+                <td>51</td>
+                <td>21</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\QuestionNavigation.tsx</td>
+                <td>getQuestionStatus</td>
+                <td>50</td>
+                <td>20</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\ExamQuestions.tsx</td>
+                <td>handleConfirmDelete</td>
+                <td>49</td>
+                <td>19</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\store\mcqExamStore.ts</td>
+                <td>if</td>
+                <td>43</td>
+                <td>13</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\types\deprecated\QuestionStatus.ts</td>
+                <td>if</td>
+                <td>43</td>
+                <td>13</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\QuestionNavigation.tsx</td>
+                <td>renderFullGrid</td>
+                <td>42</td>
+                <td>12</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\ExamContainer.tsx</td>
+                <td>if</td>
+                <td>41</td>
+                <td>11</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\ExamContainer.tsx</td>
+                <td>if</td>
+                <td>41</td>
+                <td>11</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\hooks\exam-container\useExamReset.ts</td>
+                <td>useExamReset</td>
+                <td>40</td>
+                <td>10</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\mcq\McqExamList.tsx</td>
+                <td>if</td>
+                <td>37</td>
+                <td>7</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\store\examStore.ts</td>
+                <td>if</td>
+                <td>37</td>
+                <td>7</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\McqEditor.tsx</td>
+                <td>if</td>
+                <td>36</td>
+                <td>6</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\admin\JsonExamUploader.tsx</td>
+                <td>catch</td>
+                <td>35</td>
+                <td>5</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\common\ExamPaperCard.tsx</td>
+                <td>getButtonContentByStatus</td>
+                <td>33</td>
+                <td>3</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\student\QuestionDisplay.tsx</td>
+                <td>renderOptions</td>
+                <td>33</td>
+                <td>3</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\hooks\useExams.ts</td>
+                <td>useExams</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\utils\paperTypeUtils.ts</td>
+                <td>switch</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+              <tr>
+                <td>features\exams\components\common\ExamPaperCard.tsx</td>
+                <td>switch</td>
+                <td>31</td>
+                <td>1</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+        </div>
+        
+        <div class="module-section">
+          <h3>core Module</h3>
+          
+          <h4>Oversized Components (29)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\RegisterForm.tsx</td>
+                <td>737</td>
+                <td>537</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\passwordRecovery\ResetPasswordForm.tsx</td>
+                <td>423</td>
+                <td>223</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\api\services\authService.ts</td>
+                <td>407</td>
+                <td>207</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\core\AuthContext.tsx</td>
+                <td>389</td>
+                <td>189</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-api-handler\factories\createApiHooks.ts</td>
+                <td>386</td>
+                <td>186</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\services\factories\createApiHooks.ts</td>
+                <td>385</td>
+                <td>185</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\core\tokenManager.ts</td>
+                <td>372</td>
+                <td>172</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\core\tokenManager.ts</td>
+                <td>372</td>
+                <td>172</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\api\services\authApiService.ts</td>
+                <td>364</td>
+                <td>164</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\state\authStore.ts</td>
+                <td>337</td>
+                <td>137</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\utils\optimisticUpdates.ts</td>
+                <td>319</td>
+                <td>119</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\context\RegisterFormContext.tsx</td>
+                <td>317</td>
+                <td>117</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-api-handler\core\apiClient.ts</td>
+                <td>316</td>
+                <td>116</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\examples\UserManager.tsx</td>
+                <td>315</td>
+                <td>115</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-rbac\hooks\useAccess.ts</td>
+                <td>303</td>
+                <td>103</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\passwordRecovery\ForgotPasswordForm.tsx</td>
+                <td>294</td>
+                <td>94</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\examples\userService.ts</td>
+                <td>293</td>
+                <td>93</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\login\EnhancedLoginForm.tsx</td>
+                <td>291</td>
+                <td>91</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-api-handler\hooks\useApi.ts</td>
+                <td>284</td>
+                <td>84</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\login\LoginForm.tsx</td>
+                <td>279</td>
+                <td>79</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\core\error\apiErrors.ts</td>
+                <td>262</td>
+                <td>62</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\anti-sharing\components\admin\SessionMonitoring.tsx</td>
+                <td>260</td>
+                <td>60</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\core\error\errorLogger.ts</td>
+                <td>258</td>
+                <td>58</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useLoginForm.ts</td>
+                <td>257</td>
+                <td>57</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\core\interceptors\responseInterceptor.ts</td>
+                <td>244</td>
+                <td>44</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\admin\components\SessionMonitoring.tsx</td>
+                <td>244</td>
+                <td>44</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\admin\components\SessionMonitoring.tsx</td>
+                <td>244</td>
+                <td>44</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\anti-sharing\api\sessionApi.ts</td>
+                <td>231</td>
+                <td>31</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useLoginForm.enhanced.ts</td>
+                <td>211</td>
+                <td>11</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+          
+          <h4>Oversized Functions (65)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Function Name</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\RegisterForm.tsx</td>
+                <td>RegisterForm</td>
+                <td>627</td>
+                <td>597</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\passwordRecovery\ResetPasswordForm.tsx</td>
+                <td>ResetPasswordForm</td>
+                <td>388</td>
+                <td>358</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-rbac\hooks\useAccess.ts</td>
+                <td>useAccess</td>
+                <td>289</td>
+                <td>259</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\passwordRecovery\ForgotPasswordForm.tsx</td>
+                <td>ForgotPasswordForm</td>
+                <td>265</td>
+                <td>235</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\login\EnhancedLoginForm.tsx</td>
+                <td>EnhancedLoginForm</td>
+                <td>258</td>
+                <td>228</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\login\LoginForm.tsx</td>
+                <td>LoginForm</td>
+                <td>255</td>
+                <td>225</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useLoginForm.ts</td>
+                <td>useLoginForm</td>
+                <td>242</td>
+                <td>212</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\admin\components\SessionMonitoring.tsx</td>
+                <td>FC</td>
+                <td>218</td>
+                <td>188</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\admin\components\SessionMonitoring.tsx</td>
+                <td>FC</td>
+                <td>218</td>
+                <td>188</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useLoginForm.enhanced.ts</td>
+                <td>useLoginForm</td>
+                <td>178</td>
+                <td>148</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\steps\AccountStep.tsx</td>
+                <td>FC</td>
+                <td>168</td>
+                <td>138</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\passwordRecovery\ResetPasswordForm.tsx</td>
+                <td>renderContent</td>
+                <td>166</td>
+                <td>136</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\passwordRecovery\ResetPasswordForm.tsx</td>
+                <td>switch</td>
+                <td>164</td>
+                <td>134</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-rbac\hooks\usePermissions.ts</td>
+                <td>usePermissions</td>
+                <td>150</td>
+                <td>120</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\steps\AccountInfoStep.tsx</td>
+                <td>FC</td>
+                <td>142</td>
+                <td>112</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\steps\PersonalInfoStep.tsx</td>
+                <td>FC</td>
+                <td>124</td>
+                <td>94</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\steps\ConfirmationStep.tsx</td>
+                <td>FC</td>
+                <td>115</td>
+                <td>85</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\steps\PersonalStep.tsx</td>
+                <td>FC</td>
+                <td>114</td>
+                <td>84</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-rbac\hooks\useFeatureAccess.ts</td>
+                <td>useFeatureAccess</td>
+                <td>106</td>
+                <td>76</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-rbac\api\hooks\useFeatureApi.ts</td>
+                <td>useFeatureApi</td>
+                <td>104</td>
+                <td>74</td>
+              </tr>
+              
+              <tr>
+                <td>core\ui\examples\TableViewExample.tsx</td>
+                <td>Table</td>
+                <td>102</td>
+                <td>72</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useAuth.ts</td>
+                <td>useAuth</td>
+                <td>98</td>
+                <td>68</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\core\useProfileFetcher.ts</td>
+                <td>useProfileFetcher</td>
+                <td>95</td>
+                <td>65</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\RegistrationSuccess\VerificationSteps.tsx</td>
+                <td>FC</td>
+                <td>95</td>
+                <td>65</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\anti-sharing\hooks\useSessionValidation.ts</td>
+                <td>useSessionValidation</td>
+                <td>94</td>
+                <td>64</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useAuthWithQuery.ts</td>
+                <td>useAuth</td>
+                <td>92</td>
+                <td>62</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-rbac\usage-example.tsx</td>
+                <td>RbacUsageExample</td>
+                <td>90</td>
+                <td>60</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-rbac\hooks\useFeatures.ts</td>
+                <td>useFeatures</td>
+                <td>89</td>
+                <td>59</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\hooks\login\useLogin.ts</td>
+                <td>useLogin</td>
+                <td>86</td>
+                <td>56</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\examples\UserManager.tsx</td>
+                <td>UserCreateForm</td>
+                <td>70</td>
+                <td>40</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\hooks\useAuth.ts</td>
+                <td>useAuth</td>
+                <td>64</td>
+                <td>34</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\steps\StepIndicator.tsx</td>
+                <td>FC</td>
+                <td>62</td>
+                <td>32</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-api-handler\core\apiClient.ts</td>
+                <td>hasOwnProperty</td>
+                <td>61</td>
+                <td>31</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\layout\AuthLayout.tsx</td>
+                <td>AuthLayout</td>
+                <td>60</td>
+                <td>30</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\core\AuthContext.tsx</td>
+                <td>current</td>
+                <td>60</td>
+                <td>30</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\core\useRbacHelpers.ts</td>
+                <td>useRbacHelpers</td>
+                <td>57</td>
+                <td>27</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\RegisterForm.tsx</td>
+                <td>validateRegistrationForm</td>
+                <td>57</td>
+                <td>27</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\examples\UserManager.tsx</td>
+                <td>UserList</td>
+                <td>56</td>
+                <td>26</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\core\useProfileFetcher.ts</td>
+                <td>current</td>
+                <td>55</td>
+                <td>25</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useSession.ts</td>
+                <td>useSession</td>
+                <td>54</td>
+                <td>24</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\hooks\password\usePasswordReset.ts</td>
+                <td>usePasswordReset</td>
+                <td>52</td>
+                <td>22</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\components\StepIndicator.tsx</td>
+                <td>FC</td>
+                <td>51</td>
+                <td>21</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-rbac\api\hooks\useFeatureAccessQueries.ts</td>
+                <td>useFeatureAccessQueries</td>
+                <td>50</td>
+                <td>20</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\hooks\register\useRegister.ts</td>
+                <td>useRegister</td>
+                <td>49</td>
+                <td>19</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\context\RegisterFormContext.tsx</td>
+                <td>validateRegistrationForm</td>
+                <td>47</td>
+                <td>17</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useForceLogout.ts</td>
+                <td>useForceLogout</td>
+                <td>47</td>
+                <td>17</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\api\services\authService.ts</td>
+                <td>useLogin</td>
+                <td>46</td>
+                <td>16</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\utils\PasswordStrengthIndicator.tsx</td>
+                <td>FC</td>
+                <td>44</td>
+                <td>14</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\RegisterForm.tsx</td>
+                <td>handleChange</td>
+                <td>43</td>
+                <td>13</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\register\RegisterForm.tsx</td>
+                <td>renderStepIndicator</td>
+                <td>43</td>
+                <td>13</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useLoginForm.ts</td>
+                <td>catch</td>
+                <td>40</td>
+                <td>10</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\core\error\errorFactory.ts</td>
+                <td>switch</td>
+                <td>39</td>
+                <td>9</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\components\passwordRecovery\ForgotPasswordForm.tsx</td>
+                <td>catch</td>
+                <td>37</td>
+                <td>7</td>
+              </tr>
+              
+              <tr>
+                <td>core\auth\hooks\social\useSocialAuth.ts</td>
+                <td>useSocialAuth</td>
+                <td>36</td>
+                <td>6</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\examples\ExampleApp.tsx</td>
+                <td>ExampleApp</td>
+                <td>34</td>
+                <td>4</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useLoginForm.ts</td>
+                <td>if</td>
+                <td>34</td>
+                <td>4</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\core\interceptors\responseInterceptor.ts</td>
+                <td>responseErrorInterceptor</td>
+                <td>33</td>
+                <td>3</td>
+              </tr>
+              
+              <tr>
+                <td>core\ui\examples\ThemeExample.tsx</td>
+                <td>ThemeSwitcher</td>
+                <td>33</td>
+                <td>3</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\hooks\useAuthWithQuery.ts</td>
+                <td>if</td>
+                <td>33</td>
+                <td>3</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\examples\UserManager.tsx</td>
+                <td>UserActions</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\anti-sharing\utils\uaParser.ts</td>
+                <td>getBrowser</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-auth\anti-sharing\utils\uaParser.ts</td>
+                <td>getDevice</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-mobile-handler\store\useMobileStore.ts</td>
+                <td>if</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+              <tr>
+                <td>core\api\utils\transforms\transforms.ts</td>
+                <td>if</td>
+                <td>31</td>
+                <td>1</td>
+              </tr>
+              
+              <tr>
+                <td>features\core\app-api-handler\utils\transforms.ts</td>
+                <td>if</td>
+                <td>31</td>
+                <td>1</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+        </div>
+        
+        <div class="module-section">
+          <h3>app-pages Module</h3>
+          
+          <h4>Oversized Components (11)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>app\(exams)\exam\progress\page.tsx</td>
+                <td>867</td>
+                <td>667</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\practice\page.tsx</td>
+                <td>519</td>
+                <td>319</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\summary\page.tsx</td>
+                <td>332</td>
+                <td>132</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\payments\pending\page.tsx</td>
+                <td>274</td>
+                <td>74</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\payments\approvals\page.tsx</td>
+                <td>266</td>
+                <td>66</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\subject-papers\page.tsx</td>
+                <td>265</td>
+                <td>65</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\dashboard\page.tsx</td>
+                <td>259</td>
+                <td>59</td>
+              </tr>
+              
+              <tr>
+                <td>app\auth\callback\page.tsx</td>
+                <td>255</td>
+                <td>55</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\results\page.tsx</td>
+                <td>250</td>
+                <td>50</td>
+              </tr>
+              
+              <tr>
+                <td>app\(dashboard)\dashboard\page.tsx</td>
+                <td>242</td>
+                <td>42</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\past-papers\page.tsx</td>
+                <td>205</td>
+                <td>5</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+          
+          <h4>Oversized Functions (51)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Function Name</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>app\(exams)\summary\page.tsx</td>
+                <td>ExamsSummaryPage</td>
+                <td>267</td>
+                <td>237</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\payments\pending\page.tsx</td>
+                <td>PendingPaymentsPage</td>
+                <td>242</td>
+                <td>212</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\dashboard\page.tsx</td>
+                <td>AdminDashboardPage</td>
+                <td>232</td>
+                <td>202</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\payments\approvals\page.tsx</td>
+                <td>PaymentApprovalsPage</td>
+                <td>232</td>
+                <td>202</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\subject-papers\page.tsx</td>
+                <td>SubjectPapersContent</td>
+                <td>221</td>
+                <td>191</td>
+              </tr>
+              
+              <tr>
+                <td>app\auth\callback\page.tsx</td>
+                <td>AuthCallbackContent</td>
+                <td>212</td>
+                <td>182</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\results\page.tsx</td>
+                <td>ResultsContent</td>
+                <td>205</td>
+                <td>175</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\practice\page.tsx</td>
+                <td>CustomExamTab</td>
+                <td>192</td>
+                <td>162</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\progress\page.tsx</td>
+                <td>ProgressStatsPage</td>
+                <td>190</td>
+                <td>160</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\payments\history\page.tsx</td>
+                <td>PaymentHistoryPage</td>
+                <td>165</td>
+                <td>135</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\progress\page.tsx</td>
+                <td>ScoresTab</td>
+                <td>164</td>
+                <td>134</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\model-papers\page.tsx</td>
+                <td>ModelPapersContent</td>
+                <td>156</td>
+                <td>126</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\past-papers\page.tsx</td>
+                <td>PastPapersContent</td>
+                <td>156</td>
+                <td>126</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\dashboard\page.tsx</td>
+                <td>DashboardContent</td>
+                <td>151</td>
+                <td>121</td>
+              </tr>
+              
+              <tr>
+                <td>app\(dashboard)\dashboard\page.tsx</td>
+                <td>DashboardPage</td>
+                <td>149</td>
+                <td>119</td>
+              </tr>
+              
+              <tr>
+                <td>app\(dashboard)\payments\pending\[examId]\page.tsx</td>
+                <td>PaymentPendingPage</td>
+                <td>132</td>
+                <td>102</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\practice\page.tsx</td>
+                <td>PracticeExamsPage</td>
+                <td>116</td>
+                <td>86</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\progress\page.tsx</td>
+                <td>TimeTab</td>
+                <td>106</td>
+                <td>76</td>
+              </tr>
+              
+              <tr>
+                <td>app\(dashboard)\payments\manual\[examId]\page.tsx</td>
+                <td>ManualPaymentPage</td>
+                <td>104</td>
+                <td>74</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\exams\manage\page.tsx</td>
+                <td>ManageExamsPage</td>
+                <td>95</td>
+                <td>65</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\exams\page.tsx</td>
+                <td>ManageExamsPage</td>
+                <td>95</td>
+                <td>65</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\practice\page.tsx</td>
+                <td>TopicBasedExamsTab</td>
+                <td>93</td>
+                <td>63</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\results\[attemptId]\page.tsx</td>
+                <td>ExamResultsContent</td>
+                <td>92</td>
+                <td>62</td>
+              </tr>
+              
+              <tr>
+                <td>app\auth\session-conflict\page.tsx</td>
+                <td>SessionConflictPage</td>
+                <td>86</td>
+                <td>56</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\payment\process\page.tsx</td>
+                <td>PaymentProcessPage</td>
+                <td>77</td>
+                <td>47</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\session-monitoring\page.tsx</td>
+                <td>SessionMonitoringPage</td>
+                <td>77</td>
+                <td>47</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\progress\page.tsx</td>
+                <td>AchievementsTab</td>
+                <td>76</td>
+                <td>46</td>
+              </tr>
+              
+              <tr>
+                <td>app\(dashboard)\payments\pending\page.tsx</td>
+                <td>PendingPaymentsPage</td>
+                <td>73</td>
+                <td>43</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\payments\page.tsx</td>
+                <td>PaymentsManagementPage</td>
+                <td>72</td>
+                <td>42</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\payment\result\page.tsx</td>
+                <td>PaymentResultContent</td>
+                <td>69</td>
+                <td>39</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\practice\page.tsx</td>
+                <td>TimedExamsTab</td>
+                <td>68</td>
+                <td>38</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\progress\page.tsx</td>
+                <td>TopicsTab</td>
+                <td>67</td>
+                <td>37</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\page.tsx</td>
+                <td>ExamPage</td>
+                <td>66</td>
+                <td>36</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\exams\[examId]\edit\page.tsx</td>
+                <td>EditExamPage</td>
+                <td>64</td>
+                <td>34</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\practice\timed\page.tsx</td>
+                <td>TimedExamsPage</td>
+                <td>58</td>
+                <td>28</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\subject-papers\page.tsx</td>
+                <td>if</td>
+                <td>57</td>
+                <td>27</td>
+              </tr>
+              
+              <tr>
+                <td>app\unauthorized\page.tsx</td>
+                <td>Unauthorized</td>
+                <td>56</td>
+                <td>26</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\model-papers\page.tsx</td>
+                <td>if</td>
+                <td>55</td>
+                <td>25</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\past-papers\page.tsx</td>
+                <td>if</td>
+                <td>55</td>
+                <td>25</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\practice\topics\page.tsx</td>
+                <td>TopicExamsPage</td>
+                <td>54</td>
+                <td>24</td>
+              </tr>
+              
+              <tr>
+                <td>app\(auth)\register\page.tsx</td>
+                <td>RegisterPage</td>
+                <td>48</td>
+                <td>18</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\progress\page.tsx</td>
+                <td>ScoreProgressChart</td>
+                <td>45</td>
+                <td>15</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\progress\page.tsx</td>
+                <td>TopicPerformanceChart</td>
+                <td>45</td>
+                <td>15</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\[id]\page.tsx</td>
+                <td>ExamPageContent</td>
+                <td>45</td>
+                <td>15</td>
+              </tr>
+              
+              <tr>
+                <td>app\admin\exams\[examId]\questions\page.tsx</td>
+                <td>ExamQuestionsPage</td>
+                <td>45</td>
+                <td>15</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\progress\page.tsx</td>
+                <td>MonthlyActivityChart</td>
+                <td>35</td>
+                <td>5</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\model-papers\page.tsx</td>
+                <td>if</td>
+                <td>34</td>
+                <td>4</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\past-papers\page.tsx</td>
+                <td>if</td>
+                <td>34</td>
+                <td>4</td>
+              </tr>
+              
+              <tr>
+                <td>app\(exams)\exam\subject-papers\page.tsx</td>
+                <td>if</td>
+                <td>34</td>
+                <td>4</td>
+              </tr>
+              
+              <tr>
+                <td>app\(auth)\reset-password\[token]\page.tsx</td>
+                <td>ResetPasswordTokenPage</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+              <tr>
+                <td>app\auth\callback\page.tsx</td>
+                <td>if</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+        </div>
+        
+        <div class="module-section">
+          <h3>payments Module</h3>
+          
+          <h4>Oversized Components (9)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\payments\manual\components\admin\deprecated\ManualPaymentsAdminDashboard.tsx</td>
+                <td>704</td>
+                <td>504</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\manual\components\ManualPaymentForm.tsx</td>
+                <td>603</td>
+                <td>403</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\manual\store\manualPaymentStore.ts</td>
+                <td>351</td>
+                <td>151</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\manual\components\ManualPaymentStatus.tsx</td>
+                <td>266</td>
+                <td>66</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\premium\hooks\usePremiumStatus.ts</td>
+                <td>252</td>
+                <td>52</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\admin\components\PaymentTable.tsx</td>
+                <td>237</td>
+                <td>37</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\admin\components\ViewDetailsDialog.tsx</td>
+                <td>237</td>
+                <td>37</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\admin\utils\index.ts</td>
+                <td>212</td>
+                <td>12</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\admin\components\history\PaymentHistory.tsx</td>
+                <td>205</td>
+                <td>5</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+          
+          <h4>Oversized Functions (12)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Function Name</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\payments\manual\components\admin\deprecated\ManualPaymentsAdminDashboard.tsx</td>
+                <td>FC</td>
+                <td>678</td>
+                <td>648</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\premium\hooks\usePremiumStatus.ts</td>
+                <td>usePremiumStatus</td>
+                <td>186</td>
+                <td>156</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\components\PaperPricingManager.tsx</td>
+                <td>FC</td>
+                <td>166</td>
+                <td>136</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\admin\components\dashboard\PaymentDashboard.tsx</td>
+                <td>FC</td>
+                <td>160</td>
+                <td>130</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\manual\components\admin\deprecated\ManualPaymentsAdminDashboard.tsx</td>
+                <td>renderRequestsTable</td>
+                <td>124</td>
+                <td>94</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\components\PaymentHistory.tsx</td>
+                <td>FC</td>
+                <td>114</td>
+                <td>84</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\admin\components\statistics\PaymentStatistics.tsx</td>
+                <td>FC</td>
+                <td>80</td>
+                <td>50</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\manual\components\ManualPaymentForm.tsx</td>
+                <td>onload</td>
+                <td>63</td>
+                <td>33</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\admin\utils\index.ts</td>
+                <td>getUserDisplayName</td>
+                <td>45</td>
+                <td>15</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\admin\components\EmptyState.tsx</td>
+                <td>getVariantStyles</td>
+                <td>39</td>
+                <td>9</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\admin\components\EmptyState.tsx</td>
+                <td>switch</td>
+                <td>37</td>
+                <td>7</td>
+              </tr>
+              
+              <tr>
+                <td>features\payments\manual\components\ManualPaymentForm.tsx</td>
+                <td>catch</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+        </div>
+        
+        <div class="module-section">
+          <h3>shared-components Module</h3>
+          
+          <h4>Oversized Components (6)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>components\ui\sidebar.tsx</td>
+                <td>800</td>
+                <td>600</td>
+              </tr>
+              
+              <tr>
+                <td>components\ui\chart.tsx</td>
+                <td>366</td>
+                <td>166</td>
+              </tr>
+              
+              <tr>
+                <td>components\ui\carousel.tsx</td>
+                <td>263</td>
+                <td>63</td>
+              </tr>
+              
+              <tr>
+                <td>components\ui\menubar.tsx</td>
+                <td>257</td>
+                <td>57</td>
+              </tr>
+              
+              <tr>
+                <td>components\ui\context-menu.tsx</td>
+                <td>201</td>
+                <td>1</td>
+              </tr>
+              
+              <tr>
+                <td>components\ui\dropdown-menu.tsx</td>
+                <td>201</td>
+                <td>1</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+          
+          <h4>Oversized Functions (3)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Function Name</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>components\ui\use-toast.ts</td>
+                <td>switch</td>
+                <td>51</td>
+                <td>21</td>
+              </tr>
+              
+              <tr>
+                <td>components\ui\sidebar.tsx</td>
+                <td>if</td>
+                <td>37</td>
+                <td>7</td>
+              </tr>
+              
+              <tr>
+                <td>components\ui\chart.tsx</td>
+                <td>ChartStyle</td>
+                <td>31</td>
+                <td>1</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+        </div>
+        
+        <div class="module-section">
+          <h3>shell Module</h3>
+          
+          <h4>Oversized Components (6)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\shell\components\sidebar\AppSidebar.tsx</td>
+                <td>367</td>
+                <td>167</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\store\roleStore.ts</td>
+                <td>344</td>
+                <td>144</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\components\sidebar\SidebarContactSection.tsx</td>
+                <td>280</td>
+                <td>80</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\components\topbar\AppTopbar.tsx</td>
+                <td>214</td>
+                <td>14</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\store\sidebarStore.ts</td>
+                <td>211</td>
+                <td>11</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\navigation\features.ts</td>
+                <td>201</td>
+                <td>1</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+          
+          <h4>Oversized Functions (9)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Function Name</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\shell\components\sidebar\SidebarContactSection.tsx</td>
+                <td>SidebarContactSection</td>
+                <td>260</td>
+                <td>230</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\components\sidebar\SidebarMenu.tsx</td>
+                <td>SidebarMenu</td>
+                <td>101</td>
+                <td>71</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\components\sidebar\SidebarContactSection.tsx</td>
+                <td>if</td>
+                <td>78</td>
+                <td>48</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\components\topbar\UserMenu.tsx</td>
+                <td>UserMenu</td>
+                <td>63</td>
+                <td>33</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\components\AppManager.tsx</td>
+                <td>AppManager</td>
+                <td>62</td>
+                <td>32</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\components\AppManager.tsx</td>
+                <td>if</td>
+                <td>40</td>
+                <td>10</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\store\roleStore.ts</td>
+                <td>useRoleSync</td>
+                <td>34</td>
+                <td>4</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\store\roleStore.ts</td>
+                <td>if</td>
+                <td>33</td>
+                <td>3</td>
+              </tr>
+              
+              <tr>
+                <td>features\shell\components\AppManager.tsx</td>
+                <td>if</td>
+                <td>32</td>
+                <td>2</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+        </div>
+        
+        <div class="module-section">
+          <h3>dashboard Module</h3>
+          
+          <h4>Oversized Components (4)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\dashboard\components\DashboardOverview.tsx</td>
+                <td>403</td>
+                <td>203</td>
+              </tr>
+              
+              <tr>
+                <td>features\dashboard\components\cards\DetailedPaymentStatus.tsx</td>
+                <td>328</td>
+                <td>128</td>
+              </tr>
+              
+              <tr>
+                <td>features\dashboard\api\hooks\useDashboardData.ts</td>
+                <td>326</td>
+                <td>126</td>
+              </tr>
+              
+              <tr>
+                <td>features\dashboard\components\charts\heatmap\ActivityHeatmap.tsx</td>
+                <td>248</td>
+                <td>48</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+          
+          <h4>Oversized Functions (6)</h4>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>File Path</th>
+                <th>Function Name</th>
+                <th>Line Count</th>
+                <th>Exceeds By</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td>features\dashboard\components\DashboardOverview.tsx</td>
+                <td>DashboardOverview</td>
+                <td>333</td>
+                <td>303</td>
+              </tr>
+              
+              <tr>
+                <td>features\dashboard\api\hooks\useDashboardData.ts</td>
+                <td>useDashboardData</td>
+                <td>270</td>
+                <td>240</td>
+              </tr>
+              
+              <tr>
+                <td>features\dashboard\components\navigation\UserMenu.tsx</td>
+                <td>UserMenu</td>
+                <td>128</td>
+                <td>98</td>
+              </tr>
+              
+              <tr>
+                <td>features\dashboard\components\navigation\Breadcrumbs.tsx</td>
+                <td>Breadcrumbs</td>
+                <td>86</td>
+                <td>56</td>
+              </tr>
+              
+              <tr>
+                <td>features\dashboard\components\DashboardOverview.tsx</td>
+                <td>renderAccountStatusContent</td>
+                <td>45</td>
+                <td>15</td>
+              </tr>
+              
+              <tr>
+                <td>features\dashboard\components\charts\heatmap\ActivityHeatmap.tsx</td>
+                <td>if</td>
+                <td>41</td>
+                <td>11</td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+        </div>
+        
+      
+      <h2>Recommendation</h2>
+      <p>Based on the analysis, the following modules should be prioritized for refactoring:</p>
+      <ol>
+        
+        <li>
+          <strong>exams</strong> (35 oversized components, 
+          52 oversized functions)
+        </li>
+        
+        <li>
+          <strong>core</strong> (29 oversized components, 
+          65 oversized functions)
+        </li>
+        
+        <li>
+          <strong>app-pages</strong> (11 oversized components, 
+          51 oversized functions)
+        </li>
+        
+        <li>
+          <strong>payments</strong> (9 oversized components, 
+          12 oversized functions)
+        </li>
+        
+        <li>
+          <strong>shared-components</strong> (6 oversized components, 
+          3 oversized functions)
+        </li>
+        
+        <li>
+          <strong>shell</strong> (6 oversized components, 
+          9 oversized functions)
+        </li>
+        
+      </ol>
+      
+      <h2>Refactoring Strategies</h2>
+      <ul>
+        <li><strong>Component Decomposition</strong>: Break large components into smaller, more focused ones</li>
+        <li><strong>Custom Hooks</strong>: Extract complex logic into custom hooks</li>
+        <li><strong>Container/Presentation Pattern</strong>: Separate data fetching and state management from presentation</li>
+        <li><strong>Function Extraction</strong>: Split large functions into smaller, more focused functions</li>
+        <li><strong>Atomic Design</strong>: Organize components following atomic design principles</li>
+      </ul>
+    </body>
+    </html>
+    

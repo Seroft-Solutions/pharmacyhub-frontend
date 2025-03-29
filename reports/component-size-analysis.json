@@ -1,0 +1,2445 @@
+{
+  "generatedAt": "2025-03-29T13:21:23.054Z",
+  "oversizedComponents": [
+    {
+      "path": "features\\exams\\components\\student\\ExamContainer.tsx",
+      "lineCount": 1061,
+      "limit": 200,
+      "exceededBy": 861
+    },
+    {
+      "path": "features\\exams\\components\\admin\\JsonExamUploader.tsx",
+      "lineCount": 882,
+      "limit": 200,
+      "exceededBy": 682
+    },
+    {
+      "path": "app\\(exams)\\exam\\progress\\page.tsx",
+      "lineCount": 867,
+      "limit": 200,
+      "exceededBy": 667
+    },
+    {
+      "path": "components\\ui\\sidebar.tsx",
+      "lineCount": 800,
+      "limit": 200,
+      "exceededBy": 600
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\RegisterForm.tsx",
+      "lineCount": 737,
+      "limit": 200,
+      "exceededBy": 537
+    },
+    {
+      "path": "features\\payments\\manual\\components\\admin\\deprecated\\ManualPaymentsAdminDashboard.tsx",
+      "lineCount": 704,
+      "limit": 200,
+      "exceededBy": 504
+    },
+    {
+      "path": "features\\exams\\components\\admin\\ExamQuestions.tsx",
+      "lineCount": 687,
+      "limit": 200,
+      "exceededBy": 487
+    },
+    {
+      "path": "features\\payments\\manual\\components\\ManualPaymentForm.tsx",
+      "lineCount": 603,
+      "limit": 200,
+      "exceededBy": 403
+    },
+    {
+      "path": "features\\exams\\store\\mcqExamStore.ts",
+      "lineCount": 532,
+      "limit": 200,
+      "exceededBy": 332
+    },
+    {
+      "path": "app\\(exams)\\exam\\practice\\page.tsx",
+      "lineCount": 519,
+      "limit": 200,
+      "exceededBy": 319
+    },
+    {
+      "path": "features\\exams\\components\\mcq\\McqExamResults.tsx",
+      "lineCount": 460,
+      "limit": 200,
+      "exceededBy": 260
+    },
+    {
+      "path": "features\\exams\\components\\results\\ExamResults.tsx",
+      "lineCount": 445,
+      "limit": 200,
+      "exceededBy": 245
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\passwordRecovery\\ResetPasswordForm.tsx",
+      "lineCount": 423,
+      "limit": 200,
+      "exceededBy": 223
+    },
+    {
+      "path": "features\\exams\\components\\student\\QuestionNavigation.tsx",
+      "lineCount": 408,
+      "limit": 200,
+      "exceededBy": 208
+    },
+    {
+      "path": "features\\core\\app-auth\\api\\services\\authService.ts",
+      "lineCount": 407,
+      "limit": 200,
+      "exceededBy": 207
+    },
+    {
+      "path": "features\\dashboard\\components\\DashboardOverview.tsx",
+      "lineCount": 403,
+      "limit": 200,
+      "exceededBy": 203
+    },
+    {
+      "path": "features\\core\\app-auth\\core\\AuthContext.tsx",
+      "lineCount": 389,
+      "limit": 200,
+      "exceededBy": 189
+    },
+    {
+      "path": "features\\core\\app-api-handler\\factories\\createApiHooks.ts",
+      "lineCount": 386,
+      "limit": 200,
+      "exceededBy": 186
+    },
+    {
+      "path": "core\\api\\services\\factories\\createApiHooks.ts",
+      "lineCount": 385,
+      "limit": 200,
+      "exceededBy": 185
+    },
+    {
+      "path": "features\\exams\\components\\student\\ExamResults.tsx",
+      "lineCount": 384,
+      "limit": 200,
+      "exceededBy": 184
+    },
+    {
+      "path": "features\\exams\\hooks\\useExamSession.ts",
+      "lineCount": 374,
+      "limit": 200,
+      "exceededBy": 174
+    },
+    {
+      "path": "core\\auth\\core\\tokenManager.ts",
+      "lineCount": 372,
+      "limit": 200,
+      "exceededBy": 172
+    },
+    {
+      "path": "features\\core\\app-auth\\core\\tokenManager.ts",
+      "lineCount": 372,
+      "limit": 200,
+      "exceededBy": 172
+    },
+    {
+      "path": "features\\exams\\components\\common\\ExamsTable.tsx",
+      "lineCount": 371,
+      "limit": 200,
+      "exceededBy": 171
+    },
+    {
+      "path": "features\\exams\\components\\common\\ExamPaperCard.tsx",
+      "lineCount": 369,
+      "limit": 200,
+      "exceededBy": 169
+    },
+    {
+      "path": "features\\shell\\components\\sidebar\\AppSidebar.tsx",
+      "lineCount": 367,
+      "limit": 200,
+      "exceededBy": 167
+    },
+    {
+      "path": "components\\ui\\chart.tsx",
+      "lineCount": 366,
+      "limit": 200,
+      "exceededBy": 166
+    },
+    {
+      "path": "features\\core\\app-auth\\api\\services\\authApiService.ts",
+      "lineCount": 364,
+      "limit": 200,
+      "exceededBy": 164
+    },
+    {
+      "path": "features\\payments\\manual\\store\\manualPaymentStore.ts",
+      "lineCount": 351,
+      "limit": 200,
+      "exceededBy": 151
+    },
+    {
+      "path": "features\\exams\\components\\student\\QuestionDisplay.tsx",
+      "lineCount": 350,
+      "limit": 200,
+      "exceededBy": 150
+    },
+    {
+      "path": "features\\exams\\api\\hooks\\useExamApiHooks.ts",
+      "lineCount": 348,
+      "limit": 200,
+      "exceededBy": 148
+    },
+    {
+      "path": "features\\shell\\store\\roleStore.ts",
+      "lineCount": 344,
+      "limit": 200,
+      "exceededBy": 144
+    },
+    {
+      "path": "features\\exams\\components\\mcq\\McqExamLayout.tsx",
+      "lineCount": 340,
+      "limit": 200,
+      "exceededBy": 140
+    },
+    {
+      "path": "core\\auth\\state\\authStore.ts",
+      "lineCount": 337,
+      "limit": 200,
+      "exceededBy": 137
+    },
+    {
+      "path": "features\\exams\\components\\premium\\ManualPaymentForm.tsx",
+      "lineCount": 333,
+      "limit": 200,
+      "exceededBy": 133
+    },
+    {
+      "path": "app\\(exams)\\summary\\page.tsx",
+      "lineCount": 332,
+      "limit": 200,
+      "exceededBy": 132
+    },
+    {
+      "path": "features\\exams\\store\\examStore.ts",
+      "lineCount": 329,
+      "limit": 200,
+      "exceededBy": 129
+    },
+    {
+      "path": "features\\dashboard\\components\\cards\\DetailedPaymentStatus.tsx",
+      "lineCount": 328,
+      "limit": 200,
+      "exceededBy": 128
+    },
+    {
+      "path": "features\\dashboard\\api\\hooks\\useDashboardData.ts",
+      "lineCount": 326,
+      "limit": 200,
+      "exceededBy": 126
+    },
+    {
+      "path": "features\\exams\\components\\mcq\\McqQuestionCard.tsx",
+      "lineCount": 326,
+      "limit": 200,
+      "exceededBy": 126
+    },
+    {
+      "path": "features\\exams\\components\\mcq\\McqExamList.tsx",
+      "lineCount": 320,
+      "limit": 200,
+      "exceededBy": 120
+    },
+    {
+      "path": "core\\api\\utils\\optimisticUpdates.ts",
+      "lineCount": 319,
+      "limit": 200,
+      "exceededBy": 119
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\context\\RegisterFormContext.tsx",
+      "lineCount": 317,
+      "limit": 200,
+      "exceededBy": 117
+    },
+    {
+      "path": "features\\core\\app-api-handler\\core\\apiClient.ts",
+      "lineCount": 316,
+      "limit": 200,
+      "exceededBy": 116
+    },
+    {
+      "path": "core\\api\\examples\\UserManager.tsx",
+      "lineCount": 315,
+      "limit": 200,
+      "exceededBy": 115
+    },
+    {
+      "path": "features\\core\\app-rbac\\hooks\\useAccess.ts",
+      "lineCount": 303,
+      "limit": 200,
+      "exceededBy": 103
+    },
+    {
+      "path": "features\\exams\\components\\premium\\PaymentFlow.tsx",
+      "lineCount": 301,
+      "limit": 200,
+      "exceededBy": 101
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\passwordRecovery\\ForgotPasswordForm.tsx",
+      "lineCount": 294,
+      "limit": 200,
+      "exceededBy": 94
+    },
+    {
+      "path": "core\\api\\examples\\userService.ts",
+      "lineCount": 293,
+      "limit": 200,
+      "exceededBy": 93
+    },
+    {
+      "path": "features\\exams\\types\\deprecated\\QuestionStatus.ts",
+      "lineCount": 292,
+      "limit": 200,
+      "exceededBy": 92
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\login\\EnhancedLoginForm.tsx",
+      "lineCount": 291,
+      "limit": 200,
+      "exceededBy": 91
+    },
+    {
+      "path": "features\\exams\\components\\results\\ResultsView.tsx",
+      "lineCount": 289,
+      "limit": 200,
+      "exceededBy": 89
+    },
+    {
+      "path": "features\\core\\app-api-handler\\hooks\\useApi.ts",
+      "lineCount": 284,
+      "limit": 200,
+      "exceededBy": 84
+    },
+    {
+      "path": "features\\exams\\components\\admin\\McqEditor.tsx",
+      "lineCount": 283,
+      "limit": 200,
+      "exceededBy": 83
+    },
+    {
+      "path": "features\\shell\\components\\sidebar\\SidebarContactSection.tsx",
+      "lineCount": 280,
+      "limit": 200,
+      "exceededBy": 80
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\login\\LoginForm.tsx",
+      "lineCount": 279,
+      "limit": 200,
+      "exceededBy": 79
+    },
+    {
+      "path": "app\\admin\\payments\\pending\\page.tsx",
+      "lineCount": 274,
+      "limit": 200,
+      "exceededBy": 74
+    },
+    {
+      "path": "features\\exams\\components\\admin\\PaperMetadataFields.tsx",
+      "lineCount": 268,
+      "limit": 200,
+      "exceededBy": 68
+    },
+    {
+      "path": "features\\exams\\components\\student\\ExamLanding.tsx",
+      "lineCount": 267,
+      "limit": 200,
+      "exceededBy": 67
+    },
+    {
+      "path": "app\\admin\\payments\\approvals\\page.tsx",
+      "lineCount": 266,
+      "limit": 200,
+      "exceededBy": 66
+    },
+    {
+      "path": "features\\payments\\manual\\components\\ManualPaymentStatus.tsx",
+      "lineCount": 266,
+      "limit": 200,
+      "exceededBy": 66
+    },
+    {
+      "path": "app\\(exams)\\exam\\subject-papers\\page.tsx",
+      "lineCount": 265,
+      "limit": 200,
+      "exceededBy": 65
+    },
+    {
+      "path": "components\\ui\\carousel.tsx",
+      "lineCount": 263,
+      "limit": 200,
+      "exceededBy": 63
+    },
+    {
+      "path": "core\\api\\core\\error\\apiErrors.ts",
+      "lineCount": 262,
+      "limit": 200,
+      "exceededBy": 62
+    },
+    {
+      "path": "features\\core\\app-auth\\anti-sharing\\components\\admin\\SessionMonitoring.tsx",
+      "lineCount": 260,
+      "limit": 200,
+      "exceededBy": 60
+    },
+    {
+      "path": "app\\admin\\dashboard\\page.tsx",
+      "lineCount": 259,
+      "limit": 200,
+      "exceededBy": 59
+    },
+    {
+      "path": "core\\api\\core\\error\\errorLogger.ts",
+      "lineCount": 258,
+      "limit": 200,
+      "exceededBy": 58
+    },
+    {
+      "path": "components\\ui\\menubar.tsx",
+      "lineCount": 257,
+      "limit": 200,
+      "exceededBy": 57
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useLoginForm.ts",
+      "lineCount": 257,
+      "limit": 200,
+      "exceededBy": 57
+    },
+    {
+      "path": "features\\exams\\utils\\examUtils.ts",
+      "lineCount": 257,
+      "limit": 200,
+      "exceededBy": 57
+    },
+    {
+      "path": "features\\exams\\api\\hooks\\useExamAttemptHooks.ts",
+      "lineCount": 256,
+      "limit": 200,
+      "exceededBy": 56
+    },
+    {
+      "path": "app\\auth\\callback\\page.tsx",
+      "lineCount": 255,
+      "limit": 200,
+      "exceededBy": 55
+    },
+    {
+      "path": "features\\exams\\types\\QuestionStatus.ts",
+      "lineCount": 253,
+      "limit": 200,
+      "exceededBy": 53
+    },
+    {
+      "path": "features\\payments\\premium\\hooks\\usePremiumStatus.ts",
+      "lineCount": 252,
+      "limit": 200,
+      "exceededBy": 52
+    },
+    {
+      "path": "app\\(exams)\\exam\\results\\page.tsx",
+      "lineCount": 250,
+      "limit": 200,
+      "exceededBy": 50
+    },
+    {
+      "path": "features\\exams\\types\\index.ts",
+      "lineCount": 249,
+      "limit": 200,
+      "exceededBy": 49
+    },
+    {
+      "path": "features\\dashboard\\components\\charts\\heatmap\\ActivityHeatmap.tsx",
+      "lineCount": 248,
+      "limit": 200,
+      "exceededBy": 48
+    },
+    {
+      "path": "core\\api\\core\\interceptors\\responseInterceptor.ts",
+      "lineCount": 244,
+      "limit": 200,
+      "exceededBy": 44
+    },
+    {
+      "path": "core\\auth\\admin\\components\\SessionMonitoring.tsx",
+      "lineCount": 244,
+      "limit": 200,
+      "exceededBy": 44
+    },
+    {
+      "path": "features\\core\\app-auth\\admin\\components\\SessionMonitoring.tsx",
+      "lineCount": 244,
+      "limit": 200,
+      "exceededBy": 44
+    },
+    {
+      "path": "features\\exams\\utils\\paperTypeUtils.ts",
+      "lineCount": 244,
+      "limit": 200,
+      "exceededBy": 44
+    },
+    {
+      "path": "app\\(dashboard)\\dashboard\\page.tsx",
+      "lineCount": 242,
+      "limit": 200,
+      "exceededBy": 42
+    },
+    {
+      "path": "features\\exams\\api\\services\\examApiService.ts",
+      "lineCount": 240,
+      "limit": 200,
+      "exceededBy": 40
+    },
+    {
+      "path": "features\\payments\\admin\\components\\PaymentTable.tsx",
+      "lineCount": 237,
+      "limit": 200,
+      "exceededBy": 37
+    },
+    {
+      "path": "features\\payments\\admin\\components\\ViewDetailsDialog.tsx",
+      "lineCount": 237,
+      "limit": 200,
+      "exceededBy": 37
+    },
+    {
+      "path": "features\\exams\\components\\quiz\\ExamLayout.tsx",
+      "lineCount": 235,
+      "limit": 200,
+      "exceededBy": 35
+    },
+    {
+      "path": "features\\core\\app-auth\\anti-sharing\\api\\sessionApi.ts",
+      "lineCount": 231,
+      "limit": 200,
+      "exceededBy": 31
+    },
+    {
+      "path": "features\\exams\\components\\review\\ExamReview.tsx",
+      "lineCount": 225,
+      "limit": 200,
+      "exceededBy": 25
+    },
+    {
+      "path": "features\\exams\\components\\admin\\ExamDashboard.tsx",
+      "lineCount": 223,
+      "limit": 200,
+      "exceededBy": 23
+    },
+    {
+      "path": "features\\shell\\components\\topbar\\AppTopbar.tsx",
+      "lineCount": 214,
+      "limit": 200,
+      "exceededBy": 14
+    },
+    {
+      "path": "features\\payments\\admin\\utils\\index.ts",
+      "lineCount": 212,
+      "limit": 200,
+      "exceededBy": 12
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useLoginForm.enhanced.ts",
+      "lineCount": 211,
+      "limit": 200,
+      "exceededBy": 11
+    },
+    {
+      "path": "features\\shell\\store\\sidebarStore.ts",
+      "lineCount": 211,
+      "limit": 200,
+      "exceededBy": 11
+    },
+    {
+      "path": "features\\exams\\utils\\AnswerUtils.ts",
+      "lineCount": 209,
+      "limit": 200,
+      "exceededBy": 9
+    },
+    {
+      "path": "features\\exams\\components\\review\\ReviewMode.tsx",
+      "lineCount": 208,
+      "limit": 200,
+      "exceededBy": 8
+    },
+    {
+      "path": "app\\(exams)\\exam\\past-papers\\page.tsx",
+      "lineCount": 205,
+      "limit": 200,
+      "exceededBy": 5
+    },
+    {
+      "path": "features\\payments\\admin\\components\\history\\PaymentHistory.tsx",
+      "lineCount": 205,
+      "limit": 200,
+      "exceededBy": 5
+    },
+    {
+      "path": "components\\ui\\context-menu.tsx",
+      "lineCount": 201,
+      "limit": 200,
+      "exceededBy": 1
+    },
+    {
+      "path": "components\\ui\\dropdown-menu.tsx",
+      "lineCount": 201,
+      "limit": 200,
+      "exceededBy": 1
+    },
+    {
+      "path": "features\\shell\\navigation\\features.ts",
+      "lineCount": 201,
+      "limit": 200,
+      "exceededBy": 1
+    }
+  ],
+  "oversizedFunctions": [
+    {
+      "path": "features\\payments\\manual\\components\\admin\\deprecated\\ManualPaymentsAdminDashboard.tsx",
+      "functionName": "FC",
+      "lineCount": 678,
+      "limit": 30,
+      "exceededBy": 648,
+      "startLine": 24,
+      "endLine": 702
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\RegisterForm.tsx",
+      "functionName": "RegisterForm",
+      "lineCount": 627,
+      "limit": 30,
+      "exceededBy": 597,
+      "startLine": 109,
+      "endLine": 736
+    },
+    {
+      "path": "features\\exams\\components\\mcq\\McqExamResults.tsx",
+      "functionName": "FC",
+      "lineCount": 423,
+      "limit": 30,
+      "exceededBy": 393,
+      "startLine": 36,
+      "endLine": 459
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\passwordRecovery\\ResetPasswordForm.tsx",
+      "functionName": "ResetPasswordForm",
+      "lineCount": 388,
+      "limit": 30,
+      "exceededBy": 358,
+      "startLine": 34,
+      "endLine": 422
+    },
+    {
+      "path": "features\\exams\\hooks\\useExamSession.ts",
+      "functionName": "useExamSession",
+      "lineCount": 345,
+      "limit": 30,
+      "exceededBy": 315,
+      "startLine": 29,
+      "endLine": 374
+    },
+    {
+      "path": "features\\dashboard\\components\\DashboardOverview.tsx",
+      "functionName": "DashboardOverview",
+      "lineCount": 333,
+      "limit": 30,
+      "exceededBy": 303,
+      "startLine": 68,
+      "endLine": 401
+    },
+    {
+      "path": "features\\core\\app-rbac\\hooks\\useAccess.ts",
+      "functionName": "useAccess",
+      "lineCount": 289,
+      "limit": 30,
+      "exceededBy": 259,
+      "startLine": 14,
+      "endLine": 303
+    },
+    {
+      "path": "features\\exams\\components\\mcq\\McqExamList.tsx",
+      "functionName": "FC",
+      "lineCount": 277,
+      "limit": 30,
+      "exceededBy": 247,
+      "startLine": 40,
+      "endLine": 317
+    },
+    {
+      "path": "features\\dashboard\\api\\hooks\\useDashboardData.ts",
+      "functionName": "useDashboardData",
+      "lineCount": 270,
+      "limit": 30,
+      "exceededBy": 240,
+      "startLine": 23,
+      "endLine": 293
+    },
+    {
+      "path": "app\\(exams)\\summary\\page.tsx",
+      "functionName": "ExamsSummaryPage",
+      "lineCount": 267,
+      "limit": 30,
+      "exceededBy": 237,
+      "startLine": 30,
+      "endLine": 297
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\passwordRecovery\\ForgotPasswordForm.tsx",
+      "functionName": "ForgotPasswordForm",
+      "lineCount": 265,
+      "limit": 30,
+      "exceededBy": 235,
+      "startLine": 28,
+      "endLine": 293
+    },
+    {
+      "path": "features\\shell\\components\\sidebar\\SidebarContactSection.tsx",
+      "functionName": "SidebarContactSection",
+      "lineCount": 260,
+      "limit": 30,
+      "exceededBy": 230,
+      "startLine": 19,
+      "endLine": 279
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\login\\EnhancedLoginForm.tsx",
+      "functionName": "EnhancedLoginForm",
+      "lineCount": 258,
+      "limit": 30,
+      "exceededBy": 228,
+      "startLine": 31,
+      "endLine": 289
+    },
+    {
+      "path": "features\\exams\\components\\results\\ResultsView.tsx",
+      "functionName": "ResultsView",
+      "lineCount": 257,
+      "limit": 30,
+      "exceededBy": 227,
+      "startLine": 32,
+      "endLine": 289
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\login\\LoginForm.tsx",
+      "functionName": "LoginForm",
+      "lineCount": 255,
+      "limit": 30,
+      "exceededBy": 225,
+      "startLine": 24,
+      "endLine": 279
+    },
+    {
+      "path": "app\\admin\\payments\\pending\\page.tsx",
+      "functionName": "PendingPaymentsPage",
+      "lineCount": 242,
+      "limit": 30,
+      "exceededBy": 212,
+      "startLine": 32,
+      "endLine": 274
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useLoginForm.ts",
+      "functionName": "useLoginForm",
+      "lineCount": 242,
+      "limit": 30,
+      "exceededBy": 212,
+      "startLine": 15,
+      "endLine": 257
+    },
+    {
+      "path": "app\\admin\\dashboard\\page.tsx",
+      "functionName": "AdminDashboardPage",
+      "lineCount": 232,
+      "limit": 30,
+      "exceededBy": 202,
+      "startLine": 27,
+      "endLine": 259
+    },
+    {
+      "path": "app\\admin\\payments\\approvals\\page.tsx",
+      "functionName": "PaymentApprovalsPage",
+      "lineCount": 232,
+      "limit": 30,
+      "exceededBy": 202,
+      "startLine": 34,
+      "endLine": 266
+    },
+    {
+      "path": "app\\(exams)\\exam\\subject-papers\\page.tsx",
+      "functionName": "SubjectPapersContent",
+      "lineCount": 221,
+      "limit": 30,
+      "exceededBy": 191,
+      "startLine": 24,
+      "endLine": 245
+    },
+    {
+      "path": "core\\auth\\admin\\components\\SessionMonitoring.tsx",
+      "functionName": "FC",
+      "lineCount": 218,
+      "limit": 30,
+      "exceededBy": 188,
+      "startLine": 25,
+      "endLine": 243
+    },
+    {
+      "path": "features\\core\\app-auth\\admin\\components\\SessionMonitoring.tsx",
+      "functionName": "FC",
+      "lineCount": 218,
+      "limit": 30,
+      "exceededBy": 188,
+      "startLine": 25,
+      "endLine": 243
+    },
+    {
+      "path": "features\\exams\\components\\quiz\\ExamLayout.tsx",
+      "functionName": "ExamLayout",
+      "lineCount": 214,
+      "limit": 30,
+      "exceededBy": 184,
+      "startLine": 21,
+      "endLine": 235
+    },
+    {
+      "path": "app\\auth\\callback\\page.tsx",
+      "functionName": "AuthCallbackContent",
+      "lineCount": 212,
+      "limit": 30,
+      "exceededBy": 182,
+      "startLine": 33,
+      "endLine": 245
+    },
+    {
+      "path": "app\\(exams)\\exam\\results\\page.tsx",
+      "functionName": "ResultsContent",
+      "lineCount": 205,
+      "limit": 30,
+      "exceededBy": 175,
+      "startLine": 45,
+      "endLine": 250
+    },
+    {
+      "path": "features\\exams\\components\\admin\\PaperMetadataFields.tsx",
+      "functionName": "renderField",
+      "lineCount": 200,
+      "limit": 30,
+      "exceededBy": 170,
+      "startLine": 38,
+      "endLine": 238
+    },
+    {
+      "path": "features\\exams\\components\\admin\\PaperMetadataFields.tsx",
+      "functionName": "switch",
+      "lineCount": 193,
+      "limit": 30,
+      "exceededBy": 163,
+      "startLine": 44,
+      "endLine": 237
+    },
+    {
+      "path": "app\\(exams)\\exam\\practice\\page.tsx",
+      "functionName": "CustomExamTab",
+      "lineCount": 192,
+      "limit": 30,
+      "exceededBy": 162,
+      "startLine": 327,
+      "endLine": 519
+    },
+    {
+      "path": "features\\exams\\components\\premium\\PaymentFlow.tsx",
+      "functionName": "renderStep",
+      "lineCount": 191,
+      "limit": 30,
+      "exceededBy": 161,
+      "startLine": 100,
+      "endLine": 291
+    },
+    {
+      "path": "app\\(exams)\\exam\\progress\\page.tsx",
+      "functionName": "ProgressStatsPage",
+      "lineCount": 190,
+      "limit": 30,
+      "exceededBy": 160,
+      "startLine": 58,
+      "endLine": 248
+    },
+    {
+      "path": "features\\exams\\components\\premium\\PaymentFlow.tsx",
+      "functionName": "switch",
+      "lineCount": 189,
+      "limit": 30,
+      "exceededBy": 159,
+      "startLine": 101,
+      "endLine": 290
+    },
+    {
+      "path": "features\\payments\\premium\\hooks\\usePremiumStatus.ts",
+      "functionName": "usePremiumStatus",
+      "lineCount": 186,
+      "limit": 30,
+      "exceededBy": 156,
+      "startLine": 64,
+      "endLine": 250
+    },
+    {
+      "path": "features\\exams\\components\\review\\ReviewMode.tsx",
+      "functionName": "ReviewMode",
+      "lineCount": 179,
+      "limit": 30,
+      "exceededBy": 149,
+      "startLine": 29,
+      "endLine": 208
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useLoginForm.enhanced.ts",
+      "functionName": "useLoginForm",
+      "lineCount": 178,
+      "limit": 30,
+      "exceededBy": 148,
+      "startLine": 32,
+      "endLine": 210
+    },
+    {
+      "path": "features\\exams\\components\\admin\\ExamDashboard.tsx",
+      "functionName": "FC",
+      "lineCount": 176,
+      "limit": 30,
+      "exceededBy": 146,
+      "startLine": 46,
+      "endLine": 222
+    },
+    {
+      "path": "features\\exams\\components\\results\\PerformanceCharts.tsx",
+      "functionName": "PerformanceCharts",
+      "lineCount": 174,
+      "limit": 30,
+      "exceededBy": 144,
+      "startLine": 26,
+      "endLine": 200
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\steps\\AccountStep.tsx",
+      "functionName": "FC",
+      "lineCount": 168,
+      "limit": 30,
+      "exceededBy": 138,
+      "startLine": 10,
+      "endLine": 178
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\passwordRecovery\\ResetPasswordForm.tsx",
+      "functionName": "renderContent",
+      "lineCount": 166,
+      "limit": 30,
+      "exceededBy": 136,
+      "startLine": 180,
+      "endLine": 346
+    },
+    {
+      "path": "features\\payments\\components\\PaperPricingManager.tsx",
+      "functionName": "FC",
+      "lineCount": 166,
+      "limit": 30,
+      "exceededBy": 136,
+      "startLine": 22,
+      "endLine": 188
+    },
+    {
+      "path": "app\\admin\\payments\\history\\page.tsx",
+      "functionName": "PaymentHistoryPage",
+      "lineCount": 165,
+      "limit": 30,
+      "exceededBy": 135,
+      "startLine": 29,
+      "endLine": 194
+    },
+    {
+      "path": "app\\(exams)\\exam\\progress\\page.tsx",
+      "functionName": "ScoresTab",
+      "lineCount": 164,
+      "limit": 30,
+      "exceededBy": 134,
+      "startLine": 439,
+      "endLine": 603
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\passwordRecovery\\ResetPasswordForm.tsx",
+      "functionName": "switch",
+      "lineCount": 164,
+      "limit": 30,
+      "exceededBy": 134,
+      "startLine": 181,
+      "endLine": 345
+    },
+    {
+      "path": "features\\payments\\admin\\components\\dashboard\\PaymentDashboard.tsx",
+      "functionName": "FC",
+      "lineCount": 160,
+      "limit": 30,
+      "exceededBy": 130,
+      "startLine": 23,
+      "endLine": 183
+    },
+    {
+      "path": "app\\(exams)\\exam\\model-papers\\page.tsx",
+      "functionName": "ModelPapersContent",
+      "lineCount": 156,
+      "limit": 30,
+      "exceededBy": 126,
+      "startLine": 23,
+      "endLine": 179
+    },
+    {
+      "path": "app\\(exams)\\exam\\past-papers\\page.tsx",
+      "functionName": "PastPapersContent",
+      "lineCount": 156,
+      "limit": 30,
+      "exceededBy": 126,
+      "startLine": 21,
+      "endLine": 177
+    },
+    {
+      "path": "app\\(exams)\\exam\\dashboard\\page.tsx",
+      "functionName": "DashboardContent",
+      "lineCount": 151,
+      "limit": 30,
+      "exceededBy": 121,
+      "startLine": 19,
+      "endLine": 170
+    },
+    {
+      "path": "features\\core\\app-rbac\\hooks\\usePermissions.ts",
+      "functionName": "usePermissions",
+      "lineCount": 150,
+      "limit": 30,
+      "exceededBy": 120,
+      "startLine": 11,
+      "endLine": 161
+    },
+    {
+      "path": "app\\(dashboard)\\dashboard\\page.tsx",
+      "functionName": "DashboardPage",
+      "lineCount": 149,
+      "limit": 30,
+      "exceededBy": 119,
+      "startLine": 93,
+      "endLine": 242
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\steps\\AccountInfoStep.tsx",
+      "functionName": "FC",
+      "lineCount": 142,
+      "limit": 30,
+      "exceededBy": 112,
+      "startLine": 11,
+      "endLine": 153
+    },
+    {
+      "path": "features\\exams\\components\\admin\\ExamsList.tsx",
+      "functionName": "FC",
+      "lineCount": 133,
+      "limit": 30,
+      "exceededBy": 103,
+      "startLine": 26,
+      "endLine": 159
+    },
+    {
+      "path": "app\\(dashboard)\\payments\\pending\\[examId]\\page.tsx",
+      "functionName": "PaymentPendingPage",
+      "lineCount": 132,
+      "limit": 30,
+      "exceededBy": 102,
+      "startLine": 12,
+      "endLine": 144
+    },
+    {
+      "path": "features\\exams\\types\\deprecated\\QuestionStatus.ts",
+      "functionName": "for",
+      "lineCount": 129,
+      "limit": 30,
+      "exceededBy": 99,
+      "startLine": 153,
+      "endLine": 282
+    },
+    {
+      "path": "features\\dashboard\\components\\navigation\\UserMenu.tsx",
+      "functionName": "UserMenu",
+      "lineCount": 128,
+      "limit": 30,
+      "exceededBy": 98,
+      "startLine": 28,
+      "endLine": 156
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\steps\\PersonalInfoStep.tsx",
+      "functionName": "FC",
+      "lineCount": 124,
+      "limit": 30,
+      "exceededBy": 94,
+      "startLine": 11,
+      "endLine": 135
+    },
+    {
+      "path": "features\\payments\\manual\\components\\admin\\deprecated\\ManualPaymentsAdminDashboard.tsx",
+      "functionName": "renderRequestsTable",
+      "lineCount": 124,
+      "limit": 30,
+      "exceededBy": 94,
+      "startLine": 171,
+      "endLine": 295
+    },
+    {
+      "path": "features\\exams\\components\\admin\\JsonExamUploader.tsx",
+      "functionName": "if",
+      "lineCount": 121,
+      "limit": 30,
+      "exceededBy": 91,
+      "startLine": 370,
+      "endLine": 491
+    },
+    {
+      "path": "features\\home\\components\\Footer.tsx",
+      "functionName": "Footer",
+      "lineCount": 119,
+      "limit": 30,
+      "exceededBy": 89,
+      "startLine": 6,
+      "endLine": 125
+    },
+    {
+      "path": "app\\(exams)\\exam\\practice\\page.tsx",
+      "functionName": "PracticeExamsPage",
+      "lineCount": 116,
+      "limit": 30,
+      "exceededBy": 86,
+      "startLine": 35,
+      "endLine": 151
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\steps\\ConfirmationStep.tsx",
+      "functionName": "FC",
+      "lineCount": 115,
+      "limit": 30,
+      "exceededBy": 85,
+      "startLine": 11,
+      "endLine": 126
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\steps\\PersonalStep.tsx",
+      "functionName": "FC",
+      "lineCount": 114,
+      "limit": 30,
+      "exceededBy": 84,
+      "startLine": 11,
+      "endLine": 125
+    },
+    {
+      "path": "features\\payments\\components\\PaymentHistory.tsx",
+      "functionName": "FC",
+      "lineCount": 114,
+      "limit": 30,
+      "exceededBy": 84,
+      "startLine": 12,
+      "endLine": 126
+    },
+    {
+      "path": "features\\exams\\components\\student\\ExamContainer.tsx",
+      "functionName": "if",
+      "lineCount": 111,
+      "limit": 30,
+      "exceededBy": 81,
+      "startLine": 645,
+      "endLine": 756
+    },
+    {
+      "path": "app\\(exams)\\exam\\progress\\page.tsx",
+      "functionName": "TimeTab",
+      "lineCount": 106,
+      "limit": 30,
+      "exceededBy": 76,
+      "startLine": 680,
+      "endLine": 786
+    },
+    {
+      "path": "features\\core\\app-rbac\\hooks\\useFeatureAccess.ts",
+      "functionName": "useFeatureAccess",
+      "lineCount": 106,
+      "limit": 30,
+      "exceededBy": 76,
+      "startLine": 13,
+      "endLine": 119
+    },
+    {
+      "path": "features\\exams\\components\\student\\QuestionNavigation.tsx",
+      "functionName": "renderCompactGrid",
+      "lineCount": 105,
+      "limit": 30,
+      "exceededBy": 75,
+      "startLine": 188,
+      "endLine": 293
+    },
+    {
+      "path": "app\\(dashboard)\\payments\\manual\\[examId]\\page.tsx",
+      "functionName": "ManualPaymentPage",
+      "lineCount": 104,
+      "limit": 30,
+      "exceededBy": 74,
+      "startLine": 12,
+      "endLine": 116
+    },
+    {
+      "path": "features\\core\\app-rbac\\api\\hooks\\useFeatureApi.ts",
+      "functionName": "useFeatureApi",
+      "lineCount": 104,
+      "limit": 30,
+      "exceededBy": 74,
+      "startLine": 15,
+      "endLine": 119
+    },
+    {
+      "path": "core\\ui\\examples\\TableViewExample.tsx",
+      "functionName": "Table",
+      "lineCount": 102,
+      "limit": 30,
+      "exceededBy": 72,
+      "startLine": 31,
+      "endLine": 133
+    },
+    {
+      "path": "features\\shell\\components\\sidebar\\SidebarMenu.tsx",
+      "functionName": "SidebarMenu",
+      "lineCount": 101,
+      "limit": 30,
+      "exceededBy": 71,
+      "startLine": 40,
+      "endLine": 141
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useAuth.ts",
+      "functionName": "useAuth",
+      "lineCount": 98,
+      "limit": 30,
+      "exceededBy": 68,
+      "startLine": 17,
+      "endLine": 115
+    },
+    {
+      "path": "app\\admin\\exams\\manage\\page.tsx",
+      "functionName": "ManageExamsPage",
+      "lineCount": 95,
+      "limit": 30,
+      "exceededBy": 65,
+      "startLine": 13,
+      "endLine": 108
+    },
+    {
+      "path": "app\\admin\\exams\\page.tsx",
+      "functionName": "ManageExamsPage",
+      "lineCount": 95,
+      "limit": 30,
+      "exceededBy": 65,
+      "startLine": 14,
+      "endLine": 109
+    },
+    {
+      "path": "core\\auth\\core\\useProfileFetcher.ts",
+      "functionName": "useProfileFetcher",
+      "lineCount": 95,
+      "limit": 30,
+      "exceededBy": 65,
+      "startLine": 43,
+      "endLine": 138
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\RegistrationSuccess\\VerificationSteps.tsx",
+      "functionName": "FC",
+      "lineCount": 95,
+      "limit": 30,
+      "exceededBy": 65,
+      "startLine": 13,
+      "endLine": 108
+    },
+    {
+      "path": "features\\core\\app-auth\\anti-sharing\\hooks\\useSessionValidation.ts",
+      "functionName": "useSessionValidation",
+      "lineCount": 94,
+      "limit": 30,
+      "exceededBy": 64,
+      "startLine": 12,
+      "endLine": 106
+    },
+    {
+      "path": "features\\exams\\api\\hooks\\useExamApiHooks.ts",
+      "functionName": "useExamQuestions",
+      "lineCount": 94,
+      "limit": 30,
+      "exceededBy": 64,
+      "startLine": 120,
+      "endLine": 214
+    },
+    {
+      "path": "app\\(exams)\\exam\\practice\\page.tsx",
+      "functionName": "TopicBasedExamsTab",
+      "lineCount": 93,
+      "limit": 30,
+      "exceededBy": 63,
+      "startLine": 229,
+      "endLine": 322
+    },
+    {
+      "path": "app\\(exams)\\exam\\results\\[attemptId]\\page.tsx",
+      "functionName": "ExamResultsContent",
+      "lineCount": 92,
+      "limit": 30,
+      "exceededBy": 62,
+      "startLine": 30,
+      "endLine": 122
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useAuthWithQuery.ts",
+      "functionName": "useAuth",
+      "lineCount": 92,
+      "limit": 30,
+      "exceededBy": 62,
+      "startLine": 19,
+      "endLine": 111
+    },
+    {
+      "path": "features\\exams\\components\\student\\ExamContainer.tsx",
+      "functionName": "handleStartExam",
+      "lineCount": 91,
+      "limit": 30,
+      "exceededBy": 61,
+      "startLine": 167,
+      "endLine": 258
+    },
+    {
+      "path": "features\\core\\app-rbac\\usage-example.tsx",
+      "functionName": "RbacUsageExample",
+      "lineCount": 90,
+      "limit": 30,
+      "exceededBy": 60,
+      "startLine": 10,
+      "endLine": 100
+    },
+    {
+      "path": "features\\exams\\components\\student\\ExamList.tsx",
+      "functionName": "ExamList",
+      "lineCount": 90,
+      "limit": 30,
+      "exceededBy": 60,
+      "startLine": 10,
+      "endLine": 100
+    },
+    {
+      "path": "features\\core\\app-rbac\\hooks\\useFeatures.ts",
+      "functionName": "useFeatures",
+      "lineCount": 89,
+      "limit": 30,
+      "exceededBy": 59,
+      "startLine": 13,
+      "endLine": 102
+    },
+    {
+      "path": "features\\exams\\hooks\\useExamAnalytics.ts",
+      "functionName": "useExamAnalytics",
+      "lineCount": 88,
+      "limit": 30,
+      "exceededBy": 58,
+      "startLine": 12,
+      "endLine": 100
+    },
+    {
+      "path": "app\\auth\\session-conflict\\page.tsx",
+      "functionName": "SessionConflictPage",
+      "lineCount": 86,
+      "limit": 30,
+      "exceededBy": 56,
+      "startLine": 11,
+      "endLine": 97
+    },
+    {
+      "path": "core\\auth\\hooks\\login\\useLogin.ts",
+      "functionName": "useLogin",
+      "lineCount": 86,
+      "limit": 30,
+      "exceededBy": 56,
+      "startLine": 25,
+      "endLine": 111
+    },
+    {
+      "path": "features\\dashboard\\components\\navigation\\Breadcrumbs.tsx",
+      "functionName": "Breadcrumbs",
+      "lineCount": 86,
+      "limit": 30,
+      "exceededBy": 56,
+      "startLine": 39,
+      "endLine": 125
+    },
+    {
+      "path": "features\\exams\\components\\DevTools.tsx",
+      "functionName": "DevTools",
+      "lineCount": 85,
+      "limit": 30,
+      "exceededBy": 55,
+      "startLine": 18,
+      "endLine": 103
+    },
+    {
+      "path": "features\\exams\\hooks\\useExamFeatureAccess.ts",
+      "functionName": "useExamFeatureAccess",
+      "lineCount": 83,
+      "limit": 30,
+      "exceededBy": 53,
+      "startLine": 29,
+      "endLine": 112
+    },
+    {
+      "path": "features\\home\\ui\\FeatureCardSection.tsx",
+      "functionName": "FeatureCardSection",
+      "lineCount": 83,
+      "limit": 30,
+      "exceededBy": 53,
+      "startLine": 7,
+      "endLine": 90
+    },
+    {
+      "path": "features\\home\\ui\\Footer.tsx",
+      "functionName": "Footer",
+      "lineCount": 83,
+      "limit": 30,
+      "exceededBy": 53,
+      "startLine": 7,
+      "endLine": 90
+    },
+    {
+      "path": "features\\payments\\admin\\components\\statistics\\PaymentStatistics.tsx",
+      "functionName": "FC",
+      "lineCount": 80,
+      "limit": 30,
+      "exceededBy": 50,
+      "startLine": 19,
+      "endLine": 99
+    },
+    {
+      "path": "features\\shell\\components\\sidebar\\SidebarContactSection.tsx",
+      "functionName": "if",
+      "lineCount": 78,
+      "limit": 30,
+      "exceededBy": 48,
+      "startLine": 34,
+      "endLine": 112
+    },
+    {
+      "path": "app\\(exams)\\payment\\process\\page.tsx",
+      "functionName": "PaymentProcessPage",
+      "lineCount": 77,
+      "limit": 30,
+      "exceededBy": 47,
+      "startLine": 12,
+      "endLine": 89
+    },
+    {
+      "path": "app\\admin\\session-monitoring\\page.tsx",
+      "functionName": "SessionMonitoringPage",
+      "lineCount": 77,
+      "limit": 30,
+      "exceededBy": 47,
+      "startLine": 8,
+      "endLine": 85
+    },
+    {
+      "path": "features\\exams\\components\\common\\ExamMetadata.tsx",
+      "functionName": "switch",
+      "lineCount": 77,
+      "limit": 30,
+      "exceededBy": 47,
+      "startLine": 36,
+      "endLine": 113
+    },
+    {
+      "path": "app\\(exams)\\exam\\progress\\page.tsx",
+      "functionName": "AchievementsTab",
+      "lineCount": 76,
+      "limit": 30,
+      "exceededBy": 46,
+      "startLine": 791,
+      "endLine": 867
+    },
+    {
+      "path": "features\\exams\\types\\deprecated\\QuestionStatus.ts",
+      "functionName": "if",
+      "lineCount": 76,
+      "limit": 30,
+      "exceededBy": 46,
+      "startLine": 159,
+      "endLine": 235
+    },
+    {
+      "path": "app\\(dashboard)\\payments\\pending\\page.tsx",
+      "functionName": "PendingPaymentsPage",
+      "lineCount": 73,
+      "limit": 30,
+      "exceededBy": 43,
+      "startLine": 11,
+      "endLine": 84
+    },
+    {
+      "path": "app\\admin\\payments\\page.tsx",
+      "functionName": "PaymentsManagementPage",
+      "lineCount": 72,
+      "limit": 30,
+      "exceededBy": 42,
+      "startLine": 10,
+      "endLine": 82
+    },
+    {
+      "path": "core\\api\\examples\\UserManager.tsx",
+      "functionName": "UserCreateForm",
+      "lineCount": 70,
+      "limit": 30,
+      "exceededBy": 40,
+      "startLine": 141,
+      "endLine": 211
+    },
+    {
+      "path": "app\\(exams)\\payment\\result\\page.tsx",
+      "functionName": "PaymentResultContent",
+      "lineCount": 69,
+      "limit": 30,
+      "exceededBy": 39,
+      "startLine": 22,
+      "endLine": 91
+    },
+    {
+      "path": "app\\(exams)\\exam\\practice\\page.tsx",
+      "functionName": "TimedExamsTab",
+      "lineCount": 68,
+      "limit": 30,
+      "exceededBy": 38,
+      "startLine": 156,
+      "endLine": 224
+    },
+    {
+      "path": "features\\exams\\components\\results\\useExamScoreCalculation.tsx",
+      "functionName": "useExamScoreCalculation",
+      "lineCount": 68,
+      "limit": 30,
+      "exceededBy": 38,
+      "startLine": 14,
+      "endLine": 82
+    },
+    {
+      "path": "features\\exams\\hooks\\useExamPermissions.ts",
+      "functionName": "useExamPermissions",
+      "lineCount": 68,
+      "limit": 30,
+      "exceededBy": 38,
+      "startLine": 10,
+      "endLine": 78
+    },
+    {
+      "path": "app\\(exams)\\exam\\progress\\page.tsx",
+      "functionName": "TopicsTab",
+      "lineCount": 67,
+      "limit": 30,
+      "exceededBy": 37,
+      "startLine": 608,
+      "endLine": 675
+    },
+    {
+      "path": "app\\(exams)\\exam\\page.tsx",
+      "functionName": "ExamPage",
+      "lineCount": 66,
+      "limit": 30,
+      "exceededBy": 36,
+      "startLine": 39,
+      "endLine": 105
+    },
+    {
+      "path": "features\\exams\\components\\common\\ExamErrorBoundary.tsx",
+      "functionName": "if",
+      "lineCount": 65,
+      "limit": 30,
+      "exceededBy": 35,
+      "startLine": 70,
+      "endLine": 135
+    },
+    {
+      "path": "app\\admin\\exams\\[examId]\\edit\\page.tsx",
+      "functionName": "EditExamPage",
+      "lineCount": 64,
+      "limit": 30,
+      "exceededBy": 34,
+      "startLine": 17,
+      "endLine": 81
+    },
+    {
+      "path": "core\\auth\\hooks\\useAuth.ts",
+      "functionName": "useAuth",
+      "lineCount": 64,
+      "limit": 30,
+      "exceededBy": 34,
+      "startLine": 26,
+      "endLine": 90
+    },
+    {
+      "path": "features\\payments\\manual\\components\\ManualPaymentForm.tsx",
+      "functionName": "onload",
+      "lineCount": 63,
+      "limit": 30,
+      "exceededBy": 33,
+      "startLine": 139,
+      "endLine": 202
+    },
+    {
+      "path": "features\\shell\\components\\topbar\\UserMenu.tsx",
+      "functionName": "UserMenu",
+      "lineCount": 63,
+      "limit": 30,
+      "exceededBy": 33,
+      "startLine": 20,
+      "endLine": 83
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\steps\\StepIndicator.tsx",
+      "functionName": "FC",
+      "lineCount": 62,
+      "limit": 30,
+      "exceededBy": 32,
+      "startLine": 7,
+      "endLine": 69
+    },
+    {
+      "path": "features\\shell\\components\\AppManager.tsx",
+      "functionName": "AppManager",
+      "lineCount": 62,
+      "limit": 30,
+      "exceededBy": 32,
+      "startLine": 17,
+      "endLine": 79
+    },
+    {
+      "path": "features\\core\\app-api-handler\\core\\apiClient.ts",
+      "functionName": "hasOwnProperty",
+      "lineCount": 61,
+      "limit": 30,
+      "exceededBy": 31,
+      "startLine": 181,
+      "endLine": 242
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\layout\\AuthLayout.tsx",
+      "functionName": "AuthLayout",
+      "lineCount": 60,
+      "limit": 30,
+      "exceededBy": 30,
+      "startLine": 14,
+      "endLine": 74
+    },
+    {
+      "path": "features\\core\\app-auth\\core\\AuthContext.tsx",
+      "functionName": "current",
+      "lineCount": 60,
+      "limit": 30,
+      "exceededBy": 30,
+      "startLine": 94,
+      "endLine": 154
+    },
+    {
+      "path": "features\\exams\\components\\student\\ExamContainer.tsx",
+      "functionName": "handleSubmitExam",
+      "lineCount": 59,
+      "limit": 30,
+      "exceededBy": 29,
+      "startLine": 316,
+      "endLine": 375
+    },
+    {
+      "path": "features\\exams\\components\\student\\QuestionDisplay.tsx",
+      "functionName": "QuestionOption",
+      "lineCount": 59,
+      "limit": 30,
+      "exceededBy": 29,
+      "startLine": 31,
+      "endLine": 90
+    },
+    {
+      "path": "app\\(exams)\\exam\\practice\\timed\\page.tsx",
+      "functionName": "TimedExamsPage",
+      "lineCount": 58,
+      "limit": 30,
+      "exceededBy": 28,
+      "startLine": 5,
+      "endLine": 63
+    },
+    {
+      "path": "features\\exams\\utils\\examStatisticsCalculator.ts",
+      "functionName": "calculateExamStatistics",
+      "lineCount": 58,
+      "limit": 30,
+      "exceededBy": 28,
+      "startLine": 17,
+      "endLine": 75
+    },
+    {
+      "path": "app\\(exams)\\exam\\subject-papers\\page.tsx",
+      "functionName": "if",
+      "lineCount": 57,
+      "limit": 30,
+      "exceededBy": 27,
+      "startLine": 41,
+      "endLine": 98
+    },
+    {
+      "path": "core\\auth\\core\\useRbacHelpers.ts",
+      "functionName": "useRbacHelpers",
+      "lineCount": 57,
+      "limit": 30,
+      "exceededBy": 27,
+      "startLine": 16,
+      "endLine": 73
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\RegisterForm.tsx",
+      "functionName": "validateRegistrationForm",
+      "lineCount": 57,
+      "limit": 30,
+      "exceededBy": 27,
+      "startLine": 50,
+      "endLine": 107
+    },
+    {
+      "path": "app\\unauthorized\\page.tsx",
+      "functionName": "Unauthorized",
+      "lineCount": 56,
+      "limit": 30,
+      "exceededBy": 26,
+      "startLine": 7,
+      "endLine": 63
+    },
+    {
+      "path": "core\\api\\examples\\UserManager.tsx",
+      "functionName": "UserList",
+      "lineCount": 56,
+      "limit": 30,
+      "exceededBy": 26,
+      "startLine": 13,
+      "endLine": 69
+    },
+    {
+      "path": "app\\(exams)\\exam\\model-papers\\page.tsx",
+      "functionName": "if",
+      "lineCount": 55,
+      "limit": 30,
+      "exceededBy": 25,
+      "startLine": 31,
+      "endLine": 86
+    },
+    {
+      "path": "app\\(exams)\\exam\\past-papers\\page.tsx",
+      "functionName": "if",
+      "lineCount": 55,
+      "limit": 30,
+      "exceededBy": 25,
+      "startLine": 29,
+      "endLine": 84
+    },
+    {
+      "path": "core\\auth\\core\\useProfileFetcher.ts",
+      "functionName": "current",
+      "lineCount": 55,
+      "limit": 30,
+      "exceededBy": 25,
+      "startLine": 71,
+      "endLine": 126
+    },
+    {
+      "path": "app\\(exams)\\exam\\practice\\topics\\page.tsx",
+      "functionName": "TopicExamsPage",
+      "lineCount": 54,
+      "limit": 30,
+      "exceededBy": 24,
+      "startLine": 5,
+      "endLine": 59
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useSession.ts",
+      "functionName": "useSession",
+      "lineCount": 54,
+      "limit": 30,
+      "exceededBy": 24,
+      "startLine": 17,
+      "endLine": 71
+    },
+    {
+      "path": "features\\home\\components\\AboutSection.tsx",
+      "functionName": "AboutSection",
+      "lineCount": 54,
+      "limit": 30,
+      "exceededBy": 24,
+      "startLine": 9,
+      "endLine": 63
+    },
+    {
+      "path": "features\\exams\\components\\sidebar\\ExamSidebarMenu.tsx",
+      "functionName": "ExamSidebarMenu",
+      "lineCount": 53,
+      "limit": 30,
+      "exceededBy": 23,
+      "startLine": 101,
+      "endLine": 154
+    },
+    {
+      "path": "core\\auth\\hooks\\password\\usePasswordReset.ts",
+      "functionName": "usePasswordReset",
+      "lineCount": 52,
+      "limit": 30,
+      "exceededBy": 22,
+      "startLine": 30,
+      "endLine": 82
+    },
+    {
+      "path": "features\\exams\\hooks\\usePremiumExam.ts",
+      "functionName": "usePremiumExam",
+      "lineCount": 52,
+      "limit": 30,
+      "exceededBy": 22,
+      "startLine": 15,
+      "endLine": 67
+    },
+    {
+      "path": "components\\ui\\use-toast.ts",
+      "functionName": "switch",
+      "lineCount": 51,
+      "limit": 30,
+      "exceededBy": 21,
+      "startLine": 78,
+      "endLine": 129
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\components\\StepIndicator.tsx",
+      "functionName": "FC",
+      "lineCount": 51,
+      "limit": 30,
+      "exceededBy": 21,
+      "startLine": 7,
+      "endLine": 58
+    },
+    {
+      "path": "features\\exams\\components\\admin\\JsonExamUploader.tsx",
+      "functionName": "if",
+      "lineCount": 51,
+      "limit": 30,
+      "exceededBy": 21,
+      "startLine": 144,
+      "endLine": 195
+    },
+    {
+      "path": "features\\exams\\components\\common\\NetworkStatusIndicator.tsx",
+      "functionName": "NetworkStatusIndicator",
+      "lineCount": 51,
+      "limit": 30,
+      "exceededBy": 21,
+      "startLine": 14,
+      "endLine": 65
+    },
+    {
+      "path": "features\\home\\components\\HeroSection.tsx",
+      "functionName": "HeroSection",
+      "lineCount": 51,
+      "limit": 30,
+      "exceededBy": 21,
+      "startLine": 8,
+      "endLine": 59
+    },
+    {
+      "path": "features\\core\\app-rbac\\api\\hooks\\useFeatureAccessQueries.ts",
+      "functionName": "useFeatureAccessQueries",
+      "lineCount": 50,
+      "limit": 30,
+      "exceededBy": 20,
+      "startLine": 22,
+      "endLine": 72
+    },
+    {
+      "path": "features\\exams\\components\\student\\QuestionNavigation.tsx",
+      "functionName": "getQuestionStatus",
+      "lineCount": 50,
+      "limit": 30,
+      "exceededBy": 20,
+      "startLine": 115,
+      "endLine": 165
+    },
+    {
+      "path": "core\\auth\\hooks\\register\\useRegister.ts",
+      "functionName": "useRegister",
+      "lineCount": 49,
+      "limit": 30,
+      "exceededBy": 19,
+      "startLine": 25,
+      "endLine": 74
+    },
+    {
+      "path": "features\\exams\\components\\admin\\ExamQuestions.tsx",
+      "functionName": "handleConfirmDelete",
+      "lineCount": 49,
+      "limit": 30,
+      "exceededBy": 19,
+      "startLine": 255,
+      "endLine": 304
+    },
+    {
+      "path": "app\\(auth)\\register\\page.tsx",
+      "functionName": "RegisterPage",
+      "lineCount": 48,
+      "limit": 30,
+      "exceededBy": 18,
+      "startLine": 9,
+      "endLine": 57
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\context\\RegisterFormContext.tsx",
+      "functionName": "validateRegistrationForm",
+      "lineCount": 47,
+      "limit": 30,
+      "exceededBy": 17,
+      "startLine": 82,
+      "endLine": 129
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useForceLogout.ts",
+      "functionName": "useForceLogout",
+      "lineCount": 47,
+      "limit": 30,
+      "exceededBy": 17,
+      "startLine": 12,
+      "endLine": 59
+    },
+    {
+      "path": "features\\core\\app-auth\\api\\services\\authService.ts",
+      "functionName": "useLogin",
+      "lineCount": 46,
+      "limit": 30,
+      "exceededBy": 16,
+      "startLine": 48,
+      "endLine": 94
+    },
+    {
+      "path": "app\\(exams)\\exam\\progress\\page.tsx",
+      "functionName": "ScoreProgressChart",
+      "lineCount": 45,
+      "limit": 30,
+      "exceededBy": 15,
+      "startLine": 299,
+      "endLine": 344
+    },
+    {
+      "path": "app\\(exams)\\exam\\progress\\page.tsx",
+      "functionName": "TopicPerformanceChart",
+      "lineCount": 45,
+      "limit": 30,
+      "exceededBy": 15,
+      "startLine": 349,
+      "endLine": 394
+    },
+    {
+      "path": "app\\(exams)\\exam\\[id]\\page.tsx",
+      "functionName": "ExamPageContent",
+      "lineCount": 45,
+      "limit": 30,
+      "exceededBy": 15,
+      "startLine": 36,
+      "endLine": 81
+    },
+    {
+      "path": "app\\admin\\exams\\[examId]\\questions\\page.tsx",
+      "functionName": "ExamQuestionsPage",
+      "lineCount": 45,
+      "limit": 30,
+      "exceededBy": 15,
+      "startLine": 14,
+      "endLine": 59
+    },
+    {
+      "path": "features\\dashboard\\components\\DashboardOverview.tsx",
+      "functionName": "renderAccountStatusContent",
+      "lineCount": 45,
+      "limit": 30,
+      "exceededBy": 15,
+      "startLine": 155,
+      "endLine": 200
+    },
+    {
+      "path": "features\\payments\\admin\\utils\\index.ts",
+      "functionName": "getUserDisplayName",
+      "lineCount": 45,
+      "limit": 30,
+      "exceededBy": 15,
+      "startLine": 91,
+      "endLine": 136
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\utils\\PasswordStrengthIndicator.tsx",
+      "functionName": "FC",
+      "lineCount": 44,
+      "limit": 30,
+      "exceededBy": 14,
+      "startLine": 6,
+      "endLine": 50
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\RegisterForm.tsx",
+      "functionName": "handleChange",
+      "lineCount": 43,
+      "limit": 30,
+      "exceededBy": 13,
+      "startLine": 154,
+      "endLine": 197
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\register\\RegisterForm.tsx",
+      "functionName": "renderStepIndicator",
+      "lineCount": 43,
+      "limit": 30,
+      "exceededBy": 13,
+      "startLine": 294,
+      "endLine": 337
+    },
+    {
+      "path": "features\\exams\\store\\mcqExamStore.ts",
+      "functionName": "if",
+      "lineCount": 43,
+      "limit": 30,
+      "exceededBy": 13,
+      "startLine": 130,
+      "endLine": 173
+    },
+    {
+      "path": "features\\exams\\types\\deprecated\\QuestionStatus.ts",
+      "functionName": "if",
+      "lineCount": 43,
+      "limit": 30,
+      "exceededBy": 13,
+      "startLine": 191,
+      "endLine": 234
+    },
+    {
+      "path": "features\\exams\\components\\student\\QuestionNavigation.tsx",
+      "functionName": "renderFullGrid",
+      "lineCount": 42,
+      "limit": 30,
+      "exceededBy": 12,
+      "startLine": 296,
+      "endLine": 338
+    },
+    {
+      "path": "features\\home\\components\\Header.tsx",
+      "functionName": "Header",
+      "lineCount": 42,
+      "limit": 30,
+      "exceededBy": 12,
+      "startLine": 8,
+      "endLine": 50
+    },
+    {
+      "path": "features\\dashboard\\components\\charts\\heatmap\\ActivityHeatmap.tsx",
+      "functionName": "if",
+      "lineCount": 41,
+      "limit": 30,
+      "exceededBy": 11,
+      "startLine": 122,
+      "endLine": 163
+    },
+    {
+      "path": "features\\exams\\components\\student\\ExamContainer.tsx",
+      "functionName": "if",
+      "lineCount": 41,
+      "limit": 30,
+      "exceededBy": 11,
+      "startLine": 181,
+      "endLine": 222
+    },
+    {
+      "path": "features\\exams\\components\\student\\ExamContainer.tsx",
+      "functionName": "if",
+      "lineCount": 41,
+      "limit": 30,
+      "exceededBy": 11,
+      "startLine": 420,
+      "endLine": 461
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useLoginForm.ts",
+      "functionName": "catch",
+      "lineCount": 40,
+      "limit": 30,
+      "exceededBy": 10,
+      "startLine": 94,
+      "endLine": 134
+    },
+    {
+      "path": "features\\exams\\hooks\\exam-container\\useExamReset.ts",
+      "functionName": "useExamReset",
+      "lineCount": 40,
+      "limit": 30,
+      "exceededBy": 10,
+      "startLine": 16,
+      "endLine": 56
+    },
+    {
+      "path": "features\\shell\\components\\AppManager.tsx",
+      "functionName": "if",
+      "lineCount": 40,
+      "limit": 30,
+      "exceededBy": 10,
+      "startLine": 30,
+      "endLine": 70
+    },
+    {
+      "path": "core\\api\\core\\error\\errorFactory.ts",
+      "functionName": "switch",
+      "lineCount": 39,
+      "limit": 30,
+      "exceededBy": 9,
+      "startLine": 71,
+      "endLine": 110
+    },
+    {
+      "path": "features\\payments\\admin\\components\\EmptyState.tsx",
+      "functionName": "getVariantStyles",
+      "lineCount": 39,
+      "limit": 30,
+      "exceededBy": 9,
+      "startLine": 27,
+      "endLine": 66
+    },
+    {
+      "path": "components\\ui\\sidebar.tsx",
+      "functionName": "if",
+      "lineCount": 37,
+      "limit": 30,
+      "exceededBy": 7,
+      "startLine": 202,
+      "endLine": 239
+    },
+    {
+      "path": "features\\core\\app-auth\\components\\passwordRecovery\\ForgotPasswordForm.tsx",
+      "functionName": "catch",
+      "lineCount": 37,
+      "limit": 30,
+      "exceededBy": 7,
+      "startLine": 105,
+      "endLine": 142
+    },
+    {
+      "path": "features\\exams\\components\\mcq\\McqExamList.tsx",
+      "functionName": "if",
+      "lineCount": 37,
+      "limit": 30,
+      "exceededBy": 7,
+      "startLine": 103,
+      "endLine": 140
+    },
+    {
+      "path": "features\\exams\\store\\examStore.ts",
+      "functionName": "if",
+      "lineCount": 37,
+      "limit": 30,
+      "exceededBy": 7,
+      "startLine": 210,
+      "endLine": 247
+    },
+    {
+      "path": "features\\payments\\admin\\components\\EmptyState.tsx",
+      "functionName": "switch",
+      "lineCount": 37,
+      "limit": 30,
+      "exceededBy": 7,
+      "startLine": 28,
+      "endLine": 65
+    },
+    {
+      "path": "core\\auth\\hooks\\social\\useSocialAuth.ts",
+      "functionName": "useSocialAuth",
+      "lineCount": 36,
+      "limit": 30,
+      "exceededBy": 6,
+      "startLine": 21,
+      "endLine": 57
+    },
+    {
+      "path": "features\\exams\\components\\admin\\McqEditor.tsx",
+      "functionName": "if",
+      "lineCount": 36,
+      "limit": 30,
+      "exceededBy": 6,
+      "startLine": 45,
+      "endLine": 81
+    },
+    {
+      "path": "app\\(exams)\\exam\\progress\\page.tsx",
+      "functionName": "MonthlyActivityChart",
+      "lineCount": 35,
+      "limit": 30,
+      "exceededBy": 5,
+      "startLine": 399,
+      "endLine": 434
+    },
+    {
+      "path": "features\\exams\\components\\admin\\JsonExamUploader.tsx",
+      "functionName": "catch",
+      "lineCount": 35,
+      "limit": 30,
+      "exceededBy": 5,
+      "startLine": 453,
+      "endLine": 488
+    },
+    {
+      "path": "app\\(exams)\\exam\\model-papers\\page.tsx",
+      "functionName": "if",
+      "lineCount": 34,
+      "limit": 30,
+      "exceededBy": 4,
+      "startLine": 88,
+      "endLine": 122
+    },
+    {
+      "path": "app\\(exams)\\exam\\past-papers\\page.tsx",
+      "functionName": "if",
+      "lineCount": 34,
+      "limit": 30,
+      "exceededBy": 4,
+      "startLine": 86,
+      "endLine": 120
+    },
+    {
+      "path": "app\\(exams)\\exam\\subject-papers\\page.tsx",
+      "functionName": "if",
+      "lineCount": 34,
+      "limit": 30,
+      "exceededBy": 4,
+      "startLine": 100,
+      "endLine": 134
+    },
+    {
+      "path": "core\\api\\examples\\ExampleApp.tsx",
+      "functionName": "ExampleApp",
+      "lineCount": 34,
+      "limit": 30,
+      "exceededBy": 4,
+      "startLine": 14,
+      "endLine": 48
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useLoginForm.ts",
+      "functionName": "if",
+      "lineCount": 34,
+      "limit": 30,
+      "exceededBy": 4,
+      "startLine": 97,
+      "endLine": 131
+    },
+    {
+      "path": "features\\shell\\store\\roleStore.ts",
+      "functionName": "useRoleSync",
+      "lineCount": 34,
+      "limit": 30,
+      "exceededBy": 4,
+      "startLine": 308,
+      "endLine": 342
+    },
+    {
+      "path": "core\\api\\core\\interceptors\\responseInterceptor.ts",
+      "functionName": "responseErrorInterceptor",
+      "lineCount": 33,
+      "limit": 30,
+      "exceededBy": 3,
+      "startLine": 210,
+      "endLine": 243
+    },
+    {
+      "path": "core\\ui\\examples\\ThemeExample.tsx",
+      "functionName": "ThemeSwitcher",
+      "lineCount": 33,
+      "limit": 30,
+      "exceededBy": 3,
+      "startLine": 14,
+      "endLine": 47
+    },
+    {
+      "path": "features\\core\\app-auth\\hooks\\useAuthWithQuery.ts",
+      "functionName": "if",
+      "lineCount": 33,
+      "limit": 30,
+      "exceededBy": 3,
+      "startLine": 135,
+      "endLine": 168
+    },
+    {
+      "path": "features\\exams\\components\\common\\ExamPaperCard.tsx",
+      "functionName": "getButtonContentByStatus",
+      "lineCount": 33,
+      "limit": 30,
+      "exceededBy": 3,
+      "startLine": 79,
+      "endLine": 112
+    },
+    {
+      "path": "features\\exams\\components\\student\\QuestionDisplay.tsx",
+      "functionName": "renderOptions",
+      "lineCount": 33,
+      "limit": 30,
+      "exceededBy": 3,
+      "startLine": 204,
+      "endLine": 237
+    },
+    {
+      "path": "features\\shell\\store\\roleStore.ts",
+      "functionName": "if",
+      "lineCount": 33,
+      "limit": 30,
+      "exceededBy": 3,
+      "startLine": 191,
+      "endLine": 224
+    },
+    {
+      "path": "app\\(auth)\\reset-password\\[token]\\page.tsx",
+      "functionName": "ResetPasswordTokenPage",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 18,
+      "endLine": 50
+    },
+    {
+      "path": "app\\auth\\callback\\page.tsx",
+      "functionName": "if",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 165,
+      "endLine": 197
+    },
+    {
+      "path": "core\\api\\examples\\UserManager.tsx",
+      "functionName": "UserActions",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 104,
+      "endLine": 136
+    },
+    {
+      "path": "features\\core\\app-auth\\anti-sharing\\utils\\uaParser.ts",
+      "functionName": "getBrowser",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 13,
+      "endLine": 45
+    },
+    {
+      "path": "features\\core\\app-auth\\anti-sharing\\utils\\uaParser.ts",
+      "functionName": "getDevice",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 79,
+      "endLine": 111
+    },
+    {
+      "path": "features\\core\\app-mobile-handler\\store\\useMobileStore.ts",
+      "functionName": "if",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 60,
+      "endLine": 92
+    },
+    {
+      "path": "features\\exams\\hooks\\useExams.ts",
+      "functionName": "useExams",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 9,
+      "endLine": 41
+    },
+    {
+      "path": "features\\exams\\utils\\paperTypeUtils.ts",
+      "functionName": "switch",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 114,
+      "endLine": 146
+    },
+    {
+      "path": "features\\payments\\manual\\components\\ManualPaymentForm.tsx",
+      "functionName": "catch",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 301,
+      "endLine": 333
+    },
+    {
+      "path": "features\\shell\\components\\AppManager.tsx",
+      "functionName": "if",
+      "lineCount": 32,
+      "limit": 30,
+      "exceededBy": 2,
+      "startLine": 37,
+      "endLine": 69
+    },
+    {
+      "path": "components\\ui\\chart.tsx",
+      "functionName": "ChartStyle",
+      "lineCount": 31,
+      "limit": 30,
+      "exceededBy": 1,
+      "startLine": 70,
+      "endLine": 101
+    },
+    {
+      "path": "core\\api\\utils\\transforms\\transforms.ts",
+      "functionName": "if",
+      "lineCount": 31,
+      "limit": 30,
+      "exceededBy": 1,
+      "startLine": 55,
+      "endLine": 86
+    },
+    {
+      "path": "features\\core\\app-api-handler\\utils\\transforms.ts",
+      "functionName": "if",
+      "lineCount": 31,
+      "limit": 30,
+      "exceededBy": 1,
+      "startLine": 49,
+      "endLine": 80
+    },
+    {
+      "path": "features\\exams\\components\\common\\ExamPaperCard.tsx",
+      "functionName": "switch",
+      "lineCount": 31,
+      "limit": 30,
+      "exceededBy": 1,
+      "startLine": 80,
+      "endLine": 111
+    }
+  ],
+  "componentSizeLimit": 200,
+  "functionSizeLimit": 30
+}

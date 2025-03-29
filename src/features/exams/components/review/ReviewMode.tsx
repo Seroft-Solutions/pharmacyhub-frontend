@@ -9,6 +9,17 @@ import {
     CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
     CheckCircle2,
@@ -52,13 +63,27 @@ export const ReviewMode = ({ paper, answers }: ReviewModeProps) => {
         <div className="container py-8 space-y-6">
             {/* Navigation Header */}
             <div className="flex justify-between items-center">
-                <Button
-                    variant="ghost"
-                    onClick={() => router.back()}
-                >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Results
-                </Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="ghost">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to Results
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure you want to exit?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                You will lose all your progress and be unable to view further results. 
+                                Click cancel to stay on this page, or confirm to exit.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => router.back()}>Confirm Exit</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
                 <div className="space-x-2">
                     <Button
                         variant="outline"

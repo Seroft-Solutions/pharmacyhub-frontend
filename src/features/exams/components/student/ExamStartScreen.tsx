@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -20,10 +20,13 @@ import { NetworkStatusIndicator } from '../common/NetworkStatusIndicator';
 import { InfoIcon, AlertCircleIcon } from 'lucide-react';
 import { useMobileStore, selectIsMobile } from '@/features/core/mobile-support';
 import { usePremiumExamInfo } from '@/features/payments/premium/components/PremiumExamInfoProvider';
+import { useUserExamAttemptsForExam } from '@/features/exams/api/hooks/useExamAttemptHooks';
+import { ExamAttempt } from '@/features/exams/types';
+import { Loader2 } from 'lucide-react';
 
 /**
- * ExamStartScreen - Simplified component with enhanced header
- * Now uses the PremiumExamInfoProvider context
+ * ExamStartScreen - Enhanced component with resume functionality
+ * Shows a resume option when an incomplete attempt exists
  */
 export const ExamStartScreen = ({
   exam,
@@ -31,12 +34,36 @@ export const ExamStartScreen = ({
   isOnline,
   startError,
   handleStartExam,
+  handleResumeExam,
   examType
 }) => {
   const isMobile = useMobileStore(selectIsMobile);
+  const [incompleteAttempt, setIncompleteAttempt] = useState<ExamAttempt | null>(null);
+  const [isLoadingAttempts, setIsLoadingAttempts] = useState(true);
   
   // Get premium info from context instead of props
-  const { isPremium} = usePremiumExamInfo();
+  const { isPremium } = usePremiumExamInfo();
+  
+  // Fetch user's attempts for this exam
+  const { data: attempts, isLoading: isAttemptsLoading, error: attemptsError } = 
+    useUserExamAttemptsForExam(exam?.id);
+    
+  // Check for incomplete attempts when data loads
+  useEffect(() => {
+    if (!isAttemptsLoading && attempts && Array.isArray(attempts)) {
+      // Look for incomplete attempts (not submitted)
+      const incomplete = attempts.find(attempt => 
+        attempt.examId === exam?.id && 
+        !attempt.submitted && 
+        !attempt.completed
+      );
+      
+      setIncompleteAttempt(incomplete || null);
+      setIsLoadingAttempts(false);
+    } else if (!isAttemptsLoading) {
+      setIsLoadingAttempts(false);
+    }
+  }, [attempts, isAttemptsLoading, exam?.id]);
 
   // Normal start screen for non-premium or premium with access
   return (
@@ -162,12 +189,55 @@ export const ExamStartScreen = ({
         </div>
       )}
 
-      {/* Start Button */}
-      <div className="px-2 my-3">
+      {/* Resume Notice - Show if there's an incomplete attempt */}
+      {isLoadingAttempts ? (
+        <div className="px-2 my-3 text-center text-gray-500">
+          <Loader2 className="h-4 w-4 inline animate-spin mr-2" />
+          Checking for previous attempts...
+        </div>
+      ) : incompleteAttempt ? (
+        <div className="px-2 mt-3 mb-2">
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-800 text-sm">
+            <p className="font-medium flex items-center">
+              <AlertCircleIcon className="h-4 w-4 mr-2 text-amber-600" />
+              Unfinished exam detected
+            </p>
+            <p className="mt-1 pl-6">
+              You have an unfinished attempt for this exam. You can resume your progress 
+              or start a fresh attempt.
+            </p>
+          </div>
+        </div>
+      ) : null}
+      
+      {/* Action Buttons */}
+      <div className="px-2 my-3 space-y-2">
+        {/* Resume Button - Show only if there's an incomplete attempt */}
+        {incompleteAttempt && (
+          <Button
+            onClick={() => handleResumeExam(incompleteAttempt)}
+            disabled={isStarting || !isOnline}
+            className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-md"
+          >
+            {isStarting ? (
+              <span className="flex items-center justify-center">
+                <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                Loading...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center">
+                <Clock8Icon className="h-4 w-4 mr-2" />
+                Resume Exam
+              </span>
+            )}
+          </Button>
+        )}
+        
+        {/* Start Fresh Button */}
         <Button
           onClick={handleStartExam}
           disabled={isStarting || !isOnline}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"
+          className={`w-full ${incompleteAttempt ? 'bg-gray-600 hover:bg-gray-700' : 'bg-blue-600 hover:bg-blue-700'} text-white py-2 rounded-md`}
         >
           {isStarting ? (
             <span className="flex items-center justify-center">
@@ -177,7 +247,7 @@ export const ExamStartScreen = ({
           ) : (
             <span className="flex items-center justify-center">
               <PlayIcon className="h-4 w-4 mr-2" />
-              Start Exam
+              {incompleteAttempt ? 'Start Fresh Attempt' : 'Start Exam'}
             </span>
           )}
         </Button>

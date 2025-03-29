@@ -9,6 +9,17 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   CheckCircle2,
   XCircle,
   ChevronLeft,
@@ -65,10 +76,27 @@ export const ExamReview: React.FC<ExamReviewProps> = ({
           <p className="text-gray-600">Review your answers</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onBack}>
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Results
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline">
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Results
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to exit?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You will lose all your progress and be unable to view further results. 
+                  Click cancel to stay on this page, or confirm to exit.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onBack}>Confirm Exit</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button variant="outline" onClick={onFinish}>
             <Home className="mr-2 h-4 w-4" />
             Dashboard

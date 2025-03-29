@@ -66,6 +66,7 @@ export const ATTEMPT_ENDPOINTS = {
   submit: `${BASE_URL}/attempts/:id/submit`,
   result: `${BASE_URL}/attempts/:id/result`,
   flags: `${BASE_URL}/attempts/:id/flags`,
+  answers: `${BASE_URL}/attempts/:id/answers`, // New endpoint for fetching all answers for an attempt
   answer: `${BASE_URL}/attempts/:attemptId/answer/:questionId`,
   flag: `${BASE_URL}/attempts/:attemptId/flag/:questionId`,
   unflag: `${BASE_URL}/attempts/:attemptId/flag/:questionId`,

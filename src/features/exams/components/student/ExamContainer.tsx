@@ -62,6 +62,7 @@ import {
 
 // Import the ExamStartScreen component
 import { ExamStartScreen } from './ExamStartScreen';
+import { useRouter } from 'next/navigation';
 
 interface ExamContainerProps {
   examId: number;
@@ -482,6 +483,113 @@ function ExamContainerInternal({
   }, [analytics]);
   
   // Handle timer expiration with analytics
+  // Add confirmation dialog when user tries to exit exam
+  const confirmExitExam = () => {
+    return new Promise((resolve) => {
+      const shouldExit = window.confirm(
+        "Are you sure you want to exit? You will lose all your progress and be unable to view further results."
+      );
+      resolve(shouldExit);
+    });
+  };
+  
+  // Add event listener for beforeunload to warn user before closing/navigating away - DISABLED
+  useEffect(() => {
+    // Intentionally empty - no beforeunload handler to prevent browser dialog
+    return () => {};
+  }, []);
+  
+  // Handle back button/navigation
+  useEffect(() => {
+    const handlePopState = async (e) => {
+      // Only intercept if exam is in progress
+      if (attemptId && !isCompleted) {
+        e.preventDefault();
+        const shouldExit = await confirmExitExam();
+        
+        if (shouldExit) {
+          // User confirmed exit
+          handleReturnToDashboard();
+        } else {
+          // User canceled exit - push a new history state to prevent navigation
+          window.history.pushState(null, '', window.location.href);
+        }
+      }
+    };
+    
+    // Listen for back button / history navigation
+    window.addEventListener('popstate', handlePopState);
+    
+    // Push a history state when exam starts to enable intercepting the back button
+    if (attemptId && !isCompleted) {
+      window.history.pushState(null, '', window.location.href);
+    }
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [attemptId, isCompleted]);
+  
+  // Handle resuming an exam
+  const handleResumeExam = async (incompleteAttempt) => {
+    // Track analytics event
+    analytics.trackEvent('exam_resume', { examId, userId, attemptId: incompleteAttempt.id });
+    
+    // Set the attempt ID and any other necessary state
+    setAttemptId(incompleteAttempt.id);
+    
+    // Restore answers and state from the incomplete attempt
+    try {
+      // Make API call to get the stored answers for this attempt
+      const response = await fetch(`/api/v1/exams/attempts/${incompleteAttempt.id}/answers`);
+      if (response.ok) {
+        const savedAnswers = await response.json();
+        
+        // Restore answers in the store
+        if (savedAnswers && Array.isArray(savedAnswers)) {
+          savedAnswers.forEach(answer => {
+            if (answer.questionId && answer.selectedOption !== undefined) {
+              answerQuestion(answer.questionId, answer.selectedOption);
+            }
+          });
+        }
+        
+        // Fetch flagged questions if any exist
+        try {
+          const flaggedResponse = await fetch(`/api/v1/exams/attempts/${incompleteAttempt.id}/flags`);
+          if (flaggedResponse.ok) {
+            const flagged = await flaggedResponse.json();
+            if (flagged && Array.isArray(flagged)) {
+              flagged.forEach(flagItem => {
+                if (flagItem && flagItem.questionId) {
+                  // We only need to trigger flagging if it's not already flagged
+                  if (!isFlagged(flagItem.questionId)) {
+                    toggleFlagQuestion(flagItem.questionId);
+                  }
+                }
+              });
+            }
+          }
+        } catch (err) {
+          // Log error but continue
+          console.error('Error restoring flagged questions:', err);
+        }
+        
+        // Announce success
+        toast.success('Exam resumed successfully!');
+      } else {
+        // If fetching saved answers fails, still continue but with a warning
+        toast.warning('Could not restore all previous answers. Starting from last saved state.');
+      }
+    } catch (error) {
+      console.error('Error resuming exam:', error);
+      toast.error('Error resuming exam. Starting with a fresh attempt.');
+      
+      // Fall back to starting a new attempt
+      handleStartExam();
+    }
+  };
+
   const handleExamTimeExpired = () => {
     // Prevent duplicate submissions
     if (isSubmittingRef.current) {
@@ -777,6 +885,7 @@ function ExamContainerInternal({
         isOnline={isOnline}
         startError={startError}
         handleStartExam={handleStartExam}
+        handleResumeExam={handleResumeExam}
         examType={examType}
       />
     );

@@ -6,6 +6,17 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   CheckCircle2,
@@ -343,13 +354,29 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
         </CardContent>
         
         <CardFooter className="flex justify-between p-4 border-t bg-gradient-to-r from-slate-50 to-blue-50">
-          <Button 
-            variant="outline" 
-            onClick={onBackToDashboard || onReturnToDashboard}
-            className="bg-white hover:bg-blue-50 transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" /> Back to Dashboard
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="outline"
+                className="bg-white hover:bg-blue-50 transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" /> Back to Dashboard
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to exit?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You will lose all your progress and be unable to view further results. 
+                  Click cancel to stay on this page, or confirm to exit.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onBackToDashboard || onReturnToDashboard}>Confirm Exit</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           
           <div className="flex gap-2">
             <Button 

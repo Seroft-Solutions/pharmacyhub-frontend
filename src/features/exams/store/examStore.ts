@@ -24,6 +24,7 @@ interface ExamState {
   isCompleted: boolean;
   showSummary: boolean;
   reviewMode: boolean;
+  hasUnsavedChanges: boolean; // Track unsaved changes
   
   // Actions
   startExam: (examId: number, questions: Question[], durationInMinutes: number) => void;
@@ -41,6 +42,9 @@ interface ExamState {
   completeExam: () => void;
   resetExam: () => void;
   forceResetExamState: () => void; // New method for complete reset including localStorage
+  markChangesUnsaved: () => void; // Mark that there are unsaved changes
+  markChangesSaved: () => void; // Mark that changes have been saved
+  saveExamProgress: () => Promise<boolean>; // Save exam progress to server
   
   // Getters
   hasAnswer: (questionId: number) => boolean;
@@ -64,6 +68,7 @@ export const useExamStore = create<ExamState>()(
       isCompleted: false,
       showSummary: false,
       reviewMode: false,
+      hasUnsavedChanges: false,
       
       // Actions
       startExam: (examId, questions, durationInMinutes) => {
@@ -84,6 +89,7 @@ export const useExamStore = create<ExamState>()(
           isCompleted: false,
           showSummary: false,
           reviewMode: false,
+          hasUnsavedChanges: false,
         });
       },
       
@@ -105,6 +111,7 @@ export const useExamStore = create<ExamState>()(
                 timeSpent
               },
             },
+            hasUnsavedChanges: true, // Mark changes as unsaved
           };
         });
       },
@@ -117,7 +124,10 @@ export const useExamStore = create<ExamState>()(
           } else {
             newFlagged.add(questionId);
           }
-          return { flaggedQuestions: newFlagged };
+          return { 
+            flaggedQuestions: newFlagged,
+            hasUnsavedChanges: true // Mark changes as unsaved
+          };
         });
       },
       
@@ -199,6 +209,7 @@ export const useExamStore = create<ExamState>()(
           isCompleted: false,
           showSummary: false,
           reviewMode: false,
+          hasUnsavedChanges: false,
         });
       },
       
@@ -291,6 +302,65 @@ export const useExamStore = create<ExamState>()(
         if (questions.length === 0) return 0;
         return (Object.keys(answers).length / questions.length) * 100;
       },
+      
+      // Methods for tracking changes
+      markChangesUnsaved: () => set({ hasUnsavedChanges: true }),
+      
+      markChangesSaved: () => set({ hasUnsavedChanges: false }),
+      
+      // Save exam progress to server
+      saveExamProgress: async () => {
+        try {
+          const { attemptId, answers, flaggedQuestions } = get();
+          
+          if (!attemptId) {
+            console.error('Cannot save progress: No active attempt');
+            return false;
+          }
+          
+          // Convert flaggedQuestions set to array
+          const flaggedArray = [...flaggedQuestions].map(id => ({ questionId: id }));
+          
+          // Convert answers object to array of { questionId, selectedOption }
+          const answersArray = Object.entries(answers).map(([questionId, data]) => ({
+            questionId: parseInt(questionId, 10),
+            selectedOption: data.selectedOption
+          }));
+          
+          // Make API calls to save answers and flags
+          const saveAnswersPromise = fetch(`/api/v1/exams/attempts/${attemptId}/answers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(answersArray)
+          });
+          
+          const saveFlagsPromise = fetch(`/api/v1/exams/attempts/${attemptId}/flags`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(flaggedArray)
+          });
+          
+          // Wait for both API calls to complete
+          const [answersResponse, flagsResponse] = await Promise.all([
+            saveAnswersPromise,
+            saveFlagsPromise
+          ]);
+          
+          // Check if both calls were successful
+          const success = answersResponse.ok && flagsResponse.ok;
+          
+          if (success) {
+            // Mark changes as saved
+            set({ hasUnsavedChanges: false });
+            return true;
+          }
+          
+          return false;
+        } catch (error) {
+          console.error('Error saving exam progress:', error);
+          return false;
+        }
+      },
     }),
     {
       name: 'exam-store',
@@ -308,6 +378,7 @@ export const useExamStore = create<ExamState>()(
         visitedQuestions: Array.from(state.visitedQuestions),
         isPaused: state.isPaused,
         isCompleted: state.isCompleted,
+        hasUnsavedChanges: state.hasUnsavedChanges,
       }),
       onRehydrateStorage: (state) => {
         // Convert arrays back to Sets after rehydration

@@ -1,0 +1,1250 @@
+{
+  "largeFiles": [
+    {
+      "path": "/features/exams/components/student/ExamContainer.tsx",
+      "lines": 1061,
+      "isComponent": true,
+      "name": "ExamContainer.tsx",
+      "largeFunctions": [
+        {
+          "name": "ExamContainerInternal",
+          "lines": 959,
+          "startLine": 84,
+          "endLine": 1043
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/admin/JsonExamUploader.tsx",
+      "lines": 882,
+      "isComponent": true,
+      "name": "JsonExamUploader.tsx",
+      "largeFunctions": [
+        {
+          "name": "validateForm",
+          "lines": 43,
+          "startLine": 220,
+          "endLine": 263
+        }
+      ]
+    },
+    {
+      "path": "/app/(exams)/exam/progress/page.tsx",
+      "lines": 867,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "ProgressStatsPage",
+          "lines": 190,
+          "startLine": 58,
+          "endLine": 248
+        },
+        {
+          "name": "StatCard",
+          "lines": 41,
+          "startLine": 253,
+          "endLine": 294
+        },
+        {
+          "name": "ScoreProgressChart",
+          "lines": 45,
+          "startLine": 299,
+          "endLine": 344
+        },
+        {
+          "name": "TopicPerformanceChart",
+          "lines": 45,
+          "startLine": 349,
+          "endLine": 394
+        },
+        {
+          "name": "MonthlyActivityChart",
+          "lines": 35,
+          "startLine": 399,
+          "endLine": 434
+        },
+        {
+          "name": "ScoresTab",
+          "lines": 164,
+          "startLine": 439,
+          "endLine": 603
+        },
+        {
+          "name": "TopicsTab",
+          "lines": 67,
+          "startLine": 608,
+          "endLine": 675
+        },
+        {
+          "name": "TimeTab",
+          "lines": 106,
+          "startLine": 680,
+          "endLine": 786
+        },
+        {
+          "name": "AchievementsTab",
+          "lines": 76,
+          "startLine": 791,
+          "endLine": 867
+        }
+      ]
+    },
+    {
+      "path": "/components/ui/sidebar.tsx",
+      "lines": 800,
+      "isComponent": false,
+      "name": "sidebar.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/core/app-auth/components/register/RegisterForm.tsx",
+      "lines": 737,
+      "isComponent": true,
+      "name": "RegisterForm.tsx",
+      "largeFunctions": [
+        {
+          "name": "validateRegistrationForm",
+          "lines": 57,
+          "startLine": 50,
+          "endLine": 107
+        },
+        {
+          "name": "RegisterForm",
+          "lines": 627,
+          "startLine": 109,
+          "endLine": 736
+        }
+      ]
+    },
+    {
+      "path": "/features/payments/manual/components/admin/deprecated/ManualPaymentsAdminDashboard.tsx",
+      "lines": 704,
+      "isComponent": true,
+      "name": "ManualPaymentsAdminDashboard.tsx",
+      "largeFunctions": [
+        {
+          "name": "FC",
+          "lines": 678,
+          "startLine": 24,
+          "endLine": 702
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/admin/ExamQuestions.tsx",
+      "lines": 687,
+      "isComponent": true,
+      "name": "ExamQuestions.tsx",
+      "largeFunctions": [
+        {
+          "name": "transformExamData",
+          "lines": 39,
+          "startLine": 118,
+          "endLine": 157
+        },
+        {
+          "name": "handleConfirmDelete",
+          "lines": 49,
+          "startLine": 255,
+          "endLine": 304
+        }
+      ]
+    },
+    {
+      "path": "/features/payments/manual/components/ManualPaymentForm.tsx",
+      "lines": 603,
+      "isComponent": true,
+      "name": "ManualPaymentForm.tsx",
+      "largeFunctions": [
+        {
+          "name": "onload",
+          "lines": 63,
+          "startLine": 139,
+          "endLine": 202
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/store/mcqExamStore.ts",
+      "lines": 532,
+      "isComponent": false,
+      "name": "mcqExamStore.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/app/(exams)/exam/practice/page.tsx",
+      "lines": 519,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "PracticeExamsPage",
+          "lines": 116,
+          "startLine": 35,
+          "endLine": 151
+        },
+        {
+          "name": "TimedExamsTab",
+          "lines": 68,
+          "startLine": 156,
+          "endLine": 224
+        },
+        {
+          "name": "TopicBasedExamsTab",
+          "lines": 93,
+          "startLine": 229,
+          "endLine": 322
+        },
+        {
+          "name": "CustomExamTab",
+          "lines": 192,
+          "startLine": 327,
+          "endLine": 519
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/mcq/McqExamResults.tsx",
+      "lines": 460,
+      "isComponent": true,
+      "name": "McqExamResults.tsx",
+      "largeFunctions": [
+        {
+          "name": "FC",
+          "lines": 423,
+          "startLine": 36,
+          "endLine": 459
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/results/ExamResults.tsx",
+      "lines": 445,
+      "isComponent": true,
+      "name": "ExamResults.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/core/app-auth/components/passwordRecovery/ResetPasswordForm.tsx",
+      "lines": 423,
+      "isComponent": true,
+      "name": "ResetPasswordForm.tsx",
+      "largeFunctions": [
+        {
+          "name": "ResetPasswordForm",
+          "lines": 388,
+          "startLine": 34,
+          "endLine": 422
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/student/QuestionNavigation.tsx",
+      "lines": 408,
+      "isComponent": true,
+      "name": "QuestionNavigation.tsx",
+      "largeFunctions": [
+        {
+          "name": "QuestionNavigation",
+          "lines": 310,
+          "startLine": 98,
+          "endLine": 408
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-auth/api/services/authService.ts",
+      "lines": 407,
+      "isComponent": false,
+      "name": "authService.ts",
+      "largeFunctions": [
+        {
+          "name": "useLogin",
+          "lines": 46,
+          "startLine": 48,
+          "endLine": 94
+        }
+      ]
+    },
+    {
+      "path": "/features/dashboard/components/DashboardOverview.tsx",
+      "lines": 403,
+      "isComponent": true,
+      "name": "DashboardOverview.tsx",
+      "largeFunctions": [
+        {
+          "name": "DashboardOverview",
+          "lines": 333,
+          "startLine": 68,
+          "endLine": 401
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-auth/core/AuthContext.tsx",
+      "lines": 389,
+      "isComponent": true,
+      "name": "AuthContext.tsx",
+      "largeFunctions": [
+        {
+          "name": "current",
+          "lines": 60,
+          "startLine": 94,
+          "endLine": 154
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-api-handler/factories/createApiHooks.ts",
+      "lines": 386,
+      "isComponent": false,
+      "name": "createApiHooks.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/core/api/services/factories/createApiHooks.ts",
+      "lines": 385,
+      "isComponent": false,
+      "name": "createApiHooks.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/student/ExamResults.tsx",
+      "lines": 384,
+      "isComponent": true,
+      "name": "ExamResults.tsx",
+      "largeFunctions": [
+        {
+          "name": "ExamResults",
+          "lines": 366,
+          "startLine": 18,
+          "endLine": 384
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/hooks/useExamSession.ts",
+      "lines": 374,
+      "isComponent": false,
+      "name": "useExamSession.ts",
+      "largeFunctions": [
+        {
+          "name": "useExamSession",
+          "lines": 345,
+          "startLine": 29,
+          "endLine": 374
+        }
+      ]
+    },
+    {
+      "path": "/core/auth/core/tokenManager.ts",
+      "lines": 372,
+      "isComponent": false,
+      "name": "tokenManager.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/core/app-auth/core/tokenManager.ts",
+      "lines": 372,
+      "isComponent": false,
+      "name": "tokenManager.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/common/ExamsTable.tsx",
+      "lines": 371,
+      "isComponent": true,
+      "name": "ExamsTable.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/common/ExamPaperCard.tsx",
+      "lines": 369,
+      "isComponent": true,
+      "name": "ExamPaperCard.tsx",
+      "largeFunctions": [
+        {
+          "name": "getButtonContentByStatus",
+          "lines": 33,
+          "startLine": 79,
+          "endLine": 112
+        }
+      ]
+    },
+    {
+      "path": "/features/shell/components/sidebar/AppSidebar.tsx",
+      "lines": 367,
+      "isComponent": true,
+      "name": "AppSidebar.tsx",
+      "largeFunctions": [
+        {
+          "name": "AppSidebar",
+          "lines": 299,
+          "startLine": 66,
+          "endLine": 365
+        }
+      ]
+    },
+    {
+      "path": "/components/ui/chart.tsx",
+      "lines": 366,
+      "isComponent": false,
+      "name": "chart.tsx",
+      "largeFunctions": [
+        {
+          "name": "ChartStyle",
+          "lines": 31,
+          "startLine": 70,
+          "endLine": 101
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-auth/api/services/authApiService.ts",
+      "lines": 364,
+      "isComponent": false,
+      "name": "authApiService.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/payments/manual/store/manualPaymentStore.ts",
+      "lines": 351,
+      "isComponent": false,
+      "name": "manualPaymentStore.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/student/QuestionDisplay.tsx",
+      "lines": 350,
+      "isComponent": true,
+      "name": "QuestionDisplay.tsx",
+      "largeFunctions": [
+        {
+          "name": "QuestionOption",
+          "lines": 59,
+          "startLine": 31,
+          "endLine": 90
+        },
+        {
+          "name": "QuestionDisplay",
+          "lines": 250,
+          "startLine": 100,
+          "endLine": 350
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/api/hooks/useExamApiHooks.ts",
+      "lines": 348,
+      "isComponent": false,
+      "name": "useExamApiHooks.ts",
+      "largeFunctions": [
+        {
+          "name": "useExamQuestions",
+          "lines": 94,
+          "startLine": 120,
+          "endLine": 214
+        }
+      ]
+    },
+    {
+      "path": "/features/shell/store/roleStore.ts",
+      "lines": 344,
+      "isComponent": false,
+      "name": "roleStore.ts",
+      "largeFunctions": [
+        {
+          "name": "useRoleSync",
+          "lines": 34,
+          "startLine": 308,
+          "endLine": 342
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/mcq/McqExamLayout.tsx",
+      "lines": 340,
+      "isComponent": true,
+      "name": "McqExamLayout.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/core/auth/state/authStore.ts",
+      "lines": 337,
+      "isComponent": false,
+      "name": "authStore.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/premium/ManualPaymentForm.tsx",
+      "lines": 333,
+      "isComponent": true,
+      "name": "ManualPaymentForm.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/app/(exams)/summary/page.tsx",
+      "lines": 332,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "ExamsSummaryPage",
+          "lines": 267,
+          "startLine": 30,
+          "endLine": 297
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/store/examStore.ts",
+      "lines": 329,
+      "isComponent": false,
+      "name": "examStore.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/dashboard/components/cards/DetailedPaymentStatus.tsx",
+      "lines": 328,
+      "isComponent": true,
+      "name": "DetailedPaymentStatus.tsx",
+      "largeFunctions": [
+        {
+          "name": "DetailedPaymentStatus",
+          "lines": 290,
+          "startLine": 36,
+          "endLine": 326
+        }
+      ]
+    },
+    {
+      "path": "/features/dashboard/api/hooks/useDashboardData.ts",
+      "lines": 326,
+      "isComponent": false,
+      "name": "useDashboardData.ts",
+      "largeFunctions": [
+        {
+          "name": "useDashboardData",
+          "lines": 270,
+          "startLine": 23,
+          "endLine": 293
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/mcq/McqQuestionCard.tsx",
+      "lines": 326,
+      "isComponent": true,
+      "name": "McqQuestionCard.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/mcq/McqExamList.tsx",
+      "lines": 320,
+      "isComponent": true,
+      "name": "McqExamList.tsx",
+      "largeFunctions": [
+        {
+          "name": "FC",
+          "lines": 277,
+          "startLine": 40,
+          "endLine": 317
+        }
+      ]
+    },
+    {
+      "path": "/core/api/utils/optimisticUpdates.ts",
+      "lines": 319,
+      "isComponent": false,
+      "name": "optimisticUpdates.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/core/app-auth/components/register/context/RegisterFormContext.tsx",
+      "lines": 317,
+      "isComponent": true,
+      "name": "RegisterFormContext.tsx",
+      "largeFunctions": [
+        {
+          "name": "validateRegistrationForm",
+          "lines": 47,
+          "startLine": 82,
+          "endLine": 129
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-api-handler/core/apiClient.ts",
+      "lines": 316,
+      "isComponent": false,
+      "name": "apiClient.ts",
+      "largeFunctions": [
+        {
+          "name": "replaceUrlParams",
+          "lines": 50,
+          "startLine": 44,
+          "endLine": 94
+        }
+      ]
+    },
+    {
+      "path": "/core/api/examples/UserManager.tsx",
+      "lines": 315,
+      "isComponent": true,
+      "name": "UserManager.tsx",
+      "largeFunctions": [
+        {
+          "name": "UserList",
+          "lines": 56,
+          "startLine": 13,
+          "endLine": 69
+        },
+        {
+          "name": "UserActions",
+          "lines": 32,
+          "startLine": 104,
+          "endLine": 136
+        },
+        {
+          "name": "UserCreateForm",
+          "lines": 70,
+          "startLine": 141,
+          "endLine": 211
+        },
+        {
+          "name": "UserEditForm",
+          "lines": 80,
+          "startLine": 216,
+          "endLine": 296
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-rbac/hooks/useAccess.ts",
+      "lines": 303,
+      "isComponent": false,
+      "name": "useAccess.ts",
+      "largeFunctions": [
+        {
+          "name": "useAccess",
+          "lines": 289,
+          "startLine": 14,
+          "endLine": 303
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/premium/PaymentFlow.tsx",
+      "lines": 301,
+      "isComponent": true,
+      "name": "PaymentFlow.tsx",
+      "largeFunctions": [
+        {
+          "name": "renderStep",
+          "lines": 191,
+          "startLine": 100,
+          "endLine": 291
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-auth/components/passwordRecovery/ForgotPasswordForm.tsx",
+      "lines": 294,
+      "isComponent": true,
+      "name": "ForgotPasswordForm.tsx",
+      "largeFunctions": [
+        {
+          "name": "ForgotPasswordForm",
+          "lines": 265,
+          "startLine": 28,
+          "endLine": 293
+        }
+      ]
+    },
+    {
+      "path": "/core/api/examples/userService.ts",
+      "lines": 293,
+      "isComponent": false,
+      "name": "userService.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/types/deprecated/QuestionStatus.ts",
+      "lines": 292,
+      "isComponent": false,
+      "name": "QuestionStatus.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/core/app-auth/components/login/EnhancedLoginForm.tsx",
+      "lines": 291,
+      "isComponent": true,
+      "name": "EnhancedLoginForm.tsx",
+      "largeFunctions": [
+        {
+          "name": "EnhancedLoginForm",
+          "lines": 258,
+          "startLine": 31,
+          "endLine": 289
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/results/ResultsView.tsx",
+      "lines": 289,
+      "isComponent": true,
+      "name": "ResultsView.tsx",
+      "largeFunctions": [
+        {
+          "name": "ResultsView",
+          "lines": 257,
+          "startLine": 32,
+          "endLine": 289
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-api-handler/hooks/useApi.ts",
+      "lines": 284,
+      "isComponent": false,
+      "name": "useApi.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/admin/McqEditor.tsx",
+      "lines": 283,
+      "isComponent": true,
+      "name": "McqEditor.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/shell/components/sidebar/SidebarContactSection.tsx",
+      "lines": 280,
+      "isComponent": true,
+      "name": "SidebarContactSection.tsx",
+      "largeFunctions": [
+        {
+          "name": "SidebarContactSection",
+          "lines": 260,
+          "startLine": 19,
+          "endLine": 279
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-auth/components/login/LoginForm.tsx",
+      "lines": 279,
+      "isComponent": true,
+      "name": "LoginForm.tsx",
+      "largeFunctions": [
+        {
+          "name": "LoginForm",
+          "lines": 255,
+          "startLine": 24,
+          "endLine": 279
+        }
+      ]
+    },
+    {
+      "path": "/app/admin/payments/pending/page.tsx",
+      "lines": 274,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "PendingPaymentsPage",
+          "lines": 242,
+          "startLine": 32,
+          "endLine": 274
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/admin/PaperMetadataFields.tsx",
+      "lines": 268,
+      "isComponent": true,
+      "name": "PaperMetadataFields.tsx",
+      "largeFunctions": [
+        {
+          "name": "renderField",
+          "lines": 200,
+          "startLine": 38,
+          "endLine": 238
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/student/ExamLanding.tsx",
+      "lines": 267,
+      "isComponent": true,
+      "name": "ExamLanding.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/app/admin/payments/approvals/page.tsx",
+      "lines": 266,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "PaymentApprovalsPage",
+          "lines": 232,
+          "startLine": 34,
+          "endLine": 266
+        }
+      ]
+    },
+    {
+      "path": "/features/payments/manual/components/ManualPaymentStatus.tsx",
+      "lines": 266,
+      "isComponent": true,
+      "name": "ManualPaymentStatus.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/app/(exams)/exam/subject-papers/page.tsx",
+      "lines": 265,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "SubjectPapersContent",
+          "lines": 221,
+          "startLine": 24,
+          "endLine": 245
+        }
+      ]
+    },
+    {
+      "path": "/components/ui/carousel.tsx",
+      "lines": 263,
+      "isComponent": false,
+      "name": "carousel.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/core/api/core/error/apiErrors.ts",
+      "lines": 262,
+      "isComponent": false,
+      "name": "apiErrors.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/core/app-auth/anti-sharing/components/admin/SessionMonitoring.tsx",
+      "lines": 260,
+      "isComponent": true,
+      "name": "SessionMonitoring.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/app/admin/dashboard/page.tsx",
+      "lines": 259,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "AdminDashboardPage",
+          "lines": 232,
+          "startLine": 27,
+          "endLine": 259
+        }
+      ]
+    },
+    {
+      "path": "/core/api/core/error/errorLogger.ts",
+      "lines": 258,
+      "isComponent": false,
+      "name": "errorLogger.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/components/ui/menubar.tsx",
+      "lines": 257,
+      "isComponent": false,
+      "name": "menubar.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/core/app-auth/hooks/useLoginForm.ts",
+      "lines": 257,
+      "isComponent": false,
+      "name": "useLoginForm.ts",
+      "largeFunctions": [
+        {
+          "name": "useLoginForm",
+          "lines": 242,
+          "startLine": 15,
+          "endLine": 257
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/api/hooks/useExamAttemptHooks.ts",
+      "lines": 256,
+      "isComponent": false,
+      "name": "useExamAttemptHooks.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/app/auth/callback/page.tsx",
+      "lines": 255,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "AuthCallbackContent",
+          "lines": 212,
+          "startLine": 33,
+          "endLine": 245
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/types/QuestionStatus.ts",
+      "lines": 253,
+      "isComponent": false,
+      "name": "QuestionStatus.ts",
+      "largeFunctions": [
+        {
+          "name": "getUserAnswerLabel",
+          "lines": 46,
+          "startLine": 58,
+          "endLine": 104
+        },
+        {
+          "name": "getCorrectAnswerLabel",
+          "lines": 57,
+          "startLine": 112,
+          "endLine": 169
+        }
+      ]
+    },
+    {
+      "path": "/features/payments/premium/hooks/usePremiumStatus.ts",
+      "lines": 252,
+      "isComponent": false,
+      "name": "usePremiumStatus.ts",
+      "largeFunctions": [
+        {
+          "name": "usePremiumStatus",
+          "lines": 186,
+          "startLine": 64,
+          "endLine": 250
+        }
+      ]
+    },
+    {
+      "path": "/app/(exams)/exam/results/page.tsx",
+      "lines": 250,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "ResultsContent",
+          "lines": 205,
+          "startLine": 45,
+          "endLine": 250
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/types/index.ts",
+      "lines": 249,
+      "isComponent": false,
+      "name": "index.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/dashboard/components/charts/heatmap/ActivityHeatmap.tsx",
+      "lines": 248,
+      "isComponent": true,
+      "name": "ActivityHeatmap.tsx",
+      "largeFunctions": [
+        {
+          "name": "ActivityHeatmap",
+          "lines": 221,
+          "startLine": 25,
+          "endLine": 246
+        }
+      ]
+    },
+    {
+      "path": "/core/api/core/interceptors/responseInterceptor.ts",
+      "lines": 244,
+      "isComponent": false,
+      "name": "responseInterceptor.ts",
+      "largeFunctions": [
+        {
+          "name": "processResponseUnwrapping",
+          "lines": 65,
+          "startLine": 49,
+          "endLine": 114
+        },
+        {
+          "name": "responseErrorInterceptor",
+          "lines": 33,
+          "startLine": 210,
+          "endLine": 243
+        }
+      ]
+    },
+    {
+      "path": "/core/auth/admin/components/SessionMonitoring.tsx",
+      "lines": 244,
+      "isComponent": true,
+      "name": "SessionMonitoring.tsx",
+      "largeFunctions": [
+        {
+          "name": "FC",
+          "lines": 218,
+          "startLine": 25,
+          "endLine": 243
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-auth/admin/components/SessionMonitoring.tsx",
+      "lines": 244,
+      "isComponent": true,
+      "name": "SessionMonitoring.tsx",
+      "largeFunctions": [
+        {
+          "name": "FC",
+          "lines": 218,
+          "startLine": 25,
+          "endLine": 243
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/utils/paperTypeUtils.ts",
+      "lines": 244,
+      "isComponent": false,
+      "name": "paperTypeUtils.ts",
+      "largeFunctions": [
+        {
+          "name": "metadataToTags",
+          "lines": 51,
+          "startLine": 98,
+          "endLine": 149
+        },
+        {
+          "name": "extractMetadataFromTags",
+          "lines": 55,
+          "startLine": 189,
+          "endLine": 244
+        }
+      ]
+    },
+    {
+      "path": "/app/(dashboard)/dashboard/page.tsx",
+      "lines": 242,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "DashboardPage",
+          "lines": 149,
+          "startLine": 93,
+          "endLine": 242
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/api/services/examApiService.ts",
+      "lines": 240,
+      "isComponent": false,
+      "name": "examApiService.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/payments/admin/components/PaymentTable.tsx",
+      "lines": 237,
+      "isComponent": true,
+      "name": "PaymentTable.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/payments/admin/components/ViewDetailsDialog.tsx",
+      "lines": 237,
+      "isComponent": true,
+      "name": "ViewDetailsDialog.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/quiz/ExamLayout.tsx",
+      "lines": 235,
+      "isComponent": true,
+      "name": "ExamLayout.tsx",
+      "largeFunctions": [
+        {
+          "name": "ExamLayout",
+          "lines": 214,
+          "startLine": 21,
+          "endLine": 235
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-auth/anti-sharing/api/sessionApi.ts",
+      "lines": 231,
+      "isComponent": false,
+      "name": "sessionApi.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/review/ExamReview.tsx",
+      "lines": 225,
+      "isComponent": true,
+      "name": "ExamReview.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/components/admin/ExamDashboard.tsx",
+      "lines": 223,
+      "isComponent": true,
+      "name": "ExamDashboard.tsx",
+      "largeFunctions": [
+        {
+          "name": "FC",
+          "lines": 176,
+          "startLine": 46,
+          "endLine": 222
+        }
+      ]
+    },
+    {
+      "path": "/features/shell/components/topbar/AppTopbar.tsx",
+      "lines": 214,
+      "isComponent": true,
+      "name": "AppTopbar.tsx",
+      "largeFunctions": [
+        {
+          "name": "AppTopbar",
+          "lines": 155,
+          "startLine": 59,
+          "endLine": 214
+        }
+      ]
+    },
+    {
+      "path": "/features/payments/admin/utils/index.ts",
+      "lines": 212,
+      "isComponent": false,
+      "name": "index.ts",
+      "largeFunctions": [
+        {
+          "name": "getUserDisplayName",
+          "lines": 45,
+          "startLine": 91,
+          "endLine": 136
+        }
+      ]
+    },
+    {
+      "path": "/features/core/app-auth/hooks/useLoginForm.enhanced.ts",
+      "lines": 211,
+      "isComponent": false,
+      "name": "useLoginForm.enhanced.ts",
+      "largeFunctions": [
+        {
+          "name": "useLoginForm",
+          "lines": 178,
+          "startLine": 32,
+          "endLine": 210
+        }
+      ]
+    },
+    {
+      "path": "/features/shell/store/sidebarStore.ts",
+      "lines": 211,
+      "isComponent": false,
+      "name": "sidebarStore.ts",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/exams/utils/AnswerUtils.ts",
+      "lines": 209,
+      "isComponent": false,
+      "name": "AnswerUtils.ts",
+      "largeFunctions": [
+        {
+          "name": "normalizeToLabel",
+          "lines": 41,
+          "startLine": 69,
+          "endLine": 110
+        },
+        {
+          "name": "findCorrectAnswerLabel",
+          "lines": 38,
+          "startLine": 147,
+          "endLine": 185
+        }
+      ]
+    },
+    {
+      "path": "/features/exams/components/review/ReviewMode.tsx",
+      "lines": 208,
+      "isComponent": true,
+      "name": "ReviewMode.tsx",
+      "largeFunctions": [
+        {
+          "name": "ReviewMode",
+          "lines": 179,
+          "startLine": 29,
+          "endLine": 208
+        }
+      ]
+    },
+    {
+      "path": "/app/(exams)/exam/past-papers/page.tsx",
+      "lines": 205,
+      "isComponent": false,
+      "name": "page.tsx",
+      "largeFunctions": [
+        {
+          "name": "PastPapersContent",
+          "lines": 156,
+          "startLine": 21,
+          "endLine": 177
+        }
+      ]
+    },
+    {
+      "path": "/features/payments/admin/components/history/PaymentHistory.tsx",
+      "lines": 205,
+      "isComponent": true,
+      "name": "PaymentHistory.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/components/ui/context-menu.tsx",
+      "lines": 201,
+      "isComponent": false,
+      "name": "context-menu.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/components/ui/dropdown-menu.tsx",
+      "lines": 201,
+      "isComponent": false,
+      "name": "dropdown-menu.tsx",
+      "largeFunctions": []
+    },
+    {
+      "path": "/features/shell/navigation/features.ts",
+      "lines": 201,
+      "isComponent": false,
+      "name": "features.ts",
+      "largeFunctions": []
+    }
+  ],
+  "timestamp": "2025-03-29T04:00:16.213Z",
+  "summary": {
+    "totalFilesExceedingLimit": 99,
+    "componentsExceedingLimit": 46,
+    "filesProcessed": 722,
+    "functionsExceedingLimit": 81
+  }
+}

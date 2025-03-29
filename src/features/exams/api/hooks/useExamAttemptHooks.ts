@@ -36,6 +36,7 @@ export const attemptQueryKeys = {
   userAttemptsForExam: (examId: number) => [...attemptApiHooks.queryKeys.all(), 'exam', examId] as const,
   result: (attemptId: number) => [...attemptApiHooks.queryKeys.detail(attemptId), 'result'] as const,
   flags: (attemptId: number) => [...attemptApiHooks.queryKeys.detail(attemptId), 'flags'] as const,
+  answers: (attemptId: number) => [...attemptApiHooks.queryKeys.detail(attemptId), 'answers'] as const,
 };
 
 /**
@@ -102,6 +103,23 @@ export const useFlaggedQuestions = (attemptId: number) => {
     {
       enabled: !!attemptId,
       staleTime: 0, // Always get fresh flags
+      urlParams: {
+        id: attemptId ? String(parseInt(attemptId.toString())) : '0'
+      }
+    }
+  );
+};
+
+/**
+ * Hook for fetching all answers for an attempt
+ */
+export const useExamAttemptAnswers = (attemptId: number) => {
+  return attemptApiHooks.useCustomQuery<UserAnswer[]>(
+    'answers',
+    ['answers', attemptId],
+    {
+      enabled: !!attemptId,
+      staleTime: 0, // Always get fresh answers
       urlParams: {
         id: attemptId ? String(parseInt(attemptId.toString())) : '0'
       }
@@ -240,6 +258,7 @@ export const attemptHooks = {
   useExamAttempt,
   useExamResult,
   useFlaggedQuestions,
+  useExamAttemptAnswers,
 
   // Mutation hooks
   useStartExamMutation,
