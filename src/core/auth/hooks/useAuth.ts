@@ -1,125 +1,91 @@
 /**
- * Main auth hook that provides the AuthContext state and 
- * additional auth-related functionality.
+ * Main Auth Hook
+ * 
+ * Combines all auth functionality into a single hook for convenience.
+ * This hook acts as a facade for all auth-related operations.
  */
-import { useCallback } from 'react';
-import { useAuthContext } from '../core/AuthContext';
-import { tokenManager } from '../core/tokenManager';
-import type { RegistrationData, UserProfile } from '../types';
-
-// Import auth service placeholders
-// These will be replaced when we move the API services
-const authService = {
-  useRegister: () => ({
-    mutateAsync: async () => ({}),
-    isPending: false,
-    error: null
-  }),
-  useRequestPasswordReset: () => ({
-    mutateAsync: async () => ({}),
-    isPending: false,
-    error: null
-  }),
-  useCompletePasswordReset: () => ({
-    mutateAsync: async () => ({}),
-    isPending: false,
-    error: null
-  })
-};
-
-const authApiService = {
-  processSocialLogin: async () => ({})
-};
+import { 
+  useAuthStore, 
+  useUser, 
+  useIsAuthenticated, 
+  useAuthLoading, 
+  useAuthError,
+  useRbacHelpers,
+  useAuthActions 
+} from '../state';
+import { useRegister } from './register';
+import { usePasswordReset } from './password';
+import { useSocialAuth } from './social';
 
 /**
- * Main auth hook that combines context state and auth operations
- * This is the primary hook for auth functionality
+ * Main auth hook that combines all auth-related functionality
+ * This is the primary hook for auth functionality across the application
+ * 
+ * @returns All auth state and operations in a single object
  */
 export const useAuth = () => {
-  const authContext = useAuthContext();
+  // Get state from Zustand store using selectors
+  const user = useUser();
+  const isAuthenticated = useIsAuthenticated();
+  const isLoading = useAuthLoading();
+  const error = useAuthError();
+  const { hasRole, hasPermission, hasAccess } = useRbacHelpers();
+  const { login, logout, refreshUserProfile } = useAuthActions();
   
-  // Get API hooks from authService
-  const registerMutation = authService.useRegister();
-  const resetRequestMutation = authService.useRequestPasswordReset();
-  const resetPasswordMutation = authService.useCompletePasswordReset();
+  // Get specialized hooks for functionalities not yet migrated to Zustand
+  const { register, isRegistering, registerError } = useRegister();
+  const { 
+    requestPasswordReset, 
+    resetPassword,
+    isRequestingReset,
+    isResettingPassword,
+    resetRequestError,
+    resetPasswordError
+  } = usePasswordReset();
+  const { processSocialLogin } = useSocialAuth();
 
-  // Registration function with adapter for different request formats
-  const register = useCallback(async (data: RegistrationData) => {
-    try {
-      // Convert from old format to new format if needed
-      const registerRequest = data.emailAddress 
-        ? data // If data is already in the correct format, use it directly
-        : {
-          emailAddress: data.email,
-          password: data.password,
-          firstName: data.firstName || '',
-          lastName: data.lastName || '',
-          contactNumber: data.phoneNumber,
-          userType: data.userType,
-          openToConnect: false
-        };
-      
-      return await registerMutation.mutateAsync(registerRequest);
-    } catch (error) {
-      throw error;
-    }
-  }, [registerMutation]);
+  // Determine login loading and error states
+  // For backward compatibility with useLogin hook
+  const isLoggingIn = useAuthStore(state => state.isLoading && !state.user);
+  const loginError = useAuthStore(state => !state.isAuthenticated ? state.error : null);
 
-  // Password reset request function
-  const requestPasswordReset = useCallback(async (email: string) => {
-    try {
-      return await resetRequestMutation.mutateAsync({ email });
-    } catch (error) {
-      throw error;
-    }
-  }, [resetRequestMutation]);
-
-  // Password reset completion function
-  const resetPassword = useCallback(async (token: string, newPassword: string) => {
-    try {
-      await resetPasswordMutation.mutateAsync({ 
-        token, 
-        newPassword,
-        confirmPassword: newPassword 
-      });
-    } catch (error) {
-      throw error;
-    }
-  }, [resetPasswordMutation]);
-
-  // Social login callback function to process code from OAuth provider
-  const processSocialLogin = useCallback(async (code: string, deviceInfo?: Record<string, string>): Promise<any> => {
-    try {
-      // Get device info if not provided
-      const deviceData = deviceInfo || tokenManager.getAuthDataForLogin();
-      
-      // Exchange authorization code for tokens
-      const response = await authApiService.processSocialLogin(code, deviceData);
-      
-      return response;
-    } catch (error) {
-      console.error('Social login processing error:', error);
-      throw error;
-    }
-  }, []);
-
+  // Combine and return all auth functionality
   return {
-    // Context state and methods
-    ...authContext,
+    // Base state
+    user,
+    isAuthenticated,
+    isLoading,
+    error,
+    
+    // RBAC helpers
+    hasRole,
+    hasPermission,
+    hasAccess,
+    
+    // Auth actions
+    login,
+    logout,
+    refreshUserProfile,
+    
+    // Login states (for backward compatibility)
+    isLoggingIn,
+    loginError,
 
-    // Additional actions
+    // Registration functionality
     register,
+    isRegistering,
+    registerError,
+
+    // Password reset functionality
     requestPasswordReset,
     resetPassword,
-    processSocialLogin,
+    isRequestingReset,
+    isResettingPassword,
+    resetRequestError,
+    resetPasswordError,
 
-    // Loading and error states
-    isRegistering: registerMutation.isPending,
-    isRequestingReset: resetRequestMutation.isPending,
-    isResettingPassword: resetPasswordMutation.isPending,
-    registerError: registerMutation.error,
-    resetRequestError: resetRequestMutation.error,
-    resetPasswordError: resetPasswordMutation.error
+    // Social auth functionality
+    processSocialLogin
   };
 };
 

@@ -2,75 +2,65 @@
  * Authentication guard component
  * 
  * This component protects routes by checking if a user is authenticated
- * and redirecting to the login page if not.
+ * and has the required roles or permissions.
  */
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../hooks';
+import React from 'react';
+import { RouteGuard, RbacGuard } from './guards';
 
 // Define the component props
 interface RequireAuthProps {
+  /** The protected content to render if access is granted */
   children: React.ReactNode;
+  /** Content to render if access is denied */
   fallback?: React.ReactNode;
+  /** Path to redirect to if not authenticated */
+  redirectTo?: string;
+  /** Optional save return URL functionality */
+  saveReturnUrl?: boolean;
   
   // RBAC parameters
+  /** Array of roles required for access */
   requiredRoles?: string[];
+  /** Array of permissions required for access */
   requiredPermissions?: string[];
+  /** Whether to require all roles/permissions or just one */
   requireAll?: boolean;
 }
 
 /**
- * Component that redirects to login if user is not authenticated
- * or if user doesn't have required roles or permissions
+ * Component that combines authentication, role, and permission checks
+ * to protect routes with comprehensive access control.
+ * 
+ * This component uses a composition of specialized guards:
+ * - RouteGuard: Handles authentication and redirects
+ * - RbacGuard: Manages role and permission-based access
  */
 export const RequireAuth: React.FC<RequireAuthProps> = ({ 
   children, 
   fallback = null,
+  redirectTo = '/login',
+  saveReturnUrl = true,
   requiredRoles = [],
   requiredPermissions = [],
   requireAll = true
 }) => {
-  const { isAuthenticated, isLoading, hasAccess } = useAuth();
-  const router = useRouter();
-  
-  // Check if user has the required access
-  const hasRequiredAccess = React.useMemo(() => {
-    // If no roles or permissions are required, just check auth
-    if (requiredRoles.length === 0 && requiredPermissions.length === 0) {
-      return isAuthenticated;
-    }
-    
-    // Otherwise, check if user has the required roles and permissions
-    return isAuthenticated && hasAccess(requiredRoles, requiredPermissions);
-  }, [isAuthenticated, hasAccess, requiredRoles, requiredPermissions]);
-
-  // Handle authentication check and redirection
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        // Save the current URL to redirect back after login
-        if (typeof window !== 'undefined') {
-          const currentPath = window.location.pathname;
-          sessionStorage.setItem('redirectAfterLogin', currentPath);
-        }
-        
-        // Redirect to login page
-        router.push('/login');
-      } else if (!hasRequiredAccess) {
-        // User is authenticated but doesn't have required access
-        // Redirect to unauthorized page or home
-        router.push('/unauthorized');
-      }
-    }
-  }, [isAuthenticated, isLoading, hasRequiredAccess, router]);
-
-  // Show nothing while checking auth
-  if (isLoading) {
-    return null;
-  }
-
-  // Show fallback or children based on auth and access status
-  return (isAuthenticated && hasRequiredAccess) ? <>{children}</> : <>{fallback}</>;
+  // Use nested guards for clean separation of concerns
+  return (
+    <RouteGuard 
+      fallback={fallback} 
+      redirectTo={redirectTo}
+      saveReturnUrl={saveReturnUrl}
+    >
+      <RbacGuard 
+        requiredRoles={requiredRoles}
+        requiredPermissions={requiredPermissions}
+        requireAll={requireAll}
+        fallback={fallback}
+      >
+        {children}
+      </RbacGuard>
+    </RouteGuard>
+  );
 };
 
 export default RequireAuth;
