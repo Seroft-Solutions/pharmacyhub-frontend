@@ -18,13 +18,64 @@ export const QuestionFilter: React.FC<QuestionFilterProps> = ({
   questionStatusMap,
   onSelectQuestion
 }) => {
+  // Count questions by status
+  const correctCount = questions.filter(q => 
+    questionStatusMap[q.id] === QuestionStatus.ANSWERED_CORRECT
+  ).length;
+  
+  const incorrectCount = questions.filter(q => 
+    questionStatusMap[q.id] === QuestionStatus.ANSWERED_INCORRECT
+  ).length;
+  
+  const unansweredCount = questions.filter(q => 
+    questionStatusMap[q.id] === QuestionStatus.UNANSWERED
+  ).length;
+  
   return (
     <Tabs defaultValue="all" className="w-full">
-      <TabsList className="grid grid-cols-4 mb-4">
-        <TabsTrigger value="all">All Questions</TabsTrigger>
-        <TabsTrigger value="correct">Correct</TabsTrigger>
-        <TabsTrigger value="incorrect">Incorrect</TabsTrigger>
-        <TabsTrigger value="unanswered">Unanswered</TabsTrigger>
+      <TabsList className="grid grid-cols-4 h-10 mb-4 p-1 px-0.5 bg-slate-100 rounded-lg">
+        <TabsTrigger 
+          value="all" 
+          className="text-[10px] sm:text-xs rounded-md font-medium px-1 sm:px-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-700"
+        >
+          All
+        </TabsTrigger>
+        
+        <TabsTrigger 
+          value="correct"
+          className="text-[10px] sm:text-xs rounded-md font-medium px-1 sm:px-2 data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm"
+        >
+          <span>Correct</span>
+          {correctCount > 0 && (
+            <span className="ml-0.5 sm:ml-1 rounded-full bg-green-100 px-1 py-0.5 text-[8px] sm:text-xs text-green-700">
+              {correctCount}
+            </span>
+          )}
+        </TabsTrigger>
+        
+        <TabsTrigger 
+          value="incorrect"
+          className="text-[10px] sm:text-xs rounded-md font-medium px-1 sm:px-2 data-[state=active]:bg-white data-[state=active]:text-red-700 data-[state=active]:shadow-sm"
+        >
+          <span>Wrong</span>
+          {incorrectCount > 0 && (
+            <span className="ml-0.5 sm:ml-1 rounded-full bg-red-100 px-1 py-0.5 text-[8px] sm:text-xs text-red-700">
+              {incorrectCount}
+            </span>
+          )}
+        </TabsTrigger>
+        
+        <TabsTrigger 
+          value="unanswered"
+          className="text-[10px] sm:text-xs rounded-md font-medium px-1 sm:px-2 data-[state=active]:bg-white data-[state=active]:text-amber-700 data-[state=active]:shadow-sm"
+        >
+          <span>Skip</span>
+          {unansweredCount > 0 && (
+            <span className="ml-0.5 sm:ml-1 rounded-full bg-amber-100 px-1 py-0.5 text-[8px] sm:text-xs text-amber-700">
+              {unansweredCount}
+            </span>
+          )}
+        </TabsTrigger>
       </TabsList>
       
       <TabsContent value="all">

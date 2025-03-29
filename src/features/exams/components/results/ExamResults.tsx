@@ -225,8 +225,8 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
             </div>
           </div>
           
-          {/* Score Details - 2 Column Grid */}
-          <div className="grid grid-cols-2 gap-3 p-4 pt-0">
+          {/* Score Details - Responsive Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 pt-0">
             <div className="flex items-center p-2 bg-white rounded-lg border border-blue-100 shadow-sm hover:bg-blue-50 transition-colors">
               <Clock className="h-4 w-4 text-blue-500 mr-2" />
               <span className="text-sm text-gray-600">Time:</span>
@@ -250,7 +250,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           </div>
           
           {/* Statistics Section - Animated Cards */}
-          <div className="grid grid-cols-3 gap-3 p-4 pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 pt-0">
             <motion.div 
               whileHover={{ y: -2, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}
               className="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg border border-green-200 text-center"
@@ -294,35 +294,50 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
               </div>
               
               <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mt-2">
-                <TabsList className="grid grid-cols-4 h-9 bg-slate-100 p-1 rounded-lg">
+                <TabsList className="grid grid-cols-4 h-10 bg-slate-100 p-1 px-0.5 rounded-lg mb-2">
                   <TabsTrigger 
                     value="all" 
-                    className="text-xs rounded data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
+                    className="text-[10px] sm:text-xs rounded-md font-medium px-1 sm:px-2 data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm"
                   >
                     All
                   </TabsTrigger>
                   <TabsTrigger 
                     value="correct" 
-                    className="text-xs rounded data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm"
+                    className="text-[10px] sm:text-xs rounded-md font-medium px-1 sm:px-2 data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm"
                   >
-                    Correct
+                    <span>Correct</span>
+                    {stats.correctAnswers > 0 && (
+                      <span className="ml-0.5 sm:ml-1 rounded-full bg-green-100 px-1 py-0.5 text-[8px] sm:text-xs text-green-700">
+                        {stats.correctAnswers}
+                      </span>
+                    )}
                   </TabsTrigger>
                   <TabsTrigger 
                     value="incorrect" 
-                    className="text-xs rounded data-[state=active]:bg-white data-[state=active]:text-red-700 data-[state=active]:shadow-sm"
+                    className="text-[10px] sm:text-xs rounded-md font-medium px-1 sm:px-2 data-[state=active]:bg-white data-[state=active]:text-red-700 data-[state=active]:shadow-sm"
                   >
-                    Incorrect
+                    <span>Wrong</span>
+                    {stats.incorrectAnswers > 0 && (
+                      <span className="ml-0.5 sm:ml-1 rounded-full bg-red-100 px-1 py-0.5 text-[8px] sm:text-xs text-red-700">
+                        {stats.incorrectAnswers}
+                      </span>
+                    )}
                   </TabsTrigger>
                   <TabsTrigger 
                     value="unanswered" 
-                    className="text-xs rounded data-[state=active]:bg-white data-[state=active]:text-amber-700 data-[state=active]:shadow-sm"
+                    className="text-[10px] sm:text-xs rounded-md font-medium px-1 sm:px-2 data-[state=active]:bg-white data-[state=active]:text-amber-700 data-[state=active]:shadow-sm"
                   >
-                    Unanswered
+                    <span>Skip</span>
+                    {stats.unanswered > 0 && (
+                      <span className="ml-0.5 sm:ml-1 rounded-full bg-amber-100 px-1 py-0.5 text-[8px] sm:text-xs text-amber-700">
+                        {stats.unanswered}
+                      </span>
+                    )}
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value={activeTab} className="mt-2">
-                  <div className="max-h-[280px] overflow-y-auto rounded-lg border border-slate-100 divide-y divide-slate-100">
+                <TabsContent value={activeTab} className="mt-1">
+                  <div className="max-h-[200px] sm:max-h-[280px] overflow-y-auto rounded-lg border border-slate-100 divide-y divide-slate-100 touch-pan-y">
                     {filteredQuestions.length === 0 ? (
                       <div className="text-center py-6 text-sm text-gray-500">
                         No questions in this category
@@ -353,14 +368,16 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           />
         </CardContent>
         
-        <CardFooter className="flex justify-between p-4 border-t bg-gradient-to-r from-slate-50 to-blue-50">
+        <CardFooter className="flex justify-between items-center p-3 border-t bg-gradient-to-r from-slate-50 to-blue-50">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button 
                 variant="outline"
-                className="bg-white hover:bg-blue-50 transition-colors"
+                size="sm"
+                className="bg-white hover:bg-blue-50 transition-colors text-xs sm:text-sm py-1.5 h-9"
               >
-                <ChevronLeft className="h-4 w-4 mr-1" /> Back to Dashboard
+                <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> 
+                <span className="whitespace-nowrap">Back</span>
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -378,25 +395,16 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
             </AlertDialogContent>
           </AlertDialog>
           
-          <div className="flex gap-2">
+          {onTryAgain && (
             <Button 
-              variant="outline"
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 bg-white hover:bg-blue-50 transition-colors"
+              onClick={onTryAgain}
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 transition-colors text-xs sm:text-sm py-1.5 h-9"
             >
-              <Printer className="h-4 w-4" />
-              <span>Print</span>
+              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> 
+              <span className="whitespace-nowrap">Try Again</span>
             </Button>
-            
-            {onTryAgain && (
-              <Button 
-                onClick={onTryAgain}
-                className="bg-blue-600 hover:bg-blue-700 transition-colors"
-              >
-                <RefreshCw className="h-4 w-4 mr-1.5" /> Try Again
-              </Button>
-            )}
-          </div>
+          )}
         </CardFooter>
       </Card>
     </div>
@@ -457,12 +465,12 @@ const QuestionItemEnhanced: React.FC<QuestionItemProps> = ({
     <motion.button
       whileHover={{ backgroundColor: "#f9fafb" }}
       onClick={onClick}
-      className={`flex items-center w-full p-3 text-left ${getLeftBorderColor()}`}
+      className={`flex items-center w-full p-2.5 sm:p-3 text-left ${getLeftBorderColor()}`}
     >
       <div className="w-6 h-6 flex items-center justify-center mr-3 text-sm font-medium rounded-full bg-slate-100">
         {question.questionNumber}
       </div>
-      <div className="flex-1 text-sm mr-2 line-clamp-1">
+      <div className="flex-1 text-xs sm:text-sm mr-2 line-clamp-1">
         {question.text}
       </div>
       {getStatusIcon()}

@@ -1,18 +1,19 @@
+'use client';
+
 import React from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
   CheckCircle2, 
   XCircle, 
   AlertCircle,
-  BookOpen
+  BookOpen,
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Question as QuestionType } from '../../model/standardTypes';
 import { QuestionStatus } from '../../types/QuestionStatus';
@@ -24,39 +25,44 @@ interface QuestionDialogProps {
   question: QuestionType | null;
   status: QuestionStatus;
   userAnswer?: UserAnswer;
+  totalQuestions?: number;
+  onNavigate?: (direction: 'prev' | 'next') => void;
 }
 
 /**
- * Component for displaying a question's details in a dialog
+ * Professional question dialog with optimal mobile compatibility
+ * Features a mobile app-like design with clear navigation
  */
 export const QuestionDialog: React.FC<QuestionDialogProps> = ({
   open,
   onOpenChange,
   question,
   status,
-  userAnswer
+  userAnswer,
+  totalQuestions,
+  onNavigate
 }) => {
   if (!question) return null;
   
-  const getStatusLabel = () => {
+  const getStatusBadge = () => {
     switch (status) {
       case QuestionStatus.ANSWERED_CORRECT:
         return (
-          <div className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full">
+          <div className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
             <CheckCircle2 className="h-4 w-4 mr-1.5" />
             Correct
           </div>
         );
       case QuestionStatus.ANSWERED_INCORRECT:
         return (
-          <div className="flex items-center px-3 py-1 bg-red-100 text-red-800 rounded-full">
+          <div className="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
             <XCircle className="h-4 w-4 mr-1.5" />
             Incorrect
           </div>
         );
       case QuestionStatus.UNANSWERED:
         return (
-          <div className="flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full">
+          <div className="inline-flex items-center px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
             <AlertCircle className="h-4 w-4 mr-1.5" />
             Unanswered
           </div>
@@ -66,68 +72,147 @@ export const QuestionDialog: React.FC<QuestionDialogProps> = ({
     }
   };
   
+  const handleNavigate = (direction: 'prev' | 'next') => {
+    if (onNavigate) {
+      onNavigate(direction);
+    }
+  };
+
+  const handleClose = () => {
+    onOpenChange(false);
+  };
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg">Question {question.questionNumber}</DialogTitle>
-            {getStatusLabel()}
-          </div>
-        </DialogHeader>
-        
-        <div className="py-4">
-          {/* Question Text */}
-          <div className="text-base font-medium mb-6">{question.text}</div>
-          
-          {/* Options */}
-          <div className="space-y-3 mb-6">
-            {question.options.map((option, index) => {
-              const optionLabel = String.fromCharCode(65 + index); // A, B, C, D...
-              const isCorrect = optionLabel === question.correctAnswer;
-              const isSelected = userAnswer && userAnswer.selectedOption === index;
-              
-              let optionClass = "p-3 rounded-lg border ";
-              if (isCorrect) {
-                optionClass += "border-green-500 bg-green-50";
-              } else if (isSelected) {
-                optionClass += "border-red-500 bg-red-50";
-              } else {
-                optionClass += "border-gray-200";
-              }
-              
-              return (
-                <div key={optionLabel} className={optionClass}>
-                  <div className="flex items-start">
-                    <div className="w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center mr-3 bg-white border border-gray-200">
-                      {optionLabel}
-                    </div>
-                    <div className="flex-1">{option.text}</div>
-                    {isCorrect && <CheckCircle2 className="h-5 w-5 text-green-600 mt-1 ml-2" />}
-                    {!isCorrect && isSelected && <XCircle className="h-5 w-5 text-red-600 mt-1 ml-2" />}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          
-          {/* Explanation */}
-          {question.explanation && (
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="flex items-center text-lg font-medium mb-2 text-blue-800">
-                <BookOpen className="h-5 w-5 mr-2" />
-                Explanation
-              </h3>
-              <div className="text-blue-900">{question.explanation}</div>
+      <DialogContent className="p-0 border-0 shadow-lg max-w-[95vw] sm:max-w-xl md:max-w-2xl lg:max-w-3xl sm:rounded-lg h-[95vh] sm:h-auto overflow-hidden">
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="flex justify-between items-center px-3 py-2 border-b bg-white z-10 shadow-sm">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-base">Question {question.questionNumber}</h3>
+              {totalQuestions && (
+                <span className="text-sm text-gray-500">of {totalQuestions}</span>
+              )}
             </div>
-          )}
+            <div className="flex items-center gap-2">
+              {getStatusBadge()}
+              <button 
+                onClick={handleClose}
+                className="ml-1 p-1.5 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                aria-label="Close dialog"
+              >
+                <X className="h-4 w-4 text-gray-500" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Main Content */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="px-4 py-3 sm:px-5 sm:py-4">
+              {/* Question Text */}
+              <div className="text-sm sm:text-base font-medium mb-4 text-gray-800">
+                {question.text}
+              </div>
+              
+              {/* Options */}
+              <div className="space-y-2 mb-5">
+                {question.options.map((option, index) => {
+                  const optionLabel = String.fromCharCode(65 + index); // A, B, C, D...
+                  const isCorrect = optionLabel === question.correctAnswer;
+                  const isSelected = userAnswer && userAnswer.selectedOption === index;
+                  
+                  // Determine styles based on answer status
+                  let containerClasses = "p-3 rounded-lg border transition-all hover:shadow-sm";
+                  let labelClasses = "w-7 h-7 flex-shrink-0 rounded-full flex items-center justify-center mr-3 border text-xs font-medium";
+                  
+                  if (isCorrect) {
+                    containerClasses += " border-green-500 bg-green-50";
+                    labelClasses += " bg-green-100 border-green-300 text-green-800";
+                  } else if (isSelected) {
+                    containerClasses += " border-red-500 bg-red-50";
+                    labelClasses += " bg-red-100 border-red-300 text-red-800";
+                  } else {
+                    containerClasses += " border-gray-200 hover:border-gray-300";
+                    labelClasses += " bg-gray-100 border-gray-200 text-gray-700";
+                  }
+                  
+                  return (
+                    <div key={optionLabel} className={containerClasses}>
+                      <div className="flex items-start">
+                        <div className={labelClasses}>
+                          {optionLabel}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm text-gray-800">{option.text}</div>
+                        </div>
+                        {isCorrect && <CheckCircle2 className="h-5 w-5 text-green-600 mt-1 ml-2 flex-shrink-0" />}
+                        {!isCorrect && isSelected && <XCircle className="h-5 w-5 text-red-600 mt-1 ml-2 flex-shrink-0" />}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Explanation */}
+              {question.explanation && (
+                <div className="rounded-lg overflow-hidden border border-blue-200 mb-5 shadow-sm">
+                  <div className="bg-blue-100 px-3 py-2 flex items-center">
+                    <BookOpen className="h-4 w-4 text-blue-700 mr-2" />
+                    <div className="text-xs font-medium text-blue-800">Explanation</div>
+                  </div>
+                  <div className="p-3 bg-blue-50 text-blue-900 text-sm">{question.explanation}</div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Footer */}
+          <div className="border-t bg-gray-50 px-3 py-2 flex justify-between items-center shadow-inner">
+            {onNavigate ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleNavigate('prev')}
+                  disabled={question.questionNumber <= 1}
+                  className="flex items-center gap-1 h-8 text-xs"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                
+                <Button 
+                  onClick={handleClose}
+                  variant="outline" 
+                  size="sm"
+                  className="h-8 text-xs"
+                >
+                  Close
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleNavigate('next')}
+                  disabled={totalQuestions && question.questionNumber >= totalQuestions}
+                  className="flex items-center gap-1 h-8 text-xs"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <div className="w-full flex justify-center">
+                <Button 
+                  onClick={handleClose}
+                  className="px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-sm text-sm"
+                >
+                  Close
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
-        
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button>Close</Button>
-          </DialogClose>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

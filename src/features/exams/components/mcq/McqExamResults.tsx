@@ -23,7 +23,8 @@ import {
     BookOpen,
     Flag,
     BookmarkIcon,
-    PencilIcon
+    PencilIcon,
+    ChevronLeft
 } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -78,13 +79,17 @@ export const McqExamResults: React.FC = () => {
                         Return to Exams
                     </Button>
                 </div>
+                
+                <div className="text-xs text-right text-gray-500 mt-2 mb-1">
+                    {filteredQuestionResults.length} {filteredQuestionResults.length === 1 ? 'question' : 'questions'}
+                </div>
             </div>
         );
     }
 
     if (!examResult || !currentExam) {
         return (
-            <div className="container py-8">
+            <div className="container px-4 py-4 pb-20">
                 <Card className="max-w-2xl mx-auto">
                     <CardHeader>
                         <CardTitle>No Results Available</CardTitle>
@@ -99,6 +104,9 @@ export const McqExamResults: React.FC = () => {
                         </Button>
                     </CardFooter>
                 </Card>
+
+                {/* Add bottom padding to ensure content isn't hidden under fixed buttons */}
+                <div className="pb-16"></div>
             </div>
         );
     }
@@ -164,16 +172,17 @@ export const McqExamResults: React.FC = () => {
     };
     
     return (
-        <div className="container py-8">
+        <div className="container px-4 py-4 pb-20">
             <div className="max-w-4xl mx-auto">
                 {/* Results Summary */}
                 <Card className="mb-8">
                     <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle className="text-2xl">{currentExam.title} - Results</CardTitle>
-                                <CardDescription>Completed on {new Date().toLocaleString()}</CardDescription>
+                                <CardTitle className="text-lg">{currentExam.title} - Results</CardTitle>
+                                <CardDescription className="text-xs">Completed on {new Date().toLocaleString()}</CardDescription>
                             </div>
+
                             <div className="flex items-center">
                                 {examResult.isPassed ? (
                                     <div className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full">
@@ -191,7 +200,7 @@ export const McqExamResults: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                         {/* Stats Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                             <Card className="bg-blue-50 border-blue-200">
                                 <CardContent className="flex items-center p-4">
                                     <div className="mr-4 rounded-lg bg-blue-100 p-2">
@@ -273,7 +282,7 @@ export const McqExamResults: React.FC = () => {
                           </div>
                         </Card>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 mb-16">
                             <div>
                                 <div className="flex justify-between mb-1">
                                     <span className="text-sm font-medium">Score</span>
@@ -292,43 +301,60 @@ export const McqExamResults: React.FC = () => {
                             </div>
                         </div>
                     </CardContent>
-                    <CardFooter className="flex justify-between">
-                        <Button variant="outline" onClick={() => router.push('/exam-practice')}>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to All Exams
+                <div className="fixed inset-x-0 bottom-0 z-20">
+                    <div className="flex w-full">
+                        <Button 
+                            variant="secondary" 
+                            onClick={() => router.push('/exam-practice')} 
+                            className="flex-1 rounded-none h-12 bg-white hover:bg-gray-100 text-blue-600 border-t border-r"
+                        >
+                            <ChevronLeft className="mr-1.5 h-4 w-4" />
+                            Back to Dashboard
                         </Button>
-                        <Button onClick={handleTryAgain}>
-                            <RefreshCw className="mr-2 h-4 w-4" />
+                        <Button 
+                            variant="secondary" 
+                            onClick={handleTryAgain} 
+                            className="flex-1 rounded-none h-12 bg-blue-600 hover:bg-blue-700 text-white border-t"
+                        >
+                            <RefreshCw className="mr-1.5 h-4 w-4" />
                             Try Again
                         </Button>
-                    </CardFooter>
+                    </div>
+                </div>
                 </Card>
 
                 {/* Detailed Question Review */}
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-2xl font-bold tracking-tight">Detailed Review</h2>
-                        <Tabs defaultValue="all" className="w-full max-w-md" onValueChange={(value) => setReviewMode(value as any)}>
-                            <TabsList className="grid w-full grid-cols-4">
-                                <TabsTrigger value="all" className="flex items-center justify-center gap-1">
-                                    <PencilIcon className="h-4 w-4" />
-                                    <span>All</span>
-                                </TabsTrigger>
-                                <TabsTrigger value="incorrect" className="flex items-center justify-center gap-1">
-                                    <XCircle className="h-4 w-4" />
-                                    <span>Incorrect</span>
-                                </TabsTrigger>
-                                <TabsTrigger value="unanswered" className="flex items-center justify-center gap-1">
-                                    <AlertCircle className="h-4 w-4" />
-                                    <span>Unanswered</span>
-                                </TabsTrigger>
-                                <TabsTrigger value="flagged" className="flex items-center justify-center gap-1">
-                                    <Flag className="h-4 w-4" />
-                                    <span>Flagged</span>
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
+                <div className="space-y-4">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm font-medium">Question Review</div>
+                    <div className="ml-auto">
+                        <div className="bg-gray-100 rounded-md p-1">
+                            <div className="flex space-x-2">
+                                <button 
+                                    onClick={() => setReviewMode('all')}
+                                    className={`px-3 py-1 rounded text-xs font-medium flex items-center ${reviewMode === 'all' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                                >
+                                    <PencilIcon className="h-3 w-3 mr-1" />
+                                    All
+                                </button>
+                                <button 
+                                    onClick={() => setReviewMode('incorrect')}
+                                    className={`px-3 py-1 rounded text-xs font-medium flex items-center ${reviewMode === 'incorrect' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                                >
+                                    <XCircle className="h-3 w-3 mr-1 text-red-500" />
+                                    Incorrect
+                                </button>
+                                <button 
+                                    onClick={() => setReviewMode('unanswered')}
+                                    className={`px-3 py-1 rounded text-xs font-medium flex items-center ${reviewMode === 'unanswered' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                                >
+                                    <AlertCircle className="h-3 w-3 mr-1 text-amber-500" />
+                                    Unanswered
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                </div>
                     
                     {filteredQuestionResults.length === 0 ? (
                         <Card>
@@ -437,10 +463,14 @@ export const McqExamResults: React.FC = () => {
                                                 </div>
                                             )}
                                             
-                                            <div className="border p-3 rounded-md mt-2">
-                                                <p className="text-sm font-medium text-muted-foreground mb-1">Explanation:</p>
-                                                <p className="text-sm">{questionResult.explanation}</p>
-                                            </div>
+                                            {questionResult.explanation && (
+                                    <div className="border p-3 rounded-md mt-2">
+                                        <details className="text-sm">
+                                            <summary className="font-medium cursor-pointer focus:outline-none">View Explanation</summary>
+                                            <p className="mt-2">{questionResult.explanation}</p>
+                                        </details>
+                                    </div>
+                                )}
                                         </div>
                                     </CardContent>
                                     <CardFooter>
