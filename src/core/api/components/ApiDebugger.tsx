@@ -1,8 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+/**
+ * API Debugger Component
+ * 
+ * This component helps debug API connectivity issues by testing API endpoints.
+ * It will ping the specified endpoints and show the results.
+ * 
+ * @deprecated Use the more modular components in the debugger directory instead.
+ */
+import React, { useState } from 'react';
 import { apiClient } from '../core/apiClient';
 import { formatEndpoint } from '../utils/debug/debug';
+import { logger } from '@/shared/lib/logger';
 
 interface ApiDebuggerProps {
   baseUrl?: string;
@@ -179,4 +188,7 @@ const ApiDebugger: React.FC<ApiDebuggerProps> = ({
   );
 };
 
+/**
+ * @deprecated Use the more modular components from './debugger' instead
+ */
 export default ApiDebugger;

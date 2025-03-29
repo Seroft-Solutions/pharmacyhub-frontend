@@ -2,6 +2,7 @@
  * API Mutation Hooks
  * 
  * This module provides React hooks for data mutations with TanStack Query.
+ * These hooks handle POST, PUT, PATCH, and DELETE operations with proper typing and error handling.
  */
 import { 
   useMutation,
@@ -9,46 +10,22 @@ import {
 } from '@tanstack/react-query';
 import { apiClient } from '../../core/apiClient';
 import { UseApiMutationOptions } from '../../types/hooks';
+import { processEndpoint, handleApiResponse } from '../../utils/requestUtils';
 import { logger } from '@/shared/lib/logger';
 
 /**
- * Validate and process the endpoint for mutations
- */
-function processEndpoint<TVariables>(
-  endpoint: string | ((params: TVariables) => string), 
-  variables: TVariables
-): string {
-  // Determine the actual endpoint
-  let actualEndpoint: string;
-  
-  if (typeof endpoint === 'function') {
-    try {
-      actualEndpoint = endpoint(variables);
-      logger.debug('Generated dynamic endpoint:', actualEndpoint, 'from variables:', variables);
-    } catch (err) {
-      console.error('Error generating endpoint:', err);
-      throw new Error(`Failed to generate API endpoint: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    }
-  } else {
-    actualEndpoint = endpoint;
-  }
-  
-  // Ensure we have a valid endpoint
-  if (!actualEndpoint || typeof actualEndpoint !== 'string') {
-    logger.error('Invalid endpoint:', actualEndpoint);
-    throw new Error('Invalid API endpoint');
-  }
-  
-  // Check for any remaining URL parameters that weren't replaced
-  if (actualEndpoint.includes(':')) {
-    logger.warn('Endpoint still contains unreplaced parameters:', actualEndpoint);
-  }
-  
-  return actualEndpoint;
-}
-
-/**
  * Hook for making POST requests (create operations)
+ */
+/**
+ * Hook for making data mutations (POST, PUT, PATCH, DELETE)
+ * 
+ * @template TData The response data type
+ * @template TVariables The request variables type
+ * @template TError The error type
+ * @template TContext The context type for mutation
+ * @param endpoint The API endpoint string or function that generates the endpoint
+ * @param options The mutation options
+ * @returns A TanStack mutation hook with proper typing
  */
 export function useApiMutation<TData, TVariables = unknown, TError = Error, TContext = unknown>(
   endpoint: string | ((params: TVariables) => string),
@@ -71,6 +48,7 @@ export function useApiMutation<TData, TVariables = unknown, TError = Error, TCon
         timeout: options.timeout
       };
 
+      // Execute the appropriate API method based on the provided method option
       switch (method) {
         case 'PUT':
           response = await apiClient.put<TData>(actualEndpoint, variables, requestConfig);
@@ -87,11 +65,8 @@ export function useApiMutation<TData, TVariables = unknown, TError = Error, TCon
           break;
       }
       
-      if (response.error) {
-        throw response.error;
-      }
-      
-      return response.data as TData;
+      // Handle the response and return the data
+      return handleApiResponse<TData>(response);
     },
     ...mutationOptions
   });
