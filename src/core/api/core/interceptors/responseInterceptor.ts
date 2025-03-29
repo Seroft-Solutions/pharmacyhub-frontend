@@ -7,8 +7,9 @@
 import axios, { AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { tokenManager } from '@/features/core/app-auth/core/tokenManager';
 import { logger } from '@/shared/lib/logger';
-import { logApiResponse, logApiError } from '../../utils/debug/debug';
+import { logApiResponse } from '../../utils/debug/debug';
 import { safeUrlIncludes } from './requestInterceptor';
+import { createApiError, AuthenticationError } from '../error';
 
 // Debug flag
 const DEBUG = process.env.NODE_ENV === 'development';
@@ -156,7 +157,10 @@ async function handleTokenRefresh(
     // Try to refresh token
     const refreshToken = tokenManager.getRefreshToken();
     if (!refreshToken) {
-      return Promise.reject(error);
+      return Promise.reject(
+        new AuthenticationError('Authentication failed - no refresh token available', 
+          error.response?.data, error)
+      );
     }
     
     // Clear original auth header (will be re-added by interceptor)
@@ -182,9 +186,22 @@ async function handleTokenRefresh(
     // Clear tokens on refresh failure
     tokenManager.removeToken();
     tokenManager.removeRefreshToken();
+    
+    // Create and throw a specific error for token refresh failure
+    throw new AuthenticationError(
+      'Authentication failed - token refresh error',
+      { originalError: refreshError },
+      error
+    );
   }
   
-  return Promise.reject(error);
+  return Promise.reject(
+    new AuthenticationError(
+      'Authentication failed - token refresh did not return a new token',
+      error.response?.data,
+      error
+    )
+  );
 }
 
 /**
@@ -207,30 +224,20 @@ export function responseErrorInterceptor(apiClient: any) {
       });
     }
     
-    // Log error for debugging
-    logApiError(error);
-    
     // Try token refresh for 401 errors
     if (error.response?.status === 401) {
       try {
         return handleTokenRefresh(error, apiClient);
       } catch (refreshError) {
-        // If refresh fails, continue with original error
+        // If refresh fails, return the refresh error
+        return Promise.reject(refreshError);
       }
     }
     
-    // Enhance error with more details
-    if (error.response?.data) {
-      const originalError = error;
-      const enhancedError = new Error(
-        error.response.data.message || error.response.data.error || error.message
-      ) as any;
-      enhancedError.status = error.response.status;
-      enhancedError.data = error.response.data;
-      enhancedError.originalError = originalError;
-      return Promise.reject(enhancedError);
-    }
+    // Create a proper error instance using our factory
+    const apiError = createApiError(error);
     
-    return Promise.reject(error);
+    // Return a rejected promise with the properly typed error
+    return Promise.reject(apiError);
   };
 }

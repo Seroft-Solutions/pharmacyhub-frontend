@@ -5,6 +5,16 @@
  * providing backward compatibility while maintaining a clean architecture.
  * 
  * @deprecated Import hooks directly from their specialized modules instead.
+ * 
+ * @example
+ * // Instead of:
+ * import { useApiQuery } from '@/core/api/hooks/useApi';
+ * 
+ * // Prefer:
+ * import { useApiQuery } from '@/core/api/hooks/query/useApiQuery';
+ * 
+ * // Or use the index exports:
+ * import { useApiQuery } from '@/core/api/hooks';
  */
 
 // Export query hooks
@@ -26,3 +36,18 @@ export { useApiDelete } from './mutation/useApiDelete';
 
 // Export query key utilities
 export { createQueryKeys, apiQueryKeys } from './query/useQueryKeys';
+
+/**
+ * @deprecated Use the specialized hooks directly
+ */
+export const useApi = {
+  query: useApiQuery,
+  mutation: useApiMutation,
+  delete: useApiDelete,
+  put: useApiPut,
+  patch: useApiPatch,
+  paginatedQuery: useApiPaginatedQuery,
+  infiniteQuery: useApiInfiniteQuery
+};
+
+export default useApi;

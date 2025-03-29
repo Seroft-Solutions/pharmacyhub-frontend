@@ -11,6 +11,7 @@ import {
 import { apiClient } from '../../core/apiClient';
 import { UseApiMutationOptions } from '../../types/hooks';
 import { handleApiResponse } from '../../utils/requestUtils';
+import { createApiError } from '../../core/error';
 
 /**
  * Hook for making DELETE requests
@@ -32,23 +33,39 @@ export function useApiDelete<TData, TVariables = void, TError = Error, TContext 
 
   return useMutation<TData, TError, TVariables, TContext>({
     mutationFn: async (variables) => {
-      // Check if we need to send body content with DELETE
-      const hasBody = variables !== undefined && variables !== null && variables !== void 0;
-      
-      // Execute the appropriate DELETE request based on whether we have body content
-      let response;
-      if (hasBody) {
-        response = await apiClient.request<TData>(endpoint, { 
+      try {
+        // Check if we need to send body content with DELETE
+        const hasBody = variables !== undefined && variables !== null && variables !== void 0;
+        
+        // Execute the appropriate DELETE request based on whether we have body content
+        let response;
+        if (hasBody) {
+          response = await apiClient.request<TData>(endpoint, { 
+            method: 'DELETE',
+            requiresAuth,
+            body: JSON.stringify(variables)
+          });
+        } else {
+          response = await apiClient.delete<TData>(endpoint, { requiresAuth });
+        }
+        
+        // Handle the response and return the data
+        return handleApiResponse<TData>(response);
+      } catch (error) {
+        // Convert to a properly typed API error
+        const apiError = createApiError(error);
+        
+        // Add contextual information to the error
+        apiError.data = {
+          ...apiError.data,
+          endpoint,
           method: 'DELETE',
-          requiresAuth,
-          body: JSON.stringify(variables)
-        });
-      } else {
-        response = await apiClient.delete<TData>(endpoint, { requiresAuth });
+          __requestContext: true
+        };
+        
+        // Rethrow as TError
+        throw apiError as unknown as TError;
       }
-      
-      // Handle the response and return the data
-      return handleApiResponse<TData>(response);
     },
     ...mutationOptions
   });

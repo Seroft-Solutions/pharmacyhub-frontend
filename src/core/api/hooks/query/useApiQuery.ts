@@ -11,7 +11,8 @@ import {
 } from '@tanstack/react-query';
 import { apiClient } from '../../core/apiClient';
 import { UseApiQueryOptions, PaginationParams } from '../../types/hooks';
-import { handleApiResponse } from '../../utils/requestUtils';
+import { handleApiResponse, processEndpoint, appendQueryParams } from '../../utils/requestUtils';
+import { createApiError } from '../../core/error';
 
 /**
  * Hook for making GET requests with TanStack Query
@@ -20,29 +21,62 @@ import { handleApiResponse } from '../../utils/requestUtils';
  * @template TError The error type
  * @template TQueryFnData The query function data type (optional)
  * @param queryKey The query key for caching
- * @param endpoint The API endpoint string
+ * @param endpoint The API endpoint string or function
  * @param options The query options
  * @returns A TanStack query hook with proper typing
  */
 export function useApiQuery<TData, TError = Error, TQueryFnData = TData>(
   queryKey: QueryKey,
-  endpoint: string,
+  endpoint: string | ((variables?: any) => string),
   options: UseApiQueryOptions<TData, TError, TQueryFnData> = {}
 ) {
-  const { requiresAuth = true, deduplicate = true, timeout, ...queryOptions } = options;
+  const { 
+    requiresAuth = true, 
+    deduplicate = true, 
+    timeout,
+    params,
+    ...queryOptions 
+  } = options;
 
   return useQuery<TData, TError, TQueryFnData>({
     queryKey,
     queryFn: async () => {
-      // Execute the GET request
-      const response = await apiClient.get<TData>(endpoint, { 
-        requiresAuth,
-        deduplicate,
-        timeout
-      });
-      
-      // Handle the response and return the data
-      return handleApiResponse<TData>(response);
+      try {
+        // Process the endpoint
+        const actualEndpoint = typeof endpoint === 'function'
+          ? processEndpoint(endpoint, undefined)
+          : endpoint;
+          
+        // Add query parameters if provided
+        const fullEndpoint = params 
+          ? appendQueryParams(actualEndpoint, params)
+          : actualEndpoint;
+        
+        // Execute the GET request
+        const response = await apiClient.get<TData>(fullEndpoint, { 
+          requiresAuth,
+          deduplicate,
+          timeout
+        });
+        
+        // Handle the response and return the data
+        return handleApiResponse<TData>(response);
+      } catch (error) {
+        // Convert to a properly typed API error
+        const apiError = createApiError(error);
+        
+        // Add contextual information to the error
+        apiError.data = {
+          ...apiError.data,
+          endpoint: typeof endpoint === 'string' ? endpoint : '[function]',
+          method: 'GET',
+          queryKey,
+          __requestContext: true
+        };
+        
+        // Rethrow as TError
+        throw apiError as unknown as TError;
+      }
     },
     ...queryOptions
   });
@@ -62,20 +96,27 @@ export function useApiQuery<TData, TError = Error, TQueryFnData = TData>(
  */
 export function useApiPaginatedQuery<TData, TError = Error, TQueryFnData = TData>(
   queryKey: QueryKey,
-  endpoint: string,
+  endpoint: string | ((variables?: any) => string),
   params: PaginationParams,
   options: UseApiQueryOptions<TData, TError, TQueryFnData> = {}
 ) {
   const { page, size } = params;
   
-  // Create a paginated endpoint with query parameters
-  const paginatedEndpoint = `${endpoint}?page=${page}&size=${size}`;
+  // Add pagination params to the query params
+  const queryParams = {
+    ...(options.params || {}),
+    page,
+    size
+  };
   
   // Add pagination params to the query key for proper caching
   return useApiQuery<TData, TError, TQueryFnData>(
     [...queryKey, { page, size }],
-    paginatedEndpoint,
-    options
+    endpoint,
+    {
+      ...options,
+      params: queryParams
+    }
   );
 }
 
@@ -92,7 +133,7 @@ export function useApiPaginatedQuery<TData, TError = Error, TQueryFnData = TData
  */
 export function useApiInfiniteQuery<TData, TError = Error, TQueryFnData = TData>(
   queryKey: QueryKey,
-  endpoint: string,
+  endpoint: string | ((variables?: any) => string),
   options: UseApiQueryOptions<TData, TError, TQueryFnData> = {}
 ) {
   const { requiresAuth = true, ...queryOptions } = options;
@@ -100,17 +141,42 @@ export function useApiInfiniteQuery<TData, TError = Error, TQueryFnData = TData>
   return useQuery<TData, TError, TQueryFnData>({
     queryKey,
     queryFn: async (context: QueryFunctionContext) => {
-      // Extract the pageParam from the context (default to 0)
-      const { pageParam = 0 } = context;
-      
-      // Execute the GET request with the page parameter
-      const response = await apiClient.get<TData>(
-        `${endpoint}?page=${pageParam}`,
-        { requiresAuth }
-      );
-      
-      // Handle the response and return the data
-      return handleApiResponse<TData>(response);
+      try {
+        // Extract the pageParam from the context (default to 0)
+        const { pageParam = 0 } = context;
+        
+        // Process the endpoint
+        const actualEndpoint = typeof endpoint === 'function'
+          ? processEndpoint(endpoint, undefined)
+          : endpoint;
+          
+        // Add the page parameter to the endpoint
+        const fullEndpoint = appendQueryParams(actualEndpoint, { page: pageParam });
+        
+        // Execute the GET request with the page parameter
+        const response = await apiClient.get<TData>(
+          fullEndpoint,
+          { requiresAuth }
+        );
+        
+        // Handle the response and return the data
+        return handleApiResponse<TData>(response);
+      } catch (error) {
+        // Convert to a properly typed API error
+        const apiError = createApiError(error);
+        
+        // Add contextual information to the error
+        apiError.data = {
+          ...apiError.data,
+          endpoint: typeof endpoint === 'string' ? endpoint : '[function]',
+          method: 'GET',
+          queryKey,
+          __requestContext: true
+        };
+        
+        // Rethrow as TError
+        throw apiError as unknown as TError;
+      }
     },
     ...queryOptions
   });
