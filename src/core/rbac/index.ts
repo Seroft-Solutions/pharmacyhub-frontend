@@ -34,6 +34,9 @@ export * from './api';
 // Re-export from registry
 export * from './registry';
 
+// Re-export from utils
+export * from './utils';
+
 // Re-export permissions
 export * from './permissions';
 

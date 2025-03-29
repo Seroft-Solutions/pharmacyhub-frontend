@@ -3,7 +3,7 @@
  * This file exports all RBAC-related services
  */
 
-// Export RBAC services here
-// Example: export { checkPermission } from './permission-service';
-
-export {};
+// Export RBAC services
+export { rbacService } from './rbacService';
+export { featureFlagService } from './featureFlagService';
+export { featureAccessService } from './featureAccessService';

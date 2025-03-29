@@ -5,3 +5,4 @@
  */
 
 export { FeatureProvider, useFeatures } from './FeatureContext';
+export { default as RBACProvider } from './RBACProvider';
