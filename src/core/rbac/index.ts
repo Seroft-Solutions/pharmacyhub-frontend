@@ -5,6 +5,10 @@
  * - Permission checking
  * - Role management
  * - Permission-aware UI components
+ * - Feature flags and access control
+ * 
+ * The RBAC module has been refactored according to component design principles,
+ * ensuring each component has a single responsibility and stays within size limits.
  */
 
 // Re-export from components
@@ -42,7 +46,17 @@ export * from './permissions';
 
 /**
  * Initialize the RBAC feature
- * This should be called at application startup
+ * 
+ * This function initializes all RBAC-related services and should be called at application startup.
+ * It performs the following operations:
+ * - Initializes all registered features
+ * - Initializes the feature flag service
+ * 
+ * @example
+ * // In your application's entry point
+ * import { initializeRbac } from '@/core/rbac';
+ * 
+ * initializeRbac();
  */
 export function initializeRbac() {
   // Initialize all registered features
