@@ -1,20 +1,14 @@
 /**
- * API Utilities
+ * Core API Utilities
  * 
- * This module exports all API-related utility functions
+ * This file exports all utility functions related to API operations.
  */
 
-// Export request/response utilities
-export * from './requestUtils';
-
-// Export URL utilities
-export * from './urlUtils';
-
-// Export error utilities
-export * from './errorUtils';
-
-// Export query key factory
+// Export existing utilities
 export * from './queryKeyFactory';
-
-// Export optimistic update utilities
 export * from './optimisticUpdates';
+export * from './errorHandling';
+
+// Export OpenAPI utilities
+export * from './openApiQueryKeys';
+export * from './openApiTanstackAdapter';

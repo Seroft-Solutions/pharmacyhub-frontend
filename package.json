@@ -10,7 +10,10 @@
     "shadcn": "shadcn-ui",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "openapi:fetch": "ts-node src/core/api/scripts/fetch-openapi.ts",
+    "openapi:generate": "ts-node src/core/api/scripts/generate-api.ts",
+    "openapi": "npm run openapi:fetch && npm run openapi:generate"
   },
   "dependencies": {
     "@auth/core": "^0.37.4",
@@ -97,8 +100,10 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^9",
     "eslint-config-next": "^15.2.3",
+    "openapi-typescript-codegen": "^0.29.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   },
   "overrides": {
