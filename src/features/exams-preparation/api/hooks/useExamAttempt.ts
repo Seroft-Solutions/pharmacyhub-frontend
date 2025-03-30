@@ -2,12 +2,13 @@
  * Exam Attempt Query Hooks
  * 
  * This module provides hooks for fetching and manipulating exam attempts
- * using the core API module.
+ * using the core API module with proper error handling.
  */
 import { useApiQuery, useApiMutation } from '@/core/api/hooks';
 import { Attempt, Answer } from '../../types';
 import { examsQueryKeys, attemptKeys } from '../utils/queryKeys';
 import { API_ENDPOINTS } from '../constants';
+import { handleExamError } from '../utils/errorHandler';
 
 /**
  * Hook for fetching a specific exam attempt
@@ -16,7 +17,17 @@ export const useExamAttempt = (attemptId: number, options = {}) => {
   return useApiQuery<Attempt>(
     attemptKeys.detail(attemptId),
     API_ENDPOINTS.ATTEMPT(attemptId),
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          attemptId,
+          action: 'fetch-attempt',
+          endpoint: API_ENDPOINTS.ATTEMPT(attemptId)
+        });
+      },
+      ...options
+    }
   );
 };
 
@@ -27,7 +38,17 @@ export const useExamAttempts = (examId: number, options = {}) => {
   return useApiQuery<Attempt[]>(
     attemptKeys.byExam(examId),
     API_ENDPOINTS.EXAM_ATTEMPTS(examId),
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId,
+          action: 'fetch-exam-attempts',
+          endpoint: API_ENDPOINTS.EXAM_ATTEMPTS(examId)
+        });
+      },
+      ...options
+    }
   );
 };
 
@@ -42,6 +63,14 @@ export const useStartExam = () => {
         // Invalidate exam attempts list
         context?.queryClient?.invalidateQueries({
           queryKey: attemptKeys.byExam(typeof examId === 'number' ? examId : 0)
+        });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables,
+          action: 'start-exam',
+          endpoint: API_ENDPOINTS.START_EXAM(variables)
         });
       }
     }
@@ -65,6 +94,14 @@ export const useSubmitExam = () => {
         context?.queryClient?.invalidateQueries({
           queryKey: attemptKeys.result(typeof attemptId === 'number' ? attemptId : 0)
         });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          attemptId: variables,
+          action: 'submit-exam',
+          endpoint: API_ENDPOINTS.SUBMIT_EXAM(variables)
+        });
       }
     }
   );
@@ -85,6 +122,18 @@ export const useSaveAnswer = () => {
         context?.queryClient?.invalidateQueries({
           queryKey: attemptKeys.detail(variables.attemptId)
         });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          attemptId: variables.attemptId,
+          questionId: variables.questionId,
+          action: 'save-answer',
+          endpoint: API_ENDPOINTS.SAVE_ANSWER(
+            variables.attemptId, 
+            variables.questionId
+          )
+        });
       }
     }
   );
@@ -104,6 +153,18 @@ export const useFlagQuestion = () => {
         // Invalidate the specific attempt
         context?.queryClient?.invalidateQueries({
           queryKey: attemptKeys.detail(variables.attemptId)
+        });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          attemptId: variables.attemptId,
+          questionId: variables.questionId,
+          action: variables.flagged ? 'flag-question' : 'unflag-question',
+          endpoint: API_ENDPOINTS.FLAG_QUESTION(
+            variables.attemptId, 
+            variables.questionId
+          )
         });
       }
     }

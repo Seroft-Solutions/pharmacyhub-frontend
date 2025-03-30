@@ -2,12 +2,13 @@
  * Single Exam Query Hook
  * 
  * This module provides hooks for fetching and manipulating a single exam
- * using the core API module.
+ * using the core API module with proper error handling.
  */
 import { useApiQuery, useApiMutation } from '@/core/api/hooks';
 import { Exam, Question } from '../../types/models/exam';
 import { examsQueryKeys } from '../utils/queryKeys';
 import { API_ENDPOINTS } from '../constants';
+import { handleExamError } from '../utils/errorHandler';
 
 /**
  * Hook for fetching a single exam by ID
@@ -19,6 +20,14 @@ export const useExam = (examId: number, options = {}) => {
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
       cacheTime: 15 * 60 * 1000, // 15 minutes
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId,
+          action: 'fetch-exam',
+          endpoint: API_ENDPOINTS.EXAM(examId)
+        });
+      },
       ...options
     }
   );
@@ -31,7 +40,17 @@ export const useExamQuestions = (examId: number, options = {}) => {
   return useApiQuery<Question[]>(
     examsQueryKeys.questions(examId),
     API_ENDPOINTS.QUESTIONS(examId),
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId,
+          action: 'fetch-questions',
+          endpoint: API_ENDPOINTS.QUESTIONS(examId)
+        });
+      },
+      ...options
+    }
   );
 };
 
@@ -49,6 +68,14 @@ export const useAddQuestion = () => {
         // Invalidate relevant queries on success
         context?.queryClient?.invalidateQueries({
           queryKey: examsQueryKeys.questions(variables.examId)
+        });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables.examId,
+          action: 'add-question',
+          endpoint: API_ENDPOINTS.QUESTIONS(variables.examId)
         });
       }
     }
@@ -71,6 +98,18 @@ export const useUpdateQuestion = () => {
         context?.queryClient?.invalidateQueries({
           queryKey: examsQueryKeys.questions(variables.examId)
         });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables.examId,
+          questionId: variables.questionId,
+          action: 'update-question',
+          endpoint: API_ENDPOINTS.QUESTION_BY_ID(
+            variables.examId, 
+            variables.questionId
+          )
+        });
       }
     }
   );
@@ -91,6 +130,18 @@ export const useDeleteQuestion = () => {
         // Invalidate relevant queries on success
         context?.queryClient?.invalidateQueries({
           queryKey: examsQueryKeys.questions(variables.examId)
+        });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables.examId,
+          questionId: variables.questionId,
+          action: 'delete-question',
+          endpoint: API_ENDPOINTS.QUESTION_BY_ID(
+            variables.examId, 
+            variables.questionId
+          )
         });
       }
     }

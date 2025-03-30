@@ -2,12 +2,13 @@
  * Exam Paper Query Hooks
  * 
  * This module provides hooks for fetching and manipulating exam papers
- * using the core API module.
+ * using the core API module with proper error handling.
  */
 import { useApiQuery, useApiMutation } from '@/core/api/hooks';
 import { Paper } from '../../types';
 import { paperKeys } from '../utils/queryKeys';
 import { API_ENDPOINTS } from '../constants';
+import { handleExamError } from '../utils/errorHandler';
 
 /**
  * Hook for fetching all exam papers with optional filtering
@@ -16,7 +17,16 @@ export const usePapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.all(),
     API_ENDPOINTS.PAPERS,
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'fetch-papers',
+          endpoint: API_ENDPOINTS.PAPERS
+        });
+      },
+      ...options
+    }
   );
 };
 
@@ -27,7 +37,17 @@ export const usePaper = (paperId: number, options = {}) => {
   return useApiQuery<Paper>(
     paperKeys.detail(paperId),
     API_ENDPOINTS.PAPER(paperId),
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          paperId,
+          action: 'fetch-paper',
+          endpoint: API_ENDPOINTS.PAPER(paperId)
+        });
+      },
+      ...options
+    }
   );
 };
 
@@ -38,7 +58,16 @@ export const useModelPapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.model(),
     API_ENDPOINTS.MODEL_PAPERS,
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'fetch-model-papers',
+          endpoint: API_ENDPOINTS.MODEL_PAPERS
+        });
+      },
+      ...options
+    }
   );
 };
 
@@ -49,7 +78,16 @@ export const usePastPapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.past(),
     API_ENDPOINTS.PAST_PAPERS,
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'fetch-past-papers',
+          endpoint: API_ENDPOINTS.PAST_PAPERS
+        });
+      },
+      ...options
+    }
   );
 };
 
@@ -60,7 +98,16 @@ export const useSubjectPapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.subject(),
     API_ENDPOINTS.SUBJECT_PAPERS,
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'fetch-subject-papers',
+          endpoint: API_ENDPOINTS.SUBJECT_PAPERS
+        });
+      },
+      ...options
+    }
   );
 };
 
@@ -71,7 +118,16 @@ export const usePracticePapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.practice(),
     API_ENDPOINTS.PRACTICE_PAPERS,
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'fetch-practice-papers',
+          endpoint: API_ENDPOINTS.PRACTICE_PAPERS
+        });
+      },
+      ...options
+    }
   );
 };
 
@@ -86,6 +142,13 @@ export const useCreatePaper = () => {
         // Invalidate all paper queries
         context?.queryClient?.invalidateQueries({
           queryKey: paperKeys.all()
+        });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'create-paper',
+          endpoint: API_ENDPOINTS.PAPERS
         });
       }
     }
@@ -110,6 +173,14 @@ export const useUpdatePaper = () => {
         context?.queryClient?.invalidateQueries({
           queryKey: paperKeys.all()
         });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          paperId: variables.id,
+          action: 'update-paper',
+          endpoint: API_ENDPOINTS.PAPER(variables.id)
+        });
       }
     }
   );
@@ -128,6 +199,14 @@ export const useDeletePaper = () => {
         context?.queryClient?.invalidateQueries({
           queryKey: paperKeys.all()
         });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          paperId: variables,
+          action: 'delete-paper',
+          endpoint: API_ENDPOINTS.PAPER(variables)
+        });
       }
     }
   );
@@ -144,6 +223,13 @@ export const useUploadJsonPaper = () => {
         // Invalidate all paper lists
         context?.queryClient?.invalidateQueries({
           queryKey: paperKeys.all()
+        });
+      },
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'upload-json-paper',
+          endpoint: API_ENDPOINTS.UPLOAD_JSON
         });
       }
     }

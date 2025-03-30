@@ -2,12 +2,13 @@
  * Exams Query Hooks
  * 
  * This module provides hooks for fetching and manipulating multiple exams
- * using the core API module.
+ * using the core API module with proper error handling.
  */
 import { useApiQuery, useApiMutation, useApiPaginatedQuery } from '@/core/api/hooks';
 import { Exam, ExamStatus } from '../../types';
 import { examsQueryKeys } from '../utils/queryKeys';
 import { API_ENDPOINTS } from '../constants';
+import { handleExamError } from '../utils/errorHandler';
 
 /**
  * Hook for fetching all exams with optional filtering and pagination
@@ -36,7 +37,14 @@ export const useExams = ({
     { page, size: limit },
     {
       enabled,
-      params: status ? { status } : undefined
+      params: status ? { status } : undefined,
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'fetch-exams',
+          endpoint: API_ENDPOINTS.EXAMS
+        });
+      }
     }
   );
 };
@@ -51,7 +59,16 @@ export const usePublishedExams = (
     examsQueryKeys.published(),
     API_ENDPOINTS.PUBLISHED,
     { page, size: limit },
-    { enabled }
+    { 
+      enabled,
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'fetch-published-exams',
+          endpoint: API_ENDPOINTS.PUBLISHED
+        });
+      }
+    }
   );
 };
 
@@ -66,7 +83,16 @@ export const useExamsByStatus = (
     examsQueryKeys.byStatus(status),
     API_ENDPOINTS.BY_STATUS(status.toString()),
     { page, size: limit },
-    { enabled }
+    { 
+      enabled,
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'fetch-exams-by-status',
+          endpoint: API_ENDPOINTS.BY_STATUS(status.toString())
+        });
+      }
+    }
   );
 };
 
@@ -81,6 +107,13 @@ export const useCreateExam = () => {
         // Invalidate all exam lists on success
         context?.queryClient?.invalidateQueries({
           queryKey: examsQueryKeys.lists()
+        });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          action: 'create-exam',
+          endpoint: API_ENDPOINTS.EXAMS
         });
       }
     }
@@ -105,6 +138,14 @@ export const useUpdateExam = () => {
         context?.queryClient?.invalidateQueries({
           queryKey: examsQueryKeys.lists()
         });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables.id,
+          action: 'update-exam',
+          endpoint: API_ENDPOINTS.EXAM(variables.id)
+        });
       }
     }
   );
@@ -122,6 +163,14 @@ export const useDeleteExam = () => {
         // Invalidate all exam lists on success
         context?.queryClient?.invalidateQueries({
           queryKey: examsQueryKeys.lists()
+        });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables,
+          action: 'delete-exam',
+          endpoint: API_ENDPOINTS.EXAM(variables)
         });
       }
     }
@@ -150,6 +199,14 @@ export const usePublishExam = () => {
         context?.queryClient?.invalidateQueries({
           queryKey: examsQueryKeys.byStatus(ExamStatus.PUBLISHED)
         });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables,
+          action: 'publish-exam',
+          endpoint: API_ENDPOINTS.PUBLISH(variables)
+        });
       }
     }
   );
@@ -171,6 +228,14 @@ export const useArchiveExam = () => {
         // Invalidate status-based lists that might be affected
         context?.queryClient?.invalidateQueries({
           queryKey: examsQueryKeys.byStatus(ExamStatus.ARCHIVED)
+        });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables,
+          action: 'archive-exam',
+          endpoint: API_ENDPOINTS.ARCHIVE(variables)
         });
       }
     }

@@ -2,11 +2,12 @@
  * Exam Payments Query Hooks
  * 
  * This module provides hooks for handling exam payment operations
- * using the core API module.
+ * using the core API module with proper error handling.
  */
 import { useApiQuery, useApiMutation } from '@/core/api/hooks';
 import { examsQueryKeys } from '../utils/queryKeys';
 import { API_ENDPOINTS } from '../constants';
+import { handleExamError } from '../utils/errorHandler';
 
 interface Payment {
   id: number;
@@ -37,6 +38,14 @@ export const useCreatePaymentIntent = () => {
       onSuccess: (_, variables, context) => {
         // After payment intent creation, no need to invalidate any queries
         // as this doesn't modify any cached data
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables.examId,
+          action: 'create-payment-intent',
+          endpoint: '/api/v1/payments/intent'
+        });
       }
     }
   );
@@ -58,6 +67,14 @@ export const useConfirmPayment = () => {
         context?.queryClient?.invalidateQueries({
           queryKey: examsQueryKeys.detail(variables.examId)
         });
+      },
+      onError: (error, variables) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId: variables.examId,
+          action: 'confirm-payment',
+          endpoint: '/api/v1/payments/confirm'
+        });
       }
     }
   );
@@ -70,6 +87,16 @@ export const useExamAccess = (examId: number, options = {}) => {
   return useApiQuery<{ hasAccess: boolean }>(
     [...examsQueryKeys.detail(examId), 'access'],
     `/api/v1/exams-preparation/${examId}/access`,
-    options
+    {
+      onError: (error) => {
+        // Use core error handling with exam-specific context
+        handleExamError(error, { 
+          examId,
+          action: 'check-access',
+          endpoint: `/api/v1/exams-preparation/${examId}/access`
+        });
+      },
+      ...options
+    }
   );
 };
