@@ -1,8 +1,7 @@
 /**
- * API Constants for Exams Preparation
+ * Exams Preparation API Constants
  * 
- * This module exports all constants used in the API layer.
+ * This module exports all API constants for the exams-preparation feature.
  */
 
 export * from './endpoints';
-export * from './permissions';

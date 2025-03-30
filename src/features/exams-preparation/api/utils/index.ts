@@ -1,8 +1,14 @@
 /**
- * API Utilities for Exams Preparation
+ * Exams Preparation API Utilities
  * 
- * This module exports all utilities used in the API layer.
+ * This module exports utilities for working with the exams preparation API.
  */
 
-export * from './queryKeys';
+// Export query key factories and utilities
+export * as queryKeys from './queryKeys';
+
+// Export error handling utilities
 export * from './errorHandler';
+
+// Export mutation factories
+export * from './mutationFactory';

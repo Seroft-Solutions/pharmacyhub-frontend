@@ -1,127 +1,145 @@
-# Exams Preparation API Integration
+# Exams Preparation API Module
 
-This feature leverages the core API module for all data fetching and mutation operations, following the "Core as Foundation" principle. Do NOT implement custom query or mutation patterns.
+This module provides a feature-specific API layer for the exams-preparation feature that leverages the core API module for data fetching and mutations.
 
-## Core API Components Used
+## Core Integration
 
-- `apiClient` from `@/core/api/core/apiClient` - For all HTTP requests
-- `createApiHooks` from `@/core/api/services/factories` - For creating standard API hooks
-- `useApiQuery`, `useApiMutation` from `@/core/api/hooks` - For specialized queries/mutations
-- `createQueryKeyFactory` from `@/core/api/utils/queryKeyFactory` - For consistent query keys
-- `createEndpoints` from `@/core/api/utils/endpointUtils` - For endpoint constants
+This feature strictly follows the "core as foundation" principle by:
 
-## Pattern Examples
+- Using the core API module's `useApiQuery` and `useApiMutation` hooks for all data operations
+- Following established patterns for query keys and caching
+- Implementing consistent error handling through core utilities
+- Providing a thin, domain-specific layer with proper typing
 
-### API Hooks Factory Example
+## Available Hooks
+
+### Query Hooks
+
+- `useExamsQuery` - For fetching a paginated list of exams with filtering
+- `usePublishedExamsQuery` - For fetching published exams
+- `useExamsByStatusQuery` - For fetching exams by status
+- `useExamQuery` - For fetching a single exam by ID
+- `useExamStatsQuery` - For fetching exam statistics
+- `useExamQuestionsQuery` - For fetching questions for an exam
+- `useQuestionQuery` - For fetching a single question
+- `useExamAttemptsQuery` - For fetching attempts for an exam
+- `useAttemptQuery` - For fetching a single attempt
+- `useAttemptResultQuery` - For fetching results for an attempt
+- `useExamAccessQuery` - For checking if a user has access to a premium exam
+
+### Mutation Hooks
+
+- `useCreateExamMutation` - For creating a new exam
+- `useUpdateExamMutation` - For updating an existing exam
+- `useDeleteExamMutation` - For deleting an exam
+- `usePublishExamMutation` - For publishing an exam
+- `useAddQuestionMutation` - For adding a question to an exam
+- `useUpdateQuestionMutation` - For updating a question
+- `useDeleteQuestionMutation` - For deleting a question
+- `useReorderQuestionsMutation` - For reordering questions
+- `useStartAttemptMutation` - For starting a new exam attempt
+- `useSubmitAnswerMutation` - For submitting an answer during an attempt
+- `useSubmitAttemptMutation` - For submitting a completed attempt
+- `useAbandonAttemptMutation` - For abandoning an in-progress attempt
+- `useCreatePaymentIntentMutation` - For creating a payment intent
+- `useConfirmPaymentMutation` - For confirming a payment
+
+## Usage Examples
+
+### Fetching Exams
 
 ```tsx
-// Correct pattern using core API hooks factory
-import { createApiHooks } from '@/core/api/services/factories';
-import { ENDPOINTS } from '../constants';
-import { Exam } from '../../types';
+import { useExamsQuery } from '@/features/exams-preparation/api';
 
-export const examsApiHooks = createApiHooks<Exam>(
-  {
-    // Map the CRUD endpoints for exams
-    list: ENDPOINTS.LIST,
-    detail: ENDPOINTS.DETAIL(':id'),
-    create: ENDPOINTS.CREATE,
-    update: ENDPOINTS.UPDATE(':id'),
-    delete: ENDPOINTS.DELETE(':id'),
-    
-    // Map custom endpoints
-    published: ENDPOINTS.PUBLISHED,
-    byStatus: ENDPOINTS.BY_STATUS(':status'),
-  },
-  {
-    resourceName: 'exams-preparation',
-    defaultStaleTime: 5 * 60 * 1000,
-    requiresAuth: true
-  }
-);
-
-// Usage:
-examsApiHooks.useList();          // List all exams
-examsApiHooks.useDetail(123);     // Get specific exam
-examsApiHooks.useCreate();        // Create exam mutation
-examsApiHooks.useUpdate(123);     // Update exam mutation
-```
-
-### Query Hook Example
-
-```tsx
-// Correct pattern using core API hooks factory
-import { examsApiHooks } from '../services/apiHooksFactory';
-import { Exam } from '../../types';
-
-export const useExam = (examId: number, options = {}) => {
-  return examsApiHooks.useDetail<Exam>(examId, options);
-};
-
-export const useExamsByStatus = (status: string, options = {}) => {
-  return examsApiHooks.useCustomQuery<Exam[]>(
-    'byStatus',
-    ['status', status],
-    {
-      urlParams: { status },
-      ...options
-    }
+function ExamsList() {
+  const { data, isLoading, error } = useExamsQuery({
+    page: 1,
+    limit: 10,
+    status: ExamStatus.PUBLISHED
+  });
+  
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return (
+    <div>
+      {data?.data.map(exam => (
+        <div key={exam.id}>{exam.title}</div>
+      ))}
+    </div>
   );
-};
+}
 ```
 
-### Mutation Hook Example
+### Fetching a Single Exam
 
 ```tsx
-// Correct pattern using core API hooks factory
-import { examsApiHooks } from '../services/apiHooksFactory';
-import { Exam } from '../../types';
+import { useExamQuery } from '@/features/exams-preparation/api';
 
-export const useCreateExam = () => {
-  return examsApiHooks.useCreate<Exam, Partial<Exam>>();
-};
+function ExamDetail({ examId }) {
+  const { data, isLoading, error } = useExamQuery(examId);
+  
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return (
+    <div>
+      <h1>{data.title}</h1>
+      <p>{data.description}</p>
+      {/* ... */}
+    </div>
+  );
+}
+```
 
-export const useArchiveExam = () => {
-  return examsApiHooks.useAction<Exam, number>(
-    (id) => examsApiHooks.queryKeys.custom('archive', id),
-    {
-      onSuccess: (_, id, context) => {
-        // Invalidate specific exam
-        context?.queryClient.invalidateQueries({
-          queryKey: examsApiHooks.queryKeys.detail(id)
-        });
+### Creating an Exam
+
+```tsx
+import { useCreateExamMutation } from '@/features/exams-preparation/api';
+
+function CreateExamForm() {
+  const { mutate, isLoading, error } = useCreateExamMutation();
+  
+  const handleSubmit = (formData) => {
+    mutate(formData, {
+      onSuccess: (data) => {
+        console.log('Exam created:', data);
+        // Handle success (e.g., redirect to the new exam)
       }
-    }
+    });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+    </form>
   );
-};
+}
 ```
 
-## Core Principle: Core as Foundation
+## Query Invalidation
 
-This feature strictly follows the "Core as Foundation" principle:
+The mutation hooks automatically invalidate the relevant queries based on the operation performed. For example:
 
-1. **Leverage Core Modules**: All API operations use core API modules instead of implementing custom solutions
-2. **Extend, Don't Duplicate**: When new functionality is needed, extend the core modules instead of creating duplicates
-3. **Consistent Patterns**: Follow the established patterns from core modules for consistency
-4. **Standard Query Keys**: Use the query key factory from core for proper invalidation
-5. **Standard Endpoints**: Use the endpoint utilities from core for consistent URL patterns
+- Creating an exam invalidates the exams list queries
+- Updating an exam invalidates both the list queries and the specific exam query
+- Adding a question invalidates both the questions list and the exam detail (as the question count changes)
 
-## Best Practices
+If you need to manually invalidate queries, you can use the exported query keys:
 
-1. Always use `createApiHooks` for standard CRUD operations
-2. Follow the established query key patterns for consistency
-3. Use the API_ENDPOINTS constants for all endpoint references
-4. Use proper TypeScript typing throughout
-5. Create focused hooks that leverage the core API hooks factory
-6. Separate queries and mutations into logical groups
-7. Follow standardized invalidation patterns
+```tsx
+import { examsQueryKeys } from '@/features/exams-preparation/api';
+import { useQueryClient } from '@tanstack/react-query';
 
-## Troubleshooting
-
-If you encounter issues with the API integration:
-
-1. Check that you're properly using the core API hooks factory
-2. Ensure that all endpoint strings match the API specifications
-3. Verify proper query invalidation in mutation success handlers
-4. Check typing for proper generics usage
-5. Ensure that all hooks ultimately use the core API utilities
+function SomeComponent() {
+  const queryClient = useQueryClient();
+  
+  const invalidateExams = () => {
+    queryClient.invalidateQueries({
+      queryKey: examsQueryKeys.lists()
+    });
+  };
+  
+  // ...
+}
+```

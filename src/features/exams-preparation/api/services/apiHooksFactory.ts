@@ -5,6 +5,7 @@
  * using the core API hooks factory.
  */
 import { createApiHooks } from '@/core/api/services/factories';
+import { handleApiError } from '@/core/api/core/error';
 import { ENDPOINTS } from '../constants';
 import { Exam, ExamStatus } from '../../types';
 
@@ -37,7 +38,6 @@ export interface ExamCreateParams {
  * Parameters for updating an exam
  */
 export interface ExamUpdateParams {
-  id: number;
   title?: string;
   description?: string;
   duration?: number;
@@ -73,14 +73,65 @@ export const examsApiHooks = createApiHooks<Exam, ExamListParams, ExamCreatePara
   {
     resourceName: 'exams-preparation',
     defaultStaleTime: 5 * 60 * 1000, // 5 minutes
-    requiresAuth: true
+    requiresAuth: true,
+    errorHandler: (error) => handleApiError(error, { context: { feature: 'exams-preparation' }}),
+    queryOptions: {
+      refetchOnWindowFocus: false,
+      retry: 1
+    }
   }
 );
 
 /**
+ * Interface for paper-related data
+ */
+export interface Paper {
+  id: number;
+  title: string;
+  description?: string;
+  type: 'model' | 'past' | 'subject' | 'practice';
+  year?: number;
+  subject?: string;
+  isPremium: boolean;
+  price?: number;
+  duration: number;
+  questionCount: number;
+  [key: string]: any;
+}
+
+/**
+ * Parameters for paper lists
+ */
+export interface PaperListParams {
+  page?: number;
+  limit?: number;
+  type?: string;
+  subject?: string;
+  year?: number;
+  search?: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+}
+
+/**
+ * Parameters for creating a new paper
+ */
+export interface PaperCreateParams {
+  title: string;
+  description?: string;
+  type: 'model' | 'past' | 'subject' | 'practice';
+  year?: number;
+  subject?: string;
+  isPremium?: boolean;
+  price?: number;
+  duration: number;
+  [key: string]: any;
+}
+
+/**
  * API hooks for papers (subset of exams)
  */
-export const papersApiHooks = createApiHooks<any, any, any, any>(
+export const papersApiHooks = createApiHooks<Paper, PaperListParams, PaperCreateParams, Partial<PaperCreateParams>>(
   {
     // Map the CRUD endpoints for papers
     list: ENDPOINTS.PAPERS.LIST,
@@ -100,14 +151,59 @@ export const papersApiHooks = createApiHooks<any, any, any, any>(
   {
     resourceName: 'exams-preparation-papers',
     defaultStaleTime: 10 * 60 * 1000, // 10 minutes (longer for papers)
-    requiresAuth: true
+    requiresAuth: true,
+    errorHandler: (error) => handleApiError(error, { context: { feature: 'exams-preparation-papers' }}),
+    queryOptions: {
+      refetchOnWindowFocus: false,
+      retry: 1
+    }
   }
 );
 
 /**
+ * Interface for exam attempt data
+ */
+export interface ExamAttempt {
+  id: number;
+  examId: number;
+  userId: number;
+  startTime: string;
+  endTime?: string;
+  duration: number;
+  status: 'in_progress' | 'completed' | 'abandoned';
+  score?: number;
+  maxScore?: number;
+  percentageScore?: number;
+  questionsAttempted?: number;
+  totalQuestions: number;
+  answers?: Record<string, any>[];
+  [key: string]: any;
+}
+
+/**
+ * Parameters for attempt lists
+ */
+export interface AttemptListParams {
+  page?: number;
+  limit?: number;
+  examId?: number;
+  userId?: number;
+  status?: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+}
+
+/**
+ * Parameters for creating a new attempt
+ */
+export interface AttemptCreateParams {
+  examId: number;
+}
+
+/**
  * API hooks for exam attempts
  */
-export const attemptsApiHooks = createApiHooks<any, any, any, any>(
+export const attemptsApiHooks = createApiHooks<ExamAttempt, AttemptListParams, AttemptCreateParams, Partial<ExamAttempt>>(
   {
     // Map the CRUD endpoints for attempts
     list: ENDPOINTS.ATTEMPTS,
@@ -126,7 +222,12 @@ export const attemptsApiHooks = createApiHooks<any, any, any, any>(
   {
     resourceName: 'exams-preparation-attempts',
     defaultStaleTime: 1 * 60 * 1000, // 1 minute (shorter for attempts)
-    requiresAuth: true
+    requiresAuth: true,
+    errorHandler: (error) => handleApiError(error, { context: { feature: 'exams-preparation-attempts' }}),
+    queryOptions: {
+      refetchOnWindowFocus: true, // More frequently check for attempt updates
+      retry: 2
+    }
   }
 );
 

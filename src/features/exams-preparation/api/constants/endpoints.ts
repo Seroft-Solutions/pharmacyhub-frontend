@@ -1,72 +1,73 @@
 /**
- * Exam API Endpoints Constants
+ * Exams Preparation API Endpoints
  * 
- * This module defines all API endpoints for exam-related operations
- * using the core endpoint utilities.
+ * This module defines API endpoints for the exams-preparation feature
+ * using the core API endpoint factory for consistency.
  */
 import { createEndpoints } from '@/core/api/utils/endpointUtils';
 
-// Base API path for exams
-const EXAMS_BASE_PATH = 'v1/exams-preparation';
-
 /**
- * Create exam endpoints using core factory
+ * Base API endpoints for the exams-preparation feature
  */
-export const API_ENDPOINTS = createEndpoints(EXAMS_BASE_PATH, {
-  // Custom endpoints for exams
-  PUBLISHED: (suffix = '') => `${EXAMS_BASE_PATH}/published${suffix}`,
-  BY_STATUS: (status: string) => `${EXAMS_BASE_PATH}/status/${status}`,
+export const EXAM_ENDPOINTS = createEndpoints('v1/exams-preparation', {
+  // Exam-specific endpoints
+  PUBLISHED: `${createEndpoints('v1/exams-preparation').BASE}/published`,
+  BY_STATUS: (status: string) => `${createEndpoints('v1/exams-preparation').BASE}/status/${status}`,
   
-  // Exam operations
-  PUBLISH: (id: number) => `${EXAMS_BASE_PATH}/${id}/publish`,
-  ARCHIVE: (id: number) => `${EXAMS_BASE_PATH}/${id}/archive`,
+  // Question-related endpoints
+  QUESTIONS: (examId: number) => `${createEndpoints('v1/exams-preparation').BASE}/${examId}/questions`,
+  QUESTION_DETAIL: (examId: number, questionId: number) => 
+    `${createEndpoints('v1/exams-preparation').BASE}/${examId}/questions/${questionId}`,
   
-  // Questions
-  QUESTIONS: (examId: number) => `${EXAMS_BASE_PATH}/${examId}/questions`,
-  QUESTION_BY_ID: (examId: number, questionId: number) => 
-    `${EXAMS_BASE_PATH}/${examId}/questions/${questionId}`,
+  // Attempt-related endpoints
+  ATTEMPTS: (examId: number) => `${createEndpoints('v1/exams-preparation').BASE}/${examId}/attempts`,
+  ATTEMPT_DETAIL: (attemptId: string) => `${createEndpoints('v1/exams-preparation').BASE}/attempts/${attemptId}`,
+  START_ATTEMPT: (examId: number) => `${createEndpoints('v1/exams-preparation').BASE}/${examId}/attempts/start`,
+  SUBMIT_ATTEMPT: (attemptId: string) => `${createEndpoints('v1/exams-preparation').BASE}/attempts/${attemptId}/submit`,
   
-  // Stats
-  STATS: `${EXAMS_BASE_PATH}/stats`,
+  // Result-related endpoints
+  RESULTS: (attemptId: string) => `${createEndpoints('v1/exams-preparation').BASE}/attempts/${attemptId}/results`,
   
-  // Attempts
-  START_EXAM: (id: number) => `${EXAMS_BASE_PATH}/${id}/start`,
-  SUBMIT_EXAM: (attemptId: number) => `${EXAMS_BASE_PATH}/attempts/${attemptId}/submit`,
-  SAVE_ANSWER: (attemptId: number, questionId: number) => 
-    `${EXAMS_BASE_PATH}/attempts/${attemptId}/answer/${questionId}`,
-  FLAG_QUESTION: (attemptId: number, questionId: number) => 
-    `${EXAMS_BASE_PATH}/attempts/${attemptId}/flag/${questionId}`,
+  // Paper-related endpoints
+  PAPERS: `${createEndpoints('v1/exams-preparation').BASE}/papers`,
+  PAPER_DETAIL: (paperId: number) => `${createEndpoints('v1/exams-preparation').BASE}/papers/${paperId}`,
   
-  // Attempts resource
-  ATTEMPTS: `${EXAMS_BASE_PATH}/attempts`,
-  ATTEMPT: (id: number) => `${EXAMS_BASE_PATH}/attempts/${id}`,
-  EXAM_ATTEMPTS: (examId: number) => `${EXAMS_BASE_PATH}/${examId}/attempts`,
-  ATTEMPT_RESULT: (attemptId: number) => `${EXAMS_BASE_PATH}/attempts/${attemptId}/result`,
-});
-
-// Base path for papers
-const PAPERS_BASE_PATH = `${EXAMS_BASE_PATH}/papers`;
-
-/**
- * Paper-specific endpoints using core factory
- */
-export const PAPER_ENDPOINTS = createEndpoints(PAPERS_BASE_PATH, {
-  // Paper types
-  MODEL: `${PAPERS_BASE_PATH}/model`,
-  PAST: `${PAPERS_BASE_PATH}/past`,
-  SUBJECT: `${PAPERS_BASE_PATH}/subject`,
-  PRACTICE: `${PAPERS_BASE_PATH}/practice`,
+  // Payment-related endpoints
+  PAYMENT_INTENT: (examId: number) => `${createEndpoints('v1/exams-preparation').BASE}/${examId}/payment/intent`,
+  CONFIRM_PAYMENT: (examId: number) => `${createEndpoints('v1/exams-preparation').BASE}/${examId}/payment/confirm`,
   
-  // Actions
-  UPLOAD_JSON: `${PAPERS_BASE_PATH}/upload/json`,
+  // Stats-related endpoints
+  STATS: `${createEndpoints('v1/exams-preparation').BASE}/stats`,
 });
 
 /**
- * Export all endpoints in a single object for convenience
+ * Export specific endpoint groups for easier access
  */
-export const ENDPOINTS = {
-  ...API_ENDPOINTS,
-  PAPERS: PAPER_ENDPOINTS,
+export const QUESTION_ENDPOINTS = {
+  LIST: (examId: number) => EXAM_ENDPOINTS.QUESTIONS(examId),
+  DETAIL: (examId: number, questionId: number) => EXAM_ENDPOINTS.QUESTION_DETAIL(examId, questionId),
+  CREATE: (examId: number) => EXAM_ENDPOINTS.QUESTIONS(examId),
+  UPDATE: (examId: number, questionId: number) => EXAM_ENDPOINTS.QUESTION_DETAIL(examId, questionId),
+  DELETE: (examId: number, questionId: number) => EXAM_ENDPOINTS.QUESTION_DETAIL(examId, questionId),
 };
 
-export default ENDPOINTS;
+export const ATTEMPT_ENDPOINTS = {
+  LIST: (examId: number) => EXAM_ENDPOINTS.ATTEMPTS(examId),
+  DETAIL: (attemptId: string) => EXAM_ENDPOINTS.ATTEMPT_DETAIL(attemptId),
+  START: (examId: number) => EXAM_ENDPOINTS.START_ATTEMPT(examId),
+  SUBMIT: (attemptId: string) => EXAM_ENDPOINTS.SUBMIT_ATTEMPT(attemptId),
+  RESULTS: (attemptId: string) => EXAM_ENDPOINTS.RESULTS(attemptId),
+};
+
+export const PAPER_ENDPOINTS = {
+  LIST: EXAM_ENDPOINTS.PAPERS,
+  DETAIL: (paperId: number) => EXAM_ENDPOINTS.PAPER_DETAIL(paperId),
+  CREATE: EXAM_ENDPOINTS.PAPERS,
+  UPDATE: (paperId: number) => EXAM_ENDPOINTS.PAPER_DETAIL(paperId),
+  DELETE: (paperId: number) => EXAM_ENDPOINTS.PAPER_DETAIL(paperId),
+};
+
+export const PAYMENT_ENDPOINTS = {
+  CREATE_INTENT: (examId: number) => EXAM_ENDPOINTS.PAYMENT_INTENT(examId),
+  CONFIRM: (examId: number) => EXAM_ENDPOINTS.CONFIRM_PAYMENT(examId),
+};

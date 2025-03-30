@@ -1,20 +1,15 @@
 /**
  * Exams Preparation API Module
  * 
- * This module exports all API-related functionality for the exams-preparation feature.
- * It leverages the core API module for data fetching and follows the established patterns.
- * 
- * Structure:
- * - constants: API endpoint constants and configurations
- * - hooks: React Query hooks for data fetching
- * - services: Extended API services
+ * This module serves as the public API for the exams-preparation feature's API layer.
+ * It exports all hooks, constants, and utilities for interacting with the exams API.
  */
 
-// Export API constants
-export * from './constants';
-
-// Export API hooks
+// Export all hooks
 export * from './hooks';
 
-// Export API services
-export * from './services';
+// Export constants
+export * from './constants';
+
+// Export query keys (for custom invalidation)
+export { examsQueryKeys, attemptKeys, paperKeys } from './utils/queryKeys';
