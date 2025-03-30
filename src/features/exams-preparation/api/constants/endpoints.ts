@@ -1,99 +1,61 @@
 /**
  * Exam API Endpoints Constants
  * 
- * This module defines all API endpoints for exam-related operations.
+ * This module defines all API endpoints for exam-related operations
+ * using the core endpoint utilities.
  */
+import { createEndpoints } from '@/core/api/utils';
 
 const BASE_URL = '/api/v1/exams-preparation';
 
 /**
- * Exam API Endpoints
+ * Create exam endpoints using core factory
  */
-export const EXAM_ENDPOINTS = {
-  // Base endpoint
-  base: `${BASE_URL}`,
+export const API_ENDPOINTS = {
+  BASE: BASE_URL,
   
   // CRUD operations
-  all: `${BASE_URL}`,
-  byId: `${BASE_URL}/:id`,
-  create: `${BASE_URL}`,
-  update: `${BASE_URL}/:id`,
-  patch: `${BASE_URL}/:id`,
-  delete: `${BASE_URL}/:id`,
+  EXAMS: `${BASE_URL}`,
+  EXAM: (id: number) => `${BASE_URL}/${id}`,
   
   // Custom endpoints
-  published: `${BASE_URL}/published`,
-  byStatus: `${BASE_URL}/status/:status`,
-  getExamById: `${BASE_URL}/:examId`,
+  PUBLISHED: `${BASE_URL}/published`,
+  BY_STATUS: (status: string) => `${BASE_URL}/status/${status}`,
   
   // Exam operations
-  publishExam: `${BASE_URL}/:id/publish`,
-  archiveExam: `${BASE_URL}/:id/archive`,
+  PUBLISH: (id: number) => `${BASE_URL}/${id}/publish`,
+  ARCHIVE: (id: number) => `${BASE_URL}/${id}/archive`,
   
   // Questions
-  questions: `${BASE_URL}/:examId/questions`,
-  getExamQuestions: `${BASE_URL}/:examId/questions`,
-  updateQuestion: `${BASE_URL}/:examId/questions/:questionId`,
-  deleteQuestion: `${BASE_URL}/:examId/questions/:questionId`,
+  QUESTIONS: (examId: number) => `${BASE_URL}/${examId}/questions`,
+  QUESTION_BY_ID: (examId: number, questionId: number) => 
+    `${BASE_URL}/${examId}/questions/${questionId}`,
   
   // Stats
-  examStats: `${BASE_URL}/stats`,
+  STATS: `${BASE_URL}/stats`,
   
   // Attempts
-  startExam: `${BASE_URL}/:id/start`,
-  submitExam: `${BASE_URL}/attempts/:id/submit`,
-  saveAnswer: `${BASE_URL}/attempts/:attemptId/answer/:questionId`,
-  flagQuestion: `${BASE_URL}/attempts/:attemptId/flag/:questionId`,
+  START_EXAM: (id: number) => `${BASE_URL}/${id}/start`,
+  SUBMIT_EXAM: (attemptId: number) => `${BASE_URL}/attempts/${attemptId}/submit`,
+  SAVE_ANSWER: (attemptId: number, questionId: number) => 
+    `${BASE_URL}/attempts/${attemptId}/answer/${questionId}`,
+  FLAG_QUESTION: (attemptId: number, questionId: number) => 
+    `${BASE_URL}/attempts/${attemptId}/flag/${questionId}`,
+  
+  // Attempts resource
+  ATTEMPTS: `${BASE_URL}/attempts`,
+  ATTEMPT: (id: number) => `${BASE_URL}/attempts/${id}`,
+  EXAM_ATTEMPTS: (examId: number) => `${BASE_URL}/${examId}/attempts`,
+  ATTEMPT_RESULT: (attemptId: number) => `${BASE_URL}/attempts/${attemptId}/result`,
+  
+  // Papers resource
+  PAPERS: `${BASE_URL}/papers`,
+  PAPER: (id: number) => `${BASE_URL}/papers/${id}`,
+  MODEL_PAPERS: `${BASE_URL}/papers/model`,
+  PAST_PAPERS: `${BASE_URL}/papers/past`,
+  SUBJECT_PAPERS: `${BASE_URL}/papers/subject`,
+  PRACTICE_PAPERS: `${BASE_URL}/papers/practice`,
+  UPLOAD_JSON: `${BASE_URL}/papers/upload/json`,
 };
 
-/**
- * Attempt API Endpoints
- */
-export const ATTEMPT_ENDPOINTS = {
-  // Base endpoint
-  base: `${BASE_URL}/attempts`,
-  
-  // CRUD operations
-  all: `${BASE_URL}/attempts`,
-  byId: `${BASE_URL}/attempts/:id`,
-  create: `${BASE_URL}/attempts`,
-  update: `${BASE_URL}/attempts/:id`,
-  delete: `${BASE_URL}/attempts/:id`,
-  
-  // Custom endpoints
-  byExam: `${BASE_URL}/:id/attempts`,
-  start: `${BASE_URL}/:id/start`,
-  submit: `${BASE_URL}/attempts/:id/submit`,
-  result: `${BASE_URL}/attempts/:id/result`,
-  flags: `${BASE_URL}/attempts/:id/flags`,
-  answer: `${BASE_URL}/attempts/:attemptId/answer/:questionId`,
-  flag: `${BASE_URL}/attempts/:attemptId/flag/:questionId`,
-  unflag: `${BASE_URL}/attempts/:attemptId/flag/:questionId`,
-};
-
-/**
- * Paper API Endpoints
- */
-export const PAPER_ENDPOINTS = {
-  // Base endpoint
-  base: `${BASE_URL}/papers`,
-  
-  // CRUD operations
-  all: `${BASE_URL}/papers`,
-  byId: `${BASE_URL}/papers/:id`,
-  create: `${BASE_URL}/papers`,
-  update: `${BASE_URL}/papers/:id`,
-  patch: `${BASE_URL}/papers/:id`,
-  delete: `${BASE_URL}/papers/:id`,
-  
-  // Paper types
-  model: `${BASE_URL}/papers/model`,
-  past: `${BASE_URL}/papers/past`,
-  subject: `${BASE_URL}/papers/subject`,
-  practice: `${BASE_URL}/papers/practice`,
-  
-  // Actions
-  uploadJson: `${BASE_URL}/papers/upload/json`,
-};
-
-export default { EXAM_ENDPOINTS, ATTEMPT_ENDPOINTS, PAPER_ENDPOINTS };
+export default API_ENDPOINTS;

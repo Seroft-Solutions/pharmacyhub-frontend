@@ -1,21 +1,13 @@
 /**
- * API Hooks for Exams Preparation
+ * Exams Preparation API Hooks index
  * 
- * This module exports React Query hooks for data fetching in the exams-preparation feature.
- * These hooks leverage the core API module and follow established patterns.
+ * This file exports all API hooks for the Exams Preparation feature.
+ * These hooks leverage the core API module for data fetching and mutations.
  */
 
-// Export individual primary hooks
-export * from './useExams';
+// Export exam hooks
 export * from './useExam';
+export * from './useExams';
 export * from './useExamAttempt';
 export * from './useExamResult';
 export * from './useExamPayments';
-
-// Export comprehensive API hook sets
-export * from './useExamApiHooks';
-export * from './useExamAttemptHooks';
-export * from './useExamPaperHooks';
-
-// Export hook factories
-export * from './hookFactory';
