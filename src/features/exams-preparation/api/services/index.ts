@@ -1,10 +1,10 @@
 /**
- * API Services
+ * API Services for Exams Preparation
  * 
- * This module contains service functions for API operations in the exams-preparation feature.
- * These services leverage the core API module and follow established patterns.
+ * This module exports service objects that provide methods for
+ * interacting with the backend API. These services are used by
+ * the React Query hooks to fetch and manipulate data.
  */
 
-// Export API services
-export { default as examApiService } from './examApiService';
-export { default as jsonExamUploadService } from './jsonExamUploadService';
+export * from './examService';
+export * from './paymentService';

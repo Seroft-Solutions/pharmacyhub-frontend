@@ -5,4 +5,7 @@
  * Hooks provide reusable stateful logic that can be shared across components.
  */
 
-// Export custom hooks here
+// Export navigation and timer hooks
+export { useExamNavigation } from './useExamNavigation';
+export { useExamTimer } from './useExamTimer';
+
