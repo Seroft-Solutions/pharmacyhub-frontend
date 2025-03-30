@@ -11,3 +11,6 @@ export * from './examService';
 export * from './examApiService';
 export * from './paymentService';
 export * from './jsonExamUploadService';
+
+// Export API hooks factory
+export * from './apiHooksFactory';

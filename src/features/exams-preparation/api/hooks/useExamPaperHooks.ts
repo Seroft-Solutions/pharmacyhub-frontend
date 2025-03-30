@@ -2,72 +2,33 @@
  * Exam Paper Query Hooks
  * 
  * This module provides hooks for fetching and manipulating exam papers
- * using the core API module with proper error handling.
+ * using the core API hooks factory.
  */
-import { useApiQuery, useApiMutation } from '@/core/api/hooks';
+import { papersApiHooks } from '../services/apiHooksFactory';
 import { Paper } from '../../types';
-import { paperKeys } from '../utils/queryKeys';
-import { ENDPOINTS } from '../constants';
-import { handleExamError } from '../utils/errorHandler';
 
 /**
  * Hook for fetching all exam papers with optional filtering
  */
 export const usePapers = (options = {}) => {
-  return useApiQuery<Paper[]>(
-    paperKeys.all(),
-    ENDPOINTS.PAPERS.LIST,
-    {
-      onError: (error) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          action: 'fetch-papers',
-          endpoint: ENDPOINTS.PAPERS.LIST
-        });
-      },
-      ...options
-    }
-  );
+  return papersApiHooks.useList<Paper[]>(undefined, options);
 };
 
 /**
  * Hook for fetching a specific paper by ID
  */
 export const usePaper = (paperId: number, options = {}) => {
-  return useApiQuery<Paper>(
-    paperKeys.detail(paperId),
-    ENDPOINTS.PAPERS.DETAIL(paperId),
-    {
-      onError: (error) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          paperId,
-          action: 'fetch-paper',
-          endpoint: ENDPOINTS.PAPERS.DETAIL(paperId)
-        });
-      },
-      ...options
-    }
-  );
+  return papersApiHooks.useDetail<Paper>(paperId, options);
 };
 
 /**
  * Hook for fetching model papers
  */
 export const useModelPapers = (options = {}) => {
-  return useApiQuery<Paper[]>(
-    paperKeys.model(),
-    ENDPOINTS.PAPERS.MODEL,
-    {
-      onError: (error) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          action: 'fetch-model-papers',
-          endpoint: ENDPOINTS.PAPERS.MODEL
-        });
-      },
-      ...options
-    }
+  return papersApiHooks.useCustomQuery<Paper[]>(
+    'model',
+    'model',
+    options
   );
 };
 
@@ -75,19 +36,10 @@ export const useModelPapers = (options = {}) => {
  * Hook for fetching past papers
  */
 export const usePastPapers = (options = {}) => {
-  return useApiQuery<Paper[]>(
-    paperKeys.past(),
-    ENDPOINTS.PAPERS.PAST,
-    {
-      onError: (error) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          action: 'fetch-past-papers',
-          endpoint: ENDPOINTS.PAPERS.PAST
-        });
-      },
-      ...options
-    }
+  return papersApiHooks.useCustomQuery<Paper[]>(
+    'past',
+    'past',
+    options
   );
 };
 
@@ -95,19 +47,10 @@ export const usePastPapers = (options = {}) => {
  * Hook for fetching subject papers
  */
 export const useSubjectPapers = (options = {}) => {
-  return useApiQuery<Paper[]>(
-    paperKeys.subject(),
-    ENDPOINTS.PAPERS.SUBJECT,
-    {
-      onError: (error) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          action: 'fetch-subject-papers',
-          endpoint: ENDPOINTS.PAPERS.SUBJECT
-        });
-      },
-      ...options
-    }
+  return papersApiHooks.useCustomQuery<Paper[]>(
+    'subject',
+    'subject',
+    options
   );
 };
 
@@ -115,19 +58,10 @@ export const useSubjectPapers = (options = {}) => {
  * Hook for fetching practice papers
  */
 export const usePracticePapers = (options = {}) => {
-  return useApiQuery<Paper[]>(
-    paperKeys.practice(),
-    ENDPOINTS.PAPERS.PRACTICE,
-    {
-      onError: (error) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          action: 'fetch-practice-papers',
-          endpoint: ENDPOINTS.PAPERS.PRACTICE
-        });
-      },
-      ...options
-    }
+  return papersApiHooks.useCustomQuery<Paper[]>(
+    'practice',
+    'practice',
+    options
   );
 };
 
@@ -135,101 +69,41 @@ export const usePracticePapers = (options = {}) => {
  * Hook for creating a new paper
  */
 export const useCreatePaper = () => {
-  return useApiMutation<Paper, Partial<Paper>>(
-    ENDPOINTS.PAPERS.CREATE,
-    {
-      onSuccess: (_, __, context) => {
-        // Invalidate all paper queries
-        context?.queryClient?.invalidateQueries({
-          queryKey: paperKeys.all()
-        });
-      },
-      onError: (error, variables) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          action: 'create-paper',
-          endpoint: ENDPOINTS.PAPERS.CREATE
-        });
-      }
-    }
-  );
+  return papersApiHooks.useCreate<Paper, Partial<Paper>>();
 };
 
 /**
  * Hook for updating a paper
  */
 export const useUpdatePaper = () => {
-  return useApiMutation<Paper, { id: number; paper: Partial<Paper> }>(
-    ({ id }) => ENDPOINTS.PAPERS.UPDATE(id),
-    {
-      method: 'PUT',
-      onSuccess: (data, variables, context) => {
-        // Invalidate specific paper
-        context?.queryClient?.invalidateQueries({
-          queryKey: paperKeys.detail(variables.id)
-        });
-        
-        // Invalidate paper lists
-        context?.queryClient?.invalidateQueries({
-          queryKey: paperKeys.all()
-        });
-      },
-      onError: (error, variables) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          paperId: variables.id,
-          action: 'update-paper',
-          endpoint: ENDPOINTS.PAPERS.UPDATE(variables.id)
-        });
-      }
-    }
-  );
+  return {
+    mutate: (variables: { id: number; paper: Partial<Paper> }) => {
+      const { id, paper } = variables;
+      const updateHook = papersApiHooks.useUpdate(id);
+      return updateHook.mutate(paper);
+    },
+    mutation: (id: number) => papersApiHooks.useUpdate(id)
+  };
 };
 
 /**
  * Hook for deleting a paper
  */
 export const useDeletePaper = () => {
-  return useApiMutation<void, number>(
-    (id) => ENDPOINTS.PAPERS.DELETE(id),
-    {
-      method: 'DELETE',
-      onSuccess: (_, __, context) => {
-        // Invalidate all paper lists
-        context?.queryClient?.invalidateQueries({
-          queryKey: paperKeys.all()
-        });
-      },
-      onError: (error, variables) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          paperId: variables,
-          action: 'delete-paper',
-          endpoint: ENDPOINTS.PAPERS.DELETE(variables)
-        });
-      }
-    }
-  );
+  return papersApiHooks.useDelete<void, number>();
 };
 
 /**
  * Hook for uploading JSON exam papers
  */
 export const useUploadJsonPaper = () => {
-  return useApiMutation<Paper, FormData>(
-    ENDPOINTS.PAPERS.UPLOAD_JSON,
+  return papersApiHooks.useAction<Paper, FormData>(
+    papersApiHooks.queryKeys.custom('uploadJson'),
     {
       onSuccess: (_, __, context) => {
         // Invalidate all paper lists
-        context?.queryClient?.invalidateQueries({
-          queryKey: paperKeys.all()
-        });
-      },
-      onError: (error) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          action: 'upload-json-paper',
-          endpoint: ENDPOINTS.PAPERS.UPLOAD_JSON
+        context?.queryClient.invalidateQueries({
+          queryKey: papersApiHooks.queryKeys.lists()
         });
       }
     }

@@ -1,34 +1,24 @@
 /**
  * Exam Results Query Hooks
  * 
- * This module provides hooks for fetching and manipulating exam results
- * using the core API module with proper error handling.
+ * This module provides hooks for fetching exam results
+ * using the core API hooks factory.
  */
-import { useApiQuery } from '@/core/api/hooks';
+import { attemptsApiHooks } from '../services/apiHooksFactory';
 import { Result } from '../../types';
-import { attemptKeys } from '../utils/queryKeys';
-import { ENDPOINTS } from '../constants';
-import { handleExamError } from '../utils/errorHandler';
 
 /**
  * Hook for fetching results for a specific exam attempt
  */
 export const useExamResult = (attemptId: number, options = {}) => {
-  return useApiQuery<Result>(
-    attemptKeys.result(attemptId),
-    ENDPOINTS.ATTEMPT_RESULT(attemptId),
+  return attemptsApiHooks.useCustomQuery<Result>(
+    'result',
+    ['result', attemptId],
     {
+      urlParams: { attemptId },
       // Results are typically more static
       staleTime: 30 * 60 * 1000, // 30 minutes
       cacheTime: 60 * 60 * 1000, // 1 hour
-      onError: (error) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          attemptId,
-          action: 'fetch-result',
-          endpoint: ENDPOINTS.ATTEMPT_RESULT(attemptId)
-        });
-      },
       ...options
     }
   );

@@ -1,63 +1,69 @@
 # Exams Preparation API Integration
 
-This feature leverages the core API module for all data fetching and mutation operations. Do NOT implement custom query or mutation patterns.
+This feature leverages the core API module for all data fetching and mutation operations, following the "Core as Foundation" principle. Do NOT implement custom query or mutation patterns.
 
 ## Core API Components Used
 
 - `apiClient` from `@/core/api/core/apiClient` - For all HTTP requests
-- `useApiQuery` from `@/core/api/hooks` - For creating query hooks
-- `useApiMutation` from `@/core/api/hooks` - For creating mutation hooks
+- `createApiHooks` from `@/core/api/services/factories` - For creating standard API hooks
+- `useApiQuery`, `useApiMutation` from `@/core/api/hooks` - For specialized queries/mutations
 - `createQueryKeyFactory` from `@/core/api/utils/queryKeyFactory` - For consistent query keys
-- `handleApiError`, `createApiError` from `@/core/api/core/error` - For error handling
 - `createEndpoints` from `@/core/api/utils/endpointUtils` - For endpoint constants
 
 ## Pattern Examples
 
-### Endpoint Constants Example
+### API Hooks Factory Example
 
 ```tsx
-// Correct pattern using core
-import { createEndpoints } from '@/core/api/utils/endpointUtils';
+// Correct pattern using core API hooks factory
+import { createApiHooks } from '@/core/api/services/factories';
+import { ENDPOINTS } from '../constants';
+import { Exam } from '../../types';
 
-// Base API path for exams
-const EXAMS_BASE_PATH = 'v1/exams-preparation';
+export const examsApiHooks = createApiHooks<Exam>(
+  {
+    // Map the CRUD endpoints for exams
+    list: ENDPOINTS.LIST,
+    detail: ENDPOINTS.DETAIL(':id'),
+    create: ENDPOINTS.CREATE,
+    update: ENDPOINTS.UPDATE(':id'),
+    delete: ENDPOINTS.DELETE(':id'),
+    
+    // Map custom endpoints
+    published: ENDPOINTS.PUBLISHED,
+    byStatus: ENDPOINTS.BY_STATUS(':status'),
+  },
+  {
+    resourceName: 'exams-preparation',
+    defaultStaleTime: 5 * 60 * 1000,
+    requiresAuth: true
+  }
+);
 
-// Create exam endpoints using core factory
-export const API_ENDPOINTS = createEndpoints(EXAMS_BASE_PATH, {
-  // Custom endpoints for exams
-  PUBLISHED: `${EXAMS_BASE_PATH}/published`,
-  BY_STATUS: (status: string) => `${EXAMS_BASE_PATH}/status/${status}`,
-  
-  // Exam operations
-  PUBLISH: (id: number) => `${EXAMS_BASE_PATH}/${id}/publish`,
-  
-  // Questions
-  QUESTIONS: (examId: number) => `${EXAMS_BASE_PATH}/${examId}/questions`,
-});
+// Usage:
+examsApiHooks.useList();          // List all exams
+examsApiHooks.useDetail(123);     // Get specific exam
+examsApiHooks.useCreate();        // Create exam mutation
+examsApiHooks.useUpdate(123);     // Update exam mutation
 ```
 
 ### Query Hook Example
 
 ```tsx
-// Correct pattern using core
-import { useApiQuery } from '@/core/api/hooks';
-import { examsQueryKeys } from '../utils/queryKeys';
-import { API_ENDPOINTS } from '../constants';
-import { handleExamError } from '../utils/errorHandler';
+// Correct pattern using core API hooks factory
+import { examsApiHooks } from '../services/apiHooksFactory';
+import { Exam } from '../../types';
 
 export const useExam = (examId: number, options = {}) => {
-  return useApiQuery<Exam>(
-    examsQueryKeys.detail(examId),
-    API_ENDPOINTS.DETAIL(examId),
+  return examsApiHooks.useDetail<Exam>(examId, options);
+};
+
+export const useExamsByStatus = (status: string, options = {}) => {
+  return examsApiHooks.useCustomQuery<Exam[]>(
+    'byStatus',
+    ['status', status],
     {
-      onError: (error) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          examId,
-          action: 'fetch-exam',
-          endpoint: API_ENDPOINTS.DETAIL(examId)
-        });
-      },
+      urlParams: { status },
       ...options
     }
   );
@@ -67,27 +73,22 @@ export const useExam = (examId: number, options = {}) => {
 ### Mutation Hook Example
 
 ```tsx
-// Correct pattern using core
-import { useApiMutation } from '@/core/api/hooks';
-import { examsQueryKeys } from '../utils/queryKeys';
-import { API_ENDPOINTS } from '../constants';
-import { handleExamError } from '../utils/errorHandler';
+// Correct pattern using core API hooks factory
+import { examsApiHooks } from '../services/apiHooksFactory';
+import { Exam } from '../../types';
 
 export const useCreateExam = () => {
-  return useApiMutation<Exam, Partial<Exam>>(
-    API_ENDPOINTS.CREATE,
+  return examsApiHooks.useCreate<Exam, Partial<Exam>>();
+};
+
+export const useArchiveExam = () => {
+  return examsApiHooks.useAction<Exam, number>(
+    (id) => examsApiHooks.queryKeys.custom('archive', id),
     {
-      onSuccess: (_, __, context) => {
-        // Invalidate all exam lists on success
-        context?.queryClient?.invalidateQueries({
-          queryKey: examsQueryKeys.lists()
-        });
-      },
-      onError: (error, variables) => {
-        // Use core error handling with exam-specific context
-        handleExamError(error, { 
-          action: 'create-exam',
-          endpoint: API_ENDPOINTS.CREATE
+      onSuccess: (_, id, context) => {
+        // Invalidate specific exam
+        context?.queryClient.invalidateQueries({
+          queryKey: examsApiHooks.queryKeys.detail(id)
         });
       }
     }
@@ -95,99 +96,32 @@ export const useCreateExam = () => {
 };
 ```
 
-## Error Handling
+## Core Principle: Core as Foundation
 
-The exams-preparation feature uses the core API error handling utilities for consistent error handling across the application. All API hooks include proper error handling using the `handleExamError` utility.
+This feature strictly follows the "Core as Foundation" principle:
 
-### Error Handling Utility
-
-```tsx
-import { handleError, ApiError } from '@/core/api/core/error';
-
-export interface ExamErrorContext {
-  examId?: number;
-  attemptId?: number;
-  questionId?: number;
-  paperId?: number;
-  endpoint?: string;
-  action?: string;
-}
-
-export function handleExamError(
-  error: any, 
-  context: ExamErrorContext = {}
-): ApiError {
-  // Add feature-specific context
-  const enhancedContext = {
-    ...context,
-    feature: 'exams-preparation'
-  };
-  
-  // Use the core error handling with our enhanced context
-  return handleError(error, {
-    context: enhancedContext,
-    rethrow: true
-  });
-}
-```
-
-## Endpoint Management
-
-All API endpoints are defined using the core `createEndpoints` utility to ensure consistent endpoint patterns across the application.
-
-### Endpoint Definition Example
-
-```tsx
-const EXAMS_BASE_PATH = 'v1/exams-preparation';
-
-// Create exam endpoints with standard CRUD operations
-export const API_ENDPOINTS = createEndpoints(EXAMS_BASE_PATH, {
-  // The factory automatically adds these standard endpoints:
-  // BASE, LIST, DETAIL(id), CREATE, UPDATE(id), PATCH(id), DELETE(id)
-  
-  // Custom endpoints
-  PUBLISHED: `${EXAMS_BASE_PATH}/published`,
-  BY_STATUS: (status: string) => `${EXAMS_BASE_PATH}/status/${status}`,
-});
-
-// Usage:
-API_ENDPOINTS.LIST;            // '/api/v1/exams-preparation'
-API_ENDPOINTS.DETAIL(123);     // '/api/v1/exams-preparation/123'
-API_ENDPOINTS.PUBLISHED;       // '/api/v1/exams-preparation/published'
-API_ENDPOINTS.BY_STATUS('active'); // '/api/v1/exams-preparation/status/active'
-```
+1. **Leverage Core Modules**: All API operations use core API modules instead of implementing custom solutions
+2. **Extend, Don't Duplicate**: When new functionality is needed, extend the core modules instead of creating duplicates
+3. **Consistent Patterns**: Follow the established patterns from core modules for consistency
+4. **Standard Query Keys**: Use the query key factory from core for proper invalidation
+5. **Standard Endpoints**: Use the endpoint utilities from core for consistent URL patterns
 
 ## Best Practices
 
-1. Always use core API hooks instead of direct TanStack Query imports
+1. Always use `createApiHooks` for standard CRUD operations
 2. Follow the established query key patterns for consistency
 3. Use the API_ENDPOINTS constants for all endpoint references
-4. Always handle invalidation in mutation hooks
-5. Leverage the core error handling utilities
-6. Use proper TypeScript typing throughout
-7. Separate queries and mutations into logical groups
-8. Use pagination utilities when dealing with lists
-9. Include proper error handling in all API hooks
-10. Use domain-specific context in error handlers
-11. Define all endpoints using the core `createEndpoints` utility
-12. Group related endpoints logically
-
-## Extending Core Functionality
-
-If you need functionality that doesn't exist in the core module:
-
-1. First, check if it can be added to the core module
-2. If not, create a thin wrapper around core functionality
-3. Document why you needed to extend core functionality
-4. Ensure your extension follows the same patterns and conventions
+4. Use proper TypeScript typing throughout
+5. Create focused hooks that leverage the core API hooks factory
+6. Separate queries and mutations into logical groups
+7. Follow standardized invalidation patterns
 
 ## Troubleshooting
 
-If you encounter issues with the core API integration:
+If you encounter issues with the API integration:
 
-1. Check query keys for proper structure
-2. Verify endpoint URLs for correct formatting
-3. Ensure you're using the core API client and not direct fetch/axios
-4. Look for invalidation issues if data isn't refreshing
-5. Check typing for proper generics usage
-6. Use the proper error type checking utilities for handling different error scenarios
+1. Check that you're properly using the core API hooks factory
+2. Ensure that all endpoint strings match the API specifications
+3. Verify proper query invalidation in mutation success handlers
+4. Check typing for proper generics usage
+5. Ensure that all hooks ultimately use the core API utilities
