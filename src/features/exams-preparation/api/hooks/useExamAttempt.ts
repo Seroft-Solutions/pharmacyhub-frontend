@@ -7,7 +7,7 @@
 import { useApiQuery, useApiMutation } from '@/core/api/hooks';
 import { Attempt, Answer } from '../../types';
 import { examsQueryKeys, attemptKeys } from '../utils/queryKeys';
-import { API_ENDPOINTS } from '../constants';
+import { ENDPOINTS } from '../constants';
 import { handleExamError } from '../utils/errorHandler';
 
 /**
@@ -16,14 +16,14 @@ import { handleExamError } from '../utils/errorHandler';
 export const useExamAttempt = (attemptId: number, options = {}) => {
   return useApiQuery<Attempt>(
     attemptKeys.detail(attemptId),
-    API_ENDPOINTS.ATTEMPT(attemptId),
+    ENDPOINTS.ATTEMPT(attemptId),
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           attemptId,
           action: 'fetch-attempt',
-          endpoint: API_ENDPOINTS.ATTEMPT(attemptId)
+          endpoint: ENDPOINTS.ATTEMPT(attemptId)
         });
       },
       ...options
@@ -37,14 +37,14 @@ export const useExamAttempt = (attemptId: number, options = {}) => {
 export const useExamAttempts = (examId: number, options = {}) => {
   return useApiQuery<Attempt[]>(
     attemptKeys.byExam(examId),
-    API_ENDPOINTS.EXAM_ATTEMPTS(examId),
+    ENDPOINTS.EXAM_ATTEMPTS(examId),
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           examId,
           action: 'fetch-exam-attempts',
-          endpoint: API_ENDPOINTS.EXAM_ATTEMPTS(examId)
+          endpoint: ENDPOINTS.EXAM_ATTEMPTS(examId)
         });
       },
       ...options
@@ -57,7 +57,7 @@ export const useExamAttempts = (examId: number, options = {}) => {
  */
 export const useStartExam = () => {
   return useApiMutation<Attempt, number>(
-    (examId) => API_ENDPOINTS.START_EXAM(examId),
+    (examId) => ENDPOINTS.START_EXAM(examId),
     {
       onSuccess: (data, examId, context) => {
         // Invalidate exam attempts list
@@ -70,7 +70,7 @@ export const useStartExam = () => {
         handleExamError(error, { 
           examId: variables,
           action: 'start-exam',
-          endpoint: API_ENDPOINTS.START_EXAM(variables)
+          endpoint: ENDPOINTS.START_EXAM(variables)
         });
       }
     }
@@ -82,7 +82,7 @@ export const useStartExam = () => {
  */
 export const useSubmitExam = () => {
   return useApiMutation<Attempt, number>(
-    (attemptId) => API_ENDPOINTS.SUBMIT_EXAM(attemptId),
+    (attemptId) => ENDPOINTS.SUBMIT_EXAM(attemptId),
     {
       onSuccess: (data, attemptId, context) => {
         // Invalidate the specific attempt
@@ -100,7 +100,7 @@ export const useSubmitExam = () => {
         handleExamError(error, { 
           attemptId: variables,
           action: 'submit-exam',
-          endpoint: API_ENDPOINTS.SUBMIT_EXAM(variables)
+          endpoint: ENDPOINTS.SUBMIT_EXAM(variables)
         });
       }
     }
@@ -115,7 +115,7 @@ export const useSaveAnswer = () => {
     Answer,
     { attemptId: number; questionId: number; answer: string }
   >(
-    ({ attemptId, questionId }) => API_ENDPOINTS.SAVE_ANSWER(attemptId, questionId),
+    ({ attemptId, questionId }) => ENDPOINTS.SAVE_ANSWER(attemptId, questionId),
     {
       onSuccess: (data, variables, context) => {
         // Invalidate the specific attempt
@@ -129,7 +129,7 @@ export const useSaveAnswer = () => {
           attemptId: variables.attemptId,
           questionId: variables.questionId,
           action: 'save-answer',
-          endpoint: API_ENDPOINTS.SAVE_ANSWER(
+          endpoint: ENDPOINTS.SAVE_ANSWER(
             variables.attemptId, 
             variables.questionId
           )
@@ -147,7 +147,7 @@ export const useFlagQuestion = () => {
     void,
     { attemptId: number; questionId: number; flagged: boolean }
   >(
-    ({ attemptId, questionId }) => API_ENDPOINTS.FLAG_QUESTION(attemptId, questionId),
+    ({ attemptId, questionId }) => ENDPOINTS.FLAG_QUESTION(attemptId, questionId),
     {
       onSuccess: (_, variables, context) => {
         // Invalidate the specific attempt
@@ -161,7 +161,7 @@ export const useFlagQuestion = () => {
           attemptId: variables.attemptId,
           questionId: variables.questionId,
           action: variables.flagged ? 'flag-question' : 'unflag-question',
-          endpoint: API_ENDPOINTS.FLAG_QUESTION(
+          endpoint: ENDPOINTS.FLAG_QUESTION(
             variables.attemptId, 
             variables.questionId
           )

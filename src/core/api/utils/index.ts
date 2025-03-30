@@ -12,3 +12,6 @@ export * from './errorHandling';
 // Export OpenAPI utilities
 export * from './openApiQueryKeys';
 export * from './openApiTanstackAdapter';
+
+// Export endpoint utilities
+export * from './endpointUtils';

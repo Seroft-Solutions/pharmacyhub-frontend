@@ -4,58 +4,69 @@
  * This module defines all API endpoints for exam-related operations
  * using the core endpoint utilities.
  */
-import { createEndpoints } from '@/core/api/utils';
+import { createEndpoints } from '@/core/api/utils/endpointUtils';
 
-const BASE_URL = '/api/v1/exams-preparation';
+// Base API path for exams
+const EXAMS_BASE_PATH = 'v1/exams-preparation';
 
 /**
  * Create exam endpoints using core factory
  */
-export const API_ENDPOINTS = {
-  BASE: BASE_URL,
-  
-  // CRUD operations
-  EXAMS: `${BASE_URL}`,
-  EXAM: (id: number) => `${BASE_URL}/${id}`,
-  
-  // Custom endpoints
-  PUBLISHED: `${BASE_URL}/published`,
-  BY_STATUS: (status: string) => `${BASE_URL}/status/${status}`,
+export const API_ENDPOINTS = createEndpoints(EXAMS_BASE_PATH, {
+  // Custom endpoints for exams
+  PUBLISHED: (suffix = '') => `${EXAMS_BASE_PATH}/published${suffix}`,
+  BY_STATUS: (status: string) => `${EXAMS_BASE_PATH}/status/${status}`,
   
   // Exam operations
-  PUBLISH: (id: number) => `${BASE_URL}/${id}/publish`,
-  ARCHIVE: (id: number) => `${BASE_URL}/${id}/archive`,
+  PUBLISH: (id: number) => `${EXAMS_BASE_PATH}/${id}/publish`,
+  ARCHIVE: (id: number) => `${EXAMS_BASE_PATH}/${id}/archive`,
   
   // Questions
-  QUESTIONS: (examId: number) => `${BASE_URL}/${examId}/questions`,
+  QUESTIONS: (examId: number) => `${EXAMS_BASE_PATH}/${examId}/questions`,
   QUESTION_BY_ID: (examId: number, questionId: number) => 
-    `${BASE_URL}/${examId}/questions/${questionId}`,
+    `${EXAMS_BASE_PATH}/${examId}/questions/${questionId}`,
   
   // Stats
-  STATS: `${BASE_URL}/stats`,
+  STATS: `${EXAMS_BASE_PATH}/stats`,
   
   // Attempts
-  START_EXAM: (id: number) => `${BASE_URL}/${id}/start`,
-  SUBMIT_EXAM: (attemptId: number) => `${BASE_URL}/attempts/${attemptId}/submit`,
+  START_EXAM: (id: number) => `${EXAMS_BASE_PATH}/${id}/start`,
+  SUBMIT_EXAM: (attemptId: number) => `${EXAMS_BASE_PATH}/attempts/${attemptId}/submit`,
   SAVE_ANSWER: (attemptId: number, questionId: number) => 
-    `${BASE_URL}/attempts/${attemptId}/answer/${questionId}`,
+    `${EXAMS_BASE_PATH}/attempts/${attemptId}/answer/${questionId}`,
   FLAG_QUESTION: (attemptId: number, questionId: number) => 
-    `${BASE_URL}/attempts/${attemptId}/flag/${questionId}`,
+    `${EXAMS_BASE_PATH}/attempts/${attemptId}/flag/${questionId}`,
   
   // Attempts resource
-  ATTEMPTS: `${BASE_URL}/attempts`,
-  ATTEMPT: (id: number) => `${BASE_URL}/attempts/${id}`,
-  EXAM_ATTEMPTS: (examId: number) => `${BASE_URL}/${examId}/attempts`,
-  ATTEMPT_RESULT: (attemptId: number) => `${BASE_URL}/attempts/${attemptId}/result`,
+  ATTEMPTS: `${EXAMS_BASE_PATH}/attempts`,
+  ATTEMPT: (id: number) => `${EXAMS_BASE_PATH}/attempts/${id}`,
+  EXAM_ATTEMPTS: (examId: number) => `${EXAMS_BASE_PATH}/${examId}/attempts`,
+  ATTEMPT_RESULT: (attemptId: number) => `${EXAMS_BASE_PATH}/attempts/${attemptId}/result`,
+});
+
+// Base path for papers
+const PAPERS_BASE_PATH = `${EXAMS_BASE_PATH}/papers`;
+
+/**
+ * Paper-specific endpoints using core factory
+ */
+export const PAPER_ENDPOINTS = createEndpoints(PAPERS_BASE_PATH, {
+  // Paper types
+  MODEL: `${PAPERS_BASE_PATH}/model`,
+  PAST: `${PAPERS_BASE_PATH}/past`,
+  SUBJECT: `${PAPERS_BASE_PATH}/subject`,
+  PRACTICE: `${PAPERS_BASE_PATH}/practice`,
   
-  // Papers resource
-  PAPERS: `${BASE_URL}/papers`,
-  PAPER: (id: number) => `${BASE_URL}/papers/${id}`,
-  MODEL_PAPERS: `${BASE_URL}/papers/model`,
-  PAST_PAPERS: `${BASE_URL}/papers/past`,
-  SUBJECT_PAPERS: `${BASE_URL}/papers/subject`,
-  PRACTICE_PAPERS: `${BASE_URL}/papers/practice`,
-  UPLOAD_JSON: `${BASE_URL}/papers/upload/json`,
+  // Actions
+  UPLOAD_JSON: `${PAPERS_BASE_PATH}/upload/json`,
+});
+
+/**
+ * Export all endpoints in a single object for convenience
+ */
+export const ENDPOINTS = {
+  ...API_ENDPOINTS,
+  PAPERS: PAPER_ENDPOINTS,
 };
 
-export default API_ENDPOINTS;
+export default ENDPOINTS;

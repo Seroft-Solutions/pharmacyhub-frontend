@@ -6,7 +6,7 @@
  */
 import { useApiQuery, useApiMutation } from '@/core/api/hooks';
 import { examsQueryKeys } from '../utils/queryKeys';
-import { API_ENDPOINTS } from '../constants';
+import { ENDPOINTS } from '../constants';
 import { handleExamError } from '../utils/errorHandler';
 
 interface Payment {
@@ -24,6 +24,13 @@ interface PaymentIntent {
   amount: number;
 }
 
+// Payment endpoint constants
+const PAYMENT_BASE = '/api/v1/payments';
+const PAYMENT_ENDPOINTS = {
+  INTENT: `${PAYMENT_BASE}/intent`,
+  CONFIRM: `${PAYMENT_BASE}/confirm`,
+};
+
 /**
  * Hook for creating a payment intent for premium exams
  */
@@ -32,8 +39,7 @@ export const useCreatePaymentIntent = () => {
     PaymentIntent,
     { examId: number; amount: number }
   >(
-    // Assuming there's a payment endpoint
-    '/api/v1/payments/intent',
+    PAYMENT_ENDPOINTS.INTENT,
     {
       onSuccess: (_, variables, context) => {
         // After payment intent creation, no need to invalidate any queries
@@ -44,7 +50,7 @@ export const useCreatePaymentIntent = () => {
         handleExamError(error, { 
           examId: variables.examId,
           action: 'create-payment-intent',
-          endpoint: '/api/v1/payments/intent'
+          endpoint: PAYMENT_ENDPOINTS.INTENT
         });
       }
     }
@@ -59,8 +65,7 @@ export const useConfirmPayment = () => {
     Payment,
     { examId: number; paymentIntentId: string }
   >(
-    // Assuming there's a payment confirmation endpoint
-    '/api/v1/payments/confirm',
+    PAYMENT_ENDPOINTS.CONFIRM,
     {
       onSuccess: (_, variables, context) => {
         // After payment is confirmed, invalidate the exam to refresh its access status
@@ -73,7 +78,7 @@ export const useConfirmPayment = () => {
         handleExamError(error, { 
           examId: variables.examId,
           action: 'confirm-payment',
-          endpoint: '/api/v1/payments/confirm'
+          endpoint: PAYMENT_ENDPOINTS.CONFIRM
         });
       }
     }
@@ -86,14 +91,14 @@ export const useConfirmPayment = () => {
 export const useExamAccess = (examId: number, options = {}) => {
   return useApiQuery<{ hasAccess: boolean }>(
     [...examsQueryKeys.detail(examId), 'access'],
-    `/api/v1/exams-preparation/${examId}/access`,
+    `${ENDPOINTS.BASE}/${examId}/access`,
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           examId,
           action: 'check-access',
-          endpoint: `/api/v1/exams-preparation/${examId}/access`
+          endpoint: `${ENDPOINTS.BASE}/${examId}/access`
         });
       },
       ...options

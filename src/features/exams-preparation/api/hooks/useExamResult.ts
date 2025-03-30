@@ -7,7 +7,7 @@
 import { useApiQuery } from '@/core/api/hooks';
 import { Result } from '../../types';
 import { attemptKeys } from '../utils/queryKeys';
-import { API_ENDPOINTS } from '../constants';
+import { ENDPOINTS } from '../constants';
 import { handleExamError } from '../utils/errorHandler';
 
 /**
@@ -16,7 +16,7 @@ import { handleExamError } from '../utils/errorHandler';
 export const useExamResult = (attemptId: number, options = {}) => {
   return useApiQuery<Result>(
     attemptKeys.result(attemptId),
-    API_ENDPOINTS.ATTEMPT_RESULT(attemptId),
+    ENDPOINTS.ATTEMPT_RESULT(attemptId),
     {
       // Results are typically more static
       staleTime: 30 * 60 * 1000, // 30 minutes
@@ -26,7 +26,7 @@ export const useExamResult = (attemptId: number, options = {}) => {
         handleExamError(error, { 
           attemptId,
           action: 'fetch-result',
-          endpoint: API_ENDPOINTS.ATTEMPT_RESULT(attemptId)
+          endpoint: ENDPOINTS.ATTEMPT_RESULT(attemptId)
         });
       },
       ...options

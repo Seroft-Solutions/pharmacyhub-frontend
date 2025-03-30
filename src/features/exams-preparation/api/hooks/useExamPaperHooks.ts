@@ -7,7 +7,7 @@
 import { useApiQuery, useApiMutation } from '@/core/api/hooks';
 import { Paper } from '../../types';
 import { paperKeys } from '../utils/queryKeys';
-import { API_ENDPOINTS } from '../constants';
+import { ENDPOINTS } from '../constants';
 import { handleExamError } from '../utils/errorHandler';
 
 /**
@@ -16,13 +16,13 @@ import { handleExamError } from '../utils/errorHandler';
 export const usePapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.all(),
-    API_ENDPOINTS.PAPERS,
+    ENDPOINTS.PAPERS.LIST,
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'fetch-papers',
-          endpoint: API_ENDPOINTS.PAPERS
+          endpoint: ENDPOINTS.PAPERS.LIST
         });
       },
       ...options
@@ -36,14 +36,14 @@ export const usePapers = (options = {}) => {
 export const usePaper = (paperId: number, options = {}) => {
   return useApiQuery<Paper>(
     paperKeys.detail(paperId),
-    API_ENDPOINTS.PAPER(paperId),
+    ENDPOINTS.PAPERS.DETAIL(paperId),
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           paperId,
           action: 'fetch-paper',
-          endpoint: API_ENDPOINTS.PAPER(paperId)
+          endpoint: ENDPOINTS.PAPERS.DETAIL(paperId)
         });
       },
       ...options
@@ -57,13 +57,13 @@ export const usePaper = (paperId: number, options = {}) => {
 export const useModelPapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.model(),
-    API_ENDPOINTS.MODEL_PAPERS,
+    ENDPOINTS.PAPERS.MODEL,
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'fetch-model-papers',
-          endpoint: API_ENDPOINTS.MODEL_PAPERS
+          endpoint: ENDPOINTS.PAPERS.MODEL
         });
       },
       ...options
@@ -77,13 +77,13 @@ export const useModelPapers = (options = {}) => {
 export const usePastPapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.past(),
-    API_ENDPOINTS.PAST_PAPERS,
+    ENDPOINTS.PAPERS.PAST,
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'fetch-past-papers',
-          endpoint: API_ENDPOINTS.PAST_PAPERS
+          endpoint: ENDPOINTS.PAPERS.PAST
         });
       },
       ...options
@@ -97,13 +97,13 @@ export const usePastPapers = (options = {}) => {
 export const useSubjectPapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.subject(),
-    API_ENDPOINTS.SUBJECT_PAPERS,
+    ENDPOINTS.PAPERS.SUBJECT,
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'fetch-subject-papers',
-          endpoint: API_ENDPOINTS.SUBJECT_PAPERS
+          endpoint: ENDPOINTS.PAPERS.SUBJECT
         });
       },
       ...options
@@ -117,13 +117,13 @@ export const useSubjectPapers = (options = {}) => {
 export const usePracticePapers = (options = {}) => {
   return useApiQuery<Paper[]>(
     paperKeys.practice(),
-    API_ENDPOINTS.PRACTICE_PAPERS,
+    ENDPOINTS.PAPERS.PRACTICE,
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'fetch-practice-papers',
-          endpoint: API_ENDPOINTS.PRACTICE_PAPERS
+          endpoint: ENDPOINTS.PAPERS.PRACTICE
         });
       },
       ...options
@@ -136,7 +136,7 @@ export const usePracticePapers = (options = {}) => {
  */
 export const useCreatePaper = () => {
   return useApiMutation<Paper, Partial<Paper>>(
-    API_ENDPOINTS.PAPERS,
+    ENDPOINTS.PAPERS.CREATE,
     {
       onSuccess: (_, __, context) => {
         // Invalidate all paper queries
@@ -148,7 +148,7 @@ export const useCreatePaper = () => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'create-paper',
-          endpoint: API_ENDPOINTS.PAPERS
+          endpoint: ENDPOINTS.PAPERS.CREATE
         });
       }
     }
@@ -160,7 +160,7 @@ export const useCreatePaper = () => {
  */
 export const useUpdatePaper = () => {
   return useApiMutation<Paper, { id: number; paper: Partial<Paper> }>(
-    ({ id }) => API_ENDPOINTS.PAPER(id),
+    ({ id }) => ENDPOINTS.PAPERS.UPDATE(id),
     {
       method: 'PUT',
       onSuccess: (data, variables, context) => {
@@ -179,7 +179,7 @@ export const useUpdatePaper = () => {
         handleExamError(error, { 
           paperId: variables.id,
           action: 'update-paper',
-          endpoint: API_ENDPOINTS.PAPER(variables.id)
+          endpoint: ENDPOINTS.PAPERS.UPDATE(variables.id)
         });
       }
     }
@@ -191,7 +191,7 @@ export const useUpdatePaper = () => {
  */
 export const useDeletePaper = () => {
   return useApiMutation<void, number>(
-    (id) => API_ENDPOINTS.PAPER(id),
+    (id) => ENDPOINTS.PAPERS.DELETE(id),
     {
       method: 'DELETE',
       onSuccess: (_, __, context) => {
@@ -205,7 +205,7 @@ export const useDeletePaper = () => {
         handleExamError(error, { 
           paperId: variables,
           action: 'delete-paper',
-          endpoint: API_ENDPOINTS.PAPER(variables)
+          endpoint: ENDPOINTS.PAPERS.DELETE(variables)
         });
       }
     }
@@ -217,7 +217,7 @@ export const useDeletePaper = () => {
  */
 export const useUploadJsonPaper = () => {
   return useApiMutation<Paper, FormData>(
-    API_ENDPOINTS.UPLOAD_JSON,
+    ENDPOINTS.PAPERS.UPLOAD_JSON,
     {
       onSuccess: (_, __, context) => {
         // Invalidate all paper lists
@@ -229,7 +229,7 @@ export const useUploadJsonPaper = () => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'upload-json-paper',
-          endpoint: API_ENDPOINTS.UPLOAD_JSON
+          endpoint: ENDPOINTS.PAPERS.UPLOAD_JSON
         });
       }
     }

@@ -7,7 +7,7 @@
 import { useApiQuery, useApiMutation, useApiPaginatedQuery } from '@/core/api/hooks';
 import { Exam, ExamStatus } from '../../types';
 import { examsQueryKeys } from '../utils/queryKeys';
-import { API_ENDPOINTS } from '../constants';
+import { ENDPOINTS } from '../constants';
 import { handleExamError } from '../utils/errorHandler';
 
 /**
@@ -33,7 +33,7 @@ export const useExams = ({
   
   return useApiPaginatedQuery<Exam[]>(
     examsQueryKeys.lists(status ? { status } : undefined),
-    API_ENDPOINTS.EXAMS,
+    ENDPOINTS.LIST,
     { page, size: limit },
     {
       enabled,
@@ -42,7 +42,7 @@ export const useExams = ({
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'fetch-exams',
-          endpoint: API_ENDPOINTS.EXAMS
+          endpoint: ENDPOINTS.LIST
         });
       }
     }
@@ -57,7 +57,7 @@ export const usePublishedExams = (
 ) => {
   return useApiPaginatedQuery<Exam[]>(
     examsQueryKeys.published(),
-    API_ENDPOINTS.PUBLISHED,
+    ENDPOINTS.PUBLISHED(),
     { page, size: limit },
     { 
       enabled,
@@ -65,7 +65,7 @@ export const usePublishedExams = (
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'fetch-published-exams',
-          endpoint: API_ENDPOINTS.PUBLISHED
+          endpoint: ENDPOINTS.PUBLISHED()
         });
       }
     }
@@ -81,7 +81,7 @@ export const useExamsByStatus = (
 ) => {
   return useApiPaginatedQuery<Exam[]>(
     examsQueryKeys.byStatus(status),
-    API_ENDPOINTS.BY_STATUS(status.toString()),
+    ENDPOINTS.BY_STATUS(status.toString()),
     { page, size: limit },
     { 
       enabled,
@@ -89,7 +89,7 @@ export const useExamsByStatus = (
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'fetch-exams-by-status',
-          endpoint: API_ENDPOINTS.BY_STATUS(status.toString())
+          endpoint: ENDPOINTS.BY_STATUS(status.toString())
         });
       }
     }
@@ -101,7 +101,7 @@ export const useExamsByStatus = (
  */
 export const useCreateExam = () => {
   return useApiMutation<Exam, Partial<Exam>>(
-    API_ENDPOINTS.EXAMS,
+    ENDPOINTS.CREATE,
     {
       onSuccess: (_, __, context) => {
         // Invalidate all exam lists on success
@@ -113,7 +113,7 @@ export const useCreateExam = () => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'create-exam',
-          endpoint: API_ENDPOINTS.EXAMS
+          endpoint: ENDPOINTS.CREATE
         });
       }
     }
@@ -125,7 +125,7 @@ export const useCreateExam = () => {
  */
 export const useUpdateExam = () => {
   return useApiMutation<Exam, { id: number; exam: Partial<Exam> }>(
-    ({ id }) => API_ENDPOINTS.EXAM(id),
+    ({ id }) => ENDPOINTS.UPDATE(id),
     {
       method: 'PUT',
       onSuccess: (data, variables, context) => {
@@ -144,7 +144,7 @@ export const useUpdateExam = () => {
         handleExamError(error, { 
           examId: variables.id,
           action: 'update-exam',
-          endpoint: API_ENDPOINTS.EXAM(variables.id)
+          endpoint: ENDPOINTS.UPDATE(variables.id)
         });
       }
     }
@@ -156,7 +156,7 @@ export const useUpdateExam = () => {
  */
 export const useDeleteExam = () => {
   return useApiMutation<void, number>(
-    (id) => API_ENDPOINTS.EXAM(id),
+    (id) => ENDPOINTS.DELETE(id),
     {
       method: 'DELETE',
       onSuccess: (_, __, context) => {
@@ -170,7 +170,7 @@ export const useDeleteExam = () => {
         handleExamError(error, { 
           examId: variables,
           action: 'delete-exam',
-          endpoint: API_ENDPOINTS.EXAM(variables)
+          endpoint: ENDPOINTS.DELETE(variables)
         });
       }
     }
@@ -182,7 +182,7 @@ export const useDeleteExam = () => {
  */
 export const usePublishExam = () => {
   return useApiMutation<Exam, number>(
-    (id) => API_ENDPOINTS.PUBLISH(id),
+    (id) => ENDPOINTS.PUBLISH(id),
     {
       onSuccess: (data, id, context) => {
         // Invalidate specific exam
@@ -205,7 +205,7 @@ export const usePublishExam = () => {
         handleExamError(error, { 
           examId: variables,
           action: 'publish-exam',
-          endpoint: API_ENDPOINTS.PUBLISH(variables)
+          endpoint: ENDPOINTS.PUBLISH(variables)
         });
       }
     }
@@ -217,7 +217,7 @@ export const usePublishExam = () => {
  */
 export const useArchiveExam = () => {
   return useApiMutation<Exam, number>(
-    (id) => API_ENDPOINTS.ARCHIVE(id),
+    (id) => ENDPOINTS.ARCHIVE(id),
     {
       onSuccess: (data, id, context) => {
         // Invalidate specific exam
@@ -235,7 +235,7 @@ export const useArchiveExam = () => {
         handleExamError(error, { 
           examId: variables,
           action: 'archive-exam',
-          endpoint: API_ENDPOINTS.ARCHIVE(variables)
+          endpoint: ENDPOINTS.ARCHIVE(variables)
         });
       }
     }

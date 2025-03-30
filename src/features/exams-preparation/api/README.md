@@ -9,8 +9,32 @@ This feature leverages the core API module for all data fetching and mutation op
 - `useApiMutation` from `@/core/api/hooks` - For creating mutation hooks
 - `createQueryKeyFactory` from `@/core/api/utils/queryKeyFactory` - For consistent query keys
 - `handleApiError`, `createApiError` from `@/core/api/core/error` - For error handling
+- `createEndpoints` from `@/core/api/utils/endpointUtils` - For endpoint constants
 
 ## Pattern Examples
+
+### Endpoint Constants Example
+
+```tsx
+// Correct pattern using core
+import { createEndpoints } from '@/core/api/utils/endpointUtils';
+
+// Base API path for exams
+const EXAMS_BASE_PATH = 'v1/exams-preparation';
+
+// Create exam endpoints using core factory
+export const API_ENDPOINTS = createEndpoints(EXAMS_BASE_PATH, {
+  // Custom endpoints for exams
+  PUBLISHED: `${EXAMS_BASE_PATH}/published`,
+  BY_STATUS: (status: string) => `${EXAMS_BASE_PATH}/status/${status}`,
+  
+  // Exam operations
+  PUBLISH: (id: number) => `${EXAMS_BASE_PATH}/${id}/publish`,
+  
+  // Questions
+  QUESTIONS: (examId: number) => `${EXAMS_BASE_PATH}/${examId}/questions`,
+});
+```
 
 ### Query Hook Example
 
@@ -24,14 +48,14 @@ import { handleExamError } from '../utils/errorHandler';
 export const useExam = (examId: number, options = {}) => {
   return useApiQuery<Exam>(
     examsQueryKeys.detail(examId),
-    API_ENDPOINTS.EXAM(examId),
+    API_ENDPOINTS.DETAIL(examId),
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           examId,
           action: 'fetch-exam',
-          endpoint: API_ENDPOINTS.EXAM(examId)
+          endpoint: API_ENDPOINTS.DETAIL(examId)
         });
       },
       ...options
@@ -51,7 +75,7 @@ import { handleExamError } from '../utils/errorHandler';
 
 export const useCreateExam = () => {
   return useApiMutation<Exam, Partial<Exam>>(
-    API_ENDPOINTS.EXAMS,
+    API_ENDPOINTS.CREATE,
     {
       onSuccess: (_, __, context) => {
         // Invalidate all exam lists on success
@@ -63,30 +87,12 @@ export const useCreateExam = () => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           action: 'create-exam',
-          endpoint: API_ENDPOINTS.EXAMS
+          endpoint: API_ENDPOINTS.CREATE
         });
       }
     }
   );
 };
-```
-
-### Query Keys Example
-
-```tsx
-// Correct pattern using core
-import { createQueryKeyFactory } from '@/core/api/utils/queryKeyFactory';
-
-export const examKeys = createQueryKeyFactory<
-  | 'published'
-  | 'status'
-  | 'questions'
-  | 'stats'
->('exams-preparation');
-
-// Usage example
-examKeys.detail(123); // ['exams-preparation', 'detail', 123]
-examKeys.action('published'); // ['exams-preparation', 'published']
 ```
 
 ## Error Handling
@@ -125,28 +131,30 @@ export function handleExamError(
 }
 ```
 
-### Error Handling in Components
+## Endpoint Management
 
-Use the error information from API hooks for displaying appropriate messages to users:
+All API endpoints are defined using the core `createEndpoints` utility to ensure consistent endpoint patterns across the application.
+
+### Endpoint Definition Example
 
 ```tsx
-import { useExam } from '../api/hooks';
-import { isValidationError, getUserFriendlyErrorMessage } from '../api/utils/errorHandler';
+const EXAMS_BASE_PATH = 'v1/exams-preparation';
 
-function ExamDetailComponent({ examId }) {
-  const { data, error, isLoading } = useExam(examId);
+// Create exam endpoints with standard CRUD operations
+export const API_ENDPOINTS = createEndpoints(EXAMS_BASE_PATH, {
+  // The factory automatically adds these standard endpoints:
+  // BASE, LIST, DETAIL(id), CREATE, UPDATE(id), PATCH(id), DELETE(id)
   
-  if (isLoading) {
-    return <LoadingState />;
-  }
-  
-  if (error) {
-    const message = getUserFriendlyErrorMessage(error);
-    return <ErrorState message={message} />;
-  }
-  
-  return <ExamDetail exam={data} />;
-}
+  // Custom endpoints
+  PUBLISHED: `${EXAMS_BASE_PATH}/published`,
+  BY_STATUS: (status: string) => `${EXAMS_BASE_PATH}/status/${status}`,
+});
+
+// Usage:
+API_ENDPOINTS.LIST;            // '/api/v1/exams-preparation'
+API_ENDPOINTS.DETAIL(123);     // '/api/v1/exams-preparation/123'
+API_ENDPOINTS.PUBLISHED;       // '/api/v1/exams-preparation/published'
+API_ENDPOINTS.BY_STATUS('active'); // '/api/v1/exams-preparation/status/active'
 ```
 
 ## Best Practices
@@ -161,6 +169,8 @@ function ExamDetailComponent({ examId }) {
 8. Use pagination utilities when dealing with lists
 9. Include proper error handling in all API hooks
 10. Use domain-specific context in error handlers
+11. Define all endpoints using the core `createEndpoints` utility
+12. Group related endpoints logically
 
 ## Extending Core Functionality
 

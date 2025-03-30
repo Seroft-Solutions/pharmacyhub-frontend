@@ -7,7 +7,7 @@
 import { useApiQuery, useApiMutation } from '@/core/api/hooks';
 import { Exam, Question } from '../../types/models/exam';
 import { examsQueryKeys } from '../utils/queryKeys';
-import { API_ENDPOINTS } from '../constants';
+import { ENDPOINTS } from '../constants';
 import { handleExamError } from '../utils/errorHandler';
 
 /**
@@ -16,7 +16,7 @@ import { handleExamError } from '../utils/errorHandler';
 export const useExam = (examId: number, options = {}) => {
   return useApiQuery<Exam>(
     examsQueryKeys.detail(examId),
-    API_ENDPOINTS.EXAM(examId),
+    ENDPOINTS.DETAIL(examId),
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
       cacheTime: 15 * 60 * 1000, // 15 minutes
@@ -25,7 +25,7 @@ export const useExam = (examId: number, options = {}) => {
         handleExamError(error, { 
           examId,
           action: 'fetch-exam',
-          endpoint: API_ENDPOINTS.EXAM(examId)
+          endpoint: ENDPOINTS.DETAIL(examId)
         });
       },
       ...options
@@ -39,14 +39,14 @@ export const useExam = (examId: number, options = {}) => {
 export const useExamQuestions = (examId: number, options = {}) => {
   return useApiQuery<Question[]>(
     examsQueryKeys.questions(examId),
-    API_ENDPOINTS.QUESTIONS(examId),
+    ENDPOINTS.QUESTIONS(examId),
     {
       onError: (error) => {
         // Use core error handling with exam-specific context
         handleExamError(error, { 
           examId,
           action: 'fetch-questions',
-          endpoint: API_ENDPOINTS.QUESTIONS(examId)
+          endpoint: ENDPOINTS.QUESTIONS(examId)
         });
       },
       ...options
@@ -62,7 +62,7 @@ export const useAddQuestion = () => {
     Question,
     { examId: number; question: Omit<Question, 'id'> }
   >(
-    ({ examId }) => API_ENDPOINTS.QUESTIONS(examId),
+    ({ examId }) => ENDPOINTS.QUESTIONS(examId),
     {
       onSuccess: (_, variables, context) => {
         // Invalidate relevant queries on success
@@ -75,7 +75,7 @@ export const useAddQuestion = () => {
         handleExamError(error, { 
           examId: variables.examId,
           action: 'add-question',
-          endpoint: API_ENDPOINTS.QUESTIONS(variables.examId)
+          endpoint: ENDPOINTS.QUESTIONS(variables.examId)
         });
       }
     }
@@ -90,7 +90,7 @@ export const useUpdateQuestion = () => {
     Question,
     { examId: number; questionId: number; question: Partial<Question> }
   >(
-    ({ examId, questionId }) => API_ENDPOINTS.QUESTION_BY_ID(examId, questionId),
+    ({ examId, questionId }) => ENDPOINTS.QUESTION_BY_ID(examId, questionId),
     {
       method: 'PUT',
       onSuccess: (_, variables, context) => {
@@ -105,7 +105,7 @@ export const useUpdateQuestion = () => {
           examId: variables.examId,
           questionId: variables.questionId,
           action: 'update-question',
-          endpoint: API_ENDPOINTS.QUESTION_BY_ID(
+          endpoint: ENDPOINTS.QUESTION_BY_ID(
             variables.examId, 
             variables.questionId
           )
@@ -123,7 +123,7 @@ export const useDeleteQuestion = () => {
     void,
     { examId: number; questionId: number }
   >(
-    ({ examId, questionId }) => API_ENDPOINTS.QUESTION_BY_ID(examId, questionId),
+    ({ examId, questionId }) => ENDPOINTS.QUESTION_BY_ID(examId, questionId),
     {
       method: 'DELETE',
       onSuccess: (_, variables, context) => {
@@ -138,7 +138,7 @@ export const useDeleteQuestion = () => {
           examId: variables.examId,
           questionId: variables.questionId,
           action: 'delete-question',
-          endpoint: API_ENDPOINTS.QUESTION_BY_ID(
+          endpoint: ENDPOINTS.QUESTION_BY_ID(
             variables.examId, 
             variables.questionId
           )
