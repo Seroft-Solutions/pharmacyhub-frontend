@@ -1,157 +1,184 @@
 /**
- * Component prop types for the exams feature
+ * Component prop types for exams preparation feature
+ * 
+ * These types define the props for all components in the exams preparation feature.
+ * Using standardized prop types improves consistency and maintainability.
  */
 
-import { ReactNode } from 'react';
-import { Exam, Question, ExamResult, ExamAttempt, DifficultyLevel } from '../models/exam';
+import { Exam, Question, ExamAttempt, ExamResult } from '../models/exam';
+import { DifficultyLevel, QuestionType } from '../models/exam';
 
 /**
- * Atom component props
+ * Props for the exam card component
  */
-
-export interface ExamLabelProps {
-  status: string;
-  className?: string;
-}
-
-export interface QuestionIndicatorProps {
-  index: number;
-  isActive?: boolean;
-  isAnswered?: boolean;
-  isCorrect?: boolean;
-  onClick?: () => void;
-}
-
-export interface DifficultyBadgeProps {
-  difficulty: DifficultyLevel;
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
-
-export interface ExamTimerProps {
-  timeInSeconds: number;
-  isRunning?: boolean;
-  onComplete?: () => void;
-  className?: string;
-}
-
-/**
- * Molecule component props
- */
-
 export interface ExamCardProps {
   exam: Exam;
-  variant?: 'default' | 'compact' | 'detailed';
-  showActions?: boolean;
-  onSelect?: (examId: number) => void;
-  showPurchaseDate?: boolean;
-  purchaseInfo?: {
-    purchaseDate: string;
-    expiryDate?: string;
-  };
+  progress?: ExamProgressInfo;
+  onClick?: (exam: Exam) => void;
+  showPrice?: boolean;
+  showProgress?: boolean;
 }
 
-export interface QuestionFormProps {
-  question?: Question;
-  examId: number;
-  onSave: (question: Question) => void;
-  onCancel?: () => void;
-  isSubmitting?: boolean;
-}
-
-export interface ExamPurchaseModalProps {
+/**
+ * Props for the exam details component
+ */
+export interface ExamDetailsProps {
   exam: Exam;
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-export interface QuestionNavigatorProps {
-  currentIndex: number;
-  totalQuestions: number;
-  answeredQuestions: Record<number, boolean>;
-  onNavigate: (index: number) => void;
-}
-
-export interface ExamFilterBarProps {
-  onFilterChange: (filters: Record<string, any>) => void;
-  initialFilters?: Record<string, any>;
-  showCategoryFilter?: boolean;
-  showStatusFilter?: boolean;
-  showPremiumFilter?: boolean;
+  progress?: ExamProgressInfo;
+  onStart?: (exam: Exam) => void;
+  onContinue?: (exam: Exam, attemptId: string) => void;
+  onReview?: (exam: Exam, attemptId: string) => void;
 }
 
 /**
- * Organism component props
+ * Props for the exam list component
  */
-
-export interface ExamDashboardProps {
-  userId?: string;
-  filterDefaults?: {
-    status?: string;
-    category?: string;
-  };
+export interface ExamListProps {
+  exams: Exam[];
+  progress?: Record<number, ExamProgressInfo>;
+  onSelectExam?: (exam: Exam) => void;
+  isLoading?: boolean;
+  filter?: ExamFilterOptions;
+  onFilterChange?: (filter: ExamFilterOptions) => void;
 }
 
-export interface ExamEditorProps {
-  examId?: number;
-  onSaved?: (exam: Exam) => void;
+/**
+ * Props for the question component
+ */
+export interface QuestionProps {
+  question: Question;
+  selectedAnswer?: string | string[];
+  onAnswerChange?: (questionId: number, answer: string | string[]) => void;
+  showExplanation?: boolean;
+  showCorrectAnswer?: boolean;
+  isReview?: boolean;
+  isDisabled?: boolean;
 }
 
-export interface ExamAttemptScreenProps {
-  examId: number;
-  attemptId?: string;
+/**
+ * Props for the exam timer component
+ */
+export interface ExamTimerProps {
+  duration: number; // in seconds
+  startTime: string;
+  onTimeExpired?: () => void;
+  isPaused?: boolean;
 }
 
+/**
+ * Props for the exam progress component
+ */
+export interface ExamProgressProps {
+  currentQuestion: number;
+  totalQuestions: number;
+  answeredQuestions: number[];
+  currentTime: number; // in seconds
+  totalTime: number; // in seconds
+  onQuestionSelect?: (questionIndex: number) => void;
+}
+
+/**
+ * Props for the exam results component
+ */
 export interface ExamResultsProps {
-  examId: number;
-  attemptId?: string;
-}
-
-export interface QuestionBankProps {
-  examId: number;
-  onQuestionSelect?: (questionId: number) => void;
-}
-
-export interface AdminExamListProps {
-  defaultFilters?: Record<string, any>;
-  showPagination?: boolean;
-  pageSize?: number;
+  result: ExamResult;
+  onRetry?: () => void;
+  onReview?: () => void;
+  onNewExam?: () => void;
 }
 
 /**
- * Template component props
+ * Props for the payment component
  */
-
-export interface ExamPageTemplateProps {
-  title: string;
-  subtitle?: string;
-  children: ReactNode;
-  actions?: ReactNode;
-  sidebar?: ReactNode;
+export interface ExamPaymentProps {
+  exam: Exam;
+  onSuccess?: (transactionId: string) => void;
+  onCancel?: () => void;
 }
 
-export interface QuestionPageTemplateProps {
-  examTitle: string;
-  questionNumber: number;
+/**
+ * Exam progress information
+ */
+export interface ExamProgressInfo {
+  attemptsCount: number;
+  bestScore?: number;
+  lastAttemptDate?: string;
+  lastAttemptId?: string;
+  isCompleted?: boolean;
+  isPassed?: boolean;
+  inProgress?: boolean;
+  currentAttemptId?: string;
+}
+
+/**
+ * Exam filter options
+ */
+export interface ExamFilterOptions {
+  search?: string;
+  difficulty?: DifficultyLevel | 'all';
+  isPremium?: boolean | 'all';
+  status?: 'completed' | 'inProgress' | 'notStarted' | 'all';
+  sortBy?: 'title' | 'date' | 'difficulty' | 'progress';
+  sortDirection?: 'asc' | 'desc';
+}
+
+/**
+ * Question navigation props
+ */
+export interface QuestionNavigationProps {
+  currentQuestion: number;
   totalQuestions: number;
-  timer?: ReactNode;
-  navigator?: ReactNode;
-  children: ReactNode;
-  actions?: ReactNode;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  onFinish?: () => void;
+  isFirstQuestion?: boolean;
+  isLastQuestion?: boolean;
+  isDisabled?: boolean;
 }
 
 /**
- * Guard component props
+ * Answer option props
  */
-
-export interface ExamOperationGuardProps {
-  operation: string;
-  children: ReactNode;
-  fallback?: ReactNode;
+export interface AnswerOptionProps {
+  id: string;
+  text: string;
+  isSelected?: boolean;
+  isCorrect?: boolean;
+  isIncorrect?: boolean;
+  onSelect?: (id: string) => void;
+  disabled?: boolean;
+  showCorrectness?: boolean;
+  label?: string;
 }
 
-export interface PaymentRequiredGuardProps {
-  examId: number;
-  children: ReactNode;
+/**
+ * Exam search props
+ */
+export interface ExamSearchProps {
+  value?: string;
+  onChange?: (value: string) => void;
+  onSearch?: (value: string) => void;
+  placeholder?: string;
+  isLoading?: boolean;
+}
+
+/**
+ * Exam filter props
+ */
+export interface ExamFilterProps {
+  filter: ExamFilterOptions;
+  onChange: (filter: ExamFilterOptions) => void;
+  difficulties?: DifficultyLevel[];
+}
+
+/**
+ * Exam progress stats props
+ */
+export interface ExamProgressStatsProps {
+  completedExams: number;
+  totalExams: number;
+  passedExams: number;
+  averageScore: number;
+  bestScore: number;
+  totalTimeSpent: number; // in minutes
 }

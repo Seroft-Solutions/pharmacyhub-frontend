@@ -1,78 +1,150 @@
 /**
- * State management types for the exams feature
+ * State types for exams preparation feature
+ * 
+ * These types define the state management structures for the exams preparation feature,
+ * including Zustand store types and context types.
  */
 
-import { Question, ExamAnswer, DifficultyLevel } from '../models/exam';
+import { Exam, Question, ExamAttempt, ExamResult } from '../models/exam';
 
 /**
- * Zustand store state for exam editor
+ * Exam list store state
  */
-export interface ExamEditorState {
-  // State
-  questions: Question[];
-  currentQuestionIndex: number;
-  isDirty: boolean;
-  validation: Record<string, string[]>;
+export interface ExamListState {
+  exams: Exam[];
+  isLoading: boolean;
+  error: string | null;
   
   // Actions
-  addQuestion: (question: Question) => void;
-  updateQuestion: (index: number, question: Question) => void;
-  removeQuestion: (index: number) => void;
-  reorderQuestions: (fromIndex: number, toIndex: number) => void;
-  setCurrentQuestion: (index: number) => void;
-  validateExam: () => boolean;
-  markAsSaved: () => void;
+  fetchExams: () => Promise<void>;
+  filterExams: (filter: ExamFilterOptions) => void;
+  clearError: () => void;
 }
 
 /**
- * Zustand store state for exam attempt
+ * Filter options for exams
  */
-export interface ExamAttemptState {
-  // State
-  examId: number | null;
-  startTime: string | null;
-  timeSpent: number; // in seconds
-  currentQuestionIndex: number;
-  answers: Record<number, ExamAnswer>;
-  
-  // Actions
-  startExam: (examId: number) => void;
-  setAnswer: (questionId: number, answer: Partial<ExamAnswer>) => void;
-  nextQuestion: () => void;
-  prevQuestion: () => void;
-  jumpToQuestion: (index: number) => void;
-  updateTimeSpent: (seconds: number) => void;
-  submitExam: () => Promise<boolean>;
-  resetAttempt: () => void;
-}
-
-/**
- * Context types for exam filters
- */
-export interface ExamFilterContextType {
-  filters: ExamFilters;
-  setFilter: <K extends keyof ExamFilters>(key: K, value: ExamFilters[K]) => void;
-  clearFilters: () => void;
-}
-
-/**
- * Filter options for exam search and listing
- */
-export interface ExamFilters {
-  status?: string;
+export interface ExamFilterOptions {
   search?: string;
-  category?: string;
-  difficulty?: DifficultyLevel;
-  isPremium?: boolean;
+  difficulty?: string | 'all';
+  isPremium?: boolean | 'all';
+  completed?: boolean | 'all';
+  sortBy?: 'title' | 'date' | 'difficulty';
+  sortDirection?: 'asc' | 'desc';
 }
 
 /**
- * Context types for exam session
+ * Active exam store state
  */
-export interface ExamSessionContextType {
-  isTimerActive: boolean;
-  remainingTime: number | null; // in seconds
-  startTimer: () => void;
+export interface ActiveExamState {
+  exam: Exam | null;
+  attempt: ExamAttempt | null;
+  currentQuestionIndex: number;
+  answers: Record<number, string | string[]>;
+  flaggedQuestions: Set<number>;
+  timeRemaining: number; // in seconds
+  isLoading: boolean;
+  error: string | null;
+  
+  // Actions
+  loadExam: (examId: number) => Promise<void>;
+  startAttempt: () => Promise<void>;
+  continueAttempt: (attemptId: string) => Promise<void>;
+  submitAnswer: (questionId: number, answer: string | string[]) => Promise<void>;
+  flagQuestion: (questionId: number, flagged: boolean) => void;
+  navigateToQuestion: (index: number) => void;
+  finishAttempt: () => Promise<ExamResult>;
+  resetExam: () => void;
+  updateTimeRemaining: (seconds: number) => void;
+}
+
+/**
+ * Exam results store state
+ */
+export interface ExamResultsState {
+  results: Record<string, ExamResult>; // attemptId -> result
+  isLoading: boolean;
+  error: string | null;
+  
+  // Actions
+  loadResult: (attemptId: string) => Promise<void>;
+  loadAllResults: () => Promise<void>;
+  clearError: () => void;
+}
+
+/**
+ * Exam progress store state
+ */
+export interface ExamProgressState {
+  progress: Record<number, ExamProgress>; // examId -> progress
+  isLoading: boolean;
+  error: string | null;
+  
+  // Actions
+  loadProgress: () => Promise<void>;
+  updateProgress: (examId: number, progress: ExamProgress) => void;
+  clearError: () => void;
+}
+
+/**
+ * Progress for a single exam
+ */
+export interface ExamProgress {
+  examId: number;
+  attemptsCount: number;
+  bestScore: number | null;
+  lastAttemptDate: string | null;
+  lastAttemptId: string | null;
+  isCompleted: boolean;
+  isPassed: boolean;
+  inProgress: boolean;
+  currentAttemptId: string | null;
+}
+
+/**
+ * Exam payments store state
+ */
+export interface ExamPaymentsState {
+  purchasedExams: Set<number>;
+  hasUniversalAccess: boolean;
+  isLoading: boolean;
+  error: string | null;
+  
+  // Actions
+  loadPurchasedExams: () => Promise<void>;
+  purchaseExam: (examId: number) => Promise<boolean>;
+  checkAccess: (examId: number) => boolean;
+  clearError: () => void;
+}
+
+/**
+ * Context for handling the current exam question
+ */
+export interface QuestionContextType {
+  currentQuestion: Question | null;
+  selectedAnswer: string | string[] | null;
+  isAnswered: boolean;
+  isPreviouslyAnswered: boolean;
+  isCorrect: boolean | null;
+  isReview: boolean;
+  onAnswerSelect: (answer: string | string[]) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  onFlag: (flagged: boolean) => void;
+  onFinish: () => void;
+  flagged: boolean;
+  timeSpent: number; // in seconds
+}
+
+/**
+ * Context for handling timer and time tracking
+ */
+export interface TimerContextType {
+  timeRemaining: number; // in seconds
+  totalTime: number; // in seconds
+  isPaused: boolean;
+  isExpired: boolean;
   pauseTimer: () => void;
-  resetTimer: (duration: number) => void;
+  resumeTimer: () => void;
+  resetTimer: (seconds: number) => void;
 }

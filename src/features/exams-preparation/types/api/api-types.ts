@@ -1,113 +1,177 @@
 /**
- * API and hook types for exams feature
+ * API-specific types for exams preparation
+ * 
+ * These types represent the data structures used in API requests and responses
+ * for the exams preparation feature.
  */
 
-import { Exam, Question, ExamAttempt, ExamResult } from '../models/exam';
-import { 
-  ExamCreateDto, 
-  ExamUpdateDto, 
-  QuestionCreateDto, 
-  QuestionUpdateDto,
-  ExamSubmissionDto,
-  PaginatedResponseDto 
-} from '../dtos/exam-dtos';
+import { ExamStatus, AttemptStatus, PaperType, Difficulty, PaymentStatus } from './enums';
 
 /**
- * API client interface
+ * API response for an exam paper listing
  */
-export interface ExamApiClient {
-  getExams(params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-    search?: string;
-  }): Promise<PaginatedResponseDto<Exam>>;
-  
-  getExam(examId: number): Promise<Exam>;
-  
-  createExam(data: ExamCreateDto): Promise<Exam>;
-  
-  updateExam(examId: number, data: ExamUpdateDto): Promise<Exam>;
-  
-  deleteExam(examId: number): Promise<void>;
-  
-  getQuestions(examId: number): Promise<Question[]>;
-  
-  getQuestion(questionId: number): Promise<Question>;
-  
-  createQuestion(data: QuestionCreateDto): Promise<Question>;
-  
-  updateQuestion(questionId: number, data: QuestionUpdateDto): Promise<Question>;
-  
-  deleteQuestion(questionId: number): Promise<void>;
-  
-  startExam(examId: number): Promise<ExamAttempt>;
-  
-  submitExam(data: ExamSubmissionDto): Promise<ExamResult>;
-  
-  getAttempt(attemptId: string): Promise<ExamAttempt>;
-  
-  getResult(attemptId: string): Promise<ExamResult>;
+export interface ExamPaperResponse {
+  id: number | string;
+  title: string;
+  description: string;
+  difficulty: keyof typeof Difficulty | string;
+  questionCount: number;
+  durationMinutes: number;
+  tags: string[];
+  premium: boolean;
+  price?: number;
+  attemptCount: number;
+  successRatePercent: number;
+  lastUpdatedDate: string;
+  type: keyof typeof PaperType | string;
+  examId?: number;
+  paymentStatus?: PaymentStatus | string;
 }
 
 /**
- * Query hook types
+ * API request to create or update an exam
  */
-export interface UseExamsQueryParams {
-  page?: number;
-  limit?: number;
-  status?: string;
-  search?: string;
-  enabled?: boolean;
+export interface ExamRequestDto {
+  title: string;
+  description?: string;
+  timeLimit: number; // in minutes
+  passingScore: number; // percentage
+  status?: ExamStatus;
+  isPremium?: boolean;
+  price?: number;
+  questions?: QuestionRequestDto[];
 }
 
-export interface UseExamQueryOptions {
-  enabled?: boolean;
-  onSuccess?: (data: Exam) => void;
-  onError?: (error: Error) => void;
+/**
+ * API request to create or update a question
+ */
+export interface QuestionRequestDto {
+  text: string;
+  type: string;
+  orderIndex?: number;
+  pointValue: number;
+  explanation?: string;
+  options: QuestionOptionRequestDto[];
+  correctAnswers?: string[];
+  difficulty?: string;
 }
 
-export interface UseQuestionsQueryOptions {
+/**
+ * API request for a question option
+ */
+export interface QuestionOptionRequestDto {
+  id?: string;
+  text: string;
+  isCorrect?: boolean;
+}
+
+/**
+ * API request to start an exam attempt
+ */
+export interface StartAttemptRequestDto {
   examId: number;
-  enabled?: boolean;
-  onSuccess?: (data: Question[]) => void;
-  onError?: (error: Error) => void;
-}
-
-export interface UseExamAttemptOptions {
-  attemptId: string;
-  enabled?: boolean;
-  onSuccess?: (data: ExamAttempt) => void;
-  onError?: (error: Error) => void;
-}
-
-export interface UseExamResultOptions {
-  attemptId: string;
-  enabled?: boolean;
-  onSuccess?: (data: ExamResult) => void;
-  onError?: (error: Error) => void;
 }
 
 /**
- * Error types
+ * API response for an exam attempt
  */
-export type ApiErrorResponse = {
-  status: number;
-  message: string;
-  data?: any;
-  fieldErrors?: Record<string, string[]>;
-};
+export interface AttemptResponseDto {
+  id: string;
+  examId: number;
+  userId: string;
+  startedAt: string;
+  completedAt?: string;
+  status: AttemptStatus | string;
+  score?: number;
+  percentage?: number;
+  passed?: boolean;
+  answers?: Record<number, AnswerResponseDto>;
+}
 
-export class ExamApiError extends Error {
-  status: number;
-  data?: any;
-  fieldErrors?: Record<string, string[]>;
-  
-  constructor(error: ApiErrorResponse) {
-    super(error.message);
-    this.name = 'ExamApiError';
-    this.status = error.status;
-    this.data = error.data;
-    this.fieldErrors = error.fieldErrors;
-  }
+/**
+ * API response for an answer
+ */
+export interface AnswerResponseDto {
+  questionId: number;
+  selectedOptions?: string[];
+  textAnswer?: string;
+  isCorrect?: boolean;
+  pointsAwarded?: number;
+}
+
+/**
+ * API request to submit an answer
+ */
+export interface SubmitAnswerRequestDto {
+  attemptId: string;
+  questionId: number;
+  selectedOptions?: string[];
+  textAnswer?: string;
+}
+
+/**
+ * API request to complete an exam attempt
+ */
+export interface CompleteAttemptRequestDto {
+  attemptId: string;
+}
+
+/**
+ * API response for exam results
+ */
+export interface ExamResultResponseDto {
+  attemptId: string;
+  examId: number;
+  userId: string;
+  totalQuestions: number;
+  answeredQuestions: number;
+  correctAnswers: number;
+  score: number;
+  percentage: number;
+  passed: boolean;
+  timeSpent: number; // in seconds
+  completedAt: string;
+  feedback?: string;
+  questionResults?: QuestionResultDto[];
+}
+
+/**
+ * API response for a question result
+ */
+export interface QuestionResultDto {
+  questionId: number;
+  text: string;
+  selectedOptions?: string[];
+  correctOptions: string[];
+  isCorrect: boolean;
+  pointValue: number;
+  pointsAwarded: number;
+  explanation?: string;
+}
+
+/**
+ * API response for exam stats
+ */
+export interface ExamStatsResponseDto {
+  totalExams: number;
+  completedExams: number;
+  passedExams: number;
+  averageScore: number;
+  bestScore: number;
+  timeSpent: number; // in minutes
+}
+
+/**
+ * API response for payment processing
+ */
+export interface PaymentResponseDto {
+  paymentId: string;
+  status: PaymentStatus | string;
+  amount: number;
+  currency: string;
+  examId: number;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  redirectUrl?: string;
 }
