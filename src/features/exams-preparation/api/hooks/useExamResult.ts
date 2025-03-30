@@ -1,61 +1,26 @@
 /**
- * Exam Result Hooks
+ * Exam Results Query Hooks
  * 
- * This module provides hooks for fetching exam results.
+ * This module provides hooks for fetching and manipulating exam results
+ * using the core API module.
  */
-
-import { createQueryHook } from './hookFactory';
-import { examService } from '../services';
-import { ExamResult } from '../../types/models/exam';
-
-/**
- * Hook for fetching a result for a specific exam attempt
- */
-export const useExamResult = createQueryHook<ExamResult, string>(
-  'examResult',
-  async (attemptId) => {
-    return examService.getResultByAttemptId(attemptId);
-  }
-);
+import { useApiQuery } from '@/core/api/hooks';
+import { Result } from '../../types';
+import { attemptKeys } from '../utils/queryKeys';
+import { API_ENDPOINTS } from '../constants';
 
 /**
- * Hook for fetching all results for a specific exam
+ * Hook for fetching results for a specific exam attempt
  */
-export const useExamResults = createQueryHook<ExamResult[], number>(
-  'examResults',
-  async (examId) => {
-    return examService.getResultsByExamId(examId);
-  }
-);
-
-/**
- * Hook for fetching all results for the current user
- */
-export const useUserResults = createQueryHook<ExamResult[], void>(
-  'userResults',
-  async () => {
-    return examService.getUserResults();
-  },
-  {
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  }
-);
-
-/**
- * Hook for getting the best result for an exam
- */
-export const useBestExamResult = createQueryHook<ExamResult | null, number>(
-  'bestExamResult',
-  async (examId) => {
-    const results = await examService.getResultsByExamId(examId);
-    
-    if (results.length === 0) {
-      return null;
+export const useExamResult = (attemptId: number, options = {}) => {
+  return useApiQuery<Result>(
+    attemptKeys.result(attemptId),
+    API_ENDPOINTS.ATTEMPT_RESULT(attemptId),
+    {
+      // Results are typically more static
+      staleTime: 30 * 60 * 1000, // 30 minutes
+      cacheTime: 60 * 60 * 1000, // 1 hour
+      ...options
     }
-    
-    // Find the result with the highest score
-    return results.reduce((best, current) => {
-      return current.score > best.score ? current : best;
-    }, results[0]);
-  }
-);
+  );
+};

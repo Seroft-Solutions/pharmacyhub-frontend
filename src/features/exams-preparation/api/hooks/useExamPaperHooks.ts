@@ -1,196 +1,151 @@
-'use client';
+/**
+ * Exam Paper Query Hooks
+ * 
+ * This module provides hooks for fetching and manipulating exam papers
+ * using the core API module.
+ */
+import { useApiQuery, useApiMutation } from '@/core/api/hooks';
+import { Paper } from '../../types';
+import { paperKeys } from '../utils/queryKeys';
+import { API_ENDPOINTS } from '../constants';
 
 /**
- * Exam Paper Hooks
- *
- * This module provides React hooks for interacting with exam paper-related APIs.
- * It leverages the createApiHooks factory from core api module.
+ * Hook for fetching all exam papers with optional filtering
  */
-import { createApiHooks } from '@/core/api/factories/createApiHooks';
-import { useQueryClient } from '@tanstack/react-query';
-import { PAPER_ENDPOINTS } from '../constants';
-import { examQueryKeys } from './useExamApiHooks';
-import type { ExamPaper } from '../../types';
+export const usePapers = (options = {}) => {
+  return useApiQuery<Paper[]>(
+    paperKeys.all(),
+    API_ENDPOINTS.PAPERS,
+    options
+  );
+};
 
 /**
- * Utility function to process response data into paper format with correct paper type
- * and sort them in ascending order by ID
- * @param exams - The exams data from API response
- * @param defaultType - The default paper type if not specified
- * @returns Array of ExamPaper objects sorted by ID in ascending order
+ * Hook for fetching a specific paper by ID
  */
-function processPaperResponse(exams: any, defaultType: string = 'PRACTICE'): ExamPaper[] {
-  if (!exams) return [];
-  
-  // Handle case where exams are wrapped in an API response
-  const examsArray = exams.data ? exams.data : (Array.isArray(exams) ? exams : []);
-  
-  // Map the exams array to ExamPaper objects
-  const mappedExams = examsArray.map((exam: any) => ({
-    id: exam.id,
-    title: exam.title,
-    description: exam.description,
-    duration: exam.duration,
-    totalMarks: exam.totalMarks || exam.totalmarks,
-    passingMarks: exam.passingMarks || exam.passingmarks,
-    status: exam.status,
-    tags: exam.tags || [],
-    paperType: defaultType,
-    premium: exam.premium || false,
-    price: exam.price || 0,
-    purchased: exam.purchased || false,
-    difficulty: exam.difficulty || 'MEDIUM',
-    questionCount: exam.questionCount || (exam.questions ? exam.questions.length : 0),
-    durationMinutes: exam.durationMinutes || exam.duration || 0,
-    paymentStatus: exam.paymentStatus,
-  }));
-  
-  // Sort papers by ID in ascending order
-  // Convert ID to number for proper numeric sorting
-  return mappedExams.sort((a, b) => {
-    const idA = typeof a.id === 'number' ? a.id : parseInt(a.id, 10);
-    const idB = typeof b.id === 'number' ? b.id : parseInt(b.id, 10);
-    return idA - idB;
-  });
-}
-
-/**
- * Create standard CRUD hooks for papers
- */
-export const paperApiHooks = createApiHooks<ExamPaper>(
-  PAPER_ENDPOINTS,
-  {
-    resourceName: 'papers',
-    requiresAuth: true,
-    defaultStaleTime: 5 * 60 * 1000 // 5 minutes
-  }
-);
-
-/**
- * Extended paper query keys
- */
-export const paperQueryKeys = {
-  ...paperApiHooks.queryKeys,
-  model: () => [...paperApiHooks.queryKeys.all(), 'model'] as const,
-  past: () => [...paperApiHooks.queryKeys.all(), 'past'] as const,
-  subject: () => [...paperApiHooks.queryKeys.all(), 'subject'] as const,
-  practice: () => [...paperApiHooks.queryKeys.all(), 'practice'] as const,
+export const usePaper = (paperId: number, options = {}) => {
+  return useApiQuery<Paper>(
+    paperKeys.detail(paperId),
+    API_ENDPOINTS.PAPER(paperId),
+    options
+  );
 };
 
 /**
  * Hook for fetching model papers
  */
-export const useModelPapers = () => {
-  return paperApiHooks.useCustomQuery<ExamPaper[]>(
-    'model',
-    'model',
-    {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      select: (data) => processPaperResponse(data, 'MODEL')
-    }
+export const useModelPapers = (options = {}) => {
+  return useApiQuery<Paper[]>(
+    paperKeys.model(),
+    API_ENDPOINTS.MODEL_PAPERS,
+    options
   );
 };
 
 /**
  * Hook for fetching past papers
  */
-export const usePastPapers = () => {
-  return paperApiHooks.useCustomQuery<ExamPaper[]>(
-    'past',
-    'past',
-    {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      select: (data) => processPaperResponse(data, 'PAST')
-    }
+export const usePastPapers = (options = {}) => {
+  return useApiQuery<Paper[]>(
+    paperKeys.past(),
+    API_ENDPOINTS.PAST_PAPERS,
+    options
   );
 };
 
 /**
  * Hook for fetching subject papers
  */
-export const useSubjectPapers = () => {
-  return paperApiHooks.useCustomQuery<ExamPaper[]>(
-    'subject',
-    'subject',
-    {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      select: (data) => processPaperResponse(data, 'SUBJECT')
-    }
+export const useSubjectPapers = (options = {}) => {
+  return useApiQuery<Paper[]>(
+    paperKeys.subject(),
+    API_ENDPOINTS.SUBJECT_PAPERS,
+    options
   );
 };
 
 /**
  * Hook for fetching practice papers
  */
-export const usePracticePapers = () => {
-  return paperApiHooks.useCustomQuery<ExamPaper[]>(
-    'practice',
-    'practice',
-    {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      select: (data) => processPaperResponse(data, 'PRACTICE')
-    }
+export const usePracticePapers = (options = {}) => {
+  return useApiQuery<Paper[]>(
+    paperKeys.practice(),
+    API_ENDPOINTS.PRACTICE_PAPERS,
+    options
   );
 };
 
 /**
- * Hook for uploading a JSON exam
+ * Hook for creating a new paper
  */
-export const useUploadJsonMutation = () => {
-  const queryClient = useQueryClient();
-  
-  return paperApiHooks.useAction<ExamPaper, any>(
-    PAPER_ENDPOINTS.uploadJson,
+export const useCreatePaper = () => {
+  return useApiMutation<Paper, Partial<Paper>>(
+    API_ENDPOINTS.PAPERS,
     {
-      onSuccess: (data) => {
-        // Invalidate all paper and exam queries
-        queryClient.invalidateQueries(paperQueryKeys.lists());
-        queryClient.invalidateQueries(examQueryKeys.lists());
+      onSuccess: (_, __, context) => {
+        // Invalidate all paper queries
+        context?.queryClient?.invalidateQueries({
+          queryKey: paperKeys.all()
+        });
       }
     }
   );
 };
 
-// Export standard CRUD hooks with more descriptive names
-export const {
-  useList: usePapersList,
-  useDetail: usePaperDetail,
-  useCreate: useCreatePaper,
-  useUpdate: useUpdatePaper,
-  usePatch: usePatchPaper,
-  useDelete: useDeletePaper,
-} = paperApiHooks;
-
-// Export everything as a combined object for convenience
-export const paperHooks = {
-  // Standard CRUD hooks
-  usePapersList,
-  usePaperDetail,
-  useCreatePaper,
-  useUpdatePaper,
-  usePatchPaper,
-  useDeletePaper,
-
-  // Specialized paper hooks
-  useModelPapers,
-  usePastPapers,
-  useSubjectPapers,
-  usePracticePapers,
-  
-  // Actions
-  useUploadJsonMutation,
-
-  // Query keys
-  queryKeys: paperQueryKeys,
+/**
+ * Hook for updating a paper
+ */
+export const useUpdatePaper = () => {
+  return useApiMutation<Paper, { id: number; paper: Partial<Paper> }>(
+    ({ id }) => API_ENDPOINTS.PAPER(id),
+    {
+      method: 'PUT',
+      onSuccess: (data, variables, context) => {
+        // Invalidate specific paper
+        context?.queryClient?.invalidateQueries({
+          queryKey: paperKeys.detail(variables.id)
+        });
+        
+        // Invalidate paper lists
+        context?.queryClient?.invalidateQueries({
+          queryKey: paperKeys.all()
+        });
+      }
+    }
+  );
 };
 
-// For backward compatibility - aliases for existing components
-export const useAllPapers = usePapersList;
-export const useUploadJsonExamMutation = useUploadJsonMutation;
-
-// Create a combined export for backward compatibility
-export const paperApiHooks = {
-  ...paperHooks,
+/**
+ * Hook for deleting a paper
+ */
+export const useDeletePaper = () => {
+  return useApiMutation<void, number>(
+    (id) => API_ENDPOINTS.PAPER(id),
+    {
+      method: 'DELETE',
+      onSuccess: (_, __, context) => {
+        // Invalidate all paper lists
+        context?.queryClient?.invalidateQueries({
+          queryKey: paperKeys.all()
+        });
+      }
+    }
+  );
 };
 
-export default paperHooks;
+/**
+ * Hook for uploading JSON exam papers
+ */
+export const useUploadJsonPaper = () => {
+  return useApiMutation<Paper, FormData>(
+    API_ENDPOINTS.UPLOAD_JSON,
+    {
+      onSuccess: (_, __, context) => {
+        // Invalidate all paper lists
+        context?.queryClient?.invalidateQueries({
+          queryKey: paperKeys.all()
+        });
+      }
+    }
+  );
+};

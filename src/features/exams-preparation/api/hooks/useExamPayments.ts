@@ -1,97 +1,75 @@
 /**
- * Exam Payment Hooks
+ * Exam Payments Query Hooks
  * 
- * This module provides hooks for managing payments for premium exams.
+ * This module provides hooks for handling exam payment operations
+ * using the core API module.
  */
-
-import { createQueryHook, createMutationHook } from './hookFactory';
-import { paymentService } from '../services';
+import { useApiQuery, useApiMutation } from '@/core/api/hooks';
+import { examsQueryKeys } from '../utils/queryKeys';
 import { API_ENDPOINTS } from '../constants';
-import { apiClient } from '@/core/api';
 
-/**
- * Interface for payment status response
- */
-interface PaymentStatus {
+interface Payment {
+  id: number;
   examId: number;
-  isPremium: boolean;
-  hasAccess: boolean;
-  universalAccess: boolean;
-  purchaseDate?: string;
-  expiryDate?: string;
-}
-
-/**
- * Interface for payment checkout response
- */
-interface PaymentCheckout {
-  paymentId: string;
-  checkoutUrl: string;
+  userId: number;
   amount: number;
-  currency: string;
-  examId: number;
+  status: 'pending' | 'completed' | 'failed';
+  transactionId: string;
+  createdAt: string;
+}
+
+interface PaymentIntent {
+  clientSecret: string;
+  amount: number;
 }
 
 /**
- * Hook for checking payment status for an exam
+ * Hook for creating a payment intent for premium exams
  */
-export const useExamPayments = (examId: number) => {
-  const { 
-    data, 
-    isLoading, 
-    error,
-    refetch 
-  } = createQueryHook<PaymentStatus, number>(
-    'paymentStatus',
-    async (id) => {
-      return paymentService.getPaymentStatus(id);
+export const useCreatePaymentIntent = () => {
+  return useApiMutation<
+    PaymentIntent,
+    { examId: number; amount: number }
+  >(
+    // Assuming there's a payment endpoint
+    '/api/v1/payments/intent',
+    {
+      onSuccess: (_, variables, context) => {
+        // After payment intent creation, no need to invalidate any queries
+        // as this doesn't modify any cached data
+      }
     }
-  )(examId);
-  
-  return {
-    hasAccess: data?.hasAccess || false,
-    universalAccess: data?.universalAccess || false,
-    isPremiumContent: data?.isPremium || false,
-    purchaseDate: data?.purchaseDate,
-    expiryDate: data?.expiryDate,
-    isLoading,
-    error: error?.message,
-    refetchStatus: refetch,
-  };
+  );
 };
 
 /**
- * Hook for initiating a payment checkout
+ * Hook for confirming a payment
  */
-export const useInitiateCheckout = createMutationHook<
-  PaymentCheckout,
-  number
->(
-  async (examId) => {
-    const { data } = await apiClient.post(API_ENDPOINTS.PAYMENT_CHECKOUT(examId));
-    return data;
-  }
-);
+export const useConfirmPayment = () => {
+  return useApiMutation<
+    Payment,
+    { examId: number; paymentIntentId: string }
+  >(
+    // Assuming there's a payment confirmation endpoint
+    '/api/v1/payments/confirm',
+    {
+      onSuccess: (_, variables, context) => {
+        // After payment is confirmed, invalidate the exam to refresh its access status
+        context?.queryClient?.invalidateQueries({
+          queryKey: examsQueryKeys.detail(variables.examId)
+        });
+      }
+    }
+  );
+};
 
 /**
- * Hook for checking if a user has universal access
+ * Hook for checking if user has access to a premium exam
  */
-export const useUniversalAccess = createQueryHook<boolean, void>(
-  'universalAccess',
-  async () => {
-    return paymentService.checkUniversalAccess();
-  },
-  {
-    staleTime: 15 * 60 * 1000, // 15 minutes
-  }
-);
-
-/**
- * Hook for fetching all purchased exams
- */
-export const usePurchasedExams = createQueryHook<number[], void>(
-  'purchasedExams',
-  async () => {
-    return paymentService.getPurchasedExams();
-  }
-);
+export const useExamAccess = (examId: number, options = {}) => {
+  return useApiQuery<{ hasAccess: boolean }>(
+    [...examsQueryKeys.detail(examId), 'access'],
+    `/api/v1/exams-preparation/${examId}/access`,
+    options
+  );
+};
