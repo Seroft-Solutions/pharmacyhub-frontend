@@ -1,0 +1,8 @@
+/**
+ * Exams Preparation Hooks
+ * 
+ * This module exports custom React hooks specific to the exams-preparation feature.
+ * Hooks provide reusable stateful logic that can be shared across components.
+ */
+
+// Export custom hooks here
