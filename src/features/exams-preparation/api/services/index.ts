@@ -6,5 +6,8 @@
  * the React Query hooks to fetch and manipulate data.
  */
 
+// Export API services
 export * from './examService';
+export * from './examApiService';
 export * from './paymentService';
+export * from './jsonExamUploadService';

@@ -13,9 +13,9 @@
  * that are intended to be used by other features or app pages.
  */
 
-// Re-export from components (using named exports to control public API surface)
+// Re-export from components based on atomic design principles
 export { 
-  // Atoms
+  // Atoms (basic UI elements)
   ExamStatusBadge,
   TimeRemainingComponent,
   LoadingState,
@@ -24,7 +24,7 @@ export {
 } from './components/atoms';
 
 export {
-  // Molecules
+  // Molecules (combinations of atoms)
   ExamPaperCard,
   ExamMetadata,
   ExamTimer,
@@ -32,42 +32,49 @@ export {
 } from './components/molecules';
 
 export {
-  // Organisms
+  // Organisms (collections of molecules)
   ExamQuestion,
   ExamsTable,
   ExamsPagination,
 } from './components/organisms';
 
 export {
-  // Templates
+  // Templates (page layouts)
   ExamContainer,
   ExamLayout,
   ExamResults,
 } from './components/templates';
 
+// Guard components for access control
 export {
-  // Guards
   ExamAccessGuard,
   PremiumContentGuard,
 } from './components/guards';
 
-// API/Data hooks - export specific hooks for external use
+// API/Data hooks for data fetching and mutation
 export {
+  // Primary data hooks
   useExams,
   useExam,
   useExamAttempt,
   useExamResult,
   useExamPayments,
+  
+  // API hook sets
+  useExamApiHooks,
+  useExamAttemptHooks,
+  useExamPaperHooks,
 } from './api/hooks';
 
-// State management exports
+// State management exports for state handling
 export {
   // Zustand stores
   useExamStore,
   useExamAttemptStore,
+  useExamEditorStore,
   useExamPreparationStore,
   
-  // Selectors
+  // Selectors for optimized renders
   useExamProgress,
   useExamTimer,
   useCurrentQuestion,
@@ -76,7 +83,7 @@ export {
   useTotalStudyTime,
 } from './state';
 
-// Context providers
+// Context providers for component-level state
 export {
   QuestionContextProvider,
   TimerContextProvider,
@@ -88,7 +95,21 @@ export {
   useExamSession,
 } from './state';
 
-// Types that might be needed by other features
+// RBAC (Role-Based Access Control) exports
+export {
+  ExamPermission,
+  ExamRole,
+  canViewExam,
+  canTakeExam,
+  canViewResults,
+  canCreateExam,
+  canEditExam,
+  canDeleteExam,
+  canManagePremium,
+  ExamRBACProvider,
+} from './rbac';
+
+// Type exports for public API
 export type {
   Exam,
   Question,
@@ -101,12 +122,26 @@ export type {
 } from './types';
 
 // Feature-specific hooks
-export * from './hooks';
-
-// Utils
 export {
+  useExamNavigation,
+  useExamTimer,
+} from './hooks';
+
+// Utility functions
+export {
+  // Time formatting utilities
   formatTime,
   formatTimeVerbose,
+  
+  // Exam calculation utilities
   calculateExamScore,
+  formatExamResult,
   calculateExamStatistics,
+  isAnswerCorrect,
+  
+  // Data mapping utilities
+  mapExamResponseToExam,
+  mapAttemptResponseToAttempt,
+  mapResultResponseToResult,
+  mapQuestionOptionsForDisplay,
 } from './utils';
