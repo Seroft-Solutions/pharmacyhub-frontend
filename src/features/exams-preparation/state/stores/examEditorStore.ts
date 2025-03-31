@@ -1,12 +1,168 @@
 /**
- * Store for managing exam editor state
+ * Exam Editor Store
+ * 
+ * Manages state for the exam editor, including exam metadata, questions,
+ * validation, and editing history. Uses the feature-specific store factory
+ * for enhanced error handling, performance tracking, and proper integration
+ * with core state management patterns.
+ * 
+ * This store handles:
+ * - Exam metadata editing
+ * - Question creation, editing, and deletion
+ * - Question reordering
+ * - Validation of exam and questions
+ * - Editing history with undo/redo
+ * - State persistence
  */
 
+import { createExamsStore, createExamsSelectors, StoreError } from '../storeFactory';
 import { Exam, Question, QuestionType } from '../../types/models/exam';
-import { ExamEditorState } from '../../types/state/exam-state';
-import { createStore, createSelectors } from '../storeFactory';
+import logger from '@/core/utils/logger';
 
-// Helper to create a default question
+/**
+ * Interface for Exam Editor State
+ */
+interface ExamEditorState {
+  /**
+   * The exam being edited
+   */
+  exam: Exam | null;
+  
+  /**
+   * The questions for the exam
+   */
+  questions: Question[];
+  
+  /**
+   * The index of the current question being edited
+   */
+  currentQuestionIndex: number;
+  
+  /**
+   * Whether the exam has unsaved changes
+   */
+  isDirty: boolean;
+  
+  /**
+   * Validation errors for the exam and questions
+   * Keys can be 'exam', 'questions', or 'question_{index}'
+   */
+  validation: Record<string, string[]>;
+  
+  /**
+   * Editing history for undo/redo
+   */
+  history: {
+    past: Question[][];
+    future: Question[][];
+  };
+}
+
+/**
+ * Interface for Exam Editor Actions
+ */
+interface ExamEditorActions {
+  // Exam actions
+  /**
+   * Set the exam being edited
+   * @param exam The exam to edit
+   */
+  setExam: (exam: Exam) => void;
+  
+  /**
+   * Update exam properties
+   * @param updates Partial exam properties to update
+   */
+  updateExam: (updates: Partial<Exam>) => void;
+  
+  // Question actions
+  /**
+   * Add a new question to the exam
+   * @param question Optional partial question data
+   */
+  addQuestion: (question?: Partial<Question>) => void;
+  
+  /**
+   * Update a question at the specified index
+   * @param index Index of the question to update
+   * @param question Partial question data to update
+   */
+  updateQuestion: (index: number, question: Partial<Question>) => void;
+  
+  /**
+   * Remove a question at the specified index
+   * @param index Index of the question to remove
+   */
+  removeQuestion: (index: number) => void;
+  
+  /**
+   * Reorder questions by moving one from source to target index
+   * @param fromIndex Source index
+   * @param toIndex Target index
+   */
+  reorderQuestions: (fromIndex: number, toIndex: number) => void;
+  
+  /**
+   * Set the current question being edited
+   * @param index Index of the question to set as current
+   */
+  setCurrentQuestion: (index: number) => void;
+  
+  /**
+   * Add a blank question of a specific type
+   * @param type The type of question to add
+   */
+  addQuestionOfType: (type: QuestionType) => void;
+  
+  // Validation
+  /**
+   * Validate the entire exam
+   * @returns True if the exam is valid, false otherwise
+   */
+  validateExam: () => boolean;
+  
+  /**
+   * Validate a single question
+   * @param question The question to validate
+   * @returns Array of validation error messages
+   */
+  validateQuestion: (question: Question) => string[];
+  
+  /**
+   * Clear all validation errors
+   */
+  clearValidation: () => void;
+  
+  // History operations
+  /**
+   * Undo the last question change
+   */
+  undo: () => void;
+  
+  /**
+   * Redo the last undone question change
+   */
+  redo: () => void;
+  
+  // Misc
+  /**
+   * Mark the exam as saved (clears isDirty flag)
+   */
+  markAsSaved: () => void;
+  
+  /**
+   * Reset the store to its initial state
+   */
+  resetState: () => void;
+}
+
+/**
+ * Create a default question
+ * 
+ * @param examId The ID of the exam
+ * @param index The index for the question
+ * @returns A default question
+ */
 const createDefaultQuestion = (examId: number, index: number): Question => ({
   id: -1 * (Date.now() + index), // Temporary negative ID until saved to server
   examId,
@@ -24,51 +180,23 @@ const createDefaultQuestion = (examId: number, index: number): Question => ({
 });
 
 /**
- * Create the exam editor store using our store factory
+ * Error handler for the exam editor store
+ * 
+ * @param error The error that occurred
+ * @param actionName The name of the action that failed
+ * @param storeName The name of the store
  */
-export const examEditorStore = createStore<
-  // State shape
-  {
-    exam: Exam | null;
-    questions: Question[];
-    currentQuestionIndex: number;
-    isDirty: boolean;
-    validation: Record<string, string[]>;
-    history: {
-      past: Question[][];
-      future: Question[][];
-    };
-  },
-  // Actions
-  {
-    // Exam actions
-    setExam: (exam: Exam) => void;
-    updateExam: (updates: Partial<Exam>) => void;
-    
-    // Question actions
-    addQuestion: (question?: Partial<Question>) => void;
-    updateQuestion: (index: number, question: Partial<Question>) => void;
-    removeQuestion: (index: number) => void;
-    reorderQuestions: (fromIndex: number, toIndex: number) => void;
-    setCurrentQuestion: (index: number) => void;
-    
-    // Action to add a blank question of specific type
-    addQuestionOfType: (type: QuestionType) => void;
-    
-    // Validation
-    validateExam: () => boolean;
-    validateQuestion: (question: Question) => string[];
-    clearValidation: () => void;
-    
-    // History operations
-    undo: () => void;
-    redo: () => void;
-    
-    // Misc
-    markAsSaved: () => void;
-    resetState: () => void;
-  }
->(
+const examEditorErrorHandler = (error: unknown, actionName: string, storeName: string) => {
+  logger.error(`Error in ${storeName}.${actionName}:`, error);
+  
+  // Example: You could also send the error to an error tracking service
+  // errorTrackingService.captureException(error);
+};
+
+/**
+ * Create the exam editor store using our feature-specific store factory
+ */
+export const examEditorStore = createExamsStore<ExamEditorState, ExamEditorActions>(
   'examEditor', // Store name
   // Initial state
   {
@@ -413,7 +541,7 @@ export const examEditorStore = createStore<
       },
     }),
   }),
-  // Storage options
+  // Storage options with enhanced configuration
   {
     persist: true,
     partialize: (state) => ({
@@ -422,32 +550,145 @@ export const examEditorStore = createStore<
       questions: state.questions,
       // Don't persist validation, history, etc.
     }),
+    debug: process.env.NODE_ENV === 'development',
+    trackPerformance: process.env.NODE_ENV === 'development',
+    errorHandler: examEditorErrorHandler,
   }
 );
 
-// Extract selectors using our selector factory
-export const { useStore, createSelector } = createSelectors(examEditorStore);
+// Extract selectors using our feature-specific selector factory
+export const { useStore: useExamEditorStore, createSelector } = createExamsSelectors(examEditorStore);
 
-// Create individual selectors for optimized rendering
+/**
+ * Selector for the exam being edited
+ * @returns The exam being edited or null
+ * @example
+ * const exam = useExam();
+ * if (exam) {
+ *   console.log(`Editing exam: ${exam.title}`);
+ * }
+ */
 export const useExam = createSelector((state) => state.exam);
+
+/**
+ * Selector for the list of questions
+ * @returns Array of questions
+ * @example
+ * const questions = useQuestions();
+ * console.log(`Total questions: ${questions.length}`);
+ */
 export const useQuestions = createSelector((state) => state.questions);
+
+/**
+ * Selector for the current question index
+ * @returns The index of the current question
+ * @example
+ * const currentIndex = useCurrentQuestionIndex();
+ * console.log(`Editing question #${currentIndex + 1}`);
+ */
 export const useCurrentQuestionIndex = createSelector((state) => state.currentQuestionIndex);
+
+/**
+ * Selector for the dirty state
+ * @returns True if the exam has unsaved changes
+ * @example
+ * const isDirty = useIsDirty();
+ * if (isDirty) {
+ *   console.log('You have unsaved changes');
+ * }
+ */
 export const useIsDirty = createSelector((state) => state.isDirty);
+
+/**
+ * Selector for validation errors
+ * @returns Record of validation errors
+ * @example
+ * const validation = useValidation();
+ * if (validation.exam) {
+ *   console.log('Exam errors:', validation.exam);
+ * }
+ */
 export const useValidation = createSelector((state) => state.validation);
 
-// Computed selectors
+/**
+ * Selector for the current question
+ * @returns The current question or undefined
+ * @example
+ * const currentQuestion = useCurrentQuestion();
+ * if (currentQuestion) {
+ *   console.log(`Editing question: ${currentQuestion.text}`);
+ * }
+ */
 export const useCurrentQuestion = createSelector((state) => 
   state.questions[state.currentQuestionIndex]
 );
 
+/**
+ * Selector for whether undo is available
+ * @returns True if undo is available
+ * @example
+ * const canUndo = useCanUndo();
+ * if (canUndo) {
+ *   console.log('You can undo');
+ * }
+ */
 export const useCanUndo = createSelector((state) => state.history.past.length > 0);
+
+/**
+ * Selector for whether redo is available
+ * @returns True if redo is available
+ * @example
+ * const canRedo = useCanRedo();
+ * if (canRedo) {
+ *   console.log('You can redo');
+ * }
+ */
 export const useCanRedo = createSelector((state) => state.history.future.length > 0);
 
+/**
+ * Selector for validation errors for a specific question
+ * @param questionIndex The index of the question
+ * @returns Array of validation errors
+ * @example
+ * const errors = useQuestionValidation(0);
+ * if (errors.length > 0) {
+ *   console.log('Question 1 errors:', errors);
+ * }
+ */
 export const useQuestionValidation = (questionIndex: number) => 
   examEditorStore((state) => state.validation[`question_${questionIndex}`] || []);
 
+/**
+ * Selector for validation errors for the exam
+ * @returns Array of validation errors
+ * @example
+ * const errors = useExamValidation();
+ * if (errors.length > 0) {
+ *   console.log('Exam errors:', errors);
+ * }
+ */
 export const useExamValidation = () => 
   examEditorStore((state) => state.validation.exam || []);
+
+/**
+ * Selector for the total questions count
+ * @returns The total number of questions
+ * @example
+ * const count = useTotalQuestionsCount();
+ * console.log(`Total questions: ${count}`);
+ */
+export const useTotalQuestionsCount = createSelector((state) => state.questions.length);
+
+/**
+ * Selector for the total points
+ * @returns The total points for all questions
+ * @example
+ * const points = useTotalPoints();
+ * console.log(`Total points: ${points}`);
+ */
+export const useTotalPoints = createSelector((state) => 
+  state.questions.reduce((total, q) => total + q.pointValue, 0)
+);
 
 /**
  * Example usage of the examEditorStore:
@@ -461,7 +702,7 @@ export const useExamValidation = () =>
  *   useIsDirty,
  *   useValidation,
  *   examEditorStore 
- * } from './examEditorStore';
+ * } from '@/features/exams-preparation/state';
  * 
  * const ExamEditor = () => {
  *   // Get values from store with optimized selectors
@@ -483,15 +724,70 @@ export const useExamValidation = () =>
  *   } = examEditorStore.getState();
  *   
  *   // Handle form submission
- *   const handleSubmit = () => {
+ *   const handleSubmit = async () => {
  *     if (validateExam()) {
- *       // Submit to server
- *       // ...
- *       markAsSaved();
+ *       try {
+ *         // Submit to server
+ *         await saveExamToServer(exam, questions);
+ *         markAsSaved();
+ *         showSuccessToast('Exam saved successfully');
+ *       } catch (error) {
+ *         showErrorToast('Failed to save exam');
+ *       }
+ *     } else {
+ *       showErrorToast('Please fix validation errors');
  *     }
  *   };
  *   
- *   // Rest of component...
+ *   // Handle question addition
+ *   const handleAddQuestion = (type) => {
+ *     examEditorStore.getState().addQuestionOfType(type);
+ *   };
+ *   
+ *   // Render UI with data and actions
+ *   return (
+ *     <div>
+ *       <h1>Exam Editor</h1>
+ *       
+ *       {/* Exam metadata form */}
+ *       <ExamMetadataForm 
+ *         exam={exam} 
+ *         onUpdate={updates => updateExam(updates)}
+ *         errors={useExamValidation()}
+ *       />
+ *       
+ *       {/* Questions list */}
+ *       <QuestionsList 
+ *         questions={questions}
+ *         currentIndex={currentIndex}
+ *         onSelect={index => examEditorStore.getState().setCurrentQuestion(index)}
+ *         onReorder={(from, to) => examEditorStore.getState().reorderQuestions(from, to)}
+ *         onRemove={index => examEditorStore.getState().removeQuestion(index)}
+ *       />
+ *       
+ *       {/* Question editor */}
+ *       {currentQuestion && (
+ *         <QuestionEditor
+ *           question={currentQuestion}
+ *           onChange={updates => updateQuestion(currentIndex, updates)}
+ *           errors={useQuestionValidation(currentIndex)}
+ *         />
+ *       )}
+ *       
+ *       {/* Action buttons */}
+ *       <div className="actions">
+ *         <AddQuestionMenu onSelectType={handleAddQuestion} />
+ *         
+ *         <Button 
+ *           onClick={handleSubmit} 
+ *           disabled={!isDirty}
+ *           loading={isSaving}
+ *         >
+ *           Save Exam
+ *         </Button>
+ *       </div>
+ *     </div>
+ *   );
  * };
  * ```
  */

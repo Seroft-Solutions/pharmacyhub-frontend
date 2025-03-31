@@ -5,8 +5,9 @@
  */
 
 import { ReactNode } from 'react';
-import { ExamFilters, ExamFilterContextType } from '../../types/state/exam-state';
 import { createContextProvider, withContextProvider } from '@/core/state';
+import { ExamFilters } from '../../types/state/exam-state';
+import logger from '@/core/utils/logger';
 
 /**
  * Create the exam filter context provider using core context factory
@@ -22,13 +23,19 @@ export const [ExamFilterProvider, useExamFilter] = createContextProvider<
   {}, // Initial state - empty filters
   (setState) => ({
     // Set a specific filter
-    setFilter: (key, value) => setState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    })),
+    setFilter: (key, value) => {
+      logger.debug(`Setting ${String(key)} filter to:`, value);
+      setState((prevState) => ({
+        ...prevState,
+        [key]: value,
+      }));
+    },
     
     // Clear all filters
-    clearFilters: () => setState({}),
+    clearFilters: () => {
+      logger.debug('Clearing all exam filters');
+      setState({});
+    },
   }),
   {
     displayName: 'ExamFilterContext',

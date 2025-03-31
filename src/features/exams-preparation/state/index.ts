@@ -1,19 +1,109 @@
 /**
- * State management exports for exams-preparation feature
+ * Exams Preparation Feature State Management
  * 
- * This module follows the core-as-foundation principle by using patterns
- * that could be promoted to core in the future.
+ * This module exports all state management utilities for the exams-preparation feature.
+ * It leverages core state management utilities to ensure consistent patterns
+ * across the application while providing feature-specific implementations.
  */
 
-// Store factories and utilities
-export * from './storeFactory';
-export * from './contextFactory';
+// Re-export core state management utilities directly
+export {
+  createContextProvider,
+  withContextProvider,
+} from '@/core/state';
 
-// Zustand stores
-export * from './stores';
+// Export feature-specific store factory
+export { 
+  createExamsStore,
+  createExamsSelectors,
+  createTestStore,
+  FEATURE_NAME as STORE_FEATURE_NAME,
+  type StoreOptions,
+  type ExamsStoreOptions,
+  type ExtractState,
+  type ExtractStateOnly,
+  type ExtractActions,
+  StoreErrorType,
+  StoreError
+} from './storeFactory';
 
-// Context providers
-export * from './contexts/ExamFilterContext';
-export * from './contexts/ExamSessionContext';
-export * from './contexts/QuestionContext';
-export * from './contexts/TimerContext';
+// Export feature-specific context factory
+export {
+  createExamsContext,
+  withExamsContext,
+  createTestProvider,
+  FEATURE_NAME as CONTEXT_FEATURE_NAME,
+  type ExamsContextOptions,
+  type ContextOptions,
+  LogLevel,
+  ContextErrorType,
+  ContextError,
+  type ExtractContextState,
+  type ExtractContextValue
+} from './contextFactory';
+
+// Export contexts
+export {
+  ExamFilterProvider,
+  useExamFilter,
+  useHasActiveFilters,
+  withExamFilters,
+} from './contexts/ExamFilterContext';
+
+export {
+  ExamSessionProvider,
+  useExamSession,
+} from './contexts/ExamSessionContext';
+
+export {
+  QuestionProvider,
+  useQuestion,
+} from './contexts/QuestionContext';
+
+export {
+  TimerProvider,
+  useTimer,
+} from './contexts/TimerContext';
+
+// Export stores
+export {
+  useExamStore,
+  useExamId,
+  useAttemptId,
+  useCurrentQuestion,
+  useExamProgress,
+  useExamTimer,
+  useExamNavigation,
+} from './stores/examStore';
+
+export {
+  examEditorStore,
+  useExamEditorStore,
+  useCurrentQuestionIndex,
+  useIsDirty,
+  useQuestions,
+  useValidation,
+  useExam,
+  useCurrentQuestion,
+  useCanUndo,
+  useCanRedo,
+  useQuestionValidation,
+  useExamValidation,
+  useTotalQuestionsCount,
+  useTotalPoints,
+} from './stores/examEditorStore';
+
+export {
+  useExamAttemptStore,
+  useAttemptStatus,
+  useAttemptAnswers,
+  useAttemptProgress,
+  useCurrentAttemptQuestion,
+} from './stores/examAttemptStore';
+
+export {
+  useExamPreparationStore,
+  useAvailableExams,
+  useIsLoading,
+  useError,
+} from './stores/examPreparationStore';

@@ -1,14 +1,43 @@
 /**
- * Exams Preparation Stores
+ * Export all stores for the exams-preparation feature
  * 
- * This module exports Zustand stores for the exams-preparation feature.
- * It leverages the core state management utilities and follows established patterns.
+ * This module provides a clean interface for accessing all exam-related stores
+ * and their associated selectors through a single import.
  */
 
-// Export existing store hooks
-export * from './examAttemptStore';
-export * from './examEditorStore';
+// Export the exam store and its selectors
+export {
+  useExamStore,
+  useExamId,
+  useAttemptId,
+  useCurrentQuestion,
+  useExamProgress,
+  useExamTimer,
+  useExamNavigation,
+} from './examStore';
 
-// Export new stores for exam execution and preparation
-export * from './examStore';
-export * from './examPreparationStore';
+// Export the exam editor store and its selectors
+export {
+  useExamEditorStore,
+  useCurrentQuestionIndex,
+  useIsDirty,
+  useQuestions,
+  useValidation,
+} from './examEditorStore';
+
+// Export the exam attempt store and its selectors
+export {
+  useExamAttemptStore,
+  useAttemptStatus,
+  useAttemptAnswers,
+  useAttemptProgress,
+  useCurrentAttemptQuestion,
+} from './examAttemptStore';
+
+// Export the exam preparation store and its selectors
+export {
+  useExamPreparationStore,
+  useAvailableExams,
+  useIsLoading,
+  useError,
+} from './examPreparationStore';

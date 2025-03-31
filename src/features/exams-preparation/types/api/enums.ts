@@ -62,3 +62,28 @@ export enum PaymentStatus {
   FAILED = 'FAILED',
   REFUNDED = 'REFUNDED'
 }
+
+/**
+ * Status of a question in an exam attempt
+ */
+export enum QuestionStatus {
+  /**
+   * The question has not been answered yet
+   */
+  UNANSWERED = 'UNANSWERED',
+  
+  /**
+   * The question has been answered but correctness is unknown
+   */
+  ANSWERED_PENDING = 'ANSWERED_PENDING',
+  
+  /**
+   * The question has been answered correctly
+   */
+  ANSWERED_CORRECT = 'ANSWERED_CORRECT',
+  
+  /**
+   * The question has been answered incorrectly
+   */
+  ANSWERED_INCORRECT = 'ANSWERED_INCORRECT'
+}

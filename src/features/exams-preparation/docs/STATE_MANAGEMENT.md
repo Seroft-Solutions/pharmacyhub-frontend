@@ -1,142 +1,174 @@
-# State Management Integration Guide
+# Exams Preparation Feature - State Management
 
-This guide explains how to properly integrate with the core state management module in the exams-preparation feature.
+This document outlines the state management approach for the Exams Preparation feature, focusing on how it leverages core state management utilities to ensure consistency, reduce duplication, and follow the "core as foundation" principle.
 
-## Migration to Core Store Factory
+## Core as Foundation Principle
 
-The exams-preparation feature previously used a custom store factory implementation. This has now been promoted to the core module for wider use across features.
+The Exams Preparation feature strictly follows the "Core as Foundation" principle by:
 
-### Updating Imports
+1. Using core state management utilities instead of reimplementing patterns
+2. Leveraging core factories to create feature-specific state
+3. Following established patterns for consistency across the application
+4. Building feature-specific functionality on top of core foundations
 
-Update imports in all files that use the store factory:
+## State Management Hierarchy
 
-```typescript
-// Before
-import { createStore } from '../storeFactory';
+Following the project guidelines, the feature uses:
 
-// After
-import { createStore } from '@/core/state';
-```
+1. **TanStack Query** (via core API module) for all server state
+   - Fetching exams, questions, and results
+   - Submitting exam answers and results
+   
+2. **Zustand Stores** (via core factory) for complex client state
+   - Exam taking experience
+   - Exam creation and editing
+   - User's attempts and progress
+   
+3. **React Context** (via core factory) for simple UI state
+   - Filters for exam listings
+   - UI-specific state that doesn't need persistence
 
-## Using Core State Factory
+## Core State Management Utilities
 
-### Creating a Feature-Specific Store Factory
+The feature leverages these core utilities:
 
-For most cases, it's recommended to create a feature-specific store factory using `createStoreFactory`:
+### Zustand Store Factory
 
-```typescript
-// src/features/exams-preparation/state/stores/index.ts
+```tsx
+// Core store factory
 import { createStoreFactory } from '@/core/state';
 
-// Create a store factory specifically for exams feature
+// Feature-specific store factory
 export const createExamsStore = createStoreFactory('exams-preparation');
 
-// Example usage
-export const useMyStore = createExamsStore(
-  'my-store',
-  { count: 0 },
+// Using the factory to create a store
+export const useExamStore = createExamsStore<ExamState, ExamActions>(
+  'exam',
+  initialState,
   (set, get) => ({
-    increment: () => set(state => ({ count: state.count + 1 })),
-    decrement: () => set(state => ({ count: state.count - 1 })),
-  })
-);
-```
-
-### Creating Individual Stores
-
-If you prefer creating individual stores directly:
-
-```typescript
-import { createStore } from '@/core/state';
-
-export const useExamStore = createStore(
-  'exams-preparation-exam',
-  { /* initial state */ },
-  (set, get) => ({
-    // actions
-  }),
-  { 
-    persist: true,
-    storageKey: 'exams-prep-exam'
-  }
-);
-```
-
-## Creating Optimized Selectors
-
-Use the `createSelectors` utility to optimize component rendering:
-
-```typescript
-import { createStore, createSelectors } from '@/core/state';
-
-const useMyStore = createStore(
-  'my-store',
-  { count: 0, name: 'test' },
-  (set) => ({
-    increment: () => set(state => ({ count: state.count + 1 })),
-  })
-);
-
-// Create selectors for optimized rendering
-const { createSelector } = createSelectors(useMyStore);
-
-// Create hooks that only cause re-renders when the selected data changes
-export const useCount = createSelector(state => state.count);
-export const useName = createSelector(state => state.name);
-```
-
-## Persisting State
-
-To persist state to localStorage:
-
-```typescript
-import { createStore } from '@/core/state';
-
-export const usePersistentStore = createStore(
-  'persistent-store',
-  { data: null },
-  (set, get) => ({
-    setData: (data) => set({ data }),
-    clearData: () => set({ data: null }),
+    // Actions implementation...
   }),
   {
-    persist: true, // Enable persistence
-    storageKey: 'my-feature-data', // Custom storage key
-    
-    // Only persist specific parts of state
+    persist: true,
     partialize: (state) => ({
-      data: state.data,
-      // Exclude other fields from persistence
+      // Persistence configuration...
     }),
-    
-    // Handle rehydration
-    onRehydrateStorage: () => (state) => {
-      if (state) {
-        console.log('State rehydrated successfully');
-      } else {
-        console.error('Failed to rehydrate state');
-      }
-    },
   }
 );
 ```
+
+### Context Provider Factory
+
+```tsx
+// Core context factory
+import { createContextProvider } from '@/core/state';
+
+// Creating a context provider
+export const [ExamFilterProvider, useExamFilter] = createContextProvider<
+  ExamFilters, 
+  {
+    setFilter: <K extends keyof ExamFilters>(key: K, value: ExamFilters[K]) => void;
+    clearFilters: () => void;
+  }
+>(
+  'ExamFilter',
+  {}, // Initial state
+  (setState) => ({
+    // Actions implementation...
+  }),
+  {
+    displayName: 'ExamFilterContext',
+  }
+);
+```
+
+### Selector Optimization
+
+```tsx
+// Core selector utilities
+import { createSelectors } from '@/core/state';
+
+// Creating optimized selectors
+export const { createSelector } = createSelectors(useExamStore);
+
+export const useExamProgress = createSelector(state => ({
+  current: state.currentQuestionIndex + 1,
+  total: state.questions.length,
+  percentage: state.getCompletionPercentage(),
+  answered: state.getAnsweredQuestionsCount(),
+}));
+```
+
+## Feature State Overview
+
+### Stores
+
+1. **examStore**: Core exam taking experience
+   - Managing questions, answers, and navigation
+   - Tracking exam timing
+   - Handling exam completion
+
+2. **examEditorStore**: Exam creation and editing
+   - Managing question creation
+   - Handling form state and validation
+   - Supporting exam configuration
+
+3. **examAttemptStore**: User's attempts at exams
+   - Tracking attempt progress
+   - Managing answers and results
+   - Handling submission
+
+4. **examPreparationStore**: Overall state
+   - Managing available exams
+   - Tracking loading and error states
+   - Handling user preferences
+
+### Context Providers
+
+1. **ExamFilterContext**: Filters for exam listings
+   - Filter criteria (status, difficulty, etc.)
+   - Search functionality
+   - Filter clearing
+
+2. **ExamSessionContext**: Current exam session info
+   - Session status
+   - User progress
+   - Temporary session data
+
+3. **QuestionContext**: Question-specific UI state
+   - Question interaction state
+   - UI feedback for questions
+   - Temporary question-related data
+
+4. **TimerContext**: Exam timer functionality
+   - Timer display
+   - Pause/resume functionality
+   - Time warnings
 
 ## Best Practices
 
-1. **Single Responsibility**: Each store should manage a specific domain of state
-2. **Minimal State**: Only store what's necessary in global state
-3. **Use Selectors**: Create selectors for optimized component rendering
-4. **Descriptive Names**: Use clear, descriptive names for stores and actions
-5. **Appropriate Persistence**: Only persist data that needs to survive page reloads
-6. **Type Safety**: Always use TypeScript types for store state and actions
+1. **Use selectors for performance optimization**
+   - Create specific selectors for components
+   - Avoid unnecessary re-renders
+   - Use `createSelector` from core utilities
 
-## Migration Guide for Existing Stores
+2. **Minimize global state**
+   - Keep state close to where it's used
+   - Use React Context for UI-specific state
+   - Use Zustand only for complex state that needs to be shared
 
-For existing stores in the exams-preparation feature:
+3. **Follow core patterns**
+   - Use core factories and utilities
+   - Follow established naming conventions
+   - Document any feature-specific patterns
 
-1. Update the import to use the core state module
-2. Consider using `createStoreFactory` for feature-specific stores
-3. Review the persistence configuration
-4. Ensure proper type safety
+4. **Separate concerns**
+   - Keep API state in TanStack Query
+   - Use Zustand for complex client state
+   - Use Context for simple UI state
 
-No changes to store implementation should be needed as the core module follows the same patterns.
+## Migration Notes
+
+The state management utilities in this feature were initially developed within the feature and later promoted to core to establish consistent patterns across the application. The feature now leverages these core utilities rather than maintaining its own implementations.
+
+This transition demonstrates how successful patterns can be identified in feature development and then promoted to core for wider use, reflecting the evolutionary nature of our architecture.

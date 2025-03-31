@@ -29,6 +29,7 @@ export {
   ExamMetadata,
   ExamTimer,
   ExamAlertDialog,
+  ExamActionButtons,
 } from './components/molecules';
 
 export {
@@ -36,6 +37,7 @@ export {
   ExamQuestion,
   ExamsTable,
   ExamsPagination,
+  ExamNavigation,
 } from './components/organisms';
 
 export {
@@ -91,7 +93,26 @@ export {
 
 // RBAC (Role-Based Access Control) exports
 export {
+  // Operations and permission types
+  ExamOperation,
   ExamPermission,
+  OperationPermissionMap,
+  OPERATION_DESCRIPTIONS,
+  
+  // Permission hooks
+  useExamPermission,
+  useExamFeatureAccess,
+  useGuardedCallback,
+  useExamRoleUI,
+  
+  // Permission guards
+  ExamOperationGuard,
+  ExamRoleGuard,
+  ConditionalContent,
+  withExamPermission,
+  AccessDeniedPage,
+  
+  // Legacy exports for backward compatibility
   ExamRole,
   canViewExam,
   canTakeExam,
