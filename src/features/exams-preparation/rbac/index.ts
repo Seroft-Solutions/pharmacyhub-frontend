@@ -19,8 +19,8 @@ import { usePermissions, useRoles } from '@/core/rbac/hooks';
 export * from './types';
 export * from './hooks';
 export * from './guards';
-export * from './server';
 export * from './constants';
+export * from './api';
 
 // Re-export the legacy ExamPermission enum for backward compatibility
 export enum ExamPermission {

@@ -10,3 +10,5 @@
 export { useExamPermission } from './useExamPermission';
 export { useExamFeatureAccess } from './useExamFeatureAccess';
 export { useGuardedCallback } from './useGuardedCallback';
+export { useExamRoleUI } from './useExamRoleUI';
+
