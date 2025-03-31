@@ -6,16 +6,16 @@
  */
 
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiClient } from '../../core/app-api-handler'; // Your existing API client
-import { apiSchemaHelpers, createValidator } from '@/features/core/app-api-handler/schema-helpers';
-import { mapToBackendModel } from '@/features/core/app-api-schema/type-utilities';
+import { apiClient } from '@/core/api/core/apiClient'; // Your existing API client
+import { apiSchemaHelpers, createValidator } from '@/core/api/utils/schema/schema-helpers';
+import { mapToBackendModel } from '@/core/api/utils/schema/type-utilities';
 
 // Import generated types from OpenAPI
 import { 
   ExamResponseDTO, 
   ExamRequestDTO, 
   QuestionResponseDTO 
-} from '@/features/core/app-api-schema/generated';
+} from '@/core/api/generated';
 
 // Import your existing feature types
 import { Exam, Question, CreateExamRequest } from '../types';

@@ -1,8 +1,29 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Question, ExamSession, UserAnswer } from '../model/mcqTypes';
-import { throttledStorage } from '@/features/core/storage';
 import logger from '@/shared/lib/logger';
+
+// Create a throttled storage adapter to prevent excessive localStorage operations
+const throttledStorage = {
+  getItem: createJSONStorage(() => localStorage).getItem,
+  setItem: (name: string, value: string) => {
+    // Use a debounce technique with setTimeout for better performance
+    if (typeof window !== 'undefined') {
+      // Clear any existing timeout to prevent multiple pending updates
+      const existingTimeout = (window as any).__EXAM_STORAGE_TIMEOUT;
+      if (existingTimeout) {
+        window.clearTimeout(existingTimeout);
+      }
+      
+      // Set a new timeout to batch localStorage updates
+      (window as any).__EXAM_STORAGE_TIMEOUT = window.setTimeout(() => {
+        localStorage.setItem(name, value);
+        (window as any).__EXAM_STORAGE_TIMEOUT = null;
+      }, 500); // 500ms debounce time
+    }
+  },
+  removeItem: createJSONStorage(() => localStorage).removeItem
+};
 
 interface ExamState {
   // Exam data

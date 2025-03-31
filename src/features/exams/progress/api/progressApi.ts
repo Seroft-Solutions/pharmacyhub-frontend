@@ -1,4 +1,4 @@
-import { apiClient } from '@/features/core/app-api-handler/core/apiClient';
+import { apiClient } from '@/core/api/core/apiClient';
 
 // Define interface for the progress data
 export interface Progress {

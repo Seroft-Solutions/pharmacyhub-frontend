@@ -54,6 +54,11 @@ This feature follows the "Core as Foundation" principle, leveraging core UI comp
 - Uses `AlertDialog` for confirmation dialogs
 - Uses core layout components for structural elements
 
+For detailed documentation on component integration with Core UI, see:
+
+- [Component Design Guide](../docs/COMPONENT_DESIGN.md) - Design principles and patterns
+- [Core UI Examples](../docs/CORE_UI_EXAMPLES.md) - Real-world examples and best practices
+
 ## Component Composition
 
 Components are composed following a hierarchical pattern:

@@ -4,8 +4,8 @@
  * Custom hook for checking exam feature access
  * Uses the new feature-based RBAC system
  */
-import { useFeatureAccess } from '@/features/core/app-rbac/hooks/useFeatureAccess';
-import { FeatureOperation } from '@/features/core/app-rbac/types/feature-access';
+import { useFeatureAccess } from '@/core/rbac/hooks/useFeatureAccess';
+import { FeatureOperation } from '@/core/rbac/types/feature-access';
 
 export enum ExamOperation {
   VIEW = 'VIEW',

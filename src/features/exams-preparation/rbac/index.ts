@@ -3,10 +3,13 @@
  * 
  * This module handles role-based access control for the exams-preparation feature.
  * It defines permissions, operations, and access control logic specific to this feature.
+ * 
+ * Fully integrated with core RBAC module for consistent permission handling.
  */
 
 // Import core RBAC utilities
-import { hasPermission, RBACProvider } from '@/core/rbac';
+import { RBACProvider } from '@/core/rbac';
+import { usePermissions, useRoles } from '@/core/rbac/hooks';
 
 // Define exam-specific permissions
 export enum ExamPermission {
@@ -36,19 +39,71 @@ export const ExamRole = {
   ADMIN: Object.values(ExamPermission),
 };
 
-// Permission check utility for exams
-export const hasExamPermission = (permission: ExamPermission) => {
-  return hasPermission(permission);
-};
-
 // Re-export the RBAC provider
 export { RBACProvider as ExamRBACProvider };
 
-// Exam access policies
-export const canViewExam = () => hasExamPermission(ExamPermission.VIEW_EXAMS);
-export const canTakeExam = () => hasExamPermission(ExamPermission.TAKE_EXAM);
-export const canViewResults = () => hasExamPermission(ExamPermission.VIEW_RESULTS);
-export const canCreateExam = () => hasExamPermission(ExamPermission.CREATE_EXAM);
-export const canEditExam = () => hasExamPermission(ExamPermission.EDIT_EXAM);
-export const canDeleteExam = () => hasExamPermission(ExamPermission.DELETE_EXAM);
-export const canManagePremium = () => hasExamPermission(ExamPermission.MANAGE_PREMIUM);
+/**
+ * Custom hook for exam-specific permissions
+ * This leverages the core RBAC hooks for consistent permission checking
+ */
+export function useExamPermissions() {
+  const { hasPermission, checkPermissions } = usePermissions();
+  const { hasRole } = useRoles();
+  
+  return {
+    // Basic permission checks
+    hasPermission,
+    checkPermissions,
+    hasRole,
+    
+    // Exam-specific convenience methods
+    canViewExam: () => hasPermission(ExamPermission.VIEW_EXAMS),
+    canTakeExam: () => hasPermission(ExamPermission.TAKE_EXAM),
+    canViewResults: () => hasPermission(ExamPermission.VIEW_RESULTS),
+    canCreateExam: () => hasPermission(ExamPermission.CREATE_EXAM),
+    canEditExam: () => hasPermission(ExamPermission.EDIT_EXAM),
+    canDeleteExam: () => hasPermission(ExamPermission.DELETE_EXAM),
+    canManagePremium: () => hasPermission(ExamPermission.MANAGE_PREMIUM),
+    
+    // Role-based convenience methods
+    isAdmin: () => hasRole('admin'),
+    isInstructor: () => hasRole('instructor'),
+    isStudent: () => hasRole('student'),
+  };
+}
+
+// Legacy individual exports for backward compatibility
+export const canViewExam = () => {
+  const { hasPermission } = usePermissions();
+  return hasPermission(ExamPermission.VIEW_EXAMS);
+};
+
+export const canTakeExam = () => {
+  const { hasPermission } = usePermissions();
+  return hasPermission(ExamPermission.TAKE_EXAM);
+};
+
+export const canViewResults = () => {
+  const { hasPermission } = usePermissions();
+  return hasPermission(ExamPermission.VIEW_RESULTS);
+};
+
+export const canCreateExam = () => {
+  const { hasPermission } = usePermissions();
+  return hasPermission(ExamPermission.CREATE_EXAM);
+};
+
+export const canEditExam = () => {
+  const { hasPermission } = usePermissions();
+  return hasPermission(ExamPermission.EDIT_EXAM);
+};
+
+export const canDeleteExam = () => {
+  const { hasPermission } = usePermissions();
+  return hasPermission(ExamPermission.DELETE_EXAM);
+};
+
+export const canManagePremium = () => {
+  const { hasPermission } = usePermissions();
+  return hasPermission(ExamPermission.MANAGE_PREMIUM);
+};

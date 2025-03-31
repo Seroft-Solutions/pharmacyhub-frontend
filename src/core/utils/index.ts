@@ -1,9 +1,11 @@
 /**
  * Core Utilities
  * 
- * This module exports all common utility functions used across the application.
+ * This module exports common utilities used across the application.
  */
 
-// Export utilities as they are created
-// Example: export { formatDate } from './date';
-// Example: export { generateId } from './id';
+// Export logger
+export { default as logger, getLogger, LogLevel } from './logger';
+
+// Add other utility exports as they are created
+// export { functionName } from './fileName';

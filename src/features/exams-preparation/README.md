@@ -69,6 +69,14 @@ The feature leverages these core modules:
 - **Core Auth**: For authentication and user management
 - **Core RBAC**: For role-based access control
 - **Core Utils**: For common utility functions
+- **Core State**: For state management with Zustand
+
+Detailed documentation on core integration:
+- [Core Integration Guide](./docs/CORE_INTEGRATION_GUIDE.md) - Overview of core integration
+- [Component Design Guide](./docs/COMPONENT_DESIGN.md) - UI component integration
+- [Core API Integration](./docs/CORE_API_INTEGRATION.md) - API integration
+- [State Management](./docs/STATE_MANAGEMENT.md) - State management
+- [Auth & RBAC Integration](./docs/AUTH_RBAC_INTEGRATION.md) - Auth and RBAC
 
 ## Main Components
 

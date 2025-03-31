@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FeatureGuard, OperationGuard } from '@/features/core/app-rbac/components/FeatureGuard';
+import { FeatureGuard, OperationGuard } from '@/core/rbac/components/FeatureGuard';
 import { ExamOperation } from '../../hooks/useExamFeatureAccess';
 
 // Constants

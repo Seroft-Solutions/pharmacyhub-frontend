@@ -1,22 +1,39 @@
 /**
- * DEPRECATED: This store factory has been promoted to core.
+ * Core Store Factory
  * 
- * Use the core state module instead:
- * import { createStore, createStoreFactory, createSelectors } from '@/core/state';
+ * Creates Zustand stores with consistent patterns and persistence options.
+ * Provides utilities for optimizing component renders with selectors.
  * 
- * See docs/STATE_MANAGEMENT.md for migration details.
+ * This factory was promoted from the exams-preparation feature to core
+ * to establish a consistent pattern for state management across features.
  */
 
 import { create, StateCreator, StoreApi, UseBoundStore } from 'zustand';
 import { persist, PersistOptions } from 'zustand/middleware';
+import logger from '../utils/logger';
 
 /**
  * Options for the store creation
  */
 export interface StoreOptions<T> {
+  /**
+   * Whether to persist the store state to local storage
+   */
   persist?: boolean;
+  
+  /**
+   * The key to use for localStorage persistence
+   */
   storageKey?: string;
+  
+  /**
+   * Function to determine which state to persist
+   */
   partialize?: (state: T) => Partial<T>;
+  
+  /**
+   * Function to run when state is rehydrated from localStorage
+   */
   onRehydrateStorage?: (state: T | undefined) => ((state?: T) => void) | void;
 }
 
@@ -52,13 +69,15 @@ export function createStore<State, Actions>(
   // Add persistence if enabled
   if (options?.persist) {
     const persistOptions: PersistOptions<State & Actions> = {
-      name: `exams-prep-${name}`,
+      name: options.storageKey || `store-${name}`,
       partialize: options.partialize,
       onRehydrateStorage: options.onRehydrateStorage,
     };
     
     stateCreator = persist(stateCreator, persistOptions);
   }
+  
+  logger.debug(`Creating store: ${name}`);
   
   // Create the store
   return create<State & Actions>(stateCreator);
@@ -88,5 +107,48 @@ export function createSelectors<TState, TActions>(
     ) => {
       return () => store(selector);
     },
+  };
+}
+
+/**
+ * Create a store factory for a specific feature
+ * This allows customizing the store creation for a specific feature
+ * while still following the core pattern
+ * 
+ * @param featureName The name of the feature
+ * @returns A function to create stores for the feature
+ */
+export function createStoreFactory(featureName: string) {
+  return <State, Actions>(
+    storeName: string,
+    initialState: State,
+    actionsCreator: (
+      set: (
+        partial: State | Partial<State> | ((state: State) => State | Partial<State>),
+        replace?: boolean
+      ) => void,
+      get: () => State,
+      api: StoreApi<State & Actions>
+    ) => Actions,
+    options?: StoreOptions<State & Actions>
+  ): UseBoundStore<StoreApi<State & Actions>> => {
+    // Prefix the store name with the feature name for better debugging
+    const prefixedName = `${featureName}-${storeName}`;
+    
+    // Create storage key if persisting
+    const storageKey = options?.persist 
+      ? (options.storageKey || `${featureName}-${storeName}`)
+      : undefined;
+    
+    // Create the store with the modified options
+    return createStore<State, Actions>(
+      prefixedName,
+      initialState,
+      actionsCreator,
+      {
+        ...options,
+        storageKey,
+      }
+    );
   };
 }

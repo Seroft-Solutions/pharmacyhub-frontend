@@ -3,7 +3,7 @@
  * 
  * Defines which roles have access to the exams feature.
  */
-import { Role } from '@/features/core/app-rbac/constants/roles';
+import { Role } from '@/core/rbac/constants/roles';
 
 /**
  * Roles that have access to the exams feature by default

@@ -3,9 +3,9 @@
  * 
  * Defines the exams feature's permissions, feature flags, and requirements.
  */
-import { defineFeature } from '@/features/core/app-rbac/registry';
-import { Role } from '@/features/core/app-rbac/constants/roles';
-import { registerFeature } from '@/features/core/app-rbac/registry';
+import { defineFeature } from '@/core/rbac/registry';
+import { Role } from '@/core/rbac/constants/roles';
+import { registerFeature } from '@/core/rbac/registry';
 
 // Feature definition
 export const EXAMS_FEATURE = defineFeature(

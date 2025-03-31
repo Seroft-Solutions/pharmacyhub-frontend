@@ -5,7 +5,7 @@
  * ensuring consistent error logging across the application.
  */
 import { AxiosError } from 'axios';
-import { logger } from '@/shared/lib/logger';
+import logger from '@/core/utils/logger';
 import { ApiError } from './baseError';
 import {
   NetworkError,
