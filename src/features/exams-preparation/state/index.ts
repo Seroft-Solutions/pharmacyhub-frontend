@@ -47,6 +47,7 @@ export {
   ExamFilterProvider,
   useExamFilter,
   useHasActiveFilters,
+  useFilterValues,
   withExamFilters,
 } from './contexts/ExamFilterContext';
 
