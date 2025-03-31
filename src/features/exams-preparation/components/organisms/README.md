@@ -1,39 +1,43 @@
-# Organisms
+# Organism Components
 
-This directory contains larger, more complex components that are composed of multiple molecules and/or atoms working together to form a distinct section of the UI.
+This directory contains larger components that are composed of multiple molecules, atoms, and core UI components working together to form distinct sections of the UI.
 
-## What to place here
+## Components
 
-- Components that form entire sections of the interface
-- Complex components that manage significant portions of functionality
-- Components that coordinate multiple molecules and atoms
+### ExamQuestion
 
-## Examples
+A component for displaying and interacting with exam questions.
 
-- Navigation components (ExamNavigationBar, QuestionNavigation)
-- Complex data displays (ExamsTable)
-- Dialog components (ExamAlertDialog)
-- Progress tracking displays (ExamProgress)
-- Interactive question components (ExamQuestion)
-- Summary components (ExamSummary)
-- Chart/visualization components (PerformanceCharts)
-- Score display components (ScoreBreakdown, ScoreOverview)
-- Statistics displays (StatisticsDisplay)
-- Sidebar components (ExamSidebar, ExamSidebarMenu)
-- Feature-specific editors (JsonExamUploader, McqEditor)
-- Type management components (PaperTypeManager)
-- Multi-step flows (PaymentFlow)
-- Forms (ManualPaymentForm)
-- Dialog components (PromotionalOfferDialog)
-- Filter components (QuestionFilter)
-- Modal dialogs (QuestionDialog)
+- Uses core Card, RadioGroup, Label, and Button components from '@/components/ui/...'
+- Handles question state, options selection, and review mode
+- Provides explanation visibility toggling
+- Shows correct/incorrect answers in review mode
 
-## Guidelines
+### ExamsPagination
 
-- Organisms can contain multiple molecules and atoms
-- Organisms may manage more complex state
-- Organisms can handle more significant business logic
-- Organisms can be context-specific rather than generic
-- Organisms should not include page-level layout concerns
-- Keep organisms under 200 lines of code when possible
-- Consider splitting larger organisms into multiple components
+Provides navigation between pages of content.
+
+- Uses core Pagination components from '@/components/ui/pagination'
+- Handles page calculation and navigation logic
+- Provides smart ellipsis for large page counts
+
+### ExamsTable
+
+Displays exam data in a tabular format with actions.
+
+- Uses core Table components from '@/components/ui/table'
+- Uses core Button component from '@/components/ui/button'
+- Composes with ExamStatusBadge atom
+- Provides view/edit/delete actions
+- Handles conditional column rendering
+
+## Usage Guidelines
+
+1. Organisms should compose multiple molecules, atoms, and core UI components
+2. Leverage core UI components from '@/components/ui/...'
+3. Compose with atom and molecule components from the feature
+4. Organisms can contain more complex state management
+5. Maintain single responsibility principle at the section level
+6. Keep components under 200 lines of code
+7. Consider splitting larger organisms into multiple components
+8. Organisms should not contain page-level layout concerns

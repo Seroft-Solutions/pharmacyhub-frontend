@@ -9,11 +9,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/features/core/ui/atoms/table";
-import { Button } from '@/features/core/ui/atoms/button';
+} from "@/components/ui/table";
+import { Button } from '@/components/ui/button';
 import { Edit, Eye, Trash2 } from 'lucide-react';
 import { ExamStatusBadge } from '../atoms/ExamStatusBadge';
-import { formatTimeVerbose } from '@/features/exams-preparation/utils';
+import { formatTimeVerbose } from '../../utils';
 
 export interface ExamTableItem {
   id: string;

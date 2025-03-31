@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
-import { Button } from '@/features/core/ui/atoms/button';
+import { Button } from '@/components/ui/button';
 
 interface ErrorStateProps {
   message?: string;

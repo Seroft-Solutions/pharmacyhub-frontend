@@ -1,5 +1,8 @@
-// molecules/index.ts
-export { default as ExamPaperCard } from './ExamPaperCard';
-export { default as ExamTimer } from './ExamTimer';
-export { default as ExamMetadata } from './ExamMetadata';
-export { default as ExamAlertDialog } from './ExamAlertDialog';
+export { ExamAlertDialog } from './ExamAlertDialog';
+export { ExamHeader } from './ExamHeader';
+export { ExamMetadata } from './ExamMetadata';
+export { ExamPaperCard } from './ExamPaperCard';
+export { ExamQuestionNavigation } from './ExamQuestionNavigation';
+export { ExamScoreOverview } from './ExamScoreOverview';
+export { ExamStatistics } from './ExamStatistics';
+export { ExamTimer } from './ExamTimer';

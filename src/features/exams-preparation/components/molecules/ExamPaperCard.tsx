@@ -2,12 +2,12 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/features/core/ui/atoms/card";
-import { Button } from '@/features/core/ui/atoms/button';
-import { Badge } from '@/features/core/ui/atoms/badge';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ExamStatusBadge } from '../atoms/ExamStatusBadge';
 import { Clock, Award } from 'lucide-react';
-import { formatTimeVerbose } from '@/features/exams-preparation/utils';
+import { formatTimeVerbose } from '../../utils';
 
 interface ExamPaperCardProps {
   id: string;

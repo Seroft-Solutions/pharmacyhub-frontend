@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { formatTimeVerbose } from '@/features/exams-preparation/utils';
+import { formatTimeVerbose } from '../../utils';
 
 interface TimeRemainingComponentProps {
   timeRemaining: number; // in seconds

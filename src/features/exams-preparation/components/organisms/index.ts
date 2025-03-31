@@ -1,4 +1,7 @@
-// organisms/index.ts
-export { default as ExamsTable } from './ExamsTable';
-export { default as ExamsPagination } from './ExamsPagination';
-export { default as ExamQuestion } from './ExamQuestion';
+export { ExamQuestion } from './ExamQuestion';
+export { ExamQuestionCard } from './ExamQuestionCard';
+export { ExamResultsTabs } from './ExamResultsTabs';
+export { ExamSidebar } from './ExamSidebar';
+export { ExamsPagination } from './ExamsPagination';
+export { ExamsTable } from './ExamsTable';
+export { ExamDialogs } from './ExamDialogs';

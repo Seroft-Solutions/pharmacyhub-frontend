@@ -2,10 +2,10 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/features/core/ui/atoms/card';
-import { RadioGroup, RadioGroupItem } from '@/features/core/ui/atoms/radio-group';
-import { Label } from '@/features/core/ui/atoms/label';
-import { Button } from '@/features/core/ui/atoms/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 
 interface Option {

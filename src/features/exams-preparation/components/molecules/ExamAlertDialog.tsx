@@ -11,7 +11,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/features/core/ui/atoms/alert-dialog";
+} from "@/components/ui/alert-dialog";
 
 interface ExamAlertDialogProps {
   open: boolean;

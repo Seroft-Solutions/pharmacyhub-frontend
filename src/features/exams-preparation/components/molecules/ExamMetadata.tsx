@@ -2,9 +2,9 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent } from '@/features/core/ui/atoms/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Clock, HelpCircle, Award, Calendar } from 'lucide-react';
-import { formatTimeVerbose } from '@/features/exams-preparation/utils';
+import { formatTimeVerbose } from '../../utils';
 
 interface ExamMetadataProps {
   questionsCount: number;

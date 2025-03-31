@@ -1,28 +1,40 @@
 /**
- * Exam API enums and constants
- * Contains standardized enum types for exam-related data
+ * Enums for Exams Preparation
+ * 
+ * This module defines all enum types used in the exams-preparation feature.
  */
 
 /**
- * Exam status types
+ * Status of an exam
  */
 export enum ExamStatus {
   DRAFT = 'DRAFT',
   PUBLISHED = 'PUBLISHED',
-  ARCHIVED = 'ARCHIVED'
+  ARCHIVED = 'ARCHIVED',
+  DELETED = 'DELETED'
 }
 
 /**
- * Attempt status types
+ * Type of question
  */
-export enum AttemptStatus {
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  ABANDONED = 'ABANDONED'
+export enum QuestionType {
+  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
+  TRUE_FALSE = 'TRUE_FALSE',
+  SINGLE_CHOICE = 'SINGLE_CHOICE'
 }
 
 /**
- * Paper types
+ * Difficulty level of a question
+ */
+export enum DifficultyLevel {
+  EASY = 'EASY',
+  MEDIUM = 'MEDIUM',
+  HARD = 'HARD',
+  EXPERT = 'EXPERT'
+}
+
+/**
+ * Type of paper
  */
 export enum PaperType {
   MODEL = 'MODEL',
@@ -32,42 +44,21 @@ export enum PaperType {
 }
 
 /**
- * Difficulty levels
+ * Status of an attempt
  */
-export enum Difficulty {
-  EASY = 'EASY',
-  MEDIUM = 'MEDIUM',
-  HARD = 'HARD'
+export enum AttemptStatus {
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  TIMED_OUT = 'TIMED_OUT',
+  ABANDONED = 'ABANDONED'
 }
 
 /**
- * Question types
- */
-export enum QuestionType {
-  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
-  SINGLE_CHOICE = 'SINGLE_CHOICE',
-  TRUE_FALSE = 'TRUE_FALSE',
-  MATCHING = 'MATCHING',
-  SHORT_ANSWER = 'SHORT_ANSWER'
-}
-
-/**
- * Payment status types
+ * Payment status
  */
 export enum PaymentStatus {
-  PAID = 'PAID',
   PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
-  NOT_PAID = 'NOT_PAID',
-  NOT_REQUIRED = 'NOT_REQUIRED'
-}
-
-/**
- * Question status in an attempt
- */
-export enum QuestionStatus {
-  UNANSWERED = 'UNANSWERED',
-  ANSWERED_CORRECT = 'CORRECT',
-  ANSWERED_INCORRECT = 'INCORRECT',
-  ANSWERED_PENDING = 'PENDING'
+  REFUNDED = 'REFUNDED'
 }

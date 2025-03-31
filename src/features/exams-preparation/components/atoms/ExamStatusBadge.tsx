@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { Badge, BadgeProps } from "@/features/core/ui/atoms/badge";
+import { Badge, BadgeProps } from "@/components/ui/badge";
 
 export type ExamStatus = 'draft' | 'published' | 'archived' | 'completed' | 'in-progress';
 

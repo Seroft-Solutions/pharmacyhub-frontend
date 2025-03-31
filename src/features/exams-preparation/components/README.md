@@ -1,34 +1,66 @@
-# Exams Preparation Components
+# Exam Preparation Components
 
-This directory contains UI components for the exams-preparation feature, organized according to atomic design principles.
+This directory contains components for the Exam Preparation feature, organized according to atomic design principles.
 
-## Atomic Design Structure
+## Directory Structure
 
-- **atoms/** - Basic UI elements (buttons, inputs, icons, etc.)
-- **molecules/** - Combinations of atoms (form fields, search bars, etc.)
-- **organisms/** - Collections of molecules forming a section (data tables, forms, etc.)
-- **templates/** - Page layouts composed of organisms
+- **atoms**: The smallest building blocks (buttons, inputs, badges)
+- **molecules**: Simple combinations of atoms (headers, cards, navigation)
+- **organisms**: Complex UI sections (question displays, sidebars, dialogs)
+- **templates**: Page layouts and containers
+- **admin**: Admin-specific components
+- **navigation**: Navigation components (not currently used)
+- **guards**: Permission and access control components
 
-## Additional Categories
+## Component Organization
 
-- **admin/** - Admin-specific components (to be reorganized into atomic design categories)
-- **guards/** - Components for access control (to be reorganized into atomic design categories)
-- **navigation/** - Navigation components (to be reorganized into atomic design categories)
+### Atoms
+- `EmptyState`: Displays when no data is available
+- `ErrorState`: Displays when an error occurs
+- `ExamStatusBadge`: Badge showing exam status
+- `LoadingState`: Loading indicator
+- `TimeRemainingComponent`: Shows time remaining in an exam
 
-## Core Integration
+### Molecules
+- `ExamAlertDialog`: Confirmation dialogs for exam actions
+- `ExamHeader`: Displays exam title, description, and time
+- `ExamMetadata`: Shows metadata about an exam
+- `ExamPaperCard`: Card displaying exam paper information
+- `ExamQuestionNavigation`: Navigation buttons for moving between questions
+- `ExamScoreOverview`: Overview of exam scores
+- `ExamStatistics`: Displays exam statistics
+- `ExamTimer`: Timer component for exams
 
-Components in this directory should:
+### Organisms
+- `ExamDialogs`: Manages all the dialogs related to exams
+- `ExamQuestion`: Displays a single exam question with options
+- `ExamQuestionCard`: Card containing question and navigation
+- `ExamResultsTabs`: Tabbed interface for viewing exam results
+- `ExamSidebar`: Sidebar for exam navigation and overview
+- `ExamsPagination`: Pagination component for exam lists
+- `ExamsTable`: Table displaying a list of exams
 
-- Use core UI component library for atomic components
-- Follow established patterns for styling and behavior
-- Maintain size limitations (<200 lines)
-- Have a single responsibility
-- Be independently testable
+### Templates
+- `ExamContainer`: Main container for the exam taking experience
+- `ExamLayout`: Overall layout for exam-related pages
+- `ExamResults`: Displays exam results after completion
 
-## Usage Guidelines
+## Core Component Integration
 
-1. Keep components small and focused
-2. Use composition over inheritance
-3. Minimize props (max 7-8 props per component)
-4. Use TypeScript interfaces to strictly type all props
-5. Export components through index.ts files
+This feature follows the "Core as Foundation" principle, leveraging core UI components wherever possible:
+
+- Uses `Card`, `CardHeader`, `CardContent`, and `CardFooter` from UI library
+- Uses `Button` components from core UI
+- Uses `AlertDialog` for confirmation dialogs
+- Uses core layout components for structural elements
+
+## Component Composition
+
+Components are composed following a hierarchical pattern:
+
+1. Templates use organisms and molecules
+2. Organisms use molecules and atoms
+3. Molecules use atoms
+4. Atoms use core UI components
+
+This composition pattern ensures each component has a single responsibility and remains under the 200-line limit.

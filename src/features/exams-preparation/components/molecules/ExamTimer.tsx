@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { TimeRemainingComponent } from '../atoms/TimeRemainingComponent';
-import { Card, CardContent } from '@/features/core/ui/atoms/card';
-import { Button } from '@/features/core/ui/atoms/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Clock, PauseCircle, PlayCircle } from 'lucide-react';
 
 interface ExamTimerProps {

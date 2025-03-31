@@ -51,20 +51,14 @@ export {
   PremiumContentGuard,
 } from './components/guards';
 
-// API/Data hooks for data fetching and mutation
+// Feature-specific API
 export {
-  // Primary data hooks
-  useExams,
-  useExam,
-  useExamAttempt,
-  useExamResult,
-  useExamPayments,
-  
-  // API hook sets
-  useExamApiHooks,
-  useExamAttemptHooks,
-  useExamPaperHooks,
-} from './api/hooks';
+  examsPreparationApi,
+  examsApi,
+  papersApi,
+  attemptsApi,
+  paymentsApi,
+} from './api';
 
 // State management exports for state handling
 export {
@@ -113,13 +107,28 @@ export {
 export type {
   Exam,
   Question,
-  ExamAttempt,
-  ExamResult,
-  ExamAnswer,
-  QuestionOption,
-  DifficultyLevel,
+  ExamAttempt as Attempt,
+  ExamResult as Result,
+  Answer,
+  PaginatedResponse,
+  ExamStatus,
   QuestionType,
-} from './types';
+  DifficultyLevel,
+  PaperType,
+  AttemptStatus,
+  PaymentStatus,
+  ExamSearchParams,
+  ExamCreateParams,
+  ExamUpdateParams,
+  QuestionCreateParams,
+  QuestionUpdateParams,
+  PaperBase,
+  Paper,
+  PaymentIntent,
+  Payment,
+  ExamStats,
+  AccessCheckResponse,
+} from './types/api/api-types';
 
 // Feature-specific hooks
 export {

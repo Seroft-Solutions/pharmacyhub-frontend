@@ -2,7 +2,7 @@
 "use client";
 
 import React, { ReactNode } from 'react';
-import { Card } from '@/features/core/ui/atoms/card';
+import { Card } from '@/components/ui/card';
 import { LoadingState } from '../atoms/LoadingState';
 import { ErrorState } from '../atoms/ErrorState';
 
