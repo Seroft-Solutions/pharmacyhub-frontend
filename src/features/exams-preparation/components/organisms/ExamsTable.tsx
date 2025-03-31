@@ -10,10 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from '@/components/ui/button';
-import { Edit, Eye, Trash2 } from 'lucide-react';
 import { ExamStatusBadge } from '../atoms/ExamStatusBadge';
 import { formatTimeVerbose } from '../../utils';
+import { ExamActionButtons } from '../molecules/ExamActionButtons';
 
 export interface ExamTableItem {
   id: string;
@@ -83,39 +82,12 @@ export const ExamsTable: React.FC<ExamsTableProps> = ({
                 </TableCell>
               )}
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  {onView && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onView(exam.id)}
-                      title="View"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {onEdit && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEdit(exam.id)}
-                      title="Edit"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {onDelete && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDelete(exam.id)}
-                      title="Delete"
-                      className="text-red-500 hover:text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                <ExamActionButtons
+                  examId={exam.id}
+                  onView={onView ? () => onView(exam.id) : undefined}
+                  onEdit={onEdit ? () => onEdit(exam.id) : undefined}
+                  onDelete={onDelete ? () => onDelete(exam.id) : undefined}
+                />
               </TableCell>
             </TableRow>
           ))}

@@ -1,4 +1,5 @@
 export { ExamAlertDialog } from './ExamAlertDialog';
+export { ExamActionButtons } from './ExamActionButtons';
 export { ExamHeader } from './ExamHeader';
 export { ExamMetadata } from './ExamMetadata';
 export { ExamPaperCard } from './ExamPaperCard';
