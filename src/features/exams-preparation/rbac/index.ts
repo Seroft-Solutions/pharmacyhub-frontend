@@ -5,13 +5,24 @@
  * It defines permissions, operations, and access control logic specific to this feature.
  * 
  * Fully integrated with core RBAC module for consistent permission handling.
+ * 
+ * @module exams-preparation/rbac
  */
 
-// Import core RBAC utilities
-import { RBACProvider } from '@/core/rbac';
+// Import core RBAC components
+import { RBACProvider, PermissionGuard, RoleGuard } from '@/core/rbac/components';
+
+// Import core RBAC hooks
 import { usePermissions, useRoles } from '@/core/rbac/hooks';
 
-// Define exam-specific permissions
+// Export our new types, hooks, guards, and constants
+export * from './types';
+export * from './hooks';
+export * from './guards';
+export * from './server';
+export * from './constants';
+
+// Re-export the legacy ExamPermission enum for backward compatibility
 export enum ExamPermission {
   VIEW_EXAMS = 'exam:view',
   TAKE_EXAM = 'exam:take',
@@ -22,7 +33,7 @@ export enum ExamPermission {
   MANAGE_PREMIUM = 'exam:premium:manage',
 }
 
-// Define exam-specific roles and their associated permissions
+// Define exam-specific roles and their associated permissions (for backward compatibility)
 export const ExamRole = {
   STUDENT: [
     ExamPermission.VIEW_EXAMS,
@@ -39,12 +50,17 @@ export const ExamRole = {
   ADMIN: Object.values(ExamPermission),
 };
 
-// Re-export the RBAC provider
-export { RBACProvider as ExamRBACProvider };
+// Re-export the RBAC provider and core guards
+export { 
+  RBACProvider as ExamRBACProvider,
+  PermissionGuard,
+  RoleGuard
+};
 
 /**
- * Custom hook for exam-specific permissions
- * This leverages the core RBAC hooks for consistent permission checking
+ * Legacy custom hook for exam-specific permissions
+ * This is kept for backward compatibility
+ * New code should use useExamPermission or useExamFeatureAccess
  */
 export function useExamPermissions() {
   const { hasPermission, checkPermissions } = usePermissions();

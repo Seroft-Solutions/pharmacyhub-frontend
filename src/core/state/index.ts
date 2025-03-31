@@ -11,7 +11,14 @@ export {
   createStoreFactory 
 } from './storeFactory';
 
+// Export context factory
+export {
+  createContextProvider,
+  withContextProvider
+} from './contextFactory';
+
 // Export types
 export type { StoreOptions } from './storeFactory';
+export type { ContextOptions } from './contextFactory';
 
 // Add other state management exports as they are created

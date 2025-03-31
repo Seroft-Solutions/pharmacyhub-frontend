@@ -2,7 +2,8 @@
 
 import React, {use} from 'react';
 import {ExamQuestions} from "@/features/exams/components/admin";
-import { ExamOperationGuard, ExamOperation } from '@/features/exams/rbac';
+import { ExamOperationGuard } from '@/features/exams-preparation/rbac';
+import { ExamOperation } from '@/features/exams-preparation/rbac/types';
 
 interface ExamQuestionsPageProps {
   params: Promise<{ examId: string }>;

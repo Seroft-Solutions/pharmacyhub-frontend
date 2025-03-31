@@ -1,13 +1,15 @@
 /**
  * ExamFilter context for managing filter state in exams listings
+ * 
+ * Uses the core context factory to create a context provider for exam filters.
  */
 
 import { ReactNode } from 'react';
 import { ExamFilters, ExamFilterContextType } from '../../types/state/exam-state';
-import { createContextProvider } from '../contextFactory';
+import { createContextProvider, withContextProvider } from '@/core/state';
 
 /**
- * Create the exam filter context provider using our context factory
+ * Create the exam filter context provider using core context factory
  */
 export const [ExamFilterProvider, useExamFilter] = createContextProvider<
   ExamFilters, 
@@ -35,10 +37,17 @@ export const [ExamFilterProvider, useExamFilter] = createContextProvider<
 
 /**
  * Higher-order component that provides exam filter context
+ * Uses the core withContextProvider utility
  */
 export const withExamFilters = <P extends object>(
   Component: React.ComponentType<P>
 ): React.FC<P & { initialFilters?: Partial<ExamFilters> }> => {
+  // Use the withContextProvider utility from core
+  const WithProvider = withContextProvider<P, ExamFilters>(
+    ExamFilterProvider as React.FC<{ children: ReactNode; initialState?: Partial<ExamFilters> }>,
+  );
+  
+  // Return component with initialFilters handling
   return ({ initialFilters, ...props }) => (
     <ExamFilterProvider initialState={initialFilters}>
       <Component {...props as P} />

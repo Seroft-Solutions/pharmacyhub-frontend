@@ -1,6 +1,8 @@
 "use client"
 
 import React, {useEffect, useState} from 'react';
+import { ExamOperationGuard } from '@/features/exams-preparation/rbac';
+import { ExamOperation } from '@/features/exams-preparation/rbac/types';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import { PaperTypeManager } from '@/features/exams/components/admin';
@@ -31,7 +33,8 @@ export default function ManageExamsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <ExamOperationGuard operation={ExamOperation.CREATE_EXAM}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="py-6 space-y-6">
         <h1 className="text-2xl font-bold">Exam Management</h1>
 
@@ -105,5 +108,6 @@ export default function ManageExamsPage() {
         </Tabs>
       </div>
     </div>
+    </ExamOperationGuard>
   );
 }

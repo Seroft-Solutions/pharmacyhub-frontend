@@ -5,7 +5,7 @@
  * active exam sessions, answers, and quiz navigation.
  */
 
-import { createStore } from '../storeFactory';
+import { createStore, createSelectors } from '@/core/state';
 import { Question, ExamAttempt, ExamAnswer } from '../../types/models/exam';
 import { QuestionStatus } from '../../types/api/enums';
 import { calculateExamScore, formatTimeVerbose } from '../../utils';
@@ -96,9 +96,9 @@ interface ExamActions {
   forceResetExamState: () => void; // Complete reset including localStorage
 }
 
-// Create the store
+  // Create the store
 export const useExamStore = createStore<ExamState, ExamActions>(
-  'exam',
+  'exams-preparation-exam',
   initialState,
   (set, get) => ({
     // Exam session actions
@@ -384,10 +384,10 @@ export const useExamStore = createStore<ExamState, ExamActions>(
       // Reset the store state
       set(initialState);
     },
-  }),
+  })),
   {
     persist: true,
-    storageKey: 'exams-prep-exam',
+    storageKey: 'exams-preparation-exam',
     partialize: (state) => ({
       // Only persist these fields
       examId: state.examId,
@@ -422,25 +422,27 @@ export const useExamStore = createStore<ExamState, ExamActions>(
   }
 );
 
-// Selectors for better performance and component optimization
-export const useExamId = () => useExamStore(state => state.examId);
-export const useAttemptId = () => useExamStore(state => state.attemptId);
-export const useCurrentQuestion = () => useExamStore(state => {
+// Create selectors for better performance and component optimization
+export const { createSelector } = createSelectors(useExamStore);
+
+export const useExamId = createSelector(state => state.examId);
+export const useAttemptId = createSelector(state => state.attemptId);
+export const useCurrentQuestion = createSelector(state => {
   const { questions, currentQuestionIndex } = state;
   return questions[currentQuestionIndex];
 });
-export const useExamProgress = () => useExamStore(state => ({
+export const useExamProgress = createSelector(state => ({
   current: state.currentQuestionIndex + 1,
   total: state.questions.length,
   percentage: state.getCompletionPercentage(),
   answered: state.getAnsweredQuestionsCount(),
 }));
-export const useExamTimer = () => useExamStore(state => ({
+export const useExamTimer = createSelector(state => ({
   timeRemaining: state.timeRemaining,
   formatted: state.getRemainingTimeFormatted(),
   isPaused: state.isPaused,
 }));
-export const useExamNavigation = () => useExamStore(state => ({
+export const useExamNavigation = createSelector(state => ({
   currentIndex: state.currentQuestionIndex,
   hasNext: state.currentQuestionIndex < state.questions.length - 1,
   hasPrevious: state.currentQuestionIndex > 0,

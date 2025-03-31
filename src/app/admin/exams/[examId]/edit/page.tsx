@@ -2,7 +2,8 @@
 
 import React, {use} from 'react';
 import {PaperTypeManager} from "@/features/exams/components/admin";
-import { ExamOperationGuard, ExamOperation } from '@/features/exams/rbac';
+import { ExamOperationGuard } from '@/features/exams-preparation/rbac';
+import { ExamOperation } from '@/features/exams-preparation/rbac/types';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -44,7 +45,7 @@ export default function EditExamPage({params}: EditExamPageProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <ExamOperationGuard 
-        operation={ExamOperation.EDIT}
+        operation={ExamOperation.EDIT_EXAM}
         fallback={
           <div className="py-6">
             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
