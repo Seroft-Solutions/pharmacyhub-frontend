@@ -64,31 +64,52 @@ export {
 
 // State management exports for state handling
 export {
-  // Zustand stores
+  // State management factories
+  createExamsStore,
+  createExamsContext,
+  
+  // Stores
   useExamStore,
-  useExamAttemptStore,
   useExamEditorStore,
+  useExamAttemptStore,
   useExamPreparationStore,
   
   // Selectors for optimized renders
+  useExamId,
+  useAttemptId,
+  useCurrentQuestion,
   useExamProgress,
   useExamTimer,
-  useCurrentQuestion,
   useExamNavigation,
-  useStudyProgress,
-  useTotalStudyTime,
-} from './state';
-
-// Context providers for component-level state
-export {
-  QuestionContextProvider,
-  TimerContextProvider,
+  useValidation,
+  useQuestions,
+  useIsDirty,
+  useExam,
+  useCanUndo,
+  useCanRedo,
+  useAttempStatus,
+  useAttemptAnswers,
+  useAttemptProgress,
+  useAvailableExams,
+  useIsLoading,
+  useError,
+  
+  // Context providers
   ExamFilterProvider,
   ExamSessionProvider,
-  useQuestionContext,
-  useTimerContext,
+  QuestionProvider,
+  TimerProvider,
+  
+  // Context hooks
   useExamFilter,
   useExamSession,
+  useQuestion,
+  useTimer,
+  useHasActiveFilters,
+  useFilterValues,
+  
+  // Higher-order components
+  withExamFilters,
 } from './state';
 
 // RBAC (Role-Based Access Control) exports
