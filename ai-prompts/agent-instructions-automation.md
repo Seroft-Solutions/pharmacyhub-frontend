@@ -19,8 +19,36 @@ We are trying to develop features based on feature-based architechure and you ca
   By following this structured approach, we ensure an efficient, systematic feature development.
 
 ### Requirements
-Can you please update questions Navigator component? 
-I want to have 20 questions per page, so when I click on next page it should open page 2 not go to the next mcq. please fix this properly
+
+e
+
+u1_0.user_id=?
+
+2025-04-08T13:00:06.521Z INFO 1 --- [nio-8081-exec-5] c.c.c.k.service.impl.AuthServiceImpl : Stored refresh token for user 543f9c16-c978-4121-9641-99c6740a92ca
+
+2025-04-08T13:00:06.521Z DEBUG 1 --- [nio-8081-exec-5] c.c.c.k.c.KeycloakAuthController : Access token obtained successfully
+
+2025-04-08T13:00:06.521Z DEBUG 1 --- [nio-8081-exec-5] c.c.c.k.c.KeycloakAuthController : Refresh token obtained successfully
+
+2025-04-08T13:00:06.521Z INFO 1 --- [nio-8081-exec-5] c.c.c.k.c.KeycloakAuthController : Login successful for user: demo@gmail.com
+
+2025-04-08T13:00:06.522Z DEBUG 1 --- [nio-8081-exec-5] o.s.w.s.m.m.a.HttpEntityMethodProcessor : Using 'application/json', given [application/json] and supported [application/json, application/*+json]
+
+2025-04-08T13:00:06.523Z DEBUG 1 --- [nio-8081-exec-5] o.s.w.s.m.m.a.HttpEntityMethodProcessor : Writing [AuthResponse(token=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3M3dkN2g5dzI0Y0R2WERPWnQyRFpvc (truncated)...]
+
+2025-04-08T13:00:06.524Z DEBUG 1 --- [nio-8081-exec-5] o.s.web.servlet.DispatcherServlet : Completed 200 OK
+
+2025-04-08T13:00:06.525Z DEBUG 1 --- [nio-8081-exec-5] o.s.w.f.CommonsRequestLoggingFilter : Request Processed: POST /api/auth/login, client=104.28.212.126, headers=[host:"api.dev.crmcup.com", x-forwarded-scheme:"https", x-forwarded-proto:"https", x-real-ip:"104.28.212.126", connection:"close", content-length:"48", sec-ch-ua-platform:""Windows"", cache-control:"no-cache", user-agent:"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36", accept:"application/json", sec-ch-ua:""Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"", sec-ch-ua-mobile:"?0", origin:"https://dev.crmcup.com", sec-fetch-site:"same-site", sec-fetch-mode:"cors", sec-fetch-dest:"empty", referer:"https://dev.crmcup.com/", accept-encoding:"gzip, deflate, br, zstd", accept-language:"en-US,en;q=0.9", priority:"u=1, i", cookie:"JSESSIONID=0856E1CB2EB0722BE495E180A49F54D3", Content-Type:"application/json;charset=UTF-8"], payload={"email":"demo@gmail.com","password":"usman123"}]
+
+2025-04-08T13:00:06.526Z DEBUG 1 --- [nio-8081-exec-5] com.crm.cup.security.TenantContext : Tenant context cleared
+
+2025-04-08T13:00:06.526Z DEBUG 1 --- [nio-8081-exec-5] com.crm.cup.security.TenantFilter : Tenant context cleared for request: /api/auth/login
+
+2025-04-08T13:00:06.527Z INFO 1 --- [nio-8081-exec-5] c.crm.cup.security.RequestLoggingFilter : [99f73915] Response: status=200, duration=154ms
+
+2025-04-08T13:00:06.527Z INFO 1 --- [nio-8081-exec-5] c.crm.cup.security.RequestLoggingFilter : [99f73915] Authentication successful for request: {"email":"demo@gmail.com","password":"****"}
+
+On the front end side when I am logging in into my application I request initiatives and the request goes to back end on the back end my api gets authenticated and gives us a successful response a valid response but when I receive the response on the front end side I mean it it happened somewhere you know in the application layer that gives me an error that is related to the 502 a bad gateway I'm just trying to understand why I am getting bad gateway result because the lock says authentication is successful and we are just now need to utilize this information and successfully gets logged in but not not really sure what is going on with the endpoint and I'm not able to successfully logged in into my application dashboard
 
 > **Agent Philosophy:**  
 > **Plans → Acts → Persists → Learns**  
@@ -38,7 +66,7 @@ I want to have 20 questions per page, so when I click on next page it should ope
     - Use `search_in_files_content` if you need to check references or patterns.
     - use JIRA project PHAR and then create an issue for the task.
     - use `create_jira_issue` to create a JIRA issue.
-    - use `get_jira_issue` to get the details of the JIRA issue.
+    - us[general_agent_instructions.md](general_agent_instructions.md)e `get_jira_issue` to get the details of the JIRA issue.
     - use `get_jira_issue_comments` to get the comments of the JIRA issue.
     - use `get_jira_issue_transitions` to get the transitions of the JIRA issue.
     - first transition stage is selected for development.

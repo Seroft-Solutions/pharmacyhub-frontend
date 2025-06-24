@@ -76,7 +76,7 @@ To manually deploy to a specific environment:
 
 ```bash
 # SSH to the VPS
-ssh root103.135.45.76 -p 22
+ssh root31.58.144.117 -p 22
 
 # Navigate to the environment directory
 cd /opt/CRM/dev/frontend
