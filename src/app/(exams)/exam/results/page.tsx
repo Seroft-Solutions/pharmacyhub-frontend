@@ -32,7 +32,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { formatTimeVerbose } from '@/features/exams/utils/formatTime';
-import { ExamAttempt, AttemptStatus } from '@/features/exams/model/standardTypes';
+import { ExamAttempt, AttemptStatus } from '@/features/exams/types';
 
 export default function ResultsPage() {
   return (

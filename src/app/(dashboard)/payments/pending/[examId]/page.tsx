@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useCheckExamAccessMutation } from '@/features/payments/api/hooks';
+import { useCheckExamAccessMutation } from '@/features/payments/api/hooks/index';
 import { Loader2Icon, ClockIcon, CheckCircleIcon, XCircleIcon, RefreshCwIcon } from 'lucide-react';
 
 export default function PaymentPendingPage({ params }: { params: { examId: string } }) {

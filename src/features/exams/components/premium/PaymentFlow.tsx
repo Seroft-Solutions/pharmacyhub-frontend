@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
-import { useInitiateExamPaymentMutation } from '@/features/payments/api/hooks';
+import { useInitiateExamPaymentMutation } from '@/features/payments/api/hooks/index';
 import { PaymentMethod } from '@/features/payments/types';
 
 interface PaymentFlowProps {

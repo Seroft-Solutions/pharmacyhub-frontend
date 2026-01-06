@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { usePaymentHistoryQuery } from '../api/hooks';
+import { usePaymentHistoryQuery } from '../api/hooks/index';
 import { Loader2Icon, ReceiptIcon, AlertCircleIcon } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
